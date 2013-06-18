@@ -151,17 +151,23 @@ JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS
  * @param {object} args Jingle session arguments
  */
 function JSJaCJingle(args) {
-  if(typeof(jsjac_connection) != 'undefined' && jsjac_connection)
+  if(args && args.connection)
     /**
      * @private
      */
-    this._connection = connection;
+    this._connection = args.connection;
 
-  if(args && args.content_client)
+  if(args && element_local)
     /**
      * @private
      */
-    this._content_client = args.content_client;
+    this._element_local = args.element_local;
+
+  if(args && element_remote)
+    /**
+     * @private
+     */
+    this._element_remote = args.element_remote;
 
   if(args && args.debug && args.debug.log) {
       /**
@@ -175,6 +181,12 @@ function JSJaCJingle(args) {
         log: function() {}
       };
   }
+
+  if(args && args.content_client)
+    /**
+     * @private
+     */
+    this._content_client = args.content_client;
 
   /**
    * @private
@@ -233,6 +245,12 @@ function JSJaCJingle(args) {
  * @param {object} args Jingle session arguments
  */
 JSJaCJingle.prototype.init = function(args) {
+  // Slot available?
+  if(this._busy)
+    this.debug.log('[JSJaCJingle] Cannot init, resource busy.', 1); return;
+  if(this._status != 'terminated')
+    this.debug.log('[JSJaCJingle] Cannot init, resource not terminated (status: ' + this._status + ').', 1); return;
+
   // TODO: .send() session-initiate
   // TODO: REGISTER: .handle() over .send()
 }
@@ -699,6 +717,51 @@ JSJaCJingle.prototype.handle_transport_replace = function(stanza) {
  */
 
 /**
+ * Gets the connection value
+ * @return connection value
+ * @type JSJaCConnection
+ */
+JSJaCJingle.prototype.get_connection = function() {
+  return this._connection;
+}
+
+/**
+ * Gets the element_local value
+ * @return element_local value
+ * @type dom
+ */
+JSJaCJingle.prototype.get_element_local = function() {
+  return this._element_local;
+}
+
+/**
+ * Gets the element_remote value
+ * @return element_remote value
+ * @type dom
+ */
+JSJaCJingle.prototype.get_element_remote = function() {
+  return this._element_remote;
+}
+
+/**
+ * Gets the debug value
+ * @return debug value
+ * @type function
+ */
+JSJaCJingle.prototype.get_debug = function() {
+  return this._connection;
+}
+
+/**
+ * Gets the content_client value
+ * @return content_client value
+ * @type object
+ */
+JSJaCJingle.prototype.get_content_client = function() {
+  return this._content_client;
+}
+
+/**
  * Gets the content_session value
  * @return content_session value
  * @type object
@@ -793,6 +856,41 @@ JSJaCJingle.prototype.get_handlers = function() {
 /**
  * JSJSAC JINGLE SETTERS
  */
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_connection = function(connection) {
+  this._connection = connection;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_element_local = function(element_local) {
+  this._element_local = element_local;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_element_remote = function(element_remote) {
+  this._element_remote = element_remote;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_debug = function(debug) {
+  this._debug = debug;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_content_client = function(content_client) {
+  this._content_client = content_client;
+}
 
 /**
  * @private
