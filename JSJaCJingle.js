@@ -316,12 +316,22 @@ JSJaCJingle.prototype.handle = function(stanza) {
  * Registers a given handler on a given Jingle stanza
  */
 JSJaCJingle.prototype.register_handler = function(action, fn) {
-  if(action in JSJAC_JINGLE_ACTIONS) {
+  if(typeof(fn) != 'function') {
+    this.debug.log('[JSJaCJingle] fn parameter not passed or not a function!', 1);
+
+    return false;
+  }
+
+  if(action && action in JSJAC_JINGLE_ACTIONS) {
     this._handlers[action] = fn;
 
     this.debug.log('[JSJaCJingle] Registered handler for action: ' + action, 4);
+
+    return true;
   } else {
     this.debug.log('[JSJaCJingle] Could not register handler for action: ' + action + ' (not in protocol)', 1);
+
+    return false;
   }
 }
 
