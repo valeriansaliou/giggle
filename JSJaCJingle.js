@@ -35,8 +35,11 @@ var R_NS_JINGLE_TRANSPORT                           = /urn:xmpp:jingle:transport
  * JSJAC JINGLE CONSTANTS
  */
 
+var JSJAC_JINGLE_STATUS_INACTIVE                    = 'inactive';
 var JSJAC_JINGLE_STATUS_INITIATING                  = 'initiating';
 var JSJAC_JINGLE_STATUS_INITIATED                   = 'initiated';
+var JSJAC_JINGLE_STATUS_STARTING                    = 'starting';
+var JSJAC_JINGLE_STATUS_STARTED                     = 'started';
 var JSJAC_JINGLE_STATUS_TERMINATING                 = 'terminating';
 var JSJAC_JINGLE_STATUS_TERMINATED                  = 'terminated';
 
@@ -86,8 +89,11 @@ var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS      = 'unsupported-transports';
  */
 
 var JSJAC_JINGLE_STATUSES  = {
+  JSJAC_JINGLE_STATUS_INACTIVE,
   JSJAC_JINGLE_STATUS_INITIATING,
   JSJAC_JINGLE_STATUS_INITIATED,
+  JSJAC_JINGLE_STATUS_STARTING,
+  JSJAC_JINGLE_STATUS_STARTED,
   JSJAC_JINGLE_STATUS_TERMINATING,
   JSJAC_JINGLE_STATUS_TERMINATED
 };
@@ -157,6 +163,18 @@ function JSJaCJingle(args) {
      */
     this._connection = args.connection;
 
+  if(args && args.success_callback)
+    /**
+     * @private
+     */
+    this._success_callback = args.success_callback;
+
+  if(args && args.error_callback)
+    /**
+     * @private
+     */
+    this._error_callback = args.error_callback;
+
   if(args && element_local)
     /**
      * @private
@@ -182,21 +200,10 @@ function JSJaCJingle(args) {
       };
   }
 
-  if(args && args.content_client)
-    /**
-     * @private
-     */
-    this._content_client = args.content_client;
-
   /**
    * @private
    */
   this._content_session = {};
-
-  /**
-   * @private
-   */
-  this._busy = false;
 
   /**
    * @private
@@ -231,27 +238,32 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  this._success_callback = null;
-
-  /**
-   * @private
-   */
   this._handlers = {};
 }
 
 
 /**
- * Initializes a new Jingle session.
+ * Init a new Jingle session.
  * @param {object} args Jingle session arguments
  */
-JSJaCJingle.prototype.init = function(args) {
-  // Slot available?
-  if(this._busy)
-    this.debug.log('[JSJaCJingle] Cannot init, resource busy.', 1); return;
-  if(this._status != 'terminated')
-    this.debug.log('[JSJaCJingle] Cannot init, resource not terminated (status: ' + this._status + ').', 1); return;
+JSJaCJingle.prototype.init = function() {
+  // Slot unavailable?
+  if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE)
+    this.get_debug().log('[JSJaCJingle] Cannot init, resource not inactive (status: ' + this.get_status() + ').', 1); return;
 
   // TODO: .send() session-initiate
+  // TODO: REGISTER: .handle() over .send() --> start()
+}
+
+/**
+ * Starts the Jingle session.
+ */
+JSJaCJingle.prototype.start = function(to, handler) {
+  // Slot unavailable?
+  if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED))
+    this.get_debug().log('[JSJaCJingle] Cannot start, resource not initiated or terminated (status: ' + this.get_status() + ').', 1); return;
+
+  // TODO
   // TODO: REGISTER: .handle() over .send()
 }
 
@@ -261,6 +273,10 @@ JSJaCJingle.prototype.init = function(args) {
  * @type boolean
  */
 JSJaCJingle.prototype.terminate = function() {
+  // Slot unavailable?
+  if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED))
+    this.get_debug().log('[JSJaCJingle] Cannot terminate, resource not started (status: ' + this.get_status() + ').', 1); return;
+
   // TODO: .send() session-terminate
   // TODO: REGISTER: .handle() over .send()
   // TODO: .handle session-terminate ack, trigger a client event
@@ -269,9 +285,14 @@ JSJaCJingle.prototype.terminate = function() {
 /**
  * Sends a given Jingle stanza packet
  */
-JSJaCJingle.prototype.send = function(to, handler) {
+JSJaCJingle.prototype.send = function(stanza) {
+  // Slot unavailable?
+  if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_STARTED))
+    this.get_debug().log('[JSJaCJingle] Cannot send, resource not initiated or started (status: ' + this.get_status() + ').', 1); return;
+
   // TODO
-  // TODO: REGISTER: .handle() over .send()
+  // TODO: send over the network
+  // TODO: get stanza data from one of the send_* method
 }
 
 /**
@@ -281,7 +302,7 @@ JSJaCJingle.prototype.handle = function(stanza) {
   // TODO
 
   var action = stanza.getNode().getChild('contents').getAttribute('action');
-  this._action_last = action;
+  this._set_action_last(action);
 
   // Submit to registered handler
   switch(action) {
@@ -331,13 +352,13 @@ JSJaCJingle.prototype.handle = function(stanza) {
       this.send_transport_replace(stanza); break;
   }
 
-  if(action in this._handlers) {
+  if(action in this.get_handlers()) {
     try {
-      this.debug.log('[JSJaCJingle] Binding to handler for action: ' + action, 4);
+      this.get_debug().log('[JSJaCJingle] Binding to handler for action: ' + action, 4);
 
-      (this._handlers[action])(jingle);
+      ((this.get_handlers())[action])(jingle);
     } catch(e) {
-      this.debug.log('[JSJaCJingle] Could not bind to handler for action: ' + action + ' > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle] Could not bind to handler for action: ' + action + ' > ' + e, 1);
     }
   }
 }
@@ -347,48 +368,22 @@ JSJaCJingle.prototype.handle = function(stanza) {
  */
 JSJaCJingle.prototype.register_handler = function(action, fn) {
   if(typeof(fn) != 'function') {
-    this.debug.log('[JSJaCJingle] fn parameter not passed or not a function!', 1);
+    this.get_debug().log('[JSJaCJingle] fn parameter not passed or not a function!', 1);
 
     return false;
   }
 
   if(action && action in JSJAC_JINGLE_ACTIONS) {
-    this._handlers[action] = fn;
+    this._set_handlers(action, fn);
 
-    this.debug.log('[JSJaCJingle] Registered handler for action: ' + action, 4);
+    this.get_debug().log('[JSJaCJingle] Registered handler for action: ' + action, 4);
 
     return true;
   } else {
-    this.debug.log('[JSJaCJingle] Could not register handler for action: ' + action + ' (not in protocol)', 1);
+    this.get_debug().log('[JSJaCJingle] Could not register handler for action: ' + action + ' (not in protocol)', 1);
 
     return false;
   }
-}
-
-/**
- * Sets the Jingle session mode
- * @param {string} mode Jingle session mode
- */
-JSJaCJingle.prototype.mode = function(mode) {
-  // TODO: send the new mode request, register ack handler
-}
-
-/**
- * Gets the busy value
- * @return 'true' if Jingle is busy, 'false' otherwise
- * @type boolean
- */
-JSJaCJingle.prototype.is_busy = function() {
-  return this._busy;
-}
-
-/**
- * Gets the status value
- * @return status value
- * @type string
- */
-JSJaCJingle.prototype.status = function() {
-  return this._status;
 }
 
 
@@ -404,7 +399,7 @@ JSJaCJingle.prototype.send_content_accept = function() {
   // TODO
   // Feature not implemented for now
 
-  this.debug.log('[JSJaCJingle] Send content accept.', 4);
+  this.get_debug().log('[JSJaCJingle] Send content accept.', 4);
 }
 
 /**
@@ -414,7 +409,7 @@ JSJaCJingle.prototype.send_content_add = function() {
   // TODO
   // Feature not implemented for now
 
-  this.debug.log('[JSJaCJingle] Send content add.', 4);
+  this.get_debug().log('[JSJaCJingle] Send content add.', 4);
 }
 
 /**
@@ -424,7 +419,7 @@ JSJaCJingle.prototype.send_content_modify = function() {
   // TODO
   // Feature not implemented for now
 
-  this.debug.log('[JSJaCJingle] Send content modify.', 4);
+  this.get_debug().log('[JSJaCJingle] Send content modify.', 4);
 }
 
 /**
@@ -434,7 +429,7 @@ JSJaCJingle.prototype.send_content_reject = function() {
   // TODO
   // Feature not implemented for now
 
-  this.debug.log('[JSJaCJingle] Send content reject.', 4);
+  this.get_debug().log('[JSJaCJingle] Send content reject.', 4);
 }
 
 /**
@@ -444,7 +439,7 @@ JSJaCJingle.prototype.send_content_remove = function() {
   // TODO
   // Feature not implemented for now
 
-  this.debug.log('[JSJaCJingle] Send content remove.', 4);
+  this.get_debug().log('[JSJaCJingle] Send content remove.', 4);
 }
 
 /**
@@ -454,7 +449,7 @@ JSJaCJingle.prototype.send_description_info = function() {
   // TODO
   // Feature not implemented for now
 
-  this.debug.log('[JSJaCJingle] Send description info.', 4);
+  this.get_debug().log('[JSJaCJingle] Send description info.', 4);
 }
 
 /**
@@ -464,7 +459,7 @@ JSJaCJingle.prototype.send_security_info = function() {
   // TODO
   // Feature not implemented for now
 
-  this.debug.log('[JSJaCJingle] Send security info.', 4);
+  this.get_debug().log('[JSJaCJingle] Send security info.', 4);
 }
 
 /**
@@ -473,7 +468,7 @@ JSJaCJingle.prototype.send_security_info = function() {
 JSJaCJingle.prototype.send_session_accept = function() {
   // TODO
 
-  this.debug.log('[JSJaCJingle] Send session accept.', 4);
+  this.get_debug().log('[JSJaCJingle] Send session accept.', 4);
 }
 
 /**
@@ -482,7 +477,7 @@ JSJaCJingle.prototype.send_session_accept = function() {
 JSJaCJingle.prototype.send_session_info = function() {
   // TODO
 
-  this.debug.log('[JSJaCJingle] Send session info.', 4);
+  this.get_debug().log('[JSJaCJingle] Send session info.', 4);
 }
 
 /**
@@ -491,7 +486,7 @@ JSJaCJingle.prototype.send_session_info = function() {
 JSJaCJingle.prototype.send_session_initiate = function() {
   // TODO
 
-  this.debug.log('[JSJaCJingle] Send session initiate.', 4);
+  this.get_debug().log('[JSJaCJingle] Send session initiate.', 4);
 }
 
 /**
@@ -500,7 +495,7 @@ JSJaCJingle.prototype.send_session_initiate = function() {
 JSJaCJingle.prototype.send_session_terminate = function() {
   // TODO
 
-  this.debug.log('[JSJaCJingle] Send session terminate.', 4);
+  this.get_debug().log('[JSJaCJingle] Send session terminate.', 4);
 }
 
 /**
@@ -510,7 +505,7 @@ JSJaCJingle.prototype.send_transport_accept = function() {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Send transport accept.', 4);
+  this.get_debug().log('[JSJaCJingle] Send transport accept.', 4);
 }
 
 /**
@@ -520,7 +515,7 @@ JSJaCJingle.prototype.send_transport_info = function() {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Send transport info.', 4);
+  this.get_debug().log('[JSJaCJingle] Send transport info.', 4);
 }
 
 /**
@@ -530,7 +525,7 @@ JSJaCJingle.prototype.send_transport_reject = function() {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Send transport reject.', 4);
+  this.get_debug().log('[JSJaCJingle] Send transport reject.', 4);
 }
 
 /**
@@ -540,7 +535,7 @@ JSJaCJingle.prototype.send_transport_replace = function() {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Send transport replace.', 4);
+  this.get_debug().log('[JSJaCJingle] Send transport replace.', 4);
 }
 
 
@@ -557,7 +552,7 @@ JSJaCJingle.prototype.handle_content_accept = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle content accept.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle content accept.', 4);
 }
 
 /**
@@ -568,7 +563,7 @@ JSJaCJingle.prototype.handle_content_add = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle content add.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle content add.', 4);
 }
 
 /**
@@ -579,7 +574,7 @@ JSJaCJingle.prototype.handle_content_modify = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle content modify.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle content modify.', 4);
 }
 
 /**
@@ -590,7 +585,7 @@ JSJaCJingle.prototype.handle_content_reject = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle content reject.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle content reject.', 4);
 }
 
 /**
@@ -601,7 +596,7 @@ JSJaCJingle.prototype.handle_content_remove = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle content remove.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle content remove.', 4);
 }
 
 /**
@@ -612,7 +607,7 @@ JSJaCJingle.prototype.handle_description_info = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle description info.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle description info.', 4);
 }
 
 /**
@@ -623,7 +618,7 @@ JSJaCJingle.prototype.handle_security_info = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle security info.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle security info.', 4);
 }
 
 /**
@@ -633,7 +628,7 @@ JSJaCJingle.prototype.handle_security_info = function(stanza) {
 JSJaCJingle.prototype.handle_session_accept = function(stanza) {
   // TODO
 
-  this.debug.log('[JSJaCJingle] Handle session accept.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle session accept.', 4);
 }
 
 /**
@@ -643,7 +638,7 @@ JSJaCJingle.prototype.handle_session_accept = function(stanza) {
 JSJaCJingle.prototype.handle_session_info = function(stanza) {
   // TODO
 
-  this.debug.log('[JSJaCJingle] Handle session info.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle session info.', 4);
 }
 
 /**
@@ -653,7 +648,7 @@ JSJaCJingle.prototype.handle_session_info = function(stanza) {
 JSJaCJingle.prototype.handle_session_initiate = function(stanza) {
   // TODO
 
-  this.debug.log('[JSJaCJingle] Handle session initiate.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle session initiate.', 4);
 }
 
 /**
@@ -663,7 +658,7 @@ JSJaCJingle.prototype.handle_session_initiate = function(stanza) {
 JSJaCJingle.prototype.handle_session_terminate = function(stanza) {
   // TODO
 
-  this.debug.log('[JSJaCJingle] Handle session terminate.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle session terminate.', 4);
 }
 
 /**
@@ -674,7 +669,7 @@ JSJaCJingle.prototype.handle_transport_accept = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle transport accept.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle transport accept.', 4);
 }
 
 /**
@@ -685,7 +680,7 @@ JSJaCJingle.prototype.handle_transport_info = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle transport info.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle transport info.', 4);
 }
 
 /**
@@ -696,7 +691,7 @@ JSJaCJingle.prototype.handle_transport_reject = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle transport reject.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle transport reject.', 4);
 }
 
 /**
@@ -707,7 +702,7 @@ JSJaCJingle.prototype.handle_transport_replace = function(stanza) {
   // TODO
   // Error reply: feature-not-implemented
 
-  this.debug.log('[JSJaCJingle] Handle transport replace.', 4);
+  this.get_debug().log('[JSJaCJingle] Handle transport replace.', 4);
 }
 
 
@@ -723,6 +718,24 @@ JSJaCJingle.prototype.handle_transport_replace = function(stanza) {
  */
 JSJaCJingle.prototype.get_connection = function() {
   return this._connection;
+}
+
+/**
+ * Gets the success_callback value
+ * @return success_callback value
+ * @type function
+ */
+JSJaCJingle.prototype.get_success_callback = function() {
+  return this._success_callback;
+}
+
+/**
+ * Gets the error_callback value
+ * @return error_callback value
+ * @type function
+ */
+JSJaCJingle.prototype.get_error_callback = function() {
+  return this._error_callback;
 }
 
 /**
@@ -749,16 +762,7 @@ JSJaCJingle.prototype.get_element_remote = function() {
  * @type function
  */
 JSJaCJingle.prototype.get_debug = function() {
-  return this._connection;
-}
-
-/**
- * Gets the content_client value
- * @return content_client value
- * @type object
- */
-JSJaCJingle.prototype.get_content_client = function() {
-  return this._content_client;
+  return this._debug;
 }
 
 /**
@@ -768,15 +772,6 @@ JSJaCJingle.prototype.get_content_client = function() {
  */
 JSJaCJingle.prototype.get_content_session = function() {
   return this._content_session;
-}
-
-/**
- * Gets the busy value
- * @return busy value
- * @type boole
- */
-JSJaCJingle.prototype.get_busy = function() {
-  return this._busy;
 }
 
 /**
@@ -834,15 +829,6 @@ JSJaCJingle.prototype.get_response = function() {
 }
 
 /**
- * Gets the success_callback value
- * @return success_callback value
- * @type function
- */
-JSJaCJingle.prototype.get_success_callback = function() {
-  return this._success_callback;
-}
-
-/**
  * Gets the handlers value
  * @return handlers value
  * @type object
@@ -862,6 +848,20 @@ JSJaCJingle.prototype.get_handlers = function() {
  */
 JSJaCJingle.prototype._set_connection = function(connection) {
   this._connection = connection;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_success_callback = function(success_callback) {
+  this._success_callback = success_callback;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_error_callback = function(error_callback) {
+  this._error_callback = error_callback;
 }
 
 /**
@@ -888,22 +888,8 @@ JSJaCJingle.prototype._set_debug = function(debug) {
 /**
  * @private
  */
-JSJaCJingle.prototype._set_content_client = function(content_client) {
-  this._content_client = content_client;
-}
-
-/**
- * @private
- */
 JSJaCJingle.prototype._set_content_session = function(content_session) {
   this._content_session = content_session;
-}
-
-/**
- * @private
- */
-JSJaCJingle.prototype._set_busy = function(busy) {
-  this._busy = busy;
 }
 
 /**
@@ -951,13 +937,6 @@ JSJaCJingle.prototype._set_response = function(response) {
 /**
  * @private
  */
-JSJaCJingle.prototype._set_success_callback = function(success_callback) {
-  this._success_callback = success_callback;
-}
-
-/**
- * @private
- */
-JSJaCJingle.prototype._set_handlers = function(handlers) {
-  this._handlers = handlers;
+JSJaCJingle.prototype._set_handlers = function(action, handler) {
+  this._handlers[action] = handler;
 }
