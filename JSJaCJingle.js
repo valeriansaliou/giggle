@@ -4,12 +4,14 @@
  *
  * @url http://xmpp.org/extensions/xep-0166.html
  * @author Valérian Saliou valerian@jappix.com
+ * @license Mozilla Public License (MPL)
  */
 
 
 /**
  * JINGLE NAMESPACES
  */
+
 var NS_JINGLE                                       = 'urn:xmpp:jingle:1';
 var NS_JINGLE_ERRORS                                = 'urn:xmpp:jingle:errors:1';
 
@@ -32,6 +34,12 @@ var R_NS_JINGLE_TRANSPORT                           = /urn:xmpp:jingle:transport
 /**
  * JSJAC JINGLE CONSTANTS
  */
+
+var JSJAC_JINGLE_STATUS_INITIATING                  = 'initiating';
+var JSJAC_JINGLE_STATUS_INITIATED                   = 'initiated';
+var JSJAC_JINGLE_STATUS_TERMINATING                 = 'terminating';
+var JSJAC_JINGLE_STATUS_TERMINATED                  = 'terminated';
+
 var JSJAC_JINGLE_ACTION_CONTENT_ACCEPT              = 'content-accept';
 var JSJAC_JINGLE_ACTION_CONTENT_ADD                 = 'content-add';
 var JSJAC_JINGLE_ACTION_CONTENT_MODIFY              = 'content-modify';
@@ -76,7 +84,15 @@ var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS      = 'unsupported-transports';
 /**
  * JSJSAC JINGLE CONSTANTS MAPPING
  */
- var JSJAC_JINGLE_ACTIONS   = [
+
+var JSJAC_JINGLE_STATUSES  = {
+  JSJAC_JINGLE_STATUS_INITIATING,
+  JSJAC_JINGLE_STATUS_INITIATED,
+  JSJAC_JINGLE_STATUS_TERMINATING,
+  JSJAC_JINGLE_STATUS_TERMINATED
+};
+
+var JSJAC_JINGLE_ACTIONS   = {
   JSJAC_JINGLE_ACTION_CONTENT_ACCEPT,
   JSJAC_JINGLE_ACTION_CONTENT_ADD,
   JSJAC_JINGLE_ACTION_CONTENT_MODIFY,
@@ -92,16 +108,16 @@ var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS      = 'unsupported-transports';
   JSJAC_JINGLE_ACTION_TRANSPORT_INFO,
   JSJAC_JINGLE_ACTION_TRANSPORT_REJECT,
   JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE
-];
+};
 
-var JSJAC_JINGLE_ERRORS     = [
+var JSJAC_JINGLE_ERRORS     = {
   JSJAC_JINGLE_ERROR_OUT_OF_BORDER,
   JSJAC_JINGLE_ERROR_TIE_BREAK,
   JSJAC_JINGLE_ERROR_UNKNOWN_SESSION,
   JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO
-];
+};
 
-var JSJAC_JINGLE_REASONS    = [
+var JSJAC_JINGLE_REASONS    = {
   JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION,
   JSJAC_JINGLE_REASON_BUSY,
   JSJAC_JINGLE_REASON_CANCEL,
@@ -118,8 +134,8 @@ var JSJAC_JINGLE_REASONS    = [
   JSJAC_JINGLE_REASON_SUCCESS,
   JSJAC_JINGLE_REASON_TIMEOUT,
   JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS,
-  JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS
-];
+JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS
+};
 
 
 
@@ -198,11 +214,6 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  this._initiator = '';
-
-  /**
-   * @private
-   */
   this._response = '';
 
   /**
@@ -219,9 +230,9 @@ function JSJaCJingle(args) {
 
 /**
  * Initializes a new Jingle session.
- * @param {object} content_client Client supported Jingle content
+ * @param {object} args Jingle session arguments
  */
-JSJaCJingle.prototype.init = function(connection, content_client) {
+JSJaCJingle.prototype.init = function(args) {
   // TODO: .send() session-initiate
   // TODO: REGISTER: .handle() over .send()
 }
@@ -240,8 +251,9 @@ JSJaCJingle.prototype.terminate = function() {
 /**
  * Sends a given Jingle stanza packet
  */
-JSJaCJingle.prototype.send = function(to) {
+JSJaCJingle.prototype.send = function(to, handler) {
   // TODO
+  // TODO: REGISTER: .handle() over .send()
 }
 
 /**
@@ -681,6 +693,103 @@ JSJaCJingle.prototype.handle_transport_replace = function(stanza) {
 }
 
 
+
+/**
+ * JSJSAC JINGLE GETTERS
+ */
+
+/**
+ * Gets the content_session value
+ * @return content_session value
+ * @type object
+ */
+JSJaCJingle.prototype.get_content_session = function() {
+  return this._content_session;
+}
+
+/**
+ * Gets the busy value
+ * @return busy value
+ * @type boole
+ */
+JSJaCJingle.prototype.get_busy = function() {
+  return this._busy;
+}
+
+/**
+ * Gets the sid value
+ * @return sid value
+ * @type string
+ */
+JSJaCJingle.prototype.get_sid = function() {
+  return this._sid;
+}
+
+/**
+ * Gets the action_last value
+ * @return action_last value
+ * @type string
+ */
+JSJaCJingle.prototype.get_action_last = function() {
+  return this._action_last;
+}
+
+/**
+ * Gets the status value
+ * @return status value
+ * @type string
+ */
+JSJaCJingle.prototype.get_status = function() {
+  return this._status;
+}
+
+/**
+ * Gets the receiver value
+ * @return receiver value
+ * @type string
+ */
+JSJaCJingle.prototype.get_receiver = function() {
+  return this._receiver;
+}
+
+/**
+ * Gets the initiator value
+ * @return initiator value
+ * @type string
+ */
+JSJaCJingle.prototype.get_initiator = function() {
+  return this._initiator;
+}
+
+/**
+ * Gets the response value
+ * @return response value
+ * @type string
+ */
+JSJaCJingle.prototype.get_response = function() {
+  return this._response;
+}
+
+/**
+ * Gets the success_callback value
+ * @return success_callback value
+ * @type function
+ */
+JSJaCJingle.prototype.get_success_callback = function() {
+  return this._success_callback;
+}
+
+/**
+ * Gets the handlers value
+ * @return handlers value
+ * @type object
+ */
+JSJaCJingle.prototype.get_handlers = function() {
+  return this._handlers;
+}
+
+
+
 /**
  * JSJSAC JINGLE SETTERS
  */
@@ -688,8 +797,8 @@ JSJaCJingle.prototype.handle_transport_replace = function(stanza) {
 /**
  * @private
  */
-JSJaCJingle.prototype._set_content_session = function(mode) {
-  // TODO: change session content on other party ack
+JSJaCJingle.prototype._set_content_session = function(content_session) {
+  this._content_session = content_session;
 }
 
 /**
@@ -702,6 +811,55 @@ JSJaCJingle.prototype._set_busy = function(busy) {
 /**
  * @private
  */
+JSJaCJingle.prototype._set_sid = function(sid) {
+  this._sid = sid;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_action_last = function(action_last) {
+  this._action_last = action_last;
+}
+
+/**
+ * @private
+ */
 JSJaCJingle.prototype._set_status = function(status) {
   this._status = status;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_receiver = function(receiver) {
+  this._receiver = receiver;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_initiator = function(initiator) {
+  this._initiator = initiator;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_response = function(response) {
+  this._response = response;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_success_callback = function(success_callback) {
+  this._success_callback = success_callback;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_handlers = function(handlers) {
+  this._handlers = handlers;
 }
