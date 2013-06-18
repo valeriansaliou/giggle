@@ -13,6 +13,9 @@
  * Implements: XEP-0166
  * URL: http://xmpp.org/extensions/xep-0166.html
 
+ * This negociation example associates JSJaCJingle.js methods to a real workflow
+ * We assume in this workflow example remote user accepts the call he gets
+
  * 1.cmt Local user wants to start a WebRTC session with remote user
  * 1.snd Local user sends a session-initiate type='set'
  * 1.hdl Remote user sends back a type='result' to '1.snd' stanza (ack)
