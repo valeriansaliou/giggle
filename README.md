@@ -1,7 +1,7 @@
 JSJaCJingle.js
 ==============
 
-JSJaC Jingle library, implementation of XEP-0166.
+JSJaC Jingle library, implementation of [XEP-0166](http://xmpp.org/extensions/xep-0166.html).
 
 To be used with JSJaC from Stefan Strigler, available there: https://github.com/sstrigler/JSJaC
 
