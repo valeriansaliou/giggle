@@ -1,17 +1,20 @@
 /**
  * @fileoverview JSJaC Jingle library, implementation of XEP-0166.
+ * Built originally for Uno.im service requirements
+ *
  * @url http://xmpp.org/extensions/xep-0166.html
  * @author Valérian Saliou valerian@jappix.com
  */
 
 
 /**
- * Jingle namespaces
+ * JINGLE NAMESPACES
  */
 var NS_JINGLE                                       = 'urn:xmpp:jingle:1';
 var NS_JINGLE_ERRORS                                = 'urn:xmpp:jingle:errors:1';
 
 var NS_JINGLE_APPS_RTP                              = 'urn:xmpp:jingle:apps:rtp:1';
+var NS_JINGLE_APPS_RTP_INFO                         = 'urn:xmpp:jingle:apps:rtp:1:info';
 var NS_JINGLE_APPS_RTP_AUDIO                        = 'urn:xmpp:jingle:apps:rtp:audio';
 var NS_JINGLE_APPS_RTP_VIDEO                        = 'urn:xmpp:jingle:apps:rtp:video';
 var NS_JINGLE_APPS_STUB                             = 'urn:xmpp:jingle:apps:stub:0';
@@ -25,8 +28,9 @@ var R_NS_JINGLE_APP                                 = /urn:xmpp:jingle:app:([a-z
 var R_NS_JINGLE_TRANSPORT                           = /urn:xmpp:jingle:transport:([a-zA-Z]+)/;
 
 
+
 /**
- * JSJaC Jingle constants
+ * JSJAC JINGLE CONSTANTS
  */
 var JSJAC_JINGLE_ACTION_CONTENT_ACCEPT              = 'content-accept';
 var JSJAC_JINGLE_ACTION_CONTENT_ADD                 = 'content-add';
@@ -66,8 +70,10 @@ var JSJAC_JINGLE_REASON_TIMEOUT                     = 'timeout';
 var JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS    = 'unsupported-applications';
 var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS      = 'unsupported-transports';
 
+
+
 /**
- * JSJaC Jingle constants mapping
+ * JSJSAC JINGLE CONSTANTS MAPPING
  */
  var JSJAC_JINGLE_ACTIONS   = [
   JSJAC_JINGLE_ACTION_CONTENT_ACCEPT,
@@ -114,19 +120,43 @@ var JSJAC_JINGLE_REASONS    = [
 ];
 
 
+
+/**
+ * JSJSAC JINGLE GENERAL METHODS
+ */
+
 /**
  * Creates a new XMPP Jingle session.
  * @class Somewhat abstract base class for XMPP Jingle sessions. Contains all
  * of the code in common for all Jingle sessions
  * @constructor
- * @param {object} content_client Client supported Jingle content
+ * @param {object} args Jingle session arguments
  */
-function JSJaCJingle(content_client) {
-  if(content_client && typeof(content_client) == 'object')
+function JSJaCJingle(args) {
+  if(typeof(jsjac_connection) != 'undefined' && jsjac_connection)
     /**
      * @private
      */
-    this._content_client = {};
+    this._connection = connection;
+
+  if(args && args.content_client)
+    /**
+     * @private
+     */
+    this._content_client = args.content_client;
+
+  if(args && args.debug && args.debug.log) {
+      /**
+       * Reference to debugger interface
+       * (needs to implement method <code>log</code>)
+       * @type JSJaCDebugger
+       */
+    this._debug = args.debug;
+  } else {
+      this._debug = {
+        log: function() {}
+      };
+  }
 
   /**
    * @private
@@ -157,6 +187,35 @@ function JSJaCJingle(content_client) {
    * @private
    */
   this._status = 'terminated';
+
+  /**
+   * @private
+   */
+  this._receiver = false;
+
+  /**
+   * @private
+   */
+  this._initiator = '';
+
+  /**
+   * @private
+   */
+  this._response = '';
+
+  /**
+   * @private
+   */
+  this._success_callback = null;
+
+  /**
+   * @private
+   */
+  this._handlers = {
+    HANDLE_INIT_REQUEST     = undefined,
+    HANDLE_INIT_RESPONSE    = undefined
+    // TODO: add more handlers
+  };
 }
 
 
@@ -164,7 +223,7 @@ function JSJaCJingle(content_client) {
  * Initializes a new Jingle session.
  * @param {object} content_client Client supported Jingle content
  */
-JSJaCJingle.prototype.init = function(content_client) {
+JSJaCJingle.prototype.init = function(connection, content_client) {
   // TODO: .send() session-initiate
   // TODO: REGISTER: .handle() over .send()
 }
@@ -202,7 +261,6 @@ JSJaCJingle.prototype.mode = function(mode) {
   // TODO: send the new mode request, register ack handler
 }
 
-
 /**
  * Gets the busy value
  * @return 'true' if Jingle is busy, 'false' otherwise
@@ -222,11 +280,334 @@ JSJaCJingle.prototype.status = function() {
 }
 
 
+
+/**
+ * JSJSAC JINGLE SENDERS
+ */
+
+/**
+ * Sends the Jingle content accept
+ */
+JSJaCJingle.prototype.send_content_accept = function() {
+  // TODO
+  // Feature not implemented for now
+
+  this.debug.log('Send content accept.', 4);
+}
+
+/**
+ * Sends the Jingle content add
+ */
+JSJaCJingle.prototype.send_content_add = function() {
+  // TODO
+  // Feature not implemented for now
+
+  this.debug.log('Send content add.', 4);
+}
+
+/**
+ * Sends the Jingle content modify
+ */
+JSJaCJingle.prototype.send_content_modify = function() {
+  // TODO
+  // Feature not implemented for now
+
+  this.debug.log('Send content modify.', 4);
+}
+
+/**
+ * Sends the Jingle content reject
+ */
+JSJaCJingle.prototype.send_content_reject = function() {
+  // TODO
+  // Feature not implemented for now
+
+  this.debug.log('Send content reject.', 4);
+}
+
+/**
+ * Sends the Jingle content remove
+ */
+JSJaCJingle.prototype.send_content_remove = function() {
+  // TODO
+  // Feature not implemented for now
+
+  this.debug.log('Send content remove.', 4);
+}
+
+/**
+ * Sends the Jingle description info
+ */
+JSJaCJingle.prototype.send_description_info = function() {
+  // TODO
+  // Feature not implemented for now
+
+  this.debug.log('Send description info.', 4);
+}
+
+/**
+ * Sends the Jingle security info
+ */
+JSJaCJingle.prototype.send_security_info = function() {
+  // TODO
+  // Feature not implemented for now
+
+  this.debug.log('Send security info.', 4);
+}
+
+/**
+ * Sends the Jingle session accept
+ */
+JSJaCJingle.prototype.send_session_accept = function() {
+  // TODO
+
+  this.debug.log('Send session accept.', 4);
+}
+
+/**
+ * Sends the Jingle session info
+ */
+JSJaCJingle.prototype.send_session_info = function() {
+  // TODO
+
+  this.debug.log('Send session info.', 4);
+}
+
+/**
+ * Sends the Jingle session initiate
+ */
+JSJaCJingle.prototype.send_session_initiate = function() {
+  // TODO
+
+  this.debug.log('Send session initiate.', 4);
+}
+
+/**
+ * Sends the Jingle session terminate
+ */
+JSJaCJingle.prototype.send_session_terminate = function() {
+  // TODO
+
+  this.debug.log('Send session terminate.', 4);
+}
+
+/**
+ * Sends the Jingle transport accept
+ */
+JSJaCJingle.prototype.send_transport_accept = function() {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Send transport accept.', 4);
+}
+
+/**
+ * Sends the Jingle transport info
+ */
+JSJaCJingle.prototype.send_transport_info = function() {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Send transport info.', 4);
+}
+
+/**
+ * Sends the Jingle transport reject
+ */
+JSJaCJingle.prototype.send_transport_reject = function() {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Send transport reject.', 4);
+}
+
+/**
+ * Sends the Jingle transport replace
+ */
+JSJaCJingle.prototype.send_transport_replace = function() {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Send transport replace.', 4);
+}
+
+
+
+/**
+ * JSJSAC JINGLE HANDLERS
+ */
+
+/**
+ * Handles the Jingle content accept
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_content_accept = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle content accept.', 4);
+}
+
+/**
+ * Handles the Jingle content add
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_content_add = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle content add.', 4);
+}
+
+/**
+ * Handles the Jingle content modify
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_content_modify = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle content modify.', 4);
+}
+
+/**
+ * Handles the Jingle content reject
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_content_reject = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle content reject.', 4);
+}
+
+/**
+ * Handles the Jingle content remove
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_content_remove = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle content remove.', 4);
+}
+
+/**
+ * Handles the Jingle description info
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_description_info = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle description info.', 4);
+}
+
+/**
+ * Handles the Jingle security info
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_security_info = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle security info.', 4);
+}
+
+/**
+ * Handles the Jingle session accept
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_accept = function(stanza) {
+  // TODO
+
+  this.debug.log('Handle session accept.', 4);
+}
+
+/**
+ * Handles the Jingle session info
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_info = function(stanza) {
+  // TODO
+
+  this.debug.log('Handle session info.', 4);
+}
+
+/**
+ * Handles the Jingle session initiate
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_initiate = function(stanza) {
+  // TODO
+
+  this.debug.log('Handle session initiate.', 4);
+}
+
+/**
+ * Handles the Jingle session terminate
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_terminate = function(stanza) {
+  // TODO
+
+  this.debug.log('Handle session terminate.', 4);
+}
+
+/**
+ * Handles the Jingle transport accept
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_transport_accept = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle transport accept.', 4);
+}
+
+/**
+ * Handles the Jingle transport info
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_transport_info = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle transport info.', 4);
+}
+
+/**
+ * Handles the Jingle transport reject
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_transport_reject = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle transport reject.', 4);
+}
+
+/**
+ * Handles the Jingle transport replace
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_transport_replace = function(stanza) {
+  // TODO
+  // Error reply: feature-not-implemented
+
+  this.debug.log('Handle transport replace.', 4);
+}
+
+
+/**
+ * JSJSAC JINGLE SETTERS
+ */
+
 /**
  * @private
  */
 JSJaCJingle.prototype._set_content_session = function(mode) {
-  //TODO: change session content on other party ack
+  // TODO: change session content on other party ack
 }
 
 /**
