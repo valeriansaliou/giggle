@@ -200,17 +200,17 @@ function JSJaCJingle(args) {
      */
     this._error_callback = args.error_callback;
 
-  if(args && element_local)
+  if(args && local_view)
     /**
      * @private
      */
-    this._element_local = args.element_local;
+    this._local_view = args.local_view;
 
-  if(args && element_remote)
+  if(args && remote_view)
     /**
      * @private
      */
-    this._element_remote = args.element_remote;
+    this._remote_view = args.remote_view;
 
   if(args && args.debug && args.debug.log) {
       /**
@@ -224,6 +224,16 @@ function JSJaCJingle(args) {
         log: function() {}
       };
   }
+
+  /**
+   * @private
+   */
+  this._local_stream = null;
+
+  /**
+   * @private
+   */
+  this._remote_stream = null;
 
   /**
    * @private
@@ -248,7 +258,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  this._status = 'terminated';
+  this._status = JSJAC_JINGLE_STATUS_INACTIVE;
 
   /**
    * @private
@@ -264,6 +274,21 @@ function JSJaCJingle(args) {
    * @private
    */
   this._handlers = {};
+
+  /**
+   * @private
+   */
+  this._server_config = 'NONE';
+
+  /**
+   * @private
+   */
+  this._peer_connection = null;
+
+  /**
+   * @private
+   */
+  this._sdp_message = '';
 }
 
 
@@ -275,6 +300,10 @@ JSJaCJingle.prototype.init = function() {
   // Slot unavailable?
   if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE)
     this.get_debug().log('[JSJaCJingle] Cannot init, resource not inactive (status: ' + this.get_status() + ').', 1); return;
+
+  // Register Jingle IQ handler
+  // TODO
+  registerIQSet(<String> childName, <String> childNS, <Function> handler);
 
   // TODO: .send() session-initiate
   // TODO: REGISTER: .handle() over .send() --> start()
@@ -764,21 +793,21 @@ JSJaCJingle.prototype.get_error_callback = function() {
 }
 
 /**
- * Gets the element_local value
- * @return element_local value
+ * Gets the local_view value
+ * @return local_view value
  * @type dom
  */
-JSJaCJingle.prototype.get_element_local = function() {
-  return this._element_local;
+JSJaCJingle.prototype.get_local_view = function() {
+  return this._local_view;
 }
 
 /**
- * Gets the element_remote value
- * @return element_remote value
+ * Gets the remote_view value
+ * @return remote_view value
  * @type dom
  */
-JSJaCJingle.prototype.get_element_remote = function() {
-  return this._element_remote;
+JSJaCJingle.prototype.get_remote_view = function() {
+  return this._remote_view;
 }
 
 /**
@@ -892,15 +921,15 @@ JSJaCJingle.prototype._set_error_callback = function(error_callback) {
 /**
  * @private
  */
-JSJaCJingle.prototype._set_element_local = function(element_local) {
-  this._element_local = element_local;
+JSJaCJingle.prototype._set_local_view = function(local_view) {
+  this._local_view = local_view;
 }
 
 /**
  * @private
  */
-JSJaCJingle.prototype._set_element_remote = function(element_remote) {
-  this._element_remote = element_remote;
+JSJaCJingle.prototype._set_remote_view = function(remote_view) {
+  this._remote_view = remote_view;
 }
 
 /**
@@ -964,4 +993,160 @@ JSJaCJingle.prototype._set_response = function(response) {
  */
 JSJaCJingle.prototype._set_handlers = function(action, handler) {
   this._handlers[action] = handler;
+}
+
+
+
+/**
+ * JSJSAC JINGLE PEER API
+ */
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._peer_connection_create = function(sdp_message_callback) {
+  // Create PeerConnection object
+  this._set_peer_connection(new PeerConnection(_serverConfig, sdpMessageCallback));
+
+  // Event: onaddstream
+  this.get_peer_connection().onaddstream = function(e) {
+    this.get_debug().info('[JSJaCJingle] onaddstream');
+    this.get_debug().log('[JSJaCJingle] ' + e, 4);
+
+    // Attach PeerConnection remote stream
+    var stream = e.stream,
+    url = URL.createObjectURL(stream);
+
+    this.get_remote_view().attr('src', url);
+    this.get_remote_stream() = stream;
+  };
+
+  // Event: onremovestream
+  this.get_peer_connection().onremovestream = function(e) {
+    this.get_remote_view().attr('src', '');
+  };
+
+  // Event: onmessage
+  this.get_peer_connection().onmessage = function(e) {
+    this.get_debug().info('[JSJaCJingle] onmessage');
+    this.get_debug().log('[JSJaCJingle] ' + e, 4);
+  };
+
+  // Event: onopen
+  this.get_peer_connection().onopen = function(e) {
+    this.get_debug().info('[JSJaCJingle] onopen');
+    this.get_debug().log('[JSJaCJingle] ' + e, 4);
+  };
+
+  // Event: onconnecting
+  this.get_peer_connection().onconnecting = function(e) {
+    this.get_debug().info('[JSJaCJingle] onconnecting');
+    this.get_debug().dir(e);
+  };
+
+  // Event: onstatechange
+  this.get_peer_connection().onstatechange = function(e, state) {
+    this.get_debug().info('[JSJaCJingle] onstatechange');
+    this.get_debug().dir(e, state);
+  };
+
+  // Attach PeerConnection local stream
+  this.get_peer_connection().addStream(this.get_local_stream());
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._peer_get_user_media = function(callback) {
+  try {
+    this.get_debug().log('[JSJaCJingle] Getting user media...', 4);
+
+    navigator.getUserMedia('video,audio', this._peer_got_stream.bind(this, callback), this._peer_got_stream.bind(this));
+  } catch(e) {
+    this.get_debug().log('[JSJaCJingle] Could not get user media.', 1);
+  }
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._peer_got_stream = function(callback, stream) {
+  // TODO
+
+  this.get_debug().log('[JSJaCJingle] Got stream.', 4);
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._peer_got_stream_failed = function(error) {
+  this.get_debug().log('[JSJaCJingle] Stream failed.', 1);
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._peer_get_json_from_sdp = function(message) {
+  try
+    return JSON.parse(msg.substring(4));
+  catch(e)
+    this.get_debug().log('[JSJaCJingle] JSON parser not available.', 1);
+
+  return null;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._peer_xml_html_node = function(html) {
+  // From Strophe.js (License: MIT)
+  if(window.DOMParser) {
+    parser = new DOMParser();
+    node = parser.parseFromString(html, 'text/xml');
+  } else {
+    node = new ActiveXObject('Microsoft.XMLDOM');
+    node.async = 'false';
+    node.loadXML(html);
+  }
+
+  return node;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._peer_generate_json_from_sdp = function(sdp, info) {
+  var str = 'SDP\n{\n';
+
+  if(info.attr('answererid'))
+    str += '   "answererSessionId" : "' + info.attr('answererid') + '",\n';
+
+  str += '   "messageType" : "' + info.attr('type') + '",\n';
+
+  if(info.attr('offererid'))
+    str += '   "offererSessionId" : "' + info.attr('offererid') + '",\n';
+
+  if(sdp)
+    str += '   "sdp" : "' + sdp + '",\n';
+
+  str += '   "seq" : ' + parseInt(info.attr('seq'), 10);
+
+  if(info.attr('tiebreaker'))
+    str += ',\n   "tieBreaker" : ' + parseInt(info.attr('tiebreaker'), 10);
+
+  return str + '\n}';
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._peer_jingle_to_sdp = function(sdp_message_callback) {
+  // TODO
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._peer_sdp_to_jingle = function(sdp_message_callback) {
+  // TODO
 }
