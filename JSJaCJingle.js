@@ -820,6 +820,24 @@ JSJaCJingle.prototype.get_debug = function() {
 }
 
 /**
+ * Gets the local_stream value
+ * @return local_stream value
+ * @type dom
+ */
+JSJaCJingle.prototype.get_local_stream = function() {
+  return this._local_stream;
+}
+
+/**
+ * Gets the remote_stream value
+ * @return remote_stream value
+ * @type dom
+ */
+JSJaCJingle.prototype.get_remote_stream = function() {
+  return this._remote_stream;
+}
+
+/**
  * Gets the content_session value
  * @return content_session value
  * @type object
@@ -891,6 +909,33 @@ JSJaCJingle.prototype.get_handlers = function() {
   return this._handlers;
 }
 
+/**
+ * Gets the server_config value
+ * @return server_config value
+ * @type object
+ */
+JSJaCJingle.prototype.server_config = function() {
+  return this._server_config;
+}
+
+/**
+ * Gets the peer_connection value
+ * @return peer_connection value
+ * @type object
+ */
+JSJaCJingle.prototype.peer_connection = function() {
+  return this._peer_connection;
+}
+
+/**
+ * Gets the sdp_message value
+ * @return sdp_message value
+ * @type object
+ */
+JSJaCJingle.prototype.get_sdp_message = function() {
+  return this._sdp_message;
+}
+
 
 
 /**
@@ -937,6 +982,20 @@ JSJaCJingle.prototype._set_remote_view = function(remote_view) {
  */
 JSJaCJingle.prototype._set_debug = function(debug) {
   this._debug = debug;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_local_stream = function(local_stream) {
+  this._local_stream = local_stream;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_remote_stream = function(remote_stream) {
+  this._remote_stream = remote_stream;
 }
 
 /**
@@ -993,6 +1052,27 @@ JSJaCJingle.prototype._set_response = function(response) {
  */
 JSJaCJingle.prototype._set_handlers = function(action, handler) {
   this._handlers[action] = handler;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_server_config = function(server_config) {
+  this._server_config = server_config;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_peer_connection = function(peer_connection) {
+  this._peer_connection = peer_connection;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_sdp_message = function(sdp_message) {
+  this._sdp_message = sdp_message;
 }
 
 
