@@ -462,7 +462,7 @@ function JSJaCJingle(args) {
     self._set_responder(self.get_to());
 
     // Trigger init pending custom callback
-    (self._get_session_initiate_pending())();
+    (self._get_session_initiate_pending())(self);
 
     // Process init actions
     (self._get_connection()).registerIQSet('jingle', NS_JINGLE, self.handle);
@@ -480,7 +480,7 @@ function JSJaCJingle(args) {
     }
 
     // Trigger accept pending custom callback
-    (self._get_session_accept_pending())();
+    (self._get_session_accept_pending())(self);
 
     // Process accept actions
     self.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_ACCEPT);
@@ -497,7 +497,7 @@ function JSJaCJingle(args) {
     }
 
     // Trigger terminate pending custom callback
-    (self._get_session_terminate_pending())();
+    (self._get_session_terminate_pending())(self);
 
     // Process terminate actions
     self.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_TERMINATE);
@@ -1050,19 +1050,19 @@ function JSJaCJingle(args) {
     // Can now safely dispatch the stanza
     switch(stanza.getType()) {
       case 'result':
-        (self._get_session_accept_success())(stanza);
+        (self._get_session_accept_success())(self, stanza);
         self.handle_session_accept_success(stanza);
 
         break;
 
       case 'error':
-        (self._get_session_accept_error())(stanza);
+        (self._get_session_accept_error())(self, stanza);
         self.handle_session_accept_error(stanza);
 
         break;
 
       case 'set':
-        (self._get_session_accept_request())(stanza);
+        (self._get_session_accept_request())(self, stanza);
         self.handle_session_accept_request(stanza);
 
         break;
@@ -1120,19 +1120,19 @@ function JSJaCJingle(args) {
     // Can now safely dispatch the stanza
     switch(stanza.getType()) {
       case 'result':
-        (self._get_session_info_success())(stanza);
+        (self._get_session_info_success())(self, stanza);
         self.handle_session_info_success(stanza);
 
         break;
 
       case 'error':
-        (self._get_session_info_error())(stanza);
+        (self._get_session_info_error())(self, stanza);
         self.handle_session_info_error(stanza);
 
         break;
 
       case 'set':
-        (self._get_session_info_request())(stanza);
+        (self._get_session_info_request())(self, stanza);
         self.handle_session_info_request(stanza);
 
         break;
@@ -1181,19 +1181,19 @@ function JSJaCJingle(args) {
   self.handle_session_initiate = function(stanza) {
     switch(stanza.getType()) {
       case 'result':
-        (self._get_session_initiate_success())(stanza);
+        (self._get_session_initiate_success())(self, stanza);
         self.handle_session_initiate_success(stanza);
 
         break;
 
       case 'error':
-        (self._get_session_initiate_error())(stanza);
+        (self._get_session_initiate_error())(self, stanza);
         self.handle_session_initiate_error(stanza);
 
         break;
 
       case 'set':
-        (self._get_session_initiate_request())(stanza);
+        (self._get_session_initiate_request())(self, stanza);
         self.handle_session_initiate_request(stanza);
 
         break;
@@ -1268,19 +1268,19 @@ function JSJaCJingle(args) {
     // Can now safely dispatch the stanza
     switch(stanza.getType()) {
       case 'result':
-        (self._get_session_terminate_success())(stanza);
+        (self._get_session_terminate_success())(self, stanza);
         self.handle_session_terminate_success(stanza);
 
         break;
 
       case 'error':
-        (self._get_session_terminate_error())(stanza);
+        (self._get_session_terminate_error())(self, stanza);
         self.handle_session_terminate_error(stanza);
 
         break;
 
       case 'set':
-        (self._get_session_terminate_request())(stanza);
+        (self._get_session_terminate_request())(self, stanza);
         self.handle_session_terminate_request(stanza);
 
         break;
@@ -1326,7 +1326,7 @@ function JSJaCJingle(args) {
     self.send(stanza.getID(), 'result');
 
     // Trigger terminate success custom callback
-    (self._get_session_terminate_success())();
+    (self._get_session_terminate_success())(self, stanza);
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > Handled (reason: ' + (self.util_stanza_terminate_reason(stanza) || 'undefined') + ')', 4);
   };

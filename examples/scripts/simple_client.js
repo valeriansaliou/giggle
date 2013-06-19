@@ -194,98 +194,97 @@ $(document).ready(function() {
 					    debug: (new JSJaCConsoleLogger(4)),
 
 					    // Custom handlers (optional)
-					    session_initiate_pending: function() {
+					    session_initiate_pending: function(self) {
 					    	$('.call_notif').hide();
 					        $('#call_info').text('Initializing...').show();
 
 					        console.log('session_initiate_pending');
 					    },
 
-					    session_initiate_success: function(stanza) {
+					    session_initiate_success: function(self, stanza) {
 					        $('.call_notif').hide();
 					        $('#call_success').text('Initialized.').show();
 
 					        // Request for Jingle session to be accepted
-					        // TODO: buggy, cannot access to top-level object there...
-					        //this.accept();
+					       	self.accept();
 
 					        console.log('session_initiate_success');
 					    },
 
-					    session_initiate_error: function(stanza) {
+					    session_initiate_error: function(self, stanza) {
 					        $('.call_notif').hide();
 					        $('#call_error').text('Could not initialize.').show();
 
 					        console.log('session_initiate_error');
 					    },
 
-					    session_initiate_request: function(stanza) {
+					    session_initiate_request: function(self, stanza) {
 							console.log('session_initiate_request');
 						},
 
-					    session_accept_pending: function() {
+					    session_accept_pending: function(self) {
 					        $('.call_notif').hide();
 					        $('#call_info').text('Waiting to be accepted...').show();
 
 					        console.log('session_accept_pending');
 					    },
 
-					    session_accept_success: function(stanza) {
+					    session_accept_success: function(self, stanza) {
 					        $('.call_notif').hide();
 					        $('#call_success').text('Accepted.').show();
 
 					        console.log('session_accept_success');
 					    },
 
-					    session_accept_error: function(stanza) {
+					    session_accept_error: function(self, stanza) {
 					        $('.call_notif').hide();
 					        $('#call_error').text('Could not be accepted.').show();
 
 					        console.log('session_accept_error');
 					    },
 
-					    session_accept_request: function(stanza) {
+					    session_accept_request: function(self, stanza) {
 							console.log('session_accept_request');
 						},
 
-					    session_info_pending: function() {
+					    session_info_pending: function(self) {
 							console.log('session_info_pending');
 						},
 
-						session_info_success: function(stanza) {
+						session_info_success: function(self, stanza) {
 							console.log('session_info_success');
 						},
 
-						session_info_error: function(stanza) {
+						session_info_error: function(self, stanza) {
 							console.log('session_info_error');
 						},
 
-						session_info_request: function(stanza) {
+						session_info_request: function(self, stanza) {
 							console.log('session_info_request');
 						},
 
-					    session_terminate_pending: function() {
+					    session_terminate_pending: function(self) {
 					        $('.call_notif').hide();
 					        $('#call_info').text('Terminating...').show();
 
 					        console.log('session_terminate_pending');
 					    },
 
-					    session_terminate_success: function(stanza) {
+					    session_terminate_success: function(self, stanza) {
 					        $('.call_notif').hide();
 					        $('#call_success').text('Terminated.').show();
 
 					        console.log('session_terminate_success');
 					    },
 
-					    session_terminate_error: function(stanza) {
+					    session_terminate_error: function(self, stanza) {
 					        $('.call_notif').hide();
 					        $('#call_error').text('Could not terminate.').show();
 
 					        console.log('session_terminate_error');
 					    },
 
-					    session_terminate_request: function(stanza) {
+					    session_terminate_request: function(self, stanza) {
 					        console.log('session_terminate_request');
 					    }
 					};

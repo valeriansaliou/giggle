@@ -46,120 +46,120 @@ var args = {
 	remote_view: document.getElementById('jingle-' + ctx_hash + '-remote'),
 
 	// Custom handlers (optional)
-	session_initiate_pending: function() {
+	session_initiate_pending: function(self) {
 		// Update your client UI
 		// Waiting to be initialized...
 
 		console.log('session_initiate_pending');
 	},
 
-	session_initiate_success: function(stanza) {
+	session_initiate_success: function(self, stanza) {
 		// Update your client UI
 		// Initialized!
 
 		// Request for Jingle session to be accepted
 		// You can also call this later, on UI confirm or so
-		this.accept();
+		self.accept();
 
 		console.log('session_initiate_success');
 	},
 
-	session_initiate_error: function(stanza) {
+	session_initiate_error: function(self, stanza) {
 		// Update your client UI
 		// Could not initialize!
 
 		console.log('session_initiate_error');
 	},
 
-	session_initiate_request: function(stanza) {
+	session_initiate_request: function(self, stanza) {
 		// Update your client UI
 		// Got an initiate request!
 
 		console.log('session_initiate_request');
 	},
 
-	session_accept_pending: function() {
+	session_accept_pending: function(self) {
 		// Update your client UI
 		// Waiting to be accepted...
 
 		console.log('session_accept_pending');
 	},
 
-	session_accept_success: function(stanza) {
+	session_accept_success: function(self, stanza) {
 		// Update your client UI
 		// Accepted!
 
 		// Request for Jingle session to terminate
 		// You can call this when user press 'end' button
-		// Use: this.terminate();
+		// Use: self.terminate();
 
 		console.log('session_accept_success');
 	},
 
-	session_accept_error: function(stanza) {
+	session_accept_error: function(self, stanza) {
 		// Update your client UI
 		// Could not be accepted!
 
 		console.log('session_accept_error');
 	},
 
-	session_accept_request: function(stanza) {
+	session_accept_request: function(self, stanza) {
 		// Update your client UI
 		// Got an accept request!
 
 		console.log('session_accept_request');
 	},
 
-	session_info_pending: function() {
+	session_info_pending: function(self) {
 		// Update your client UI
 		// Waiting for info to be received...
 
 		console.log('session_info_pending');
 	},
 
-	session_info_success: function(stanza) {
+	session_info_success: function(self, stanza) {
 		// Update your client UI
 		// Info successfully sent!
 
 		console.log('session_info_success');
 	},
 
-	session_info_error: function(stanza) {
+	session_info_error: function(self, stanza) {
 		// Update your client UI
 		// Got an info error!
 
 		console.log('session_info_error');
 	},
 
-	session_info_request: function(stanza) {
+	session_info_request: function(self, stanza) {
 		// Update your client UI
 		// Got an info request!
 
 		console.log('session_info_request');
 	},
 
-	session_terminate_pending: function() {
+	session_terminate_pending: function(self) {
 		// Update your client UI
 		// Waiting to be terminated...
 
 		console.log('session_terminate_pending');
 	},
 
-	session_terminate_success: function(stanza) {
+	session_terminate_success: function(self, stanza) {
 		// Update your client UI
 		// Terminated!
 
 		console.log('session_terminate_success');
 	},
 
-	session_terminate_error: function(stanza) {
+	session_terminate_error: function(self, stanza) {
 		// Update your client UI
 		// Could not terminate!
 
 		console.log('session_terminate_error');
 	},
 
-	session_terminate_request: function(stanza) {
+	session_terminate_request: function(self, stanza) {
 		// Update your client UI
 		// Got a terminate request!
 
