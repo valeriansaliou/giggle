@@ -850,25 +850,57 @@ JSJaCJingle.prototype.handle_security_info = function(stanza) {
 JSJaCJingle.prototype.handle_session_accept = function(stanza) {
   switch(stanza.getType()) {
     case 'result':
-      //TODO: stone-static handler
+      this.handle_session_accept_success(stanza);
       (this.get_start_success())(stanza);
 
       break;
 
     case 'error':
-      //TODO: stone-static handler
+      this.handle_session_accept_error(stanza);
       (this.get_start_error())(stanza);
 
       break;
 
     case 'set':
-      break;// TODO
+      this.handle_session_accept_request(stanza);
+
+      break;
 
     default:
       this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
   }
 
   this.get_debug().log('[JSJaCJingle] Handle session accept.', 4);
+}
+
+/**
+ * Handles the Jingle session accept success
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_accept_success = function(stanza) {
+  // TODO
+
+  this.get_debug().log('[JSJaCJingle] Handle session accept success.', 4);
+}
+
+/**
+ * Handles the Jingle session accept error
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_accept_error = function(stanza) {
+  // TODO
+
+  this.get_debug().log('[JSJaCJingle] Handle session accept error.', 4);
+}
+
+/**
+ * Handles the Jingle session accept request
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_accept_request = function(stanza) {
+  // TODO
+
+  this.get_debug().log('[JSJaCJingle] Handle session accept request.', 4);
 }
 
 /**
@@ -889,19 +921,21 @@ JSJaCJingle.prototype.handle_session_info = function(stanza) {
 JSJaCJingle.prototype.handle_session_initiate = function(stanza) {
   switch(stanza.getType()) {
     case 'result':
-      //TODO: stone-static handler
+      this.handle_session_initiate_success(stanza);
       (this.get_init_success())(stanza);
 
       break;
 
     case 'error':
-      //TODO: stone-static handler
+      this.handle_session_initiate_error(stanza);
       (this.get_init_error())(stanza);
 
       break;
 
     case 'set':
-      break;// TODO
+      this.handle_session_initiate_request(stanza);
+
+      break;
 
     default:
       this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
@@ -911,31 +945,93 @@ JSJaCJingle.prototype.handle_session_initiate = function(stanza) {
 }
 
 /**
+ * Handles the Jingle session initiate success
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_initiate_success = function(stanza) {
+  // TODO
+
+  this.get_debug().log('[JSJaCJingle] Handle session initiate success.', 4);
+}
+
+/**
+ * Handles the Jingle session initiate error
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_initiate_error = function(stanza) {
+  // TODO
+
+  this.get_debug().log('[JSJaCJingle] Handle session initiate error.', 4);
+}
+
+/**
+ * Handles the Jingle session initiate request
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_initiate_request = function(stanza) {
+  // TODO
+
+  this.get_debug().log('[JSJaCJingle] Handle session initiate request.', 4);
+}
+
+/**
  * Handles the Jingle session terminate
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_session_terminate = function(stanza) {
   switch(stanza.getType()) {
     case 'result':
-      //TODO: stone-static handler
+      this.handle_session_terminate_success(stanza);
       (this.get_terminate_success())(stanza);
 
       break;
 
     case 'error':
-      //TODO: stone-static handler
+      this.handle_session_terminate_error(stanza);
       (this.get_terminate_error())(stanza);
 
       break;
 
     case 'set':
-      break;// TODO
+      this.handle_session_terminate_request(stanza);
+
+      break;
 
     default:
       this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
   }
 
   this.get_debug().log('[JSJaCJingle] Handle session terminate.', 4);
+}
+
+/**
+ * Handles the Jingle session terminate success
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_terminate_success = function(stanza) {
+  // TODO
+
+  this.get_debug().log('[JSJaCJingle] Handle session terminate success.', 4);
+}
+
+/**
+ * Handles the Jingle session terminate error
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_terminate_error = function(stanza) {
+  // TODO
+
+  this.get_debug().log('[JSJaCJingle] Handle session terminate error.', 4);
+}
+
+/**
+ * Handles the Jingle session terminate request
+ * @param {JSJaCPacket} stanza Jingle handled stanza
+ */
+JSJaCJingle.prototype.handle_session_terminate_request = function(stanza) {
+  // TODO
+
+  this.get_debug().log('[JSJaCJingle] Handle session terminate request.', 4);
 }
 
 /**
