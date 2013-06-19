@@ -196,7 +196,8 @@ $(document).ready(function() {
 					        $('#call_success').text('Initialized.').show();
 
 					        // Request for Jingle session to be accepted
-					        this.accept();
+					        // TODO: buggy, cannot access to top-level object there...
+					        //this.accept();
 
 					        console.log('session_initiate_success');
 					    },
@@ -207,6 +208,10 @@ $(document).ready(function() {
 
 					        console.log('session_initiate_error');
 					    },
+
+					    session_initiate_request: function(stanza) {
+							console.log('session_initiate_request');
+						},
 
 					    session_accept_pending: function() {
 					        $('.call_notif').hide();
@@ -228,6 +233,10 @@ $(document).ready(function() {
 
 					        console.log('session_accept_error');
 					    },
+
+					    session_accept_request: function(stanza) {
+							console.log('session_accept_request');
+						},
 
 					    session_info_pending: function() {
 							console.log('session_info_pending');
@@ -264,11 +273,15 @@ $(document).ready(function() {
 					        $('#call_error').text('Could not terminate.').show();
 
 					        console.log('session_terminate_error');
+					    },
+
+					    session_terminate_request: function(stanza) {
+					        console.log('session_terminate_request');
 					    }
 					};
 
 					// Let's go!
-					(new JSJaCJingle(args)).init();
+					(new JSJaCJingle(args)).initialize();
 				} catch(e) {
 					alert('jingle > ' + e);
 				}
