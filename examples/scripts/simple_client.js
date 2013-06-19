@@ -1,3 +1,13 @@
+/* 
+  JSJaCJingle.js Simple Client
+
+  @fileoverview Scripts for the client
+  
+  @url https://github.com/valeriansaliou/jsjac-jingle
+  @author Valérian Saliou
+  @license Mozilla Public License (MPL)
+ */
+
 var SC_CONNECTED = false;
 var SC_PRESENCE = {};
 
