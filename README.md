@@ -120,6 +120,8 @@ var jingle = new JSJaCJingle(args);
 // See: http://xmpp.org/extensions/xep-0166.html#protocol-initiate
 jingle.init();
 
+// Note: use (new JSJaCJingle(args)).init() if you don't require JSJaCJingle later
+
 // Now, refer to the custom handlers that we passed above!
 // Play hard with this lib, have fun!
 
