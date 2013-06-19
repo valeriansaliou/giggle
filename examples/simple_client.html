@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+
+    <title>JSJaCJingle.js - Example: Simple Client</title>
+
+    <link rel="stylesheet" href="./styles/simple_client.css" type="text/css" media="all" />
+
+    <!-- Work with ease with jQuery -->
+    <script src="./scripts/lib.jquery.js" type="text/javascript"></script>
+
+    <!-- Dependency: JSJaC -->
+    <script src="./scripts/lib.jsjac.js" type="text/javascript"></script>
+
+    <!-- JSJaCJingle.js -->
+    <script src="../JSJaCJingle.js" type="text/javascript"></script>
+
+    <!-- Simple Client JS -->
+    <script src="./scripts/simple_client.js" type="text/javascript"></script>
+</head>
+
+<body>
+  <h1>JSJaCJingle.js</h1>
+  <h4>Simple Client</h4>
+
+  <hr />
+
+  <fieldset>
+    <legend>1. XMPP Account Login</legend>
+
+    <form action="#">
+      <label>JID <input name="login_jid" type="email" placeholder="user@jappix.com" required="" /></label>
+      <label>Password <input name="login_pwd" type="password" placeholder="Password" required="" /></label>
+
+      <input type="submit" value="Connect" />
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>2. Call A JID (Jingle/WebRTC)</legend>
+
+    <form action="#">
+      <label>Full JID <input type="call_jid" placeholder="friend@jappix.com/resource" required="" /></label>
+
+      <input type="submit" value="Jingle!" />
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>3. See Me Live!</legend>
+
+    <video src="" alt="">
+      <h6>Your browser does not support the video element :(</h6>
+    </video>
+
+    <form action="#">
+      <input type="submit" value="Terminate" />
+    </form>
+  </fieldset>
+</body>
