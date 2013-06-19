@@ -189,15 +189,23 @@ JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS
  * @class Somewhat abstract base class for XMPP Jingle sessions. Contains all
  * of the code in common for all Jingle sessions
  * @constructor
- * @param {object} args Jingle session arguments
+ * @param {Object} args Jingle session arguments.
+ * @param {JSJaConnection} args.connection The XMPP connection.
+ * @param {function} args.init_pending The init pending custom handler.
+ * @param {function} args.init_success The init success custom handler.
+ * @param {function} args.init_error The init error custom handler.
+ * @param {function} args.start_pending The start pending custom handler.
+ * @param {function} args.start_success The start success custom handler.
+ * @param {function} args.start_error The start error custom handler.
+ * @param {function} args.terminate_pending The terminate pending custom handler.
+ * @param {function} args.terminate_success The terminate success custom handler.
+ * @param {function} args.terminate_error The terminate error custom handler.
+ * @param {DOM} args.local_view The path to the local stream view element.
+ * @param {DOM} args.remote_view The path to the remote stream view element.
+ * @param {string} args.to The full JID to start the Jingle session with.
+ * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
  */
 function JSJaCJingle(args) {
-  if(args && args.connection)
-    /**
-     * @private
-     */
-    this._connection = args.connection;
-
   if(args && args.init_pending)
     /**
      * @private
@@ -252,6 +260,18 @@ function JSJaCJingle(args) {
      */
     this._terminate_error = args.terminate_error;
 
+  if(args && args.connection)
+    /**
+     * @private
+     */
+    this._connection = args.connection;
+
+  if(args && args.to)
+    /**
+     * @private
+     */
+    this._to = '';
+
   if(args && args.local_view)
     /**
      * @private
@@ -263,12 +283,6 @@ function JSJaCJingle(args) {
      * @private
      */
     this._remote_view = args.remote_view;
-
-  if(args && args.to)
-    /**
-     * @private
-     */
-    this._to = '';
 
   if(args && args.debug && args.debug.log) {
       /**
@@ -352,20 +366,18 @@ function JSJaCJingle(args) {
 
 /**
  * Init a new Jingle session.
- * @param {object} args Jingle session arguments
  */
 JSJaCJingle.prototype.init = function() {
   // Slot unavailable?
   if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE)
     this.get_debug().log('[JSJaCJingle] Cannot init, resource not inactive (status: ' + this.get_status() + ').', 1); return;
 
+  // Trigger init pending custom callback
   (this.get_init_pending())();
 
-  // Register Jingle IQ handler
-  //registerIQSet('jingle', NS_JINGLE, this.handle);
-
-  // TODO: .send() session-initiate
-  // TODO: REGISTER: .handle() over .send() --> start()
+  // Process init actions
+  (this.get_connection())registerIQSet('jingle', NS_JINGLE, this.handle);
+  this.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_INITIATE, this.handle_session_initiate);
 }
 
 /**
@@ -376,29 +388,26 @@ JSJaCJingle.prototype.start = function() {
   if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED))
     this.get_debug().log('[JSJaCJingle] Cannot start, resource not initiated or terminated (status: ' + this.get_status() + ').', 1); return;
 
+  // Trigger start pending custom callback
   (this.get_start_pending())();
 
-  // TODO
-  // TODO: REGISTER: .handle() over .send()
+  // Process start actions
+  this.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_ACCEPT, this.handle_session_accept);
 }
 
 /**
- * Terminates an active Jingle session.
- * @return 'true' if session was terminated, 'false' in case it wasn't found
- * @type boolean
+ * Terminates the Jingle session.
  */
 JSJaCJingle.prototype.terminate = function() {
   // Slot unavailable?
   if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED))
     this.get_debug().log('[JSJaCJingle] Cannot terminate, resource not started (status: ' + this.get_status() + ').', 1); return;
 
+  // Trigger terminate pending custom callback
   (this.get_terminate_pending())();
 
+  // Process terminate actions
   this.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_TERMINATE, this.handle_session_terminate);
-
-  // TODO: .send() session-terminate
-  // TODO: REGISTER: .handle() over .send()
-  // TODO: .handle session-terminate ack, trigger a client event
 }
 
 /**
@@ -1099,7 +1108,10 @@ JSJaCJingle.prototype.get_connection = function() {
  * @type function
  */
 JSJaCJingle.prototype.get_init_pending = function() {
-  return this._init_pending;
+  if(typeof(this._init_pending) == 'function')
+    return this._init_pending;
+
+  return function() {};
 }
 
 /**
@@ -1108,7 +1120,10 @@ JSJaCJingle.prototype.get_init_pending = function() {
  * @type function
  */
 JSJaCJingle.prototype.get_init_success = function() {
-  return this._init_success;
+  if(typeof(this._init_success) == 'function')
+    return this._init_success;
+
+  return function(stanza) {};
 }
 
 /**
@@ -1117,7 +1132,10 @@ JSJaCJingle.prototype.get_init_success = function() {
  * @type function
  */
 JSJaCJingle.prototype.get_init_error = function() {
-  return this._init_error;
+  if(typeof(this._init_error) == 'function')
+    return this._init_error;
+
+  return function(stanza) {};
 }
 
 /**
@@ -1126,7 +1144,10 @@ JSJaCJingle.prototype.get_init_error = function() {
  * @type function
  */
 JSJaCJingle.prototype.get_start_pending = function() {
-  return this._start_pending;
+  if(typeof(this._start_pending) == 'function')
+    return this._start_pending;
+
+  return function() {};
 }
 
 /**
@@ -1135,7 +1156,10 @@ JSJaCJingle.prototype.get_start_pending = function() {
  * @type function
  */
 JSJaCJingle.prototype.get_start_success = function() {
-  return this._start_success;
+  if(typeof(this._start_success) == 'function')
+    return this._start_success;
+
+  return function(stanza) {};
 }
 
 /**
@@ -1144,7 +1168,10 @@ JSJaCJingle.prototype.get_start_success = function() {
  * @type function
  */
 JSJaCJingle.prototype.get_start_error = function() {
-  return this._start_error;
+  if(typeof(this._start_error) == 'function')
+    return this._start_error;
+
+  return function(stanza) {};
 }
 
 /**
@@ -1153,7 +1180,10 @@ JSJaCJingle.prototype.get_start_error = function() {
  * @type function
  */
 JSJaCJingle.prototype.get_terminate_pending = function() {
-  return this._terminate_pending;
+  if(typeof(this._terminate_pending) == 'function')
+    return this._terminate_pending;
+
+  return function() {};
 }
 
 /**
@@ -1162,7 +1192,10 @@ JSJaCJingle.prototype.get_terminate_pending = function() {
  * @type function
  */
 JSJaCJingle.prototype.get_terminate_success = function() {
-  return this._terminate_success;
+  if(typeof(this._terminate_success) == 'function')
+    return this._terminate_success;
+
+  return function(stanza) {};
 }
 
 /**
@@ -1171,13 +1204,16 @@ JSJaCJingle.prototype.get_terminate_success = function() {
  * @type function
  */
 JSJaCJingle.prototype.get_terminate_error = function() {
-  return this._terminate_error;
+  if(typeof(this._terminate_error) == 'function')
+    return this._terminate_error;
+
+  return function(stanza) {};
 }
 
 /**
  * Gets the local_view value
  * @return local_view value
- * @type dom
+ * @type DOM
  */
 JSJaCJingle.prototype.get_local_view = function() {
   return this._local_view;
@@ -1186,7 +1222,7 @@ JSJaCJingle.prototype.get_local_view = function() {
 /**
  * Gets the remote_view value
  * @return remote_view value
- * @type dom
+ * @type DOM
  */
 JSJaCJingle.prototype.get_remote_view = function() {
   return this._remote_view;
@@ -1195,7 +1231,7 @@ JSJaCJingle.prototype.get_remote_view = function() {
 /**
  * Gets the debug value
  * @return debug value
- * @type function
+ * @type JSJaCDebugger
  */
 JSJaCJingle.prototype.get_debug = function() {
   return this._debug;
@@ -1204,7 +1240,7 @@ JSJaCJingle.prototype.get_debug = function() {
 /**
  * Gets the local_stream value
  * @return local_stream value
- * @type dom
+ * @type string
  */
 JSJaCJingle.prototype.get_local_stream = function() {
   return this._local_stream;
@@ -1213,7 +1249,7 @@ JSJaCJingle.prototype.get_local_stream = function() {
 /**
  * Gets the remote_stream value
  * @return remote_stream value
- * @type dom
+ * @type string
  */
 JSJaCJingle.prototype.get_remote_stream = function() {
   return this._remote_stream;
@@ -1222,7 +1258,7 @@ JSJaCJingle.prototype.get_remote_stream = function() {
 /**
  * Gets the content_session value
  * @return content_session value
- * @type object
+ * @type Object
  */
 JSJaCJingle.prototype.get_content_session = function() {
   return this._content_session;
@@ -1294,7 +1330,7 @@ JSJaCJingle.prototype.get_response = function() {
 /**
  * Gets the handlers value
  * @return handlers value
- * @type object
+ * @type Object
  */
 JSJaCJingle.prototype.get_handlers = function() {
   return this._handlers;
@@ -1303,7 +1339,7 @@ JSJaCJingle.prototype.get_handlers = function() {
 /**
  * Gets the server_config value
  * @return server_config value
- * @type object
+ * @type string
  */
 JSJaCJingle.prototype.server_config = function() {
   return this._server_config;
@@ -1312,7 +1348,7 @@ JSJaCJingle.prototype.server_config = function() {
 /**
  * Gets the peer_connection value
  * @return peer_connection value
- * @type object
+ * @type PeerConnection
  */
 JSJaCJingle.prototype.peer_connection = function() {
   return this._peer_connection;
@@ -1321,7 +1357,7 @@ JSJaCJingle.prototype.peer_connection = function() {
 /**
  * Gets the sdp_message value
  * @return sdp_message value
- * @type object
+ * @type string
  */
 JSJaCJingle.prototype.get_sdp_message = function() {
   return this._sdp_message;
