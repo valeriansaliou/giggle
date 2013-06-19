@@ -198,29 +198,77 @@ function JSJaCJingle(args) {
      */
     this._connection = args.connection;
 
-  if(args && args.success_callback)
+  if(args && args.init_pending)
     /**
      * @private
      */
-    this._success_callback = args.success_callback;
+    this._init_pending = args.init_pending;
 
-  if(args && args.error_callback)
+  if(args && args.init_success)
     /**
      * @private
      */
-    this._error_callback = args.error_callback;
+    this._init_success = args.init_success;
 
-  if(args && local_view)
+  if(args && args.init_error)
+    /**
+     * @private
+     */
+    this._init_error = args.init_error;
+
+  if(args && args.start_pending)
+    /**
+     * @private
+     */
+    this._start_pending = args.start_pending;
+
+  if(args && args.start_success)
+    /**
+     * @private
+     */
+    this._start_success = args.start_success;
+
+  if(args && args.start_error)
+    /**
+     * @private
+     */
+    this._start_error = args.start_error;
+
+  if(args && args.terminate_pending)
+    /**
+     * @private
+     */
+    this._terminate_pending = args.terminate_pending;
+
+  if(args && args.terminate_success)
+    /**
+     * @private
+     */
+    this._terminate_success = args.terminate_success;
+
+  if(args && args.terminate_error)
+    /**
+     * @private
+     */
+    this._terminate_error = args.terminate_error;
+
+  if(args && args.local_view)
     /**
      * @private
      */
     this._local_view = args.local_view;
 
-  if(args && remote_view)
+  if(args && args.remote_view)
     /**
      * @private
      */
     this._remote_view = args.remote_view;
+
+  if(args && args.to)
+    /**
+     * @private
+     */
+    this._to = '';
 
   if(args && args.debug && args.debug.log) {
       /**
@@ -355,7 +403,7 @@ JSJaCJingle.prototype.send = function(id, type, action, handler) {
 
   // Build stanza
   var stanza = new JSJaCIQ();
-  stanza.setTo(this.remote_user_jid());
+  stanza.setTo(this.get_to());
 
   if(id) stanza.setID(id);
 
@@ -985,6 +1033,15 @@ JSJaCJingle.prototype.get_status = function() {
 }
 
 /**
+ * Gets the to value
+ * @return to value
+ * @type string
+ */
+JSJaCJingle.prototype.get_to = function() {
+  return this._to;
+}
+
+/**
  * Gets the receiver value
  * @return receiver value
  * @type string
@@ -1140,6 +1197,13 @@ JSJaCJingle.prototype._set_status = function(status) {
 /**
  * @private
  */
+JSJaCJingle.prototype._set_to = function(receiver) {
+  this._to = to;
+}
+
+/**
+ * @private
+ */
 JSJaCJingle.prototype._set_receiver = function(receiver) {
   this._receiver = receiver;
 }
@@ -1185,19 +1249,6 @@ JSJaCJingle.prototype._set_peer_connection = function(peer_connection) {
 JSJaCJingle.prototype._set_sdp_message = function(sdp_message) {
   this._sdp_message = sdp_message;
 }
-
-
-
-/**
- * JSJAC JINGLE UTILITIES
- */
-
-JSJaCJingle.prototype.remote_user_jid = function() {
-  if(this.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED)
-    return null;
-
-  return this.get_receiver() ? this.get_initiator() : this.get_response();
-};
 
 
 
