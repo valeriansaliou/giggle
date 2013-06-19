@@ -934,21 +934,84 @@ JSJaCJingle.prototype.get_connection = function() {
 }
 
 /**
- * Gets the success_callback value
- * @return success_callback value
+ * Gets the init_pending value
+ * @return init_pending value
  * @type function
  */
-JSJaCJingle.prototype.get_success_callback = function() {
-  return this._success_callback;
+JSJaCJingle.prototype.get_init_pending = function() {
+  return this._init_pending;
 }
 
 /**
- * Gets the error_callback value
- * @return error_callback value
+ * Gets the init_success value
+ * @return init_success value
  * @type function
  */
-JSJaCJingle.prototype.get_error_callback = function() {
-  return this._error_callback;
+JSJaCJingle.prototype.get_init_success = function() {
+  return this._init_success;
+}
+
+/**
+ * Gets the init_error value
+ * @return init_error value
+ * @type function
+ */
+JSJaCJingle.prototype.get_init_error = function() {
+  return this._init_error;
+}
+
+/**
+ * Gets the start_pending value
+ * @return start_pending value
+ * @type function
+ */
+JSJaCJingle.prototype.get_start_pending = function() {
+  return this._start_pending;
+}
+
+/**
+ * Gets the start_success value
+ * @return start_success value
+ * @type function
+ */
+JSJaCJingle.prototype.get_start_success = function() {
+  return this._start_success;
+}
+
+/**
+ * Gets the start_error value
+ * @return start_error value
+ * @type function
+ */
+JSJaCJingle.prototype.get_start_error = function() {
+  return this._start_error;
+}
+
+/**
+ * Gets the terminate_pending value
+ * @return terminate_pending value
+ * @type function
+ */
+JSJaCJingle.prototype.get_terminate_pending = function() {
+  return this._terminate_pending;
+}
+
+/**
+ * Gets the terminate_success value
+ * @return terminate_success value
+ * @type function
+ */
+JSJaCJingle.prototype.get_terminate_success = function() {
+  return this._terminate_success;
+}
+
+/**
+ * Gets the terminate_error value
+ * @return terminate_error value
+ * @type function
+ */
+JSJaCJingle.prototype.get_terminate_error = function() {
+  return this._terminate_error;
 }
 
 /**
@@ -1120,15 +1183,64 @@ JSJaCJingle.prototype._set_connection = function(connection) {
 /**
  * @private
  */
-JSJaCJingle.prototype._set_success_callback = function(success_callback) {
-  this._success_callback = success_callback;
+JSJaCJingle.prototype._set_init_pending = function(init_pending) {
+  this._init_pending = init_pending;
 }
 
 /**
  * @private
  */
-JSJaCJingle.prototype._set_error_callback = function(error_callback) {
-  this._error_callback = error_callback;
+JSJaCJingle.prototype._set_init_success = function(init_success) {
+  this._init_success = init_success;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_init_error = function(init_error) {
+  this._init_error = init_error;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_start_pending = function(start_pending) {
+  this._start_pending = start_pending;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_start_success = function(start_success) {
+  this._start_success = start_success;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_start_error = function(start_error) {
+  this._start_error = start_error;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_terminate_pending = function(terminate_pending) {
+  this._terminate_pending = terminate_pending;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_terminate_success = function(terminate_success) {
+  this._terminate_success = terminate_success;
+}
+
+/**
+ * @private
+ */
+JSJaCJingle.prototype._set_terminate_error = function(terminate_error) {
+  this._terminate_error = terminate_error;
 }
 
 /**
