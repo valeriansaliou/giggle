@@ -376,7 +376,7 @@ function JSJaCJingle(args) {
 JSJaCJingle.prototype.init = function() {
   // Slot unavailable?
   if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE)
-    this.get_debug().log('[JSJaCJingle] Cannot init, resource not inactive (status: ' + this.get_status() + ').', 1); return;
+    this.get_debug().log('[JSJaCJingle] init > Cannot init, resource not inactive (status: ' + this.get_status() + ').', 1); return;
 
   // Trigger init pending custom callback
   (this.get_init_pending())();
@@ -392,7 +392,7 @@ JSJaCJingle.prototype.init = function() {
 JSJaCJingle.prototype.start = function() {
   // Slot unavailable?
   if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED))
-    this.get_debug().log('[JSJaCJingle] Cannot start, resource not initiated or terminated (status: ' + this.get_status() + ').', 1); return;
+    this.get_debug().log('[JSJaCJingle] init > Cannot start, resource not initiated or terminated (status: ' + this.get_status() + ').', 1); return;
 
   // Trigger start pending custom callback
   (this.get_start_pending())();
@@ -407,7 +407,7 @@ JSJaCJingle.prototype.start = function() {
 JSJaCJingle.prototype.terminate = function() {
   // Slot unavailable?
   if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED))
-    this.get_debug().log('[JSJaCJingle] Cannot terminate, resource not started (status: ' + this.get_status() + ').', 1); return;
+    this.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource not started (status: ' + this.get_status() + ').', 1); return;
 
   // Trigger terminate pending custom callback
   (this.get_terminate_pending())();
@@ -428,7 +428,7 @@ JSJaCJingle.prototype.send = function(id, type, action, handler) {
 
   if(type == 'set') {
     if(!(action && action in JSJAC_JINGLE_ACTIONS))
-      this.get_debug().log('[JSJaCJingle] Stanza action unknown.', 1); return;
+      this.get_debug().log('[JSJaCJingle] send > Stanza action unknown.', 1); return;
 
       // Submit to registered handler
       switch(action) {
@@ -478,12 +478,12 @@ JSJaCJingle.prototype.send = function(id, type, action, handler) {
           this.send_transport_replace(stanza); break;
 
         default:
-          this.get_debug().log('[JSJaCJingle] Unexpected error.', 1);
+          this.get_debug().log('[JSJaCJingle] send > Unexpected error.', 1);
 
           return false;
       }
   } else if(type != 'result') {
-    this.get_debug().log('[JSJaCJingle] Stanza type must either be set or result.', 1);
+    this.get_debug().log('[JSJaCJingle] send > Stanza type must either be set or result.', 1);
 
     return false;
   }
@@ -569,7 +569,7 @@ JSJaCJingle.prototype.handle = function(stanza) {
  */
 JSJaCJingle.prototype.register_handler = function(action, fn) {
   if(typeof(fn) != 'function') {
-    this.get_debug().log('[JSJaCJingle] fn parameter not passed or not a function!', 1);
+    this.get_debug().log('[JSJaCJingle] register_handler > fn parameter not passed or not a function!', 1);
 
     return false;
   }
@@ -577,11 +577,11 @@ JSJaCJingle.prototype.register_handler = function(action, fn) {
   if(action && action in JSJAC_JINGLE_ACTIONS) {
     this._set_handlers(action, fn);
 
-    this.get_debug().log('[JSJaCJingle] Registered handler for action: ' + action, 4);
+    this.get_debug().log('[JSJaCJingle] register_handler > Registered handler for action: ' + action, 4);
 
     return true;
   } else {
-    this.get_debug().log('[JSJaCJingle] Could not register handler for action: ' + action + ' (not in protocol)', 1);
+    this.get_debug().log('[JSJaCJingle] register_handler > Could not register handler for action: ' + action + ' (not in protocol)', 1);
 
     return false;
   }
@@ -594,11 +594,11 @@ JSJaCJingle.prototype.unregister_handler = function(action) {
   if(action in this._handlers) {
     delete this._handlers[action];
 
-    this.get_debug().log('[JSJaCJingle] Unregistered handler for action: ' + action, 4);
+    this.get_debug().log('[JSJaCJingle] unregister_handler > Unregistered handler for action: ' + action, 4);
 
     return true;
   } else {
-    this.get_debug().log('[JSJaCJingle] Could not unregister handler action: ' + action + ' (not found)', 2);
+    this.get_debug().log('[JSJaCJingle] unregister_handler > Could not unregister handler action: ' + action + ' (not found)', 2);
 
     return false;
   }
@@ -617,7 +617,7 @@ JSJaCJingle.prototype.send_content_accept = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_content_accept > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send content accept.', 4);
+  this.get_debug().log('[JSJaCJingle] send_content_accept > Sent.', 4);
 }
 
 /**
@@ -627,7 +627,7 @@ JSJaCJingle.prototype.send_content_add = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_content_add > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send content add.', 4);
+  this.get_debug().log('[JSJaCJingle] send_content_add > Sent.', 4);
 }
 
 /**
@@ -637,7 +637,7 @@ JSJaCJingle.prototype.send_content_modify = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_content_modify > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send content modify.', 4);
+  this.get_debug().log('[JSJaCJingle] send_content_modify > Sent.', 4);
 }
 
 /**
@@ -647,7 +647,7 @@ JSJaCJingle.prototype.send_content_reject = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_content_reject > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send content reject.', 4);
+  this.get_debug().log('[JSJaCJingle] send_content_reject > Sent.', 4);
 }
 
 /**
@@ -657,7 +657,7 @@ JSJaCJingle.prototype.send_content_remove = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_content_remove > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send content remove.', 4);
+  this.get_debug().log('[JSJaCJingle] send_content_remove > Sent.', 4);
 }
 
 /**
@@ -677,7 +677,7 @@ JSJaCJingle.prototype.send_security_info = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_security_info > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send security info.', 4);
+  this.get_debug().log('[JSJaCJingle] send_security_info > Sent.', 4);
 }
 
 /**
@@ -709,8 +709,8 @@ JSJaCJingle.prototype.send_session_accept = function(stanza, type, arg) {
   } else {
     this.get_debug().log('[JSJaCJingle] send_session_accept > Stanza type must either be set or result.', 1); return;
   }
-  
-  this.get_debug().log('[JSJaCJingle] Send session accept.', 4);
+
+  this.get_debug().log('[JSJaCJingle] send_session_accept > Sent.', 4);
 }
 
 /**
@@ -720,7 +720,7 @@ JSJaCJingle.prototype.send_session_info = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_session_info > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send session info.', 4);
+  this.get_debug().log('[JSJaCJingle] send_session_info > Sent.', 4);
 }
 
 /**
@@ -754,7 +754,7 @@ JSJaCJingle.prototype.send_session_initiate = function(stanza, type, arg) {
     this.get_debug().log('[JSJaCJingle] send_session_initiate > Stanza type must either be set or result.', 1); return;
   }
 
-  this.get_debug().log('[JSJaCJingle] Send session initiate.', 4);
+  this.get_debug().log('[JSJaCJingle] send_session_initiate > Sent.', 4);
 }
 
 /**
@@ -785,7 +785,7 @@ JSJaCJingle.prototype.send_session_terminate = function(stanza, type, arg) {
     this.get_debug().log('[JSJaCJingle] send_session_terminate > Stanza type must either be set or result.', 1); return;
   }
 
-  this.get_debug().log('[JSJaCJingle] Send session terminate.', 4);
+  this.get_debug().log('[JSJaCJingle] send_session_terminate > Sent.', 4);
 }
 
 /**
@@ -795,7 +795,7 @@ JSJaCJingle.prototype.send_transport_accept = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_transport_accept > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send transport accept.', 4);
+  this.get_debug().log('[JSJaCJingle] send_transport_accept > Sent.', 4);
 }
 
 /**
@@ -805,7 +805,7 @@ JSJaCJingle.prototype.send_transport_info = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_transport_info > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send transport info.', 4);
+  this.get_debug().log('[JSJaCJingle] send_transport_info > Sent.', 4);
 }
 
 /**
@@ -815,7 +815,7 @@ JSJaCJingle.prototype.send_transport_reject = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_transport_reject > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send transport reject.', 4);
+  this.get_debug().log('[JSJaCJingle] send_transport_reject > Sent.', 4);
 }
 
 /**
@@ -825,7 +825,7 @@ JSJaCJingle.prototype.send_transport_replace = function(stanza) {
   // Not implemented for now
   this.get_debug().log('[JSJaCJingle] send_transport_replace > Feature not implemented!', 1);
 
-  this.get_debug().log('[JSJaCJingle] Send transport replace.', 4);
+  this.get_debug().log('[JSJaCJingle] send_transport_replace > Sent.', 4);
 }
 
 /**
@@ -833,7 +833,7 @@ JSJaCJingle.prototype.send_transport_replace = function(stanza) {
  */
 JSJaCJingle.prototype.send_error = function(stanza, jingle_condition) {
   if(!(jingle_condition in JSJAC_JINGLE_ERRORS))
-    this.get_debug().log('[JSJaCJingle] Jingle condition unknown.', 1); return;
+    this.get_debug().log('[JSJaCJingle] send_error > Jingle condition unknown.', 1); return;
 
   var jingle_error_map = JSJAC_JINGLE_ERRORS[jingle_condition];
 
@@ -844,7 +844,7 @@ JSJaCJingle.prototype.send_error = function(stanza, jingle_condition) {
   error.appendChild(stanza.buildNode(jingle_error_map.xmpp, {'xmlns': NS_STANZAS}));
   error.appendChild(stanza.buildNode(jingle_error_map.jingle, {'xmlns': NS_JINGLE_ERRORS}));
 
-  this.get_debug().log('[JSJaCJingle] Send error: ' + jingle_condition, 4);
+  this.get_debug().log('[JSJaCJingle] send_error > Sent: ' + jingle_condition, 4);
 }
 
 
@@ -861,7 +861,7 @@ JSJaCJingle.prototype.handle_content_accept = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle content accept.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_content_accept > Handled.', 4);
 }
 
 /**
@@ -872,7 +872,7 @@ JSJaCJingle.prototype.handle_content_add = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle content add.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_content_add > Handled.', 4);
 }
 
 /**
@@ -883,7 +883,7 @@ JSJaCJingle.prototype.handle_content_modify = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle content modify.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_content_modify > Handled.', 4);
 }
 
 /**
@@ -894,7 +894,7 @@ JSJaCJingle.prototype.handle_content_reject = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle content reject.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_content_reject > Handled.', 4);
 }
 
 /**
@@ -905,7 +905,7 @@ JSJaCJingle.prototype.handle_content_remove = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle content remove.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_content_remove > Handled.', 4);
 }
 
 /**
@@ -916,7 +916,7 @@ JSJaCJingle.prototype.handle_description_info = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle description info.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_description_info > Handled.', 4);
 }
 
 /**
@@ -927,7 +927,7 @@ JSJaCJingle.prototype.handle_security_info = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle security info.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_security_info > Handled.', 4);
 }
 
 /**
@@ -957,7 +957,7 @@ JSJaCJingle.prototype.handle_session_accept = function(stanza) {
       this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
   }
 
-  this.get_debug().log('[JSJaCJingle] Handle session accept.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_accept > Handled.', 4);
 }
 
 /**
@@ -967,7 +967,7 @@ JSJaCJingle.prototype.handle_session_accept = function(stanza) {
 JSJaCJingle.prototype.handle_session_accept_success = function(stanza) {
   // TODO
 
-  this.get_debug().log('[JSJaCJingle] Handle session accept success.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_accept_success > Handled.', 4);
 }
 
 /**
@@ -977,7 +977,7 @@ JSJaCJingle.prototype.handle_session_accept_success = function(stanza) {
 JSJaCJingle.prototype.handle_session_accept_error = function(stanza) {
   // TODO
 
-  this.get_debug().log('[JSJaCJingle] Handle session accept error.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_accept_error > Handled.', 4);
 }
 
 /**
@@ -987,7 +987,7 @@ JSJaCJingle.prototype.handle_session_accept_error = function(stanza) {
 JSJaCJingle.prototype.handle_session_accept_request = function(stanza) {
   // TODO
 
-  this.get_debug().log('[JSJaCJingle] Handle session accept request.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_accept_request > Handled.', 4);
 }
 
 /**
@@ -998,7 +998,7 @@ JSJaCJingle.prototype.handle_session_info = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle session info.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_info > Handled.', 4);
 }
 
 /**
@@ -1028,7 +1028,7 @@ JSJaCJingle.prototype.handle_session_initiate = function(stanza) {
       this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
   }
 
-  this.get_debug().log('[JSJaCJingle] Handle session initiate.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_initiate > Handled.', 4);
 }
 
 /**
@@ -1044,7 +1044,7 @@ JSJaCJingle.prototype.handle_session_initiate_success = function(stanza) {
   // Change session status
   this._set_status(JSJAC_JINGLE_STATUS_INITIATED);
 
-  this.get_debug().log('[JSJaCJingle] Handle session initiate success.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_initiate_success > Handled.', 4);
 }
 
 /**
@@ -1057,7 +1057,7 @@ JSJaCJingle.prototype.handle_session_initiate_error = function(stanza) {
   // Change session status
   this._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
-  this.get_debug().log('[JSJaCJingle] Handle session initiate error.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_initiate_error > Handled.', 4);
 }
 
 /**
@@ -1070,7 +1070,7 @@ JSJaCJingle.prototype.handle_session_initiate_request = function(stanza) {
   // Change session status
   this._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
-  this.get_debug().log('[JSJaCJingle] Handle session initiate request.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Handled.', 4);
 }
 
 /**
@@ -1100,7 +1100,7 @@ JSJaCJingle.prototype.handle_session_terminate = function(stanza) {
       this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
   }
 
-  this.get_debug().log('[JSJaCJingle] Handle session terminate.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_terminate > Handled.', 4);
 }
 
 /**
@@ -1111,7 +1111,7 @@ JSJaCJingle.prototype.handle_session_terminate_success = function(stanza) {
   // Change session status
   this._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
-  this.get_debug().log('[JSJaCJingle] Handle session terminate success.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_terminate_success > Handled.', 4);
 }
 
 /**
@@ -1124,7 +1124,7 @@ JSJaCJingle.prototype.handle_session_terminate_error = function(stanza) {
   // Change session status
   this._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
-  this.get_debug().log('[JSJaCJingle] Handle session terminate error.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_terminate_error > Handled.', 4);
 }
 
 /**
@@ -1137,7 +1137,7 @@ JSJaCJingle.prototype.handle_session_terminate_request = function(stanza) {
   // Change session status
   this._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
-  this.get_debug().log('[JSJaCJingle] Handle session terminate request.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_session_terminate_request > Handled.', 4);
 }
 
 /**
@@ -1148,7 +1148,7 @@ JSJaCJingle.prototype.handle_transport_accept = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle transport accept.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_transport_accept > Handled.', 4);
 }
 
 /**
@@ -1159,7 +1159,7 @@ JSJaCJingle.prototype.handle_transport_info = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle transport info.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_transport_info > Handled.', 4);
 }
 
 /**
@@ -1170,7 +1170,7 @@ JSJaCJingle.prototype.handle_transport_reject = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle transport reject.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_transport_reject > Handled.', 4);
 }
 
 /**
@@ -1181,7 +1181,7 @@ JSJaCJingle.prototype.handle_transport_replace = function(stanza) {
   // Not implemented for now
   this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
-  this.get_debug().log('[JSJaCJingle] Handle transport replace.', 4);
+  this.get_debug().log('[JSJaCJingle] handle_transport_replace > Handled.', 4);
 }
 
 
@@ -1673,8 +1673,8 @@ JSJaCJingle.prototype._peer_connection_create = function(sdp_message_callback) {
 
   // Event: onaddstream
   this.get_peer_connection().onaddstream = function(e) {
-    this.get_debug().info('[JSJaCJingle] onaddstream');
-    this.get_debug().log('[JSJaCJingle] ' + e, 4);
+    this.get_debug().info('[JSJaCJingle] _peer_connection_create > onaddstream');
+    this.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
 
     // Attach PeerConnection remote stream
     var stream = e.stream,
@@ -1691,25 +1691,25 @@ JSJaCJingle.prototype._peer_connection_create = function(sdp_message_callback) {
 
   // Event: onmessage
   this.get_peer_connection().onmessage = function(e) {
-    this.get_debug().info('[JSJaCJingle] onmessage');
-    this.get_debug().log('[JSJaCJingle] ' + e, 4);
+    this.get_debug().info('[JSJaCJingle] _peer_connection_create > onmessage');
+    this.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
   };
 
   // Event: onopen
   this.get_peer_connection().onopen = function(e) {
-    this.get_debug().info('[JSJaCJingle] onopen');
-    this.get_debug().log('[JSJaCJingle] ' + e, 4);
+    this.get_debug().info('[JSJaCJingle] _peer_connection_create > onopen');
+    this.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
   };
 
   // Event: onconnecting
   this.get_peer_connection().onconnecting = function(e) {
-    this.get_debug().info('[JSJaCJingle] onconnecting');
+    this.get_debug().info('[JSJaCJingle] _peer_connection_create > onconnecting');
     this.get_debug().dir(e);
   };
 
   // Event: onstatechange
   this.get_peer_connection().onstatechange = function(e, state) {
-    this.get_debug().info('[JSJaCJingle] onstatechange');
+    this.get_debug().info('[JSJaCJingle] _peer_connection_create > onstatechange');
     this.get_debug().dir(e, state);
   };
 
@@ -1722,11 +1722,11 @@ JSJaCJingle.prototype._peer_connection_create = function(sdp_message_callback) {
  */
 JSJaCJingle.prototype._peer_get_user_media = function(callback) {
   try {
-    this.get_debug().log('[JSJaCJingle] Getting user media...', 4);
+    this.get_debug().log('[JSJaCJingle] _peer_get_user_media > Getting user media...', 4);
 
     navigator.getUserMedia('video,audio', this._peer_got_stream.bind(this, callback), this._peer_got_stream.bind(this));
   } catch(e) {
-    this.get_debug().log('[JSJaCJingle] Could not get user media.', 1);
+    this.get_debug().log('[JSJaCJingle] _peer_get_user_media > Could not get user media.', 1);
   }
 }
 
@@ -1734,16 +1734,26 @@ JSJaCJingle.prototype._peer_get_user_media = function(callback) {
  * @private
  */
 JSJaCJingle.prototype._peer_got_stream = function(callback, stream) {
-  // TODO
+  try {
+    var url = URL.createObjectURL(stream);
 
-  this.get_debug().log('[JSJaCJingle] Got stream.', 4);
+    (this.get_local_view()).attr('src', url);
+    this._set_local_stream(stream);
+
+    if(callback)
+      callback();
+
+    this.get_debug().log('[JSJaCJingle] _peer_got_stream > Got stream.', 4);
+  } catch(e) {
+    this.get_debug().log('[JSJaCJingle] _peer_got_stream > URL.createObjectURL() method not available.', 1);
+  }
 }
 
 /**
  * @private
  */
 JSJaCJingle.prototype._peer_got_stream_failed = function(error) {
-  this.get_debug().log('[JSJaCJingle] Stream failed.', 1);
+  this.get_debug().log('[JSJaCJingle] _peer_got_stream_failed > Stream failed.', 1);
 }
 
 /**
@@ -1753,7 +1763,7 @@ JSJaCJingle.prototype._peer_get_json_from_sdp = function(message) {
   try
     return JSON.parse(msg.substring(4));
   catch(e)
-    this.get_debug().log('[JSJaCJingle] JSON parser not available.', 1);
+    this.get_debug().log('[JSJaCJingle] _peer_get_json_from_sdp > JSON parser not available.', 1);
 
   return null;
 }
