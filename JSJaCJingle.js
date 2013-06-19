@@ -86,11 +86,11 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_INFO              = 'transport-info';
 var JSJAC_JINGLE_ACTION_TRANSPORT_REJECT            = 'transport-reject';
 var JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE           = 'transport-replace';
 
-var JSJAC_JINGLE_ERROR_OUT_OF_BORDER                = { jingle: 'out-of-border',      xmpp: 'unexpected-request',       type: 'wait'   };
-var JSJAC_JINGLE_ERROR_TIE_BREAK                    = { jingle: 'tie-break',          xmpp: 'conflict',                 type: 'cancel' };
-var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION              = { jingle: 'unknown-session',    xmpp: 'item-not-found',           type: 'cancel' };
-var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO             = { jingle: 'unsupported-info',   xmpp: 'feature-not-implemented',  type: 'modify' };
-var JSJAC_JINGLE_ERROR_SECURITY_REQUIRED            = { jingle: 'security-required',  xmpp: 'not-acceptable',           type: 'cancel' };
+var JSJAC_JINGLE_ERROR_OUT_OF_BORDER                = { jingle: 'out-of-border',          xmpp: 'unexpected-request',         type: 'wait'   };
+var JSJAC_JINGLE_ERROR_TIE_BREAK                    = { jingle: 'tie-break',              xmpp: 'conflict',                   type: 'cancel' };
+var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION              = { jingle: 'unknown-session',        xmpp: 'item-not-found',             type: 'cancel' };
+var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO             = { jingle: 'unsupported-info',       xmpp: 'feature-not-implemented',    type: 'modify' };
+var JSJAC_JINGLE_ERROR_SECURITY_REQUIRED            = { jingle: 'security-required',      xmpp: 'not-acceptable',             type: 'cancel' };
 
 var XMPP_ERROR_FEATURE_NOT_IMPLEMENTED              = { xmpp: 'feature-not-implemented',  type: 'cancel' };
 var XMPP_ERROR_SERVICE_UNAVAILABLE                  = { xmpp: 'service-unavailable',      type: 'cancel' };
