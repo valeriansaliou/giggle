@@ -1,0 +1,170 @@
+body {
+	background: #fafafa;
+	color: #666;
+	text-align: center;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	margin: 0;
+	width: 700px;
+	margin: auto;
+	font-size: 14px;
+	position: relative;
+}
+
+img {
+	width: 61px;
+	height: 70px;
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+
+h1 {
+	margin: 20px 0 14px 0;
+	font-weight: bold;
+	font-size: 26px;
+}
+
+h4 {
+	color: #456;
+	font-size: 18px;
+	font-weight: normal;
+	text-transform: uppercase;
+	margin: 0 0 24px 0;
+}
+
+hr {
+	margin: 18px 0;
+	border: 0;
+	border-top: 1px solid #EEE;
+	border-bottom: 1px solid white;
+	margin-bottom: 46px;
+}
+
+fieldset {
+	border-top: 1px solid #e6e6e6;
+	border-right: 1px solid #e6e6e6;
+	border-left: 1px solid #ededed;
+	border-bottom: 1px solid #ededed;
+	margin: 24px 0;
+	padding: 20px 0;
+}
+
+fieldset legend {
+	font-size: 0.85em;
+	font-weight: bold;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	padding: 0 10px;
+}
+
+fieldset[disabled] legend {
+	opacity: 0.6;
+}
+
+fieldset label {
+	margin-bottom: 6px;
+	display: block;
+}
+
+fieldset[disabled] label {
+	opacity: 0.5;
+}
+
+fieldset label span.label {
+	text-align: right;
+	width: 100px;
+	padding-right: 16px;
+	display: inline-block;
+}
+
+fieldset label input {
+	width: 160px;
+	padding: 2px 4px;
+	margin-top: -2px;
+}
+
+fieldset button {
+	margin-top: 10px;
+	padding: 4px 8px 5px 8px;
+}
+
+fieldset video {
+	border: 1px solid #aaaaaa;
+}
+
+fieldset[disabled] video {
+	opacity: 0.2;
+}
+
+.login_notif,
+.call_notif,
+.live_notif {
+	font-weight: bold;
+	font-size: 13px;
+	margin-top: 16px;
+	display: none;
+}
+
+.error {
+	color: #bd001b;
+}
+
+.success {
+	color: #09ae3a;
+}
+
+.info {
+	color: #0047ae;
+}
+
+#login_disconnect {
+	display: none;
+}
+
+#roster_call {
+	list-style: none;
+	margin-top: 26px;
+	display: none;
+}
+
+#roster_call.disabled {
+	opacity: 0.6;
+}
+
+#roster_call li {
+	margin: 7px 0;
+}
+
+#roster_call li a {
+	color: #413f5b;
+	text-decoration: none;
+	font-size: 0.9em;
+	display: inline-block;
+}
+
+#roster_call.disabled li a {
+	cursor: default;
+}
+
+#roster_call li a:hover,
+#roster_call li a:active {
+	text-decoration: underline;
+}
+
+#roster_call.disabled li a:hover,
+#roster_call.disabled li a:active {
+	text-decoration: none;
+}
+
+.video_container {
+	width: 642px;
+	height: 362px;
+	margin: 0 auto 8px auto;
+	position: relative;
+}
+
+#video_local {
+	position: absolute;
+	left: 8px;
+	bottom: 8px;
+}

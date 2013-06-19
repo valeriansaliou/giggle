@@ -43,7 +43,7 @@ var args = {
 	connection: ctx_connection,
 	to: ctx_to,
 	local_view: document.getElementById('jingle-' + ctx_hash + '-local'),
-	remote_view: document.getElementById('jingle-' + ctx_hash + '-remote')
+	remote_view: document.getElementById('jingle-' + ctx_hash + '-remote'),
 
 	// Custom handlers (optional)
 	init_pending: function() {

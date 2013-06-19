@@ -1,0 +1,296 @@
+var SC_CONNECTED = false;
+var SC_PRESENCE = {};
+
+$(document).ready(function() {
+	// Submit first form
+	$('#form_login').submit(function() {
+		try {
+			if(SC_CONNECTED)
+				return false;
+
+			$('.login_notif').hide();
+
+			var login_bosh = $(this).find('input[name="login_bosh"]').val();
+			var login_jid = $(this).find('input[name="login_jid"]').val();
+			var login_pwd = $(this).find('input[name="login_pwd"]').val();
+
+			if(login_bosh && login_jid && login_pwd) {
+				$('#login_info').text('Connecting...').show();
+
+				// Generate JID
+				login_jid += '/JSJaCJingle.js (' + (new Date()).getTime() + ')';
+				var jid_obj = new JSJaCJID(login_jid);
+
+				// Configure connection
+				oArgs = new Object();
+				oArgs.httpbase = login_bosh;
+
+				con = new JSJaCHttpBindingConnection(oArgs);
+				
+				// Configure handlers
+				con.registerHandler('onconnect', function() {
+					try {
+						$('.login_notif').hide();
+						$('#login_success').text('Connected: ' + jid_obj.toString()).show();
+
+						$('#form_login button').hide();
+						$('#login_disconnect').show();
+
+						$('#fieldset_call').removeAttr('disabled');
+
+						SC_CONNECTED = true;
+
+						// Initial presence
+						con.send(new JSJaCPresence());
+					} catch(e) {
+						alert('onconnect > ' + e);
+					}
+				});
+
+				con.registerHandler('ondisconnect', function() {
+					try {
+						$('.login_notif').hide();
+
+						if(SC_CONNECTED)
+							$('#login_error').text('Disconnected.').show();
+						else
+							$('#login_error').text('Invalid credentials.').show();
+
+						$('#form_login').find('input').removeAttr('disabled');
+						$('#form_login button').show();
+						$('#login_disconnect').hide();
+
+						$('#fieldset_call, #fieldset_live').attr('disabled', true);
+
+						SC_CONNECTED = false;
+					} catch(e) {
+						alert('ondisconnect > ' + e);
+					}
+				});
+
+				con.registerHandler('presence', function(presence) {
+					try {
+						var pr_from = presence.getFrom();
+
+						if(!pr_from)
+							return;
+
+						var jid_obj = new JSJaCJID(pr_from);
+
+						if(jid_obj.toString() == con.username + '@' + con.domain + '/' + con.resource)
+							return;
+
+						// Online buddy: show it!
+						var jid_bare = jid_obj.getBareJID();
+						var jid_resource = jid_obj.getResource();
+
+						if(presence.getType() == 'unavailable') {
+							if(jid_bare in SC_PRESENCE && jid_resource in SC_PRESENCE[jid_bare]) {
+								delete (SC_PRESENCE[jid_bare])[jid_resource];
+
+								if(!(SC_PRESENCE[jid_bare]).length)
+									delete SC_PRESENCE[jid_bare];
+							}
+						} else {
+							if(!(jid_bare in SC_PRESENCE))
+								SC_PRESENCE[jid_bare] = {};
+
+							(SC_PRESENCE[jid_bare])[jid_resource] = 1;
+						}
+
+						// Update list
+						var roster_call = '';
+						$('#roster_call').hide().empty();
+
+						for(cur_bare_jid in SC_PRESENCE) {
+							for(cur_resource in SC_PRESENCE[cur_bare_jid]) {
+								roster_call += '<li>';
+									roster_call += '<a href="#" data-jid="' + (cur_bare_jid + '/' + cur_resource).htmlEnc() + '"><b>' + cur_bare_jid.htmlEnc() + '</b>/' + cur_resource.htmlEnc() + '</a>';
+								roster_call += '</li>';
+							}
+						}
+
+						if(roster_call) {
+							$('#roster_call').append(roster_call).show();
+
+							$('#roster_call a').click(function() {
+								try {
+									if($('#roster_call').hasClass('disabled'))
+										return false;
+
+									$('#form_call input[name="call_jid"]').val($(this).attr('data-jid'));
+								} catch(e) {
+									alert('roster_call > ' + e);
+								} finally {
+									return false;
+								}
+							});
+						}
+					} catch(e) {
+						alert('presence > ' + e);
+					}
+				});
+				
+				// Configure credentials
+				oArgs = new Object();
+				oArgs.username = jid_obj.getNode();
+				oArgs.domain = jid_obj.getDomain();
+				oArgs.resource = jid_obj.getResource();
+				oArgs.pass = login_pwd;
+				oArgs.secure = true;
+				
+				// Connect
+				con.connect(oArgs);
+
+				// Disable form
+				$('#form_login').find('input').attr('disabled', true);
+			} else {
+				$('#login_error').text('Please fill the form.').show();
+			}
+		} catch(e) {
+			alert('form_login > ' + e);
+		} finally {
+			return false;
+		}
+	});
+
+	// Submit second form
+	$('#form_call').submit(function() {
+		try {
+			if(!SC_CONNECTED)
+				return false;
+
+			$('#roster_call').addClass('disabled');
+
+			$('.call_notif').hide();
+
+			var call_jid = $(this).find('input[name="call_jid"]').val();
+
+			// Any JID defined?
+			if(call_jid) {
+				$('#call_info').text('Initializing...').show();
+
+				try {
+					// JSJaCJingle arguments
+					var args = {
+					    // Configuration (required)
+					    connection: con,
+					    to: call_jid,
+					    local_view: document.getElementById('video_local'),
+					    remote_view: document.getElementById('video_remote'),
+					    debug: console,
+
+					    // Custom handlers (optional)
+					    init_pending: function() {
+					        // Update your client UI
+					        // Waiting to be initialized...
+
+					        console.log('init_pending');
+					    },
+
+					    init_success: function(stanza) {
+					        // Update your client UI
+					        // Initialized!
+
+					        // Request for Jingle session to start
+					        // You can also call this later, on UI confirm or so
+					        this.start();
+
+					        console.log('init_success');
+					    },
+
+					    init_error: function(stanza) {
+					        // Update your client UI
+					        // Could not initialize!
+
+					        console.log('init_error');
+					    },
+
+					    start_pending: function() {
+					        // Update your client UI
+					        // Waiting to be started...
+
+					        console.log('start_pending');
+					    },
+
+					    start_success: function(stanza) {
+					        // Update your client UI
+					        // Started!
+
+					        // Request for Jingle session to terminate
+					        // You can call this when user press 'end' button
+					        // Use: this.terminate();
+
+					        console.log('start_success');
+					    },
+
+					    start_error: function(stanza) {
+					        // Update your client UI
+					        // Could not start!
+
+					        console.log('start_error');
+					    },
+
+					    terminate_pending: function() {
+					        // Update your client UI
+					        // Waiting to be terminated...
+
+					        console.log('terminate_pending');
+					    },
+
+					    terminate_success: function(stanza) {
+					        // Update your client UI
+					        // Terminated!
+
+					        console.log('terminate_success');
+					    },
+
+					    terminate_error: function(stanza) {
+					        // Update your client UI
+					        // Could not terminate!
+
+					        console.log('terminate_error');
+					    }
+					};
+
+					// Let's go!
+					(new JSJaCJingle(args)).init();
+				} catch(e) {
+					alert('jingle > ' + e);
+				}
+			} else {
+				$('#call_error').text('Please fill the form.').show();
+			}
+		} catch(e) {
+			alert('form_call > ' + e);
+		} finally {
+			return false;
+		}
+	});
+
+	// Submit third form
+	$('#form_live').submit(function() {
+		try {
+			if(!SC_CONNECTED)
+				return false;
+
+			$('.live_notif').hide();
+		} catch(e) {
+			alert('form_live > ' + e);
+		} finally {
+			return false;
+		}
+	});
+
+	// Disconnect button pressed
+	$('#login_disconnect').click(function() {
+		try {
+			if(typeof(con) != 'undefined' && con)
+				con.disconnect();
+		} catch(e) {
+			alert('login_disconnect > ' + e);
+		} finally {
+			return false;
+		}
+	});
+});

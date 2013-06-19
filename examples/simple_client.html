@@ -21,41 +21,78 @@
 </head>
 
 <body>
+  <div class="header">
+  <img src="./images/jingle.png" alt="" />
+
   <h1>JSJaCJingle.js</h1>
   <h4>Simple Client</h4>
 
   <hr />
 
-  <fieldset>
-    <legend>1. XMPP Account Login</legend>
+  <fieldset id="fieldset_login">
+    <legend>XMPP Account Login</legend>
 
-    <form action="#">
-      <label>JID <input name="login_jid" type="email" placeholder="user@jappix.com" required="" /></label>
-      <label>Password <input name="login_pwd" type="password" placeholder="Password" required="" /></label>
+    <form id="form_login" action="#">
+      <label>
+        <span class="label">BOSH</span>
+        <input name="login_bosh" type="url" placeholder="https://bind.jappix.com/" value="https://bind.jappix.com/" required="" />
+      </label>
 
-      <input type="submit" value="Connect" />
+      <label>
+        <span class="label">JID</span>
+        <input name="login_jid" type="email" placeholder="user@jappix.com" value="jappix@jappix.com" required="" />
+      </label>
+
+      <label>
+        <span class="label">Password</span>
+        <input name="login_pwd" type="password" placeholder="Password" value="jappix" required="" />
+      </label>
+
+      <button type="submit">Connect</button>
+      <button id="login_disconnect">Disconnect</button>
+
+      <div id="login_error" class="error login_notif"></div>
+      <div id="login_success" class="success login_notif"></div>
+      <div id="login_info" class="info login_notif"></div>
     </form>
   </fieldset>
 
-  <fieldset>
-    <legend>2. Call A JID (Jingle/WebRTC)</legend>
+  <fieldset id="fieldset_call" disabled>
+    <legend>Call A JID (Jingle/WebRTC)</legend>
 
-    <form action="#">
-      <label>Full JID <input type="call_jid" placeholder="friend@jappix.com/resource" required="" /></label>
+    <form id="form_call" action="#">
+      <label>
+        <span class="label">Full JID</span>
+        <input name="call_jid" type="text" placeholder="friend@jappix.com/resource" required="" />
+      </label>
 
-      <input type="submit" value="Jingle!" />
+      <button type="submit">Jingle!</button>
+
+      <div id="call_error" class="error call_notif"></div>
+      <div id="call_success" class="success call_notif"></div>
+      <div id="call_info" class="info call_notif"></div>
+
+      <ul id="roster_call"></ul>
     </form>
   </fieldset>
 
-  <fieldset>
-    <legend>3. See Me Live!</legend>
+  <fieldset id="fieldset_live" disabled>
+    <legend>See Me Live!</legend>
 
-    <video src="" alt="">
-      <h6>Your browser does not support the video element :(</h6>
-    </video>
+    <div class="video_container">
+      <video id="video_remote" src="" alt="" width="640" height="360" poster="./images/video_poster.png">
+        <h6>Your browser does not support the video element :(</h6>
+      </video>
 
-    <form action="#">
-      <input type="submit" value="Terminate" />
+      <video id="video_local" src="" alt="" width="160" height="90" poster="./images/video_poster.png"></video>
+    </div>
+
+    <form id="form_live" action="#">
+      <button type="submit">Terminate</button>
+
+      <div id="live_error" class="error live_notif"></div>
+      <div id="live_success" class="success live_notif"></div>
+      <div id="live_info" class="info live_notif"></div>
     </form>
   </fieldset>
 </body>
