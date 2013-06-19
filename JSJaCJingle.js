@@ -2,6 +2,8 @@
  * @fileoverview JSJaC Jingle library, implementation of XEP-0166.
  * Built originally for Uno.im service requirements
  *
+ * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou valerian@jappix.com
  * @license Mozilla Public License (MPL)
  */
@@ -84,10 +86,17 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_INFO              = 'transport-info';
 var JSJAC_JINGLE_ACTION_TRANSPORT_REJECT            = 'transport-reject';
 var JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE           = 'transport-replace';
 
-var JSJAC_JINGLE_ERROR_OUT_OF_BORDER                = { jingle: 'out-of-border',    xmpp: 'unexpected-request',      type: 'wait' };
-var JSJAC_JINGLE_ERROR_TIE_BREAK                    = { jingle: 'tie-break',        xmpp: 'conflict',                type: 'cancel' };
-var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION              = { jingle: 'unknown-session',  xmpp: 'item-not-found',          type: 'cancel' };
-var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO             = { jingle: 'unsupported-info', xmpp: 'feature-not-implemented', type: 'cancel' };
+var JSJAC_JINGLE_ERROR_OUT_OF_BORDER                = { jingle: 'out-of-border',      xmpp: 'unexpected-request',       type: 'wait'   };
+var JSJAC_JINGLE_ERROR_TIE_BREAK                    = { jingle: 'tie-break',          xmpp: 'conflict',                 type: 'cancel' };
+var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION              = { jingle: 'unknown-session',    xmpp: 'item-not-found',           type: 'cancel' };
+var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO             = { jingle: 'unsupported-info',   xmpp: 'feature-not-implemented',  type: 'modify' };
+var JSJAC_JINGLE_ERROR_SECURITY_REQUIRED            = { jingle: 'security-required',  xmpp: 'not-acceptable',           type: 'cancel' };
+
+var XMPP_ERROR_FEATURE_NOT_IMPLEMENTED              = { xmpp: 'feature-not-implemented',  type: 'cancel' };
+var XMPP_ERROR_SERVICE_UNAVAILABLE                  = { xmpp: 'service-unavailable',      type: 'cancel' };
+var XMPP_ERROR_REDIRECT                             = { xmpp: 'redirect',                 type: 'modify' };
+var XMPP_ERROR_RESOURCE_CONSTRAINT                  = { xmpp: 'resource-constraint',      type: 'wait'   };
+var XMPP_ERROR_BAD_REQUEST                          = { xmpp: 'bad-request',              type: 'cancel' };
 
 var JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION         = 'alternative-session';
 var JSJAC_JINGLE_REASON_BUSY                        = 'busy';
@@ -156,12 +165,19 @@ JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_INFO]              = 1;
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REJECT]            = 1;
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE]           = 1;
 
-var JSJAC_JINGLE_ERRORS             = {
-  'out-of-border':      JSJAC_JINGLE_ERROR_OUT_OF_BORDER,
-  'tie-break':          JSJAC_JINGLE_ERROR_TIE_BREAK,
-  'unknown-session':    JSJAC_JINGLE_ERROR_UNKNOWN_SESSION,
-  'unsupported-info':   JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO
-};
+var JSJAC_JINGLE_ERRORS             = {};
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_OUT_OF_BORDER.jingle]          = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_TIE_BREAK.jingle]              = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNKNOWN_SESSION.jingle]        = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.jingle]       = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_SECURITY_REQUIRED.jingle]      = 1;
+
+var XMPP_ERRORS                     = {};
+XMPP_ERRORS[XMPP_ERROR_FEATURE_NOT_IMPLEMENTED]                       = 1;
+XMPP_ERRORS[XMPP_ERROR_SERVICE_UNAVAILABLE]                           = 1;
+XMPP_ERRORS[XMPP_ERROR_REDIRECT]                                      = 1;
+XMPP_ERRORS[XMPP_ERROR_RESOURCE_CONSTRAINT]                           = 1;
+XMPP_ERRORS[XMPP_ERROR_BAD_REQUEST]                                   = 1;
 
 var JSJAC_JINGLE_REASONS            = {};
 JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION]         = 1;
