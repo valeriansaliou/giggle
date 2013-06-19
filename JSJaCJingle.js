@@ -320,6 +320,11 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  this._responder = '';
+
+  /**
+   * @private
+   */
   this._sid = '';
 
   /**
@@ -340,11 +345,6 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  this._response = '';
-
-  /**
-   * @private
-   */
   this._handlers = {};
 
   /**
@@ -361,6 +361,12 @@ function JSJaCJingle(args) {
    * @private
    */
   this._sdp_message = '';
+
+  /**
+   * Register stanza handler
+   */
+  (this._connection).registerHandler('iq', this.handle);
+  // TODO: ondestroy >> unregisterHandler('iq', this.handle)
 }
 
 
@@ -414,10 +420,6 @@ JSJaCJingle.prototype.terminate = function() {
  * Sends a given Jingle stanza packet
  */
 JSJaCJingle.prototype.send = function(id, type, action, handler) {
-  // Slot unavailable?
-  if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_STARTED))
-    this.get_debug().log('[JSJaCJingle] Cannot send, resource not initiated or started (status: ' + this.get_status() + ').', 1); return;
-
   // Build stanza
   var stanza = new JSJaCIQ();
   stanza.setTo(this.get_to());
@@ -480,21 +482,34 @@ JSJaCJingle.prototype.send = function(id, type, action, handler) {
       }
   } else if(type != 'result') {
     this.get_debug().log('[JSJaCJingle] Stanza type must either be set or result.', 1); return;
+  } else {
+    this.get_debug().log('[JSJaCJingle] Could not send stanza using type: ' + type, 1);
+
+    return false;
   }
 
   if(handler)
     con.send(stanza, handler);
   else
     con.send(stanza);
+
+  return true;
 }
 
 /**
  * Handles a given Jingle stanza response
  */
 JSJaCJingle.prototype.handle = function(stanza) {
-  // TODO
+  var jingle = stanza.getChild('jingle', NS_JINGLE);
 
-  var action = stanza.getNode().getChild('contents').getAttribute('action');
+  // Don't handle non-Jingle stanzas there...
+  if(!jingle) return;
+
+  var action = jingle.getAttribute('action');
+
+  // Don't handle action-less Jingle stanzas there...
+  if(!action) return;
+
   this._set_action_last(action);
 
   // Submit to registered handler
@@ -545,15 +560,8 @@ JSJaCJingle.prototype.handle = function(stanza) {
       this.handle_transport_replace(stanza); break;
   }
 
-  if(action in this.get_handlers()) {
-    try {
-      this.get_debug().log('[JSJaCJingle] Binding to handler for action: ' + action, 4);
-
-      ((this.get_handlers())[action])(jingle);
-    } catch(e) {
-      this.get_debug().log('[JSJaCJingle] Could not bind to handler for action: ' + action + ' > ' + e, 1);
-    }
-  }
+  // Submit to custom handler
+  (this.get_handlers(action))(stanza);
 }
 
 /**
@@ -574,6 +582,23 @@ JSJaCJingle.prototype.register_handler = function(action, fn) {
     return true;
   } else {
     this.get_debug().log('[JSJaCJingle] Could not register handler for action: ' + action + ' (not in protocol)', 1);
+
+    return false;
+  }
+}
+
+/**
+ * Unregisters the given handler on a given Jingle stanza
+ */
+JSJaCJingle.prototype.unregister_handler = function(action) {
+  if(action in this._handlers) {
+    delete this._handlers[action];
+
+    this.get_debug().log('[JSJaCJingle] Unregistered handler for action: ' + action, 4);
+
+    return true;
+  } else {
+    this.get_debug().log('[JSJaCJingle] Could not unregister handler action: ' + action + ' (not found)', 2);
 
     return false;
   }
@@ -659,7 +684,22 @@ JSJaCJingle.prototype.send_security_info = function(stanza) {
  * Sends the Jingle session accept
  */
 JSJaCJingle.prototype.send_session_accept = function(stanza) {
-  // TODO
+  if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED)
+    this.get_debug().log('[JSJaCJingle] send_session_accept > Resource not initiated (status: ' + this.get_status() + ').', 1); return;
+
+  // Change session status
+  this._set_status(JSJAC_JINGLE_STATUS_STARTING);
+
+  // Build Jingle stanza
+  var jingle = stanza.appendNode('jingle', {
+                                              'xmlns': NS_JINGLE,
+                                              'action': JSJAC_JINGLE_ACTION_SESSION_ACCEPT,
+                                              'responder': this.get_responder(),
+                                              'sid': this.get_sid()
+                                           });
+
+  var content = jingle.appendChild(stanza.buildNode('content', {'xmlns': NS_JINGLE, 'creator': 'TODO', 'name': 'TODO'}));
+  content.appendChild(stanza.buildNode(reason, {'xmlns': NS_JINGLE}));
 
   this.get_debug().log('[JSJaCJingle] Send session accept.', 4);
 }
@@ -678,15 +718,23 @@ JSJaCJingle.prototype.send_session_info = function(stanza) {
  * Sends the Jingle session initiate
  */
 JSJaCJingle.prototype.send_session_initiate = function(stanza) {
+  if(!(this.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || 
+       this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED))
+    this.get_debug().log('[JSJaCJingle] send_session_initiate > Resource not inactive or terminated (status: ' + this.get_status() + ').', 1); return;
+
+  // Change session status
+  this._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
+
+  // Build Jingle stanza
   var jingle = stanza.appendNode('jingle', {
                                               'xmlns': NS_JINGLE,
-                                              'action': JSJAC_JINGLE_ACTION_SESSION_TERMINATE,
+                                              'action': JSJAC_JINGLE_ACTION_SESSION_INITIATE,
                                               'initiator': this.get_initiator(),
                                               'sid': this.get_sid()
                                            });
 
   var content = jingle.appendChild(stanza.buildNode('content', {'xmlns': NS_JINGLE, 'creator': 'TODO', 'name': 'TODO'}));
-  jingle_reason.appendChild(stanza.buildNode(reason, {'xmlns': NS_JINGLE}));
+  content.appendChild(stanza.buildNode(reason, {'xmlns': NS_JINGLE}));
 
   this.get_debug().log('[JSJaCJingle] Send session initiate.', 4);
 }
@@ -697,6 +745,12 @@ JSJaCJingle.prototype.send_session_initiate = function(stanza) {
 JSJaCJingle.prototype.send_session_terminate = function(stanza, reason) {
   if(!reason)
     this.get_debug().log('[JSJaCJingle] Session terminate reason not provided.', 1); return;
+
+  if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATING  || 
+       this.get_status() == JSJAC_JINGLE_STATUS_INITIATED   ||
+       this.get_status() == JSJAC_JINGLE_STATUS_STARTING    ||
+       this.get_status() == JSJAC_JINGLE_STATUS_STARTED))
+    this.get_debug().log('[JSJaCJingle] send_session_terminate > Resource neither initiating, initiated, starting nor started (status: ' + this.get_status() + ').', 1); return;
 
   var jingle = stanza.appendNode('jingle', {
                                               'xmlns': NS_JINGLE,
@@ -959,6 +1013,10 @@ JSJaCJingle.prototype.handle_session_initiate = function(stanza) {
  */
 JSJaCJingle.prototype.handle_session_initiate_success = function(stanza) {
   // TODO
+  // 1. Check the IQ ID
+  // 2. Match, accept and change current status
+
+  this._set_status(JSJAC_JINGLE_STATUS_INITIATED);
 
   this.get_debug().log('[JSJaCJingle] Handle session initiate success.', 4);
 }
@@ -969,6 +1027,8 @@ JSJaCJingle.prototype.handle_session_initiate_success = function(stanza) {
  */
 JSJaCJingle.prototype.handle_session_initiate_error = function(stanza) {
   // TODO
+
+  this._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
   this.get_debug().log('[JSJaCJingle] Handle session initiate error.', 4);
 }
@@ -1323,8 +1383,8 @@ JSJaCJingle.prototype.get_initiator = function() {
  * @return response value
  * @type string
  */
-JSJaCJingle.prototype.get_response = function() {
-  return this._response;
+JSJaCJingle.prototype.get_responder = function() {
+  return this._responder;
 }
 
 /**
@@ -1332,8 +1392,11 @@ JSJaCJingle.prototype.get_response = function() {
  * @return handlers value
  * @type Object
  */
-JSJaCJingle.prototype.get_handlers = function() {
-  return this._handlers;
+JSJaCJingle.prototype.get_handlers = function(action) {
+  if(action && typeof(this._handlers[action]) == 'function')
+    return this._handlers[action];
+
+  return function(stanza) {};
 }
 
 /**
@@ -1526,8 +1589,8 @@ JSJaCJingle.prototype._set_initiator = function(initiator) {
 /**
  * @private
  */
-JSJaCJingle.prototype._set_response = function(response) {
-  this._response = response;
+JSJaCJingle.prototype._set_responder = function(responder) {
+  this._responder = responder;
 }
 
 /**
