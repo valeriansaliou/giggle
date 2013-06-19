@@ -51,8 +51,8 @@ var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transport
 
 var NS_JINGLE_SECURITY_STUB                         = 'urn:xmpp:jingle:security:stub:0';
 
-var R_NS_JINGLE_APP                                 = /urn:xmpp:jingle:app:([a-zA-Z]+):([O-9]+)/;
-var R_NS_JINGLE_TRANSPORT                           = /urn:xmpp:jingle:transport:([a-zA-Z]+)/;
+var R_NS_JINGLE_APP                                 = /^urn:xmpp:jingle:app:(\w+):(\d+)$/;
+var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transport:(\w+)$/;
 
 
 
@@ -109,7 +109,7 @@ var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS      = 'unsupported-transports';
 
 var JSJAC_JINGLE_CONTENT_CLIENT = {
   // TODO: populate this with WebRTC data
-  {
+  'audio': {
     'creator': null,
     'name': null,
     'description': {},
@@ -124,31 +124,31 @@ var JSJAC_JINGLE_CONTENT_CLIENT = {
  */
 
 var JSJAC_JINGLE_STATUSES  = {
-  JSJAC_JINGLE_STATUS_INACTIVE,
-  JSJAC_JINGLE_STATUS_INITIATING,
-  JSJAC_JINGLE_STATUS_INITIATED,
-  JSJAC_JINGLE_STATUS_STARTING,
-  JSJAC_JINGLE_STATUS_STARTED,
-  JSJAC_JINGLE_STATUS_TERMINATING,
-  JSJAC_JINGLE_STATUS_TERMINATED
+  JSJAC_JINGLE_STATUS_INACTIVE                      : 1,
+  JSJAC_JINGLE_STATUS_INITIATING                    : 1,
+  JSJAC_JINGLE_STATUS_INITIATED                     : 1,
+  JSJAC_JINGLE_STATUS_STARTING                      : 1,
+  JSJAC_JINGLE_STATUS_STARTED                       : 1,
+  JSJAC_JINGLE_STATUS_TERMINATING                   : 1,
+  JSJAC_JINGLE_STATUS_TERMINATED                    : 1
 };
 
 var JSJAC_JINGLE_ACTIONS   = {
-  JSJAC_JINGLE_ACTION_CONTENT_ACCEPT,
-  JSJAC_JINGLE_ACTION_CONTENT_ADD,
-  JSJAC_JINGLE_ACTION_CONTENT_MODIFY,
-  JSJAC_JINGLE_ACTION_CONTENT_REJECT,
-  JSJAC_JINGLE_ACTION_CONTENT_REMOVE,
-  JSJAC_JINGLE_ACTION_DESCRIPTION_INFO,
-  JSJAC_JINGLE_ACTION_SECURITY_INFO,
-  JSJAC_JINGLE_ACTION_SESSION_ACCEPT,
-  JSJAC_JINGLE_ACTION_SESSION_INFO,
-  JSJAC_JINGLE_ACTION_SESSION_INITIATE,
-  JSJAC_JINGLE_ACTION_SESSION_TERMINATE,
-  JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT,
-  JSJAC_JINGLE_ACTION_TRANSPORT_INFO,
-  JSJAC_JINGLE_ACTION_TRANSPORT_REJECT,
-  JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE
+  JSJAC_JINGLE_ACTION_CONTENT_ACCEPT                : 1,
+  JSJAC_JINGLE_ACTION_CONTENT_ADD                   : 1,
+  JSJAC_JINGLE_ACTION_CONTENT_MODIFY                : 1,
+  JSJAC_JINGLE_ACTION_CONTENT_REJECT                : 1,
+  JSJAC_JINGLE_ACTION_CONTENT_REMOVE                : 1,
+  JSJAC_JINGLE_ACTION_DESCRIPTION_INFO              : 1,
+  JSJAC_JINGLE_ACTION_SECURITY_INFO                 : 1,
+  JSJAC_JINGLE_ACTION_SESSION_ACCEPT                : 1,
+  JSJAC_JINGLE_ACTION_SESSION_INFO                  : 1,
+  JSJAC_JINGLE_ACTION_SESSION_INITIATE              : 1,
+  JSJAC_JINGLE_ACTION_SESSION_TERMINATE             : 1,
+  JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT              : 1,
+  JSJAC_JINGLE_ACTION_TRANSPORT_INFO                : 1,
+  JSJAC_JINGLE_ACTION_TRANSPORT_REJECT              : 1,
+  JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE             : 1
 };
 
 var JSJAC_JINGLE_ERRORS     = {
@@ -159,23 +159,23 @@ var JSJAC_JINGLE_ERRORS     = {
 };
 
 var JSJAC_JINGLE_REASONS    = {
-  JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION,
-  JSJAC_JINGLE_REASON_BUSY,
-  JSJAC_JINGLE_REASON_CANCEL,
-  JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR,
-  JSJAC_JINGLE_REASON_DECLINE,
-  JSJAC_JINGLE_REASON_EXPIRED,
-  JSJAC_JINGLE_REASON_FAILED_APPLICATION,
-  JSJAC_JINGLE_REASON_FAILED_TRANSPORT,
-  JSJAC_JINGLE_REASON_GENERAL_ERROR,
-  JSJAC_JINGLE_REASON_GONE,
-  JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS,
-  JSJAC_JINGLE_REASON_MEDIA_ERROR,
-  JSJAC_JINGLE_REASON_SECURITY_ERROR,
-  JSJAC_JINGLE_REASON_SUCCESS,
-  JSJAC_JINGLE_REASON_TIMEOUT,
-  JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS,
-JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS
+  JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION           : 1,
+  JSJAC_JINGLE_REASON_BUSY                          : 1,
+  JSJAC_JINGLE_REASON_CANCEL                        : 1,
+  JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR            : 1,
+  JSJAC_JINGLE_REASON_DECLINE                       : 1,
+  JSJAC_JINGLE_REASON_EXPIRED                       : 1,
+  JSJAC_JINGLE_REASON_FAILED_APPLICATION            : 1,
+  JSJAC_JINGLE_REASON_FAILED_TRANSPORT              : 1,
+  JSJAC_JINGLE_REASON_GENERAL_ERROR                 : 1,
+  JSJAC_JINGLE_REASON_GONE                          : 1,
+  JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS       : 1,
+  JSJAC_JINGLE_REASON_MEDIA_ERROR                   : 1,
+  JSJAC_JINGLE_REASON_SECURITY_ERROR                : 1,
+  JSJAC_JINGLE_REASON_SUCCESS                       : 1,
+  JSJAC_JINGLE_REASON_TIMEOUT                       : 1,
+  JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS      : 1,
+  JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS        : 1
 };
 
 
@@ -382,7 +382,7 @@ JSJaCJingle.prototype.init = function() {
   (this.get_init_pending())();
 
   // Process init actions
-  (this.get_connection())registerIQSet('jingle', NS_JINGLE, this.handle);
+  (this.get_connection()).registerIQSet('jingle', NS_JINGLE, this.handle);
   this.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_INITIATE, this.handle_session_initiate);
 }
 
@@ -1766,10 +1766,11 @@ JSJaCJingle.prototype._peer_got_stream_failed = function(error) {
  * @private
  */
 JSJaCJingle.prototype._peer_get_json_from_sdp = function(message) {
-  try
+  try {
     return JSON.parse(msg.substring(4));
-  catch(e)
+  } catch(e) {
     this.get_debug().log('[JSJaCJingle] _peer_get_json_from_sdp > JSON parser not available.', 1);
+  }
 
   return null;
 }
