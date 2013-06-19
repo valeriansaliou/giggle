@@ -93,7 +93,7 @@ fieldset video {
 }
 
 fieldset[disabled] video {
-	opacity: 0.2;
+	opacity: 0.2 !important;
 }
 
 .login_notif,
@@ -164,7 +164,19 @@ fieldset[disabled] video {
 }
 
 #video_local {
+	opacity: 0.6;
 	position: absolute;
 	left: 8px;
 	bottom: 8px;
+	-webkit-transition: all 0.4s ease-in-out 0.2s;
+	-moz-transition: all 0.4s ease-in-out 0.2s;
+	-o-transition: all 0.4s ease-in-out 0.2s;
+	transition: all 0.4s ease-in-out 0.2s;
+}
+
+#video_local:hover {
+	width: 320px;
+	height: 180px;
+	opacity: 1;
+	cursor: pointer;
 }
