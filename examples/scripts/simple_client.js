@@ -60,6 +60,9 @@ $(document).ready(function() {
 						$('#form_login button').show();
 						$('#login_disconnect').hide();
 
+						SC_PRESENCE = {};
+						$('#roster_call').removeClass('disabled').empty();
+
 						$('#fieldset_call, #fieldset_live').attr('disabled', true);
 
 						SC_CONNECTED = false;
@@ -181,70 +184,86 @@ $(document).ready(function() {
 					    debug: (new JSJaCConsoleLogger(4)),
 
 					    // Custom handlers (optional)
-					    init_pending: function() {
+					    session_initiate_pending: function() {
 					    	$('.call_notif').hide();
 					        $('#call_info').text('Initializing...').show();
 
-					        console.log('init_pending');
+					        console.log('session_initiate_pending');
 					    },
 
-					    init_success: function(stanza) {
+					    session_initiate_success: function(stanza) {
 					        $('.call_notif').hide();
 					        $('#call_success').text('Initialized.').show();
 
-					        // Request for Jingle session to start
-					        this.start();
+					        // Request for Jingle session to be accepted
+					        this.accept();
 
-					        console.log('init_success');
+					        console.log('session_initiate_success');
 					    },
 
-					    init_error: function(stanza) {
+					    session_initiate_error: function(stanza) {
 					        $('.call_notif').hide();
 					        $('#call_error').text('Could not initialize.').show();
 
-					        console.log('init_error');
+					        console.log('session_initiate_error');
 					    },
 
-					    start_pending: function() {
+					    session_accept_pending: function() {
 					        $('.call_notif').hide();
-					        $('#call_info').text('Waiting to start...').show();
+					        $('#call_info').text('Waiting to be accepted...').show();
 
-					        console.log('start_pending');
+					        console.log('session_accept_pending');
 					    },
 
-					    start_success: function(stanza) {
+					    session_accept_success: function(stanza) {
 					        $('.call_notif').hide();
-					        $('#call_success').text('Started.').show();
+					        $('#call_success').text('Accepted.').show();
 
-					        console.log('start_success');
+					        console.log('session_accept_success');
 					    },
 
-					    start_error: function(stanza) {
+					    session_accept_error: function(stanza) {
 					        $('.call_notif').hide();
-					        $('#call_error').text('Could not start.').show();
+					        $('#call_error').text('Could not be accepted.').show();
 
-					        console.log('start_error');
+					        console.log('session_accept_error');
 					    },
 
-					    terminate_pending: function() {
+					    session_info_pending: function() {
+							console.log('session_info_pending');
+						},
+
+						session_info_success: function(stanza) {
+							console.log('session_info_success');
+						},
+
+						session_info_error: function(stanza) {
+							console.log('session_info_error');
+						},
+
+						session_info_request: function(stanza) {
+							console.log('session_info_request');
+						},
+
+					    session_terminate_pending: function() {
 					        $('.call_notif').hide();
 					        $('#call_info').text('Terminating...').show();
 
-					        console.log('terminate_pending');
+					        console.log('session_terminate_pending');
 					    },
 
-					    terminate_success: function(stanza) {
+					    session_terminate_success: function(stanza) {
 					        $('.call_notif').hide();
 					        $('#call_success').text('Terminated.').show();
 
-					        console.log('terminate_success');
+					        console.log('session_terminate_success');
 					    },
 
-					    terminate_error: function(stanza) {
+					    session_terminate_error: function(stanza) {
 					        $('.call_notif').hide();
 					        $('#call_error').text('Could not terminate.').show();
 
-					        console.log('terminate_error');
+					        console.log('session_terminate_error');
 					    }
 					};
 

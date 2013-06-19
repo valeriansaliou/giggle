@@ -41,7 +41,7 @@ var NS_JINGLE                                       = 'urn:xmpp:jingle:1';
 var NS_JINGLE_ERRORS                                = 'urn:xmpp:jingle:errors:1';
 
 var NS_JINGLE_APPS_RTP                              = 'urn:xmpp:jingle:apps:rtp:1';
-var NS_JINGLE_APPS_RTP_INFO                         = 'urn:xmpp:jingle:apps:rtp:1:info';
+var NS_JINGLE_APPS_RTP_INFO                         = 'urn:xmpp:jingle:apps:rtp:info:1';
 var NS_JINGLE_APPS_RTP_AUDIO                        = 'urn:xmpp:jingle:apps:rtp:audio';
 var NS_JINGLE_APPS_RTP_VIDEO                        = 'urn:xmpp:jingle:apps:rtp:video';
 var NS_JINGLE_APPS_STUB                             = 'urn:xmpp:jingle:apps:stub:0';
@@ -51,7 +51,7 @@ var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transport
 
 var NS_JINGLE_SECURITY_STUB                         = 'urn:xmpp:jingle:security:stub:0';
 
-var R_NS_JINGLE_APP                                 = /^urn:xmpp:jingle:app:(\w+):(\d+)$/;
+var R_NS_JINGLE_APP                                 = /^urn:xmpp:jingle:app:(\w+)(:(\w+))?(:(\d+))?$/;
 var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transport:(\w+)$/;
 
 
@@ -63,8 +63,8 @@ var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transpor
 var JSJAC_JINGLE_STATUS_INACTIVE                    = 'inactive';
 var JSJAC_JINGLE_STATUS_INITIATING                  = 'initiating';
 var JSJAC_JINGLE_STATUS_INITIATED                   = 'initiated';
-var JSJAC_JINGLE_STATUS_STARTING                    = 'starting';
-var JSJAC_JINGLE_STATUS_STARTED                     = 'started';
+var JSJAC_JINGLE_STATUS_ACCEPTING                   = 'accepting';
+var JSJAC_JINGLE_STATUS_ACCEPTED                    = 'accepted';
 var JSJAC_JINGLE_STATUS_TERMINATING                 = 'terminating';
 var JSJAC_JINGLE_STATUS_TERMINATED                  = 'terminated';
 
@@ -107,7 +107,14 @@ var JSJAC_JINGLE_REASON_TIMEOUT                     = 'timeout';
 var JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS    = 'unsupported-applications';
 var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS      = 'unsupported-transports';
 
-var JSJAC_JINGLE_CONTENT_CLIENT = {
+var JSJAC_JINGLE_SESSION_INFO_ACTIVE                = 'active';
+var JSJAC_JINGLE_SESSION_INFO_HOLD                  = 'hold';
+var JSJAC_JINGLE_SESSION_INFO_MUTE                  = 'mute';
+var JSJAC_JINGLE_SESSION_INFO_RINGING               = 'ringing';
+var JSJAC_JINGLE_SESSION_INFO_UNHOLD                = 'unhold';
+var JSJAC_JINGLE_SESSION_INFO_UNMUTE                = 'unmute';
+
+var JSJAC_JINGLE_CONTENT_CLIENT     = {
   // TODO: populate this with WebRTC data
   'audio': {
     'creator': null,
@@ -123,16 +130,16 @@ var JSJAC_JINGLE_CONTENT_CLIENT = {
  * JSJSAC JINGLE CONSTANTS MAPPING
  */
 
-var JSJAC_JINGLE_STATUSES  = {};
+var JSJAC_JINGLE_STATUSES           = {};
 JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INACTIVE]                   = 1;
 JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INITIATING]                 = 1;
 JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INITIATED]                  = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_STARTING]                   = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_STARTED]                    = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_ACCEPTING]                  = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_ACCEPTED]                   = 1;
 JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATING]                = 1;
 JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATED]                 = 1;
 
-var JSJAC_JINGLE_ACTIONS   = {};
+var JSJAC_JINGLE_ACTIONS            = {};
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_ACCEPT]              = 1;
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_ADD]                 = 1;
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_MODIFY]              = 1;
@@ -149,14 +156,14 @@ JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_INFO]              = 1;
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REJECT]            = 1;
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE]           = 1;
 
-var JSJAC_JINGLE_ERRORS     = {
+var JSJAC_JINGLE_ERRORS             = {
   'out-of-border':      JSJAC_JINGLE_ERROR_OUT_OF_BORDER,
   'tie-break':          JSJAC_JINGLE_ERROR_TIE_BREAK,
   'unknown-session':    JSJAC_JINGLE_ERROR_UNKNOWN_SESSION,
   'unsupported-info':   JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO
 };
 
-var JSJAC_JINGLE_REASONS    = {};
+var JSJAC_JINGLE_REASONS            = {};
 JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION]         = 1;
 JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_BUSY]                        = 1;
 JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_CANCEL]                      = 1;
@@ -175,6 +182,14 @@ JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_TIMEOUT]                     = 1;
 JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS]    = 1;
 JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS]      = 1;
 
+var JSJAC_JINGLE_SESSION_INFOS      = {};
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_ACTIVE]          = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_HOLD]            = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_MUTE]            = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_RINGING]         = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNHOLD]          = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]          = 1;
+
 
 
 /**
@@ -188,15 +203,22 @@ JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS]      = 1;
  * @constructor
  * @param {Object} args Jingle session arguments.
  * @param {JSJaConnection} args.connection The XMPP connection.
- * @param {function} args.init_pending The init pending custom handler.
- * @param {function} args.init_success The init success custom handler.
- * @param {function} args.init_error The init error custom handler.
- * @param {function} args.start_pending The start pending custom handler.
- * @param {function} args.start_success The start success custom handler.
- * @param {function} args.start_error The start error custom handler.
- * @param {function} args.terminate_pending The terminate pending custom handler.
- * @param {function} args.terminate_success The terminate success custom handler.
- * @param {function} args.terminate_error The terminate error custom handler.
+ * @param {function} args.session_initiate_pending The initiate pending custom handler.
+ * @param {function} args.session_initiate_success The initiate success custom handler.
+ * @param {function} args.session_initiate_error The initiate error custom handler.
+ * @param {function} args.session_initiate_request The initiate request custom handler.
+ * @param {function} args.session_accept_pending The accept pending custom handler.
+ * @param {function} args.session_accept_success The accept success custom handler.
+ * @param {function} args.session_accept_error The accept error custom handler.
+ * @param {function} args.session_accept_request The accept request custom handler.
+ * @param {function} args.session_info_pending The info pending custom handler.
+ * @param {function} args.session_info_success The info success custom handler.
+ * @param {function} args.session_info_error The info error custom handler.
+ * @param {function} args.session_info_request The info request custom handler.
+ * @param {function} args.session_terminate_pending The terminate pending custom handler.
+ * @param {function} args.session_terminate_success The terminate success custom handler.
+ * @param {function} args.session_terminate_error The terminate error custom handler.
+ * @param {function} args.session_terminate_request The terminate request custom handler.
  * @param {DOM} args.local_view The path to the local stream view element.
  * @param {DOM} args.remote_view The path to the remote stream view element.
  * @param {string} args.to The full JID to start the Jingle session with.
@@ -205,59 +227,101 @@ JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS]      = 1;
 function JSJaCJingle(args) {
   var self = this;
 
-  if(args && args.init_pending)
+  if(args && args.session_initiate_pending)
     /**
      * @private
      */
-    self._init_pending = args.init_pending;
+    self._session_initiate_pending = args.session_initiate_pending;
 
-  if(args && args.init_success)
+  if(args && args.session_initiate_success)
     /**
      * @private
      */
-    self._init_success = args.init_success;
+    self._session_initiate_success = args.session_initiate_success;
 
-  if(args && args.init_error)
+  if(args && args.session_initiate_error)
     /**
      * @private
      */
-    self._init_error = args.init_error;
+    self._session_initiate_error = args.session_initiate_error;
 
-  if(args && args.start_pending)
+  if(args && args.session_initiate_request)
     /**
      * @private
      */
-    self._start_pending = args.start_pending;
+    self._session_initiate_request = args.session_initiate_request;
 
-  if(args && args.start_success)
+  if(args && args.session_accept_pending)
     /**
      * @private
      */
-    self._start_success = args.start_success;
+    self._session_accept_pending = args.session_accept_pending;
 
-  if(args && args.start_error)
+  if(args && args.session_accept_success)
     /**
      * @private
      */
-    self._start_error = args.start_error;
+    self._session_accept_success = args.session_accept_success;
 
-  if(args && args.terminate_pending)
+  if(args && args.session_accept_error)
     /**
      * @private
      */
-    self._terminate_pending = args.terminate_pending;
+    self._session_accept_error = args.session_accept_error;
 
-  if(args && args.terminate_success)
+  if(args && args.session_accept_request)
     /**
      * @private
      */
-    self._terminate_success = args.terminate_success;
+    self._session_accept_request = args.session_accept_request;
 
-  if(args && args.terminate_error)
+  if(args && args.session_info_pending)
     /**
      * @private
      */
-    self._terminate_error = args.terminate_error;
+    self._session_info_pending = args.session_info_pending;
+
+  if(args && args.session_info_success)
+    /**
+     * @private
+     */
+    self._session_info_success = args.session_info_success;
+
+  if(args && args.session_info_error)
+    /**
+     * @private
+     */
+    self._session_info_error = args.session_info_error;
+
+  if(args && args.session_info_request)
+    /**
+     * @private
+     */
+    self._session_info_request = args.session_info_request;
+
+  if(args && args.session_terminate_pending)
+    /**
+     * @private
+     */
+    self._session_terminate_pending = args.session_terminate_pending;
+
+  if(args && args.session_terminate_success)
+    /**
+     * @private
+     */
+    self._session_terminate_success = args.session_terminate_success;
+
+  if(args && args.session_terminate_error)
+    /**
+     * @private
+     */
+    self._session_terminate_error = args.session_terminate_error;
+
+  if(args && args.session_terminate_request)
+    /**
+     * @private
+     */
+    self._session_terminate_request = args.session_terminate_request;
 
   if(args && args.connection)
     /**
@@ -269,7 +333,7 @@ function JSJaCJingle(args) {
     /**
      * @private
      */
-    self._to = '';
+    self._to = args.to;
 
   if(args && args.local_view)
     /**
@@ -380,29 +444,29 @@ function JSJaCJingle(args) {
     }
 
     // Trigger init pending custom callback
-    (self.get_init_pending())();
+    (self.get_session_initiate_pending())();
 
     // Process init actions
     (self.get_connection()).registerIQSet('jingle', NS_JINGLE, self.handle);
     self.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_INITIATE, self.handle_session_initiate);
-  }
+  };
 
   /**
-   * Starts the Jingle session.
+   * Accepts the Jingle session.
    */
-  self.start = function() {
+  self.accept = function() {
     // Slot unavailable?
     if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED)) {
-      self.get_debug().log('[JSJaCJingle] init > Cannot start, resource not initiated or terminated (status: ' + self.get_status() + ').', 1);
+      self.get_debug().log('[JSJaCJingle] init > Cannot accept, resource not initiated or terminated (status: ' + self.get_status() + ').', 1);
       return;
     }
 
-    // Trigger start pending custom callback
-    (self.get_start_pending())();
+    // Trigger accept pending custom callback
+    (self.get_session_accept_pending())();
 
-    // Process start actions
+    // Process accept actions
     self.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_ACCEPT, self.handle_session_accept);
-  }
+  };
 
   /**
    * Terminates the Jingle session.
@@ -410,16 +474,16 @@ function JSJaCJingle(args) {
   self.terminate = function() {
     // Slot unavailable?
     if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED)) {
-      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource not started (status: ' + self.get_status() + ').', 1);
+      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource not accepted (status: ' + self.get_status() + ').', 1);
       return;
     }
 
     // Trigger terminate pending custom callback
-    (self.get_terminate_pending())();
+    (self.get_session_terminate_pending())();
 
     // Process terminate actions
     self.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_TERMINATE, self.handle_session_terminate);
-  }
+  };
 
   /**
    * Sends a given Jingle stanza packet
@@ -430,6 +494,7 @@ function JSJaCJingle(args) {
     stanza.setTo(self.get_to());
 
     if(id) stanza.setID(id);
+    if(type) stanza.setType(type);
 
     if(type == 'set') {
       if(!(action && action in JSJAC_JINGLE_ACTIONS)) {
@@ -501,7 +566,7 @@ function JSJaCJingle(args) {
       con.send(stanza);
 
     return true;
-  }
+  };
 
   /**
    * Handles a given Jingle stanza response
@@ -569,7 +634,7 @@ function JSJaCJingle(args) {
 
     // Submit to custom handler
     (self.get_handlers(action))(stanza);
-  }
+  };
 
   /**
    * Registers a given handler on a given Jingle stanza
@@ -592,7 +657,7 @@ function JSJaCJingle(args) {
 
       return false;
     }
-  }
+  };
 
   /**
    * Unregisters the given handler on a given Jingle stanza
@@ -609,7 +674,7 @@ function JSJaCJingle(args) {
 
       return false;
     }
-  }
+  };
 
 
 
@@ -625,7 +690,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_content_accept > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_content_accept > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle content add
@@ -635,7 +700,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_content_add > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_content_add > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle content modify
@@ -645,7 +710,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_content_modify > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_content_modify > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle content reject
@@ -655,7 +720,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_content_reject > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_content_reject > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle content remove
@@ -665,7 +730,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_content_remove > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_content_remove > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle description info
@@ -675,7 +740,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_description_info > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] Send description info.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle security info
@@ -685,7 +750,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_security_info > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_security_info > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle session accept
@@ -703,15 +768,16 @@ function JSJaCJingle(args) {
       }
 
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_STARTING);
+      // TODO: if stanza:sid == self:sid
+      self._set_status(JSJAC_JINGLE_STATUS_ACCEPTING);
 
       // Build Jingle stanza
-      var jingle = stanza.appendNode('jingle', {
+      var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', {
                                                   'xmlns': NS_JINGLE,
                                                   'action': JSJAC_JINGLE_ACTION_SESSION_ACCEPT,
                                                   'responder': self.get_responder(),
                                                   'sid': self.get_sid()
-                                               });
+                                               }));
 
       var content = jingle.appendChild(stanza.buildNode('content', {'xmlns': NS_JINGLE, 'creator': 'TODO', 'name': 'TODO'}));
       content.appendChild(stanza.buildNode(reason, {'xmlns': NS_JINGLE}));
@@ -723,7 +789,7 @@ function JSJaCJingle(args) {
     }
 
     self.get_debug().log('[JSJaCJingle] send_session_accept > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle session info
@@ -733,7 +799,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_session_info > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_session_info > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle session initiate
@@ -747,17 +813,18 @@ function JSJaCJingle(args) {
       }
 
       // Change session status
+      // TODO: if stanza:sid == self:sid
       self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
       // Build Jingle stanza
-      var jingle = stanza.appendNode('jingle', {
+      var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', {
                                                   'xmlns': NS_JINGLE,
                                                   'action': JSJAC_JINGLE_ACTION_SESSION_INITIATE,
                                                   'initiator': self.get_initiator(),
                                                   'sid': self.get_sid()
-                                               });
+                                               }));
 
-      var content = jingle.appendNode(stanza.buildNode('content', {'xmlns': NS_JINGLE, 'creator': 'TODO', 'name': 'TODO'}));
+      var content = jingle.appendChild(stanza.buildNode('content', {'xmlns': NS_JINGLE, 'creator': 'TODO', 'name': 'TODO'}));
       // TODO
     } else if(type == 'result') {
       if(!arg) {
@@ -772,7 +839,7 @@ function JSJaCJingle(args) {
     }
 
     self.get_debug().log('[JSJaCJingle] send_session_initiate > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle session terminate
@@ -786,17 +853,17 @@ function JSJaCJingle(args) {
     if(type == 'set') {
       if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATING  || 
            self.get_status() == JSJAC_JINGLE_STATUS_INITIATED   ||
-           self.get_status() == JSJAC_JINGLE_STATUS_STARTING    ||
-           self.get_status() == JSJAC_JINGLE_STATUS_STARTED)) {
-        self.get_debug().log('[JSJaCJingle] send_session_terminate > Resource neither initiating, initiated, starting nor started (status: ' + self.get_status() + ').', 1);
+           self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING   ||
+           self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED)) {
+        self.get_debug().log('[JSJaCJingle] send_session_terminate > Resource neither initiating, initiated, accepting nor accepted (status: ' + self.get_status() + ').', 1);
         return;
       }
 
-      var jingle = stanza.appendNode('jingle', {
+      var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', {
                                                   'xmlns': NS_JINGLE,
                                                   'action': JSJAC_JINGLE_ACTION_SESSION_TERMINATE,
                                                   'sid': self.get_sid()
-                                               });
+                                               }));
 
       var jingle_reason = jingle.appendChild(stanza.buildNode('reason', {'xmlns': NS_JINGLE}));
       jingle_reason.appendChild(stanza.buildNode(arg, {'xmlns': NS_JINGLE}));
@@ -808,7 +875,7 @@ function JSJaCJingle(args) {
     }
 
     self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle transport accept
@@ -818,7 +885,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_transport_accept > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_transport_accept > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle transport info
@@ -828,7 +895,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_transport_info > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_transport_info > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle transport reject
@@ -838,7 +905,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_transport_reject > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_transport_reject > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle transport replace
@@ -848,7 +915,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_transport_replace > Feature not implemented!', 1);
 
     self.get_debug().log('[JSJaCJingle] send_transport_replace > Sent.', 4);
-  }
+  };
 
   /**
    * Sends the Jingle transport replace
@@ -863,13 +930,13 @@ function JSJaCJingle(args) {
 
     stanza.setType('error');
 
-    var error = stanza.appendNode('error', {'xmlns': NS_CLIENT, 'type': jingle_error_map.type});
+    var error = stanza.getNode().appendChild(stanza.buildNode('error', {'xmlns': NS_CLIENT, 'type': jingle_error_map.type}));
 
     error.appendChild(stanza.buildNode(jingle_error_map.xmpp, {'xmlns': NS_STANZAS}));
     error.appendChild(stanza.buildNode(jingle_error_map.jingle, {'xmlns': NS_JINGLE_ERRORS}));
 
     self.get_debug().log('[JSJaCJingle] send_error > Sent: ' + jingle_condition, 4);
-  }
+  };
 
 
 
@@ -886,7 +953,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_content_accept > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle content add
@@ -897,7 +964,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_content_add > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle content modify
@@ -908,7 +975,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_content_modify > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle content reject
@@ -919,7 +986,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_content_reject > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle content remove
@@ -930,7 +997,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_content_remove > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle description info
@@ -941,7 +1008,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_description_info > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle security info
@@ -952,7 +1019,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_security_info > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session accept
@@ -962,18 +1029,19 @@ function JSJaCJingle(args) {
     switch(stanza.getType()) {
       case 'result':
         self.handle_session_accept_success(stanza);
-        (self.get_start_success())(stanza);
+        (self.get_session_accept_success())(stanza);
 
         break;
 
       case 'error':
         self.handle_session_accept_error(stanza);
-        (self.get_start_error())(stanza);
+        (self.get_session_accept_error())(stanza);
 
         break;
 
       case 'set':
         self.handle_session_accept_request(stanza);
+        (self.get_session_accept_request())(stanza);
 
         break;
 
@@ -982,7 +1050,7 @@ function JSJaCJingle(args) {
     }
 
     self.get_debug().log('[JSJaCJingle] handle_session_accept > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session accept success
@@ -992,7 +1060,7 @@ function JSJaCJingle(args) {
     // TODO
 
     self.get_debug().log('[JSJaCJingle] handle_session_accept_success > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session accept error
@@ -1002,7 +1070,7 @@ function JSJaCJingle(args) {
     // TODO
 
     self.get_debug().log('[JSJaCJingle] handle_session_accept_error > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session accept request
@@ -1012,18 +1080,68 @@ function JSJaCJingle(args) {
     // TODO
 
     self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session info
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info = function(stanza) {
-    // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+    switch(stanza.getType()) {
+      case 'result':
+        self.handle_session_info_success(stanza);
+        (self.get_session_info_success())(stanza);
+
+        break;
+
+      case 'error':
+        self.handle_session_info_error(stanza);
+        (self.get_session_info_error())(stanza);
+
+        break;
+
+      case 'set':
+        self.handle_session_info_request(stanza);
+        (self.get_session_info_request())(stanza);
+
+        break;
+
+      default:
+        self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+    }
 
     self.get_debug().log('[JSJaCJingle] handle_session_info > Handled.', 4);
-  }
+  };
+
+  /**
+   * Handles the Jingle session info success
+   * @param {JSJaCPacket} stanza Jingle handled stanza
+   */
+  self.handle_session_info_success = function(stanza) {
+    // TODO
+
+    self.get_debug().log('[JSJaCJingle] handle_session_info_success > Handled.', 4);
+  };
+
+  /**
+   * Handles the Jingle session info error
+   * @param {JSJaCPacket} stanza Jingle handled stanza
+   */
+  self.handle_session_info_error = function(stanza) {
+    // TODO
+
+    self.get_debug().log('[JSJaCJingle] handle_session_info_error > Handled.', 4);
+  };
+
+  /**
+   * Handles the Jingle session info request
+   * @param {JSJaCPacket} stanza Jingle handled stanza
+   */
+  self.handle_session_info_request = function(stanza) {
+    // TODO: reply to info request!
+
+    self.get_debug().log('[JSJaCJingle] handle_session_info_request > Handled.', 4);
+  };
 
   /**
    * Handles the Jingle session initiate
@@ -1033,18 +1151,19 @@ function JSJaCJingle(args) {
     switch(stanza.getType()) {
       case 'result':
         self.handle_session_initiate_success(stanza);
-        (self.get_init_success())(stanza);
+        (self.get_session_initiate_success())(stanza);
 
         break;
 
       case 'error':
         self.handle_session_initiate_error(stanza);
-        (self.get_init_error())(stanza);
+        (self.get_session_initiate_error())(stanza);
 
         break;
 
       case 'set':
         self.handle_session_initiate_request(stanza);
+        (self.get_session_initiate_request())(stanza);
 
         break;
 
@@ -1053,7 +1172,7 @@ function JSJaCJingle(args) {
     }
 
     self.get_debug().log('[JSJaCJingle] handle_session_initiate > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session initiate success
@@ -1066,10 +1185,11 @@ function JSJaCJingle(args) {
     // DO THIS UPPER-LEVEL - PARENT FUNCTION!
 
     // Change session status
+    // TODO: if stanza:sid == self:sid
     self._set_status(JSJAC_JINGLE_STATUS_INITIATED);
 
     self.get_debug().log('[JSJaCJingle] handle_session_initiate_success > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session initiate error
@@ -1079,10 +1199,11 @@ function JSJaCJingle(args) {
     // TODO
 
     // Change session status
+    // TODO: if stanza:sid == self:sid
     self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
     self.get_debug().log('[JSJaCJingle] handle_session_initiate_error > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session initiate request
@@ -1092,10 +1213,11 @@ function JSJaCJingle(args) {
     // TODO: reply to initiate request!
 
     // Change session status
+    // TODO: if stanza:sid == self:sid
     self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
     self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session terminate
@@ -1105,27 +1227,26 @@ function JSJaCJingle(args) {
     switch(stanza.getType()) {
       case 'result':
         self.handle_session_terminate_success(stanza);
-        (self.get_terminate_success())(stanza);
+        (self.get_session_terminate_success())(stanza);
 
         break;
 
       case 'error':
         self.handle_session_terminate_error(stanza);
-        (self.get_terminate_error())(stanza);
+        (self.get_session_terminate_error())(stanza);
 
         break;
 
       case 'set':
         self.handle_session_terminate_request(stanza);
+        (self.get_session_terminate_request())(stanza);
 
         break;
 
       default:
         self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
     }
-
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session terminate success
@@ -1133,10 +1254,11 @@ function JSJaCJingle(args) {
    */
   self.handle_session_terminate_success = function(stanza) {
     // Change session status
+    // TODO: if stanza:sid == self:sid
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_success > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session terminate error
@@ -1146,10 +1268,11 @@ function JSJaCJingle(args) {
     // TODO: force termination
 
     // Change session status
+    // TODO: if stanza:sid == self:sid
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_error > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle session terminate request
@@ -1159,10 +1282,11 @@ function JSJaCJingle(args) {
     // TODO: send termination result
 
     // Change session status
-    self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
+    // TODO: if stanza:sid == self:sid
+    self._set_status(JSJAC_JINGLE_STATUS_TERMINATING);
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle transport accept
@@ -1173,7 +1297,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_transport_accept > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle transport info
@@ -1184,7 +1308,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_transport_info > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle transport reject
@@ -1195,7 +1319,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_transport_reject > Handled.', 4);
-  }
+  };
 
   /**
    * Handles the Jingle transport replace
@@ -1206,7 +1330,7 @@ function JSJaCJingle(args) {
     self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
     self.get_debug().log('[JSJaCJingle] handle_transport_replace > Handled.', 4);
-  }
+  };
 
 
 
@@ -1221,115 +1345,199 @@ function JSJaCJingle(args) {
    */
   self.get_connection = function() {
     return self._connection;
-  }
+  };
 
   /**
-   * Gets the init_pending value
-   * @return init_pending value
+   * Gets the session_initiate_pending value
+   * @return session_initiate_pending value
    * @type function
    */
-  self.get_init_pending = function() {
-    if(typeof(self._init_pending) == 'function')
-      return self._init_pending;
+  self.get_session_initiate_pending = function() {
+    if(typeof(self._session_initiate_pending) == 'function')
+      return self._session_initiate_pending;
 
     return function() {};
-  }
+  };
 
   /**
-   * Gets the init_success value
-   * @return init_success value
+   * Gets the initiate_success value
+   * @return initiate_success value
    * @type function
    */
-  self.get_init_success = function() {
-    if(typeof(self._init_success) == 'function')
-      return self._init_success;
+  self.get_session_initiate_success = function() {
+    if(typeof(self._session_initiate_success) == 'function')
+      return self._session_initiate_success;
 
     return function(stanza) {};
-  }
+  };
 
   /**
-   * Gets the init_error value
-   * @return init_error value
+   * Gets the initiate_error value
+   * @return initiate_error value
    * @type function
    */
-  self.get_init_error = function() {
-    if(typeof(self._init_error) == 'function')
-      return self._init_error;
+  self.get_session_initiate_error = function() {
+    if(typeof(self._session_initiate_error) == 'function')
+      return self._session_initiate_error;
 
     return function(stanza) {};
-  }
+  };
 
   /**
-   * Gets the start_pending value
-   * @return start_pending value
+   * Gets the initiate_request value
+   * @return initiate_request value
    * @type function
    */
-  self.get_start_pending = function() {
-    if(typeof(self._start_pending) == 'function')
-      return self._start_pending;
+  self.get_session_initiate_request = function() {
+    if(typeof(self._session_initiate_request) == 'function')
+      return self._session_initiate_request;
+
+    return function(stanza) {};
+  };
+
+  /**
+   * Gets the accept_pending value
+   * @return accept_pending value
+   * @type function
+   */
+  self.get_session_accept_pending = function() {
+    if(typeof(self._session_accept_pending) == 'function')
+      return self._session_accept_pending;
 
     return function() {};
-  }
+  };
 
   /**
-   * Gets the start_success value
-   * @return start_success value
+   * Gets the accept_success value
+   * @return accept_success value
    * @type function
    */
-  self.get_start_success = function() {
-    if(typeof(self._start_success) == 'function')
-      return self._start_success;
+  self.get_session_accept_success = function() {
+    if(typeof(self._session_accept_success) == 'function')
+      return self._session_accept_success;
 
     return function(stanza) {};
-  }
+  };
 
   /**
-   * Gets the start_error value
-   * @return start_error value
+   * Gets the accept_error value
+   * @return accept_error value
    * @type function
    */
-  self.get_start_error = function() {
-    if(typeof(self._start_error) == 'function')
-      return self._start_error;
+  self.get_session_accept_error = function() {
+    if(typeof(self._session_accept_error) == 'function')
+      return self._session_accept_error;
 
     return function(stanza) {};
-  }
+  };
+
+  /**
+   * Gets the accept_request value
+   * @return accept_request value
+   * @type function
+   */
+  self.get_session_accept_request = function() {
+    if(typeof(self._session_accept_request) == 'function')
+      return self._session_accept_request;
+
+    return function(stanza) {};
+  };
+
+  /**
+   * Gets the info_pending value
+   * @return info_pending value
+   * @type function
+   */
+  self.get_session_info_pending = function() {
+    if(typeof(self._session_info_pending) == 'function')
+      return self._session_info_pending;
+
+    return function() {};
+  };
+
+  /**
+   * Gets the info_success value
+   * @return info_success value
+   * @type function
+   */
+  self.get_session_info_success = function() {
+    if(typeof(self._session_info_success) == 'function')
+      return self._session_info_success;
+
+    return function(stanza) {};
+  };
+
+  /**
+   * Gets the info_error value
+   * @return info_error value
+   * @type function
+   */
+  self.get_session_info_error = function() {
+    if(typeof(self._session_info_error) == 'function')
+      return self._session_info_error;
+
+    return function(stanza) {};
+  };
+
+  /**
+   * Gets the info_request value
+   * @return info_request value
+   * @type function
+   */
+  self.get_session_info_request = function() {
+    if(typeof(self._session_info_request) == 'function')
+      return self._session_info_request;
+
+    return function(stanza) {};
+  };
 
   /**
    * Gets the terminate_pending value
    * @return terminate_pending value
    * @type function
    */
-  self.get_terminate_pending = function() {
-    if(typeof(self._terminate_pending) == 'function')
-      return self._terminate_pending;
+  self.get_session_terminate_pending = function() {
+    if(typeof(self._session_terminate_pending) == 'function')
+      return self._session_terminate_pending;
 
     return function() {};
-  }
+  };
 
   /**
    * Gets the terminate_success value
    * @return terminate_success value
    * @type function
    */
-  self.get_terminate_success = function() {
-    if(typeof(self._terminate_success) == 'function')
-      return self._terminate_success;
+  self.get_session_terminate_success = function() {
+    if(typeof(self._session_terminate_success) == 'function')
+      return self._session_terminate_success;
 
     return function(stanza) {};
-  }
+  };
 
   /**
    * Gets the terminate_error value
    * @return terminate_error value
    * @type function
    */
-  self.get_terminate_error = function() {
-    if(typeof(self._terminate_error) == 'function')
-      return self._terminate_error;
+  self.get_session_terminate_error = function() {
+    if(typeof(self._session_terminate_error) == 'function')
+      return self._session_terminate_error;
 
     return function(stanza) {};
-  }
+  };
+
+  /**
+   * Gets the terminate_request value
+   * @return terminate_request value
+   * @type function
+   */
+  self.get_session_terminate_request = function() {
+    if(typeof(self._session_terminate_request) == 'function')
+      return self._session_terminate_request;
+
+    return function(stanza) {};
+  };
 
   /**
    * Gets the local_view value
@@ -1338,7 +1546,7 @@ function JSJaCJingle(args) {
    */
   self.get_local_view = function() {
     return self._local_view;
-  }
+  };
 
   /**
    * Gets the remote_view value
@@ -1347,7 +1555,7 @@ function JSJaCJingle(args) {
    */
   self.get_remote_view = function() {
     return self._remote_view;
-  }
+  };
 
   /**
    * Gets the debug value
@@ -1356,7 +1564,7 @@ function JSJaCJingle(args) {
    */
   self.get_debug = function() {
     return self._debug;
-  }
+  };
 
   /**
    * Gets the local_stream value
@@ -1365,7 +1573,7 @@ function JSJaCJingle(args) {
    */
   self.get_local_stream = function() {
     return self._local_stream;
-  }
+  };
 
   /**
    * Gets the remote_stream value
@@ -1374,7 +1582,7 @@ function JSJaCJingle(args) {
    */
   self.get_remote_stream = function() {
     return self._remote_stream;
-  }
+  };
 
   /**
    * Gets the content_session value
@@ -1383,7 +1591,7 @@ function JSJaCJingle(args) {
    */
   self.get_content_session = function() {
     return self._content_session;
-  }
+  };
 
   /**
    * Gets the sid value
@@ -1392,7 +1600,7 @@ function JSJaCJingle(args) {
    */
   self.get_sid = function() {
     return self._sid;
-  }
+  };
 
   /**
    * Gets the action_last value
@@ -1401,7 +1609,7 @@ function JSJaCJingle(args) {
    */
   self.get_action_last = function() {
     return self._action_last;
-  }
+  };
 
   /**
    * Gets the status value
@@ -1410,7 +1618,7 @@ function JSJaCJingle(args) {
    */
   self.get_status = function() {
     return self._status;
-  }
+  };
 
   /**
    * Gets the to value
@@ -1419,7 +1627,7 @@ function JSJaCJingle(args) {
    */
   self.get_to = function() {
     return self._to;
-  }
+  };
 
   /**
    * Gets the receiver value
@@ -1428,7 +1636,7 @@ function JSJaCJingle(args) {
    */
   self.get_receiver = function() {
     return self._receiver;
-  }
+  };
 
   /**
    * Gets the initiator value
@@ -1437,7 +1645,7 @@ function JSJaCJingle(args) {
    */
   self.get_initiator = function() {
     return self._initiator;
-  }
+  };
 
   /**
    * Gets the response value
@@ -1446,7 +1654,7 @@ function JSJaCJingle(args) {
    */
   self.get_responder = function() {
     return self._responder;
-  }
+  };
 
   /**
    * Gets the handlers value
@@ -1458,7 +1666,7 @@ function JSJaCJingle(args) {
       return self._handlers[action];
 
     return function(stanza) {};
-  }
+  };
 
   /**
    * Gets the server_config value
@@ -1467,7 +1675,7 @@ function JSJaCJingle(args) {
    */
   self.server_config = function() {
     return self._server_config;
-  }
+  };
 
   /**
    * Gets the peer_connection value
@@ -1485,7 +1693,7 @@ function JSJaCJingle(args) {
    */
   self.get_sdp_message = function() {
     return self._sdp_message;
-  }
+  };
 
 
 
@@ -1498,189 +1706,238 @@ function JSJaCJingle(args) {
    */
   self._set_connection = function(connection) {
     self._connection = connection;
-  }
+  };
 
   /**
    * @private
    */
-  self._set_init_pending = function(init_pending) {
-    self._init_pending = init_pending;
-  }
+  self._set_session_initiate_pending = function(session_initiate_pending) {
+    self._session_initiate_pending = session_initiate_pending;
+  };
 
   /**
    * @private
    */
-  self._set_init_success = function(init_success) {
-    self._init_success = init_success;
-  }
+  self._set_initiate_success = function(initiate_success) {
+    self._session_initiate_success = initiate_success;
+  };
 
   /**
    * @private
    */
-  self._set_init_error = function(init_error) {
-    self._init_error = init_error;
-  }
+  self._set_initiate_error = function(initiate_error) {
+    self._session_initiate_error = initiate_error;
+  };
 
   /**
    * @private
    */
-  self._set_start_pending = function(start_pending) {
-    self._start_pending = start_pending;
-  }
+  self._set_initiate_request = function(initiate_request) {
+    self._session_initiate_request = initiate_request;
+  };
 
   /**
    * @private
    */
-  self._set_start_success = function(start_success) {
-    self._start_success = start_success;
-  }
+  self._set_accept_pending = function(accept_pending) {
+    self._session_accept_pending = accept_pending;
+  };
 
   /**
    * @private
    */
-  self._set_start_error = function(start_error) {
-    self._start_error = start_error;
-  }
+  self._set_accept_success = function(accept_success) {
+    self._session_accept_success = accept_success;
+  };
+
+  /**
+   * @private
+   */
+  self._set_accept_error = function(accept_error) {
+    self._session_accept_error = accept_error;
+  };
+
+  /**
+   * @private
+   */
+  self._set_accept_request = function(accept_request) {
+    self._session_accept_request = accept_request;
+  };
+
+  /**
+   * @private
+   */
+  self._set_info_pending = function(info_pending) {
+    self._session_info_pending = info_pending;
+  };
+
+  /**
+   * @private
+   */
+  self._set_info_success = function(info_success) {
+    self._session_info_success = info_success;
+  };
+
+  /**
+   * @private
+   */
+  self._set_info_error = function(info_error) {
+    self._session_info_error = info_error;
+  };
+
+  /**
+   * @private
+   */
+  self._set_info_request = function(info_request) {
+    self._session_info_request = info_request;
+  };
 
   /**
    * @private
    */
   self._set_terminate_pending = function(terminate_pending) {
-    self._terminate_pending = terminate_pending;
-  }
+    self._session_terminate_pending = terminate_pending;
+  };
 
   /**
    * @private
    */
   self._set_terminate_success = function(terminate_success) {
-    self._terminate_success = terminate_success;
-  }
+    self._session_terminate_success = terminate_success;
+  };
 
   /**
    * @private
    */
   self._set_terminate_error = function(terminate_error) {
-    self._terminate_error = terminate_error;
-  }
+    self._session_terminate_error = terminate_error;
+  };
+
+  /**
+   * @private
+   */
+  self._set_terminate_request = function(terminate_request) {
+    self._session_terminate_request = terminate_request;
+  };
 
   /**
    * @private
    */
   self._set_local_view = function(local_view) {
     self._local_view = local_view;
-  }
+  };
 
   /**
    * @private
    */
   self._set_remote_view = function(remote_view) {
     self._remote_view = remote_view;
-  }
+  };
 
   /**
    * @private
    */
   self._set_debug = function(debug) {
     self._debug = debug;
-  }
+  };
 
   /**
    * @private
    */
   self._set_local_stream = function(local_stream) {
     self._local_stream = local_stream;
-  }
+  };
 
   /**
    * @private
    */
   self._set_remote_stream = function(remote_stream) {
     self._remote_stream = remote_stream;
-  }
+  };
 
   /**
    * @private
    */
   self._set_content_session = function(content_session) {
     self._content_session = content_session;
-  }
+  };
 
   /**
    * @private
    */
   self._set_sid = function(sid) {
     self._sid = sid;
-  }
+  };
 
   /**
    * @private
    */
   self._set_action_last = function(action_last) {
     self._action_last = action_last;
-  }
+  };
 
   /**
    * @private
    */
   self._set_status = function(status) {
     self._status = status;
-  }
+  };
 
   /**
    * @private
    */
   self._set_to = function(receiver) {
     self._to = to;
-  }
+  };
 
   /**
    * @private
    */
   self._set_receiver = function(receiver) {
     self._receiver = receiver;
-  }
+  };
 
   /**
    * @private
    */
   self._set_initiator = function(initiator) {
     self._initiator = initiator;
-  }
+  };
 
   /**
    * @private
    */
   self._set_responder = function(responder) {
     self._responder = responder;
-  }
+  };
 
   /**
    * @private
    */
   self._set_handlers = function(action, handler) {
     self._handlers[action] = handler;
-  }
+  };
 
   /**
    * @private
    */
   self._set_server_config = function(server_config) {
     self._server_config = server_config;
-  }
+  };
 
   /**
    * @private
    */
   self._set_peer_connection = function(peer_connection) {
     self._peer_connection = peer_connection;
-  }
+  };
 
   /**
    * @private
    */
   self._set_sdp_message = function(sdp_message) {
     self._sdp_message = sdp_message;
-  }
+  };
 
 
 
@@ -1745,7 +2002,7 @@ function JSJaCJingle(args) {
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_connection_create > Error: ' + e, 1);
     }
-  }
+  };
 
   /**
    * @private
@@ -1758,7 +2015,7 @@ function JSJaCJingle(args) {
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_get_user_media > Could not get user media.', 1);
     }
-  }
+  };
 
   /**
    * @private
@@ -1777,14 +2034,14 @@ function JSJaCJingle(args) {
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_got_stream > URL.createObjectURL() method not available.', 1);
     }
-  }
+  };
 
   /**
    * @private
    */
   self._peer_got_stream_failed = function(error) {
     self.get_debug().log('[JSJaCJingle] _peer_got_stream_failed > Stream failed.', 1);
-  }
+  };
 
   /**
    * @private
@@ -1797,7 +2054,7 @@ function JSJaCJingle(args) {
     }
 
     return null;
-  }
+  };
 
   /**
    * @private
@@ -1816,7 +2073,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] _peer_xml_html_node > Done.', 4);
 
     return node;
-  }
+  };
 
   /**
    * @private
@@ -1843,7 +2100,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] _peer_generate_json_from_sdp > Generated.', 4);
 
     return str + '\n}';
-  }
+  };
 
   /**
    * @private
@@ -1852,7 +2109,7 @@ function JSJaCJingle(args) {
     // TODO
 
     self.get_debug().log('[JSJaCJingle] _peer_jingle_to_sdp > Done.', 4);
-  }
+  };
 
   /**
    * @private
@@ -1861,5 +2118,5 @@ function JSJaCJingle(args) {
     // TODO
 
     self.get_debug().log('[JSJaCJingle] _peer_sdp_to_jingle > Done.', 4);
-  }
+  };
 }
