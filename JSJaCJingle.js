@@ -359,6 +359,8 @@ JSJaCJingle.prototype.init = function() {
   if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE)
     this.get_debug().log('[JSJaCJingle] Cannot init, resource not inactive (status: ' + this.get_status() + ').', 1); return;
 
+  (this.get_init_pending())();
+
   // Register Jingle IQ handler
   //registerIQSet('jingle', NS_JINGLE, this.handle);
 
@@ -369,10 +371,12 @@ JSJaCJingle.prototype.init = function() {
 /**
  * Starts the Jingle session.
  */
-JSJaCJingle.prototype.start = function(to, handler) {
+JSJaCJingle.prototype.start = function() {
   // Slot unavailable?
   if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED))
     this.get_debug().log('[JSJaCJingle] Cannot start, resource not initiated or terminated (status: ' + this.get_status() + ').', 1); return;
+
+  (this.get_start_pending())();
 
   // TODO
   // TODO: REGISTER: .handle() over .send()
@@ -387,6 +391,10 @@ JSJaCJingle.prototype.terminate = function() {
   // Slot unavailable?
   if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED))
     this.get_debug().log('[JSJaCJingle] Cannot terminate, resource not started (status: ' + this.get_status() + ').', 1); return;
+
+  (this.get_terminate_pending())();
+
+  this.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_TERMINATE, this.handle_session_terminate);
 
   // TODO: .send() session-terminate
   // TODO: REGISTER: .handle() over .send()
@@ -407,7 +415,7 @@ JSJaCJingle.prototype.send = function(id, type, action, handler) {
 
   if(id) stanza.setID(id);
 
-  if(type == 'send') {
+  if(type == 'set') {
     if(!(action && action in JSJAC_JINGLE_ACTIONS))
       this.get_debug().log('[JSJaCJingle] Stanza action unknown.', 1); return;
 
@@ -573,7 +581,7 @@ JSJaCJingle.prototype.register_handler = function(action, fn) {
  */
 JSJaCJingle.prototype.send_content_accept = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_content_accept > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send content accept.', 4);
 }
@@ -583,7 +591,7 @@ JSJaCJingle.prototype.send_content_accept = function(stanza) {
  */
 JSJaCJingle.prototype.send_content_add = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_content_add > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send content add.', 4);
 }
@@ -593,7 +601,7 @@ JSJaCJingle.prototype.send_content_add = function(stanza) {
  */
 JSJaCJingle.prototype.send_content_modify = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_content_modify > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send content modify.', 4);
 }
@@ -603,7 +611,7 @@ JSJaCJingle.prototype.send_content_modify = function(stanza) {
  */
 JSJaCJingle.prototype.send_content_reject = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_content_reject > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send content reject.', 4);
 }
@@ -613,7 +621,7 @@ JSJaCJingle.prototype.send_content_reject = function(stanza) {
  */
 JSJaCJingle.prototype.send_content_remove = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_content_remove > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send content remove.', 4);
 }
@@ -623,7 +631,7 @@ JSJaCJingle.prototype.send_content_remove = function(stanza) {
  */
 JSJaCJingle.prototype.send_description_info = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_description_info > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send description info.', 4);
 }
@@ -633,7 +641,7 @@ JSJaCJingle.prototype.send_description_info = function(stanza) {
  */
 JSJaCJingle.prototype.send_security_info = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_security_info > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send security info.', 4);
 }
@@ -651,7 +659,8 @@ JSJaCJingle.prototype.send_session_accept = function(stanza) {
  * Sends the Jingle session info
  */
 JSJaCJingle.prototype.send_session_info = function(stanza) {
-  // TODO
+  // Not implemented for now
+  this.get_debug().log('[JSJaCJingle] send_session_info > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send session info.', 4);
 }
@@ -697,7 +706,7 @@ JSJaCJingle.prototype.send_session_terminate = function(stanza, reason) {
  */
 JSJaCJingle.prototype.send_transport_accept = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_transport_accept > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send transport accept.', 4);
 }
@@ -707,7 +716,7 @@ JSJaCJingle.prototype.send_transport_accept = function(stanza) {
  */
 JSJaCJingle.prototype.send_transport_info = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_transport_info > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send transport info.', 4);
 }
@@ -717,7 +726,7 @@ JSJaCJingle.prototype.send_transport_info = function(stanza) {
  */
 JSJaCJingle.prototype.send_transport_reject = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_transport_reject > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send transport reject.', 4);
 }
@@ -727,7 +736,7 @@ JSJaCJingle.prototype.send_transport_reject = function(stanza) {
  */
 JSJaCJingle.prototype.send_transport_replace = function(stanza) {
   // Not implemented for now
-  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  this.get_debug().log('[JSJaCJingle] send_transport_replace > Feature not implemented!', 1);
 
   this.get_debug().log('[JSJaCJingle] Send transport replace.', 4);
 }
@@ -762,8 +771,8 @@ JSJaCJingle.prototype.send_error = function(stanza, jingle_condition) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_content_accept = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle content accept.', 4);
 }
@@ -773,8 +782,8 @@ JSJaCJingle.prototype.handle_content_accept = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_content_add = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle content add.', 4);
 }
@@ -784,8 +793,8 @@ JSJaCJingle.prototype.handle_content_add = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_content_modify = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle content modify.', 4);
 }
@@ -795,8 +804,8 @@ JSJaCJingle.prototype.handle_content_modify = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_content_reject = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle content reject.', 4);
 }
@@ -806,8 +815,8 @@ JSJaCJingle.prototype.handle_content_reject = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_content_remove = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle content remove.', 4);
 }
@@ -817,8 +826,8 @@ JSJaCJingle.prototype.handle_content_remove = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_description_info = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle description info.', 4);
 }
@@ -828,8 +837,8 @@ JSJaCJingle.prototype.handle_description_info = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_security_info = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle security info.', 4);
 }
@@ -839,7 +848,25 @@ JSJaCJingle.prototype.handle_security_info = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_session_accept = function(stanza) {
-  // TODO
+  switch(stanza.getType()) {
+    case 'result':
+      //TODO: stone-static handler
+      (this.get_start_success())(stanza);
+
+      break;
+
+    case 'error':
+      //TODO: stone-static handler
+      (this.get_start_error())(stanza);
+
+      break;
+
+    case 'set':
+      break;// TODO
+
+    default:
+      this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  }
 
   this.get_debug().log('[JSJaCJingle] Handle session accept.', 4);
 }
@@ -849,7 +876,8 @@ JSJaCJingle.prototype.handle_session_accept = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_session_info = function(stanza) {
-  // TODO
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle session info.', 4);
 }
@@ -859,7 +887,25 @@ JSJaCJingle.prototype.handle_session_info = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_session_initiate = function(stanza) {
-  // TODO
+  switch(stanza.getType()) {
+    case 'result':
+      //TODO: stone-static handler
+      (this.get_init_success())(stanza);
+
+      break;
+
+    case 'error':
+      //TODO: stone-static handler
+      (this.get_init_error())(stanza);
+
+      break;
+
+    case 'set':
+      break;// TODO
+
+    default:
+      this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  }
 
   this.get_debug().log('[JSJaCJingle] Handle session initiate.', 4);
 }
@@ -869,7 +915,25 @@ JSJaCJingle.prototype.handle_session_initiate = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_session_terminate = function(stanza) {
-  // TODO
+  switch(stanza.getType()) {
+    case 'result':
+      //TODO: stone-static handler
+      (this.get_terminate_success())(stanza);
+
+      break;
+
+    case 'error':
+      //TODO: stone-static handler
+      (this.get_terminate_error())(stanza);
+
+      break;
+
+    case 'set':
+      break;// TODO
+
+    default:
+      this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
+  }
 
   this.get_debug().log('[JSJaCJingle] Handle session terminate.', 4);
 }
@@ -879,8 +943,8 @@ JSJaCJingle.prototype.handle_session_terminate = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_transport_accept = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle transport accept.', 4);
 }
@@ -890,8 +954,8 @@ JSJaCJingle.prototype.handle_transport_accept = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_transport_info = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle transport info.', 4);
 }
@@ -901,8 +965,8 @@ JSJaCJingle.prototype.handle_transport_info = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_transport_reject = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle transport reject.', 4);
 }
@@ -912,8 +976,8 @@ JSJaCJingle.prototype.handle_transport_reject = function(stanza) {
  * @param {JSJaCPacket} stanza Jingle handled stanza
  */
 JSJaCJingle.prototype.handle_transport_replace = function(stanza) {
-  // TODO
-  // Error reply: feature-not-implemented
+  // Not implemented for now
+  this.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.xmpp);
 
   this.get_debug().log('[JSJaCJingle] Handle transport replace.', 4);
 }
