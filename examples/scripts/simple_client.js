@@ -178,7 +178,7 @@ $(document).ready(function() {
 					    to: call_jid,
 					    local_view: document.getElementById('video_local'),
 					    remote_view: document.getElementById('video_remote'),
-					    debug: console,
+					    debug: (new JSJaCConsoleLogger(4)),
 
 					    // Custom handlers (optional)
 					    init_pending: function() {
