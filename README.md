@@ -17,15 +17,20 @@ We assume your XMPP Web client is using JSJaC and has an active connection, stor
 
 ```javascript
 /*
+ * JSJaCJingle.js Implementation Example
+ *
  * > con.username + '@' con.domain == 'valerian@jappix.com'
  * true
  *
  * Yay, I'm connected!
- * Let's call my friend Julien
+ * Let's call my friend Julien.
  *
  * Important: JSJaCJingle.js will not check that Julien's client supports Jingle
  *            You must first check its CAPS and look for the NS_JINGLE variable value
- */ 
+ *
+ * Note: You need to create the HTML5 audio or video elements yourself.
+ *       JSJaCJingle.js needs them to display the WebRTC stream
+ */
 
 // Some context vars
 var ctx_connection = con;
