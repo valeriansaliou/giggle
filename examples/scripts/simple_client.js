@@ -168,7 +168,7 @@ $(document).ready(function() {
 
 			// Any JID defined?
 			if(call_jid) {
-				$('#call_info').text('Initializing...').show();
+				$('#call_info').text('Launching...').show();
 
 				try {
 					// JSJaCJingle arguments
@@ -182,72 +182,67 @@ $(document).ready(function() {
 
 					    // Custom handlers (optional)
 					    init_pending: function() {
-					        // Update your client UI
-					        // Waiting to be initialized...
+					    	$('.call_notif').hide();
+					        $('#call_info').text('Initializing...').show();
 
 					        console.log('init_pending');
 					    },
 
 					    init_success: function(stanza) {
-					        // Update your client UI
-					        // Initialized!
+					        $('.call_notif').hide();
+					        $('#call_success').text('Initialized.').show();
 
 					        // Request for Jingle session to start
-					        // You can also call this later, on UI confirm or so
 					        this.start();
 
 					        console.log('init_success');
 					    },
 
 					    init_error: function(stanza) {
-					        // Update your client UI
-					        // Could not initialize!
+					        $('.call_notif').hide();
+					        $('#call_error').text('Could not initialize.').show();
 
 					        console.log('init_error');
 					    },
 
 					    start_pending: function() {
-					        // Update your client UI
-					        // Waiting to be started...
+					        $('.call_notif').hide();
+					        $('#call_info').text('Waiting to start...').show();
 
 					        console.log('start_pending');
 					    },
 
 					    start_success: function(stanza) {
-					        // Update your client UI
-					        // Started!
-
-					        // Request for Jingle session to terminate
-					        // You can call this when user press 'end' button
-					        // Use: this.terminate();
+					        $('.call_notif').hide();
+					        $('#call_success').text('Started.').show();
 
 					        console.log('start_success');
 					    },
 
 					    start_error: function(stanza) {
-					        // Update your client UI
-					        // Could not start!
+					        $('.call_notif').hide();
+					        $('#call_error').text('Could not start.').show();
 
 					        console.log('start_error');
 					    },
 
 					    terminate_pending: function() {
-					        // Update your client UI
-					        // Waiting to be terminated...
+					        $('.call_notif').hide();
+					        $('#call_info').text('Terminating...').show();
 
 					        console.log('terminate_pending');
 					    },
 
 					    terminate_success: function(stanza) {
-					        // Update your client UI
-					        // Terminated!
+					        $('.call_notif').hide();
+					        $('#call_success').text('Terminated.').show();
 
 					        console.log('terminate_success');
 					    },
 
 					    terminate_error: function(stanza) {
-					        // Update your client UI
-					        // Could not terminate!
+					        $('.call_notif').hide();
+					        $('#call_error').text('Could not terminate.').show();
 
 					        console.log('terminate_error');
 					    }
