@@ -1668,53 +1668,59 @@ JSJaCJingle.prototype._set_sdp_message = function(sdp_message) {
  * @private
  */
 JSJaCJingle.prototype._peer_connection_create = function(sdp_message_callback) {
-  // Create PeerConnection object
-  this._set_peer_connection(new PeerConnection(_serverConfig, sdpMessageCallback));
+  try {
+    // Create PeerConnection object
+    this._set_peer_connection(new PeerConnection(_serverConfig, sdpMessageCallback));
 
-  // Event: onaddstream
-  this.get_peer_connection().onaddstream = function(e) {
-    this.get_debug().info('[JSJaCJingle] _peer_connection_create > onaddstream');
-    this.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
+    // Event: onaddstream
+    this.get_peer_connection().onaddstream = function(e) {
+      this.get_debug().info('[JSJaCJingle] _peer_connection_create > onaddstream');
+      this.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
 
-    // Attach PeerConnection remote stream
-    var stream = e.stream,
-    url = URL.createObjectURL(stream);
+      // Attach PeerConnection remote stream
+      var stream = e.stream,
+      url = URL.createObjectURL(stream);
 
-    this.get_remote_view().attr('src', url);
-    this.get_remote_stream() = stream;
-  };
+      this.get_remote_view().attr('src', url);
+      this.get_remote_stream() = stream;
+    };
 
-  // Event: onremovestream
-  this.get_peer_connection().onremovestream = function(e) {
-    this.get_remote_view().attr('src', '');
-  };
+    // Event: onremovestream
+    this.get_peer_connection().onremovestream = function(e) {
+      this.get_remote_view().attr('src', '');
+    };
 
-  // Event: onmessage
-  this.get_peer_connection().onmessage = function(e) {
-    this.get_debug().info('[JSJaCJingle] _peer_connection_create > onmessage');
-    this.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
-  };
+    // Event: onmessage
+    this.get_peer_connection().onmessage = function(e) {
+      this.get_debug().info('[JSJaCJingle] _peer_connection_create > onmessage');
+      this.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
+    };
 
-  // Event: onopen
-  this.get_peer_connection().onopen = function(e) {
-    this.get_debug().info('[JSJaCJingle] _peer_connection_create > onopen');
-    this.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
-  };
+    // Event: onopen
+    this.get_peer_connection().onopen = function(e) {
+      this.get_debug().info('[JSJaCJingle] _peer_connection_create > onopen');
+      this.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
+    };
 
-  // Event: onconnecting
-  this.get_peer_connection().onconnecting = function(e) {
-    this.get_debug().info('[JSJaCJingle] _peer_connection_create > onconnecting');
-    this.get_debug().dir(e);
-  };
+    // Event: onconnecting
+    this.get_peer_connection().onconnecting = function(e) {
+      this.get_debug().info('[JSJaCJingle] _peer_connection_create > onconnecting');
+      this.get_debug().dir(e);
+    };
 
-  // Event: onstatechange
-  this.get_peer_connection().onstatechange = function(e, state) {
-    this.get_debug().info('[JSJaCJingle] _peer_connection_create > onstatechange');
-    this.get_debug().dir(e, state);
-  };
+    // Event: onstatechange
+    this.get_peer_connection().onstatechange = function(e, state) {
+      this.get_debug().info('[JSJaCJingle] _peer_connection_create > onstatechange');
+      this.get_debug().dir(e, state);
+    };
 
-  // Attach PeerConnection local stream
-  this.get_peer_connection().addStream(this.get_local_stream());
+    // Attach PeerConnection local stream
+    this.get_peer_connection().addStream(this.get_local_stream());
+
+    this.get_debug().log('[JSJaCJingle] _peer_connection_create > Done.', 4);
+  } catch(e) {
+    this.get_debug().log('[JSJaCJingle] _peer_connection_create > Error: ' + e, 1);
+  }
 }
 
 /**
@@ -1782,6 +1788,8 @@ JSJaCJingle.prototype._peer_xml_html_node = function(html) {
     node.loadXML(html);
   }
 
+  this.get_debug().log('[JSJaCJingle] _peer_xml_html_node > Done.', 4);
+
   return node;
 }
 
@@ -1807,6 +1815,8 @@ JSJaCJingle.prototype._peer_generate_json_from_sdp = function(sdp, info) {
   if(info.attr('tiebreaker'))
     str += ',\n   "tieBreaker" : ' + parseInt(info.attr('tiebreaker'), 10);
 
+  this.get_debug().log('[JSJaCJingle] _peer_generate_json_from_sdp > Generated.', 4);
+
   return str + '\n}';
 }
 
@@ -1815,6 +1825,8 @@ JSJaCJingle.prototype._peer_generate_json_from_sdp = function(sdp, info) {
  */
 JSJaCJingle.prototype._peer_jingle_to_sdp = function(sdp_message_callback) {
   // TODO
+
+  this.get_debug().log('[JSJaCJingle] _peer_jingle_to_sdp > Done.', 4);
 }
 
 /**
@@ -1822,4 +1834,6 @@ JSJaCJingle.prototype._peer_jingle_to_sdp = function(sdp_message_callback) {
  */
 JSJaCJingle.prototype._peer_sdp_to_jingle = function(sdp_message_callback) {
   // TODO
+
+  this.get_debug().log('[JSJaCJingle] _peer_sdp_to_jingle > Done.', 4);
 }
