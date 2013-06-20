@@ -42,7 +42,8 @@
 var WEBRTC_GET_MEDIA           = ( navigator.getUserMedia           ||
                                    navigator.webkitGetUserMedia     ||
                                    navigator.mozGetUserMedia        ||
-                                   navigator.msGetUserMedia         );
+                                   navigator.msGetUserMedia         )
+                                  .bind(navigator);
 
 var WEBRTC_PEER_CONNECTION     = ( window.webkitRTCPeerConnection   ||
                                    window.mozRTCPeerConnection      ||
@@ -57,16 +58,33 @@ var WEBRTC_ICE_CANDIDATE       = ( window.RTCIceCandidate           ||
                                    window.RTCIceCandidate           );
 
 var WEBRTC_CONFIGURATION = {
-  iceServers  : {
-    'iceServers' : [{
-      'url': 'stun:stun.l.google.com:19302'
-    }]
+  peer_connection : {
+    config        : {
+      iceServers : [{
+        // TODO: configurable
+        'url': 'stun:stun.l.google.com:19302'
+      }]
+    },
+
+    constraints   : {
+      optional : [{
+        'DtlsSrtpKeyAgreement': true
+      }]
+    }
   },
 
-  constraints : {
-    'mandatory'  : {
-      'OfferToReceiveAudio': true,
-      'OfferToReceiveVideo': true
+  get_user_media  : {
+    audio: true,
+
+    video: {
+      mandatory : {
+        // TODO: configurable
+        // TODO: (self._aspect_ratio, max = min + 1o(p) where p is the precision 10,1,0.1,0.01,0.001,...)
+        minAspectRatio : 1.777,
+        maxAspectRatio : 1.778
+      },
+
+      optional  : []
     }
   }
 };
@@ -100,7 +118,7 @@ var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transpor
  * JSJAC JINGLE CONSTANTS
  */
 
-var JSJAC_JINGLE_AVAILABLE = WEBRTC_GET_MEDIA ? true : false;
+var JSJAC_JINGLE_AVAILABLE                          = WEBRTC_GET_MEDIA ? true : false;
 
 var JSJAC_JINGLE_STANZA_TIMEOUT                     = 10000;
 var JSJAC_JINGLE_STANZA_ID_PRE                      = 'jj_';
@@ -165,16 +183,6 @@ var JSJAC_JINGLE_SESSION_INFO_MUTE                  = 'mute';
 var JSJAC_JINGLE_SESSION_INFO_RINGING               = 'ringing';
 var JSJAC_JINGLE_SESSION_INFO_UNHOLD                = 'unhold';
 var JSJAC_JINGLE_SESSION_INFO_UNMUTE                = 'unmute';
-
-var JSJAC_JINGLE_CONTENT_CLIENT     = {
-  // TODO: populate this with WebRTC data
-  'audio': {
-    'creator': null,
-    'name': null,
-    'description': {},
-    'transport': {}
-  }
-};
 
 
 
@@ -419,9 +427,7 @@ function JSJaCJingle(args) {
     self._debug = args.debug;
   } else {
       self._debug = {
-        log   : function() {},
-        info  : function() {},
-        dir   : function() {}
+        log   : function() {}
       };
   }
 
@@ -439,6 +445,11 @@ function JSJaCJingle(args) {
    * @private
    */
   self._content_session = {};
+
+  /**
+   * @private
+   */
+  self._candidates_local = {};
 
   /**
    * @private
@@ -469,11 +480,6 @@ function JSJaCJingle(args) {
    * @private
    */
   self._handlers = {};
-
-  /**
-   * @private
-   */
-  self._server_config = 'NONE';
 
   /**
    * @private
@@ -528,7 +534,18 @@ function JSJaCJingle(args) {
 
     // Process init actions
     (self._get_connection()).registerIQSet('jingle', NS_JINGLE, self.handle);
-    self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
+
+    // Initialize WebRTC
+    self._peer_get_user_media(function() {
+      self._peer_connection_create(function(sdp_message) {
+        // Parse SDP message
+        console.log(sdp_message);
+        alert('SDP!');
+
+        // Send SDP data over Jingle/XMPP
+        //self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
+      })
+    });
   };
 
   /**
@@ -1857,6 +1874,13 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._get_candidates_local = function(candidate_id) {
+    return (candidate_id in self._candidates_local) ? self._candidates_local[candidate_id] : [];
+  };
+
+  /**
+   * @private
+   */
   self._get_content_session = function(sid) {
     return (sid in self._content_session) ? self._content_session[sid] : {};
   };
@@ -1923,13 +1947,6 @@ function JSJaCJingle(args) {
       return self._handlers[action];
 
     return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_server_config = function() {
-    return self._server_config;
   };
 
   /**
@@ -2135,6 +2152,7 @@ function JSJaCJingle(args) {
    */
   self._set_local_stream = function(local_stream) {
     self._local_stream = local_stream;
+    (self.get_local_view()).src = local_stream ? URL.createObjectURL(self._get_local_stream()) : '';
   };
 
   /**
@@ -2142,6 +2160,17 @@ function JSJaCJingle(args) {
    */
   self._set_remote_stream = function(remote_stream) {
     self._remote_stream = remote_stream;
+    (self.get_remote_view()).src = remote_stream ? URL.createObjectURL(self._get_remote_stream()) : '';
+  };
+
+  /**
+   * @private
+   */
+  self._set_candidates_local = function(candidate_id, candidate_data) {
+    if(!(candidate_id in self._candidates_local))
+      self._candidates_local[candidate_id] = [];
+
+    (self._candidates_local[candidate_id]).push(candidate_data);
   };
 
   /**
@@ -2198,13 +2227,6 @@ function JSJaCJingle(args) {
    */
   self._set_handlers = function(action, handler) {
     self._handlers[action] = handler;
-  };
-
-  /**
-   * @private
-   */
-  self._set_server_config = function(server_config) {
-    self._server_config = server_config;
   };
 
   /**
@@ -2346,6 +2368,19 @@ function JSJaCJingle(args) {
     return con.username + '@' + con.domain + '/' + con.resource;
   };
 
+  /**
+   * Attaches a stream source
+   */
+  self.util_peer_stream_attach = function(element, stream) {
+    if(navigator.mozGetUserMedia) {
+      element.mozSrcObject = stream;
+      element.play();
+    } else {
+      element.autoplay = true;
+      element.src = URL.createObjectURL(stream);
+    }
+  };
+
 
 
   /**
@@ -2357,57 +2392,59 @@ function JSJaCJingle(args) {
    */
   self._peer_connection_create = function(sdp_message_callback) {
     try {
-      // Create PeerConnection object
-      self._set_peer_connection(new PeerConnection(_serverConfig, sdpMessageCallback));
+      // Create the RTCPeerConnection object
+      self._set_peer_connection(
+        new WEBRTC_PEER_CONNECTION(
+          WEBRTC_CONFIGURATION.peer_connection.config,
+          WEBRTC_CONFIGURATION.peer_connection.constraints
+        )
+      );
+
+      // Add local stream
+      self._get_peer_connection().addStream(self._get_local_stream());
+
+      // Event: onicecandidate
+      self._get_peer_connection().onicecandidate = function(e) {
+        self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate', 2);
+
+        if(e.candidate) {
+          // Store received candidate
+          var candidate_label = e.candidate.sdpMLineIndex;
+          var candidate_id    = e.candidate.sdpMid;
+          var candidate_data  = e.candidate.candidate;
+
+          self._set_candidates_local(candidate_id, candidate_data);
+
+          self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got a candidate (id: ' + candidate_id + ')', 4);
+
+          // TODO: push it to available candidates object
+        } else {
+          self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Received everything', 4);
+
+          // Execute what's next
+          sdp_message_callback();
+        }
+      };
 
       // Event: onaddstream
       self._get_peer_connection().onaddstream = function(e) {
-        self.get_debug().info('[JSJaCJingle] _peer_connection_create > onaddstream');
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
+        self.get_debug().log('[JSJaCJingle] _peer_connection_create > onaddstream', 2);
 
-        // Attach PeerConnection remote stream
-        var stream = e.stream,
-        url = URL.createObjectURL(stream);
-
-        self.get_remote_view().attr('src', url);
-        self._get_remote_stream() = stream;
+        // Attach remote stream to DOM view
+        self._set_remote_stream(e.stream);
       };
 
       // Event: onremovestream
       self._get_peer_connection().onremovestream = function(e) {
-        self.get_remote_view().attr('src', '');
-      };
+        self.get_debug().log('[JSJaCJingle] _peer_connection_create > onremovestream', 2);
 
-      // Event: onmessage
-      self._get_peer_connection().onmessage = function(e) {
-        self.get_debug().info('[JSJaCJingle] _peer_connection_create > onmessage');
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
+        // Detach remote stream from DOM view
+        self._set_remote_stream(null);
       };
-
-      // Event: onopen
-      self._get_peer_connection().onopen = function(e) {
-        self.get_debug().info('[JSJaCJingle] _peer_connection_create > onopen');
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 4);
-      };
-
-      // Event: onconnecting
-      self._get_peer_connection().onconnecting = function(e) {
-        self.get_debug().info('[JSJaCJingle] _peer_connection_create > onconnecting');
-        self.get_debug().dir(e);
-      };
-
-      // Event: onstatechange
-      self._get_peer_connection().onstatechange = function(e, state) {
-        self.get_debug().info('[JSJaCJingle] _peer_connection_create > onstatechange');
-        self.get_debug().dir(e, state);
-      };
-
-      // Attach PeerConnection local stream
-      self._get_peer_connection().addStream(self._get_local_stream());
 
       self.get_debug().log('[JSJaCJingle] _peer_connection_create > Done.', 4);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_connection_create > Error: ' + e, 1);
+      self.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 1);
     }
   };
 
@@ -2418,9 +2455,13 @@ function JSJaCJingle(args) {
     try {
       self.get_debug().log('[JSJaCJingle] _peer_get_user_media > Getting user media...', 4);
 
-      navigator.getUserMedia('video,audio', self._peer_got_stream.bind(this, callback), self._peer_got_stream.bind(this));
+      WEBRTC_GET_MEDIA(
+        WEBRTC_CONFIGURATION.get_user_media,
+        self._peer_got_stream.bind(this, callback),
+        self._peer_got_stream_failed.bind(this)
+      );
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_get_user_media > Could not get user media.', 1);
+      self.get_debug().log('[JSJaCJingle] _peer_get_user_media > ' + e, 1);
     }
   };
 
@@ -2429,17 +2470,18 @@ function JSJaCJingle(args) {
    */
   self._peer_got_stream = function(callback, stream) {
     try {
-      var url = URL.createObjectURL(stream);
+      self.get_debug().log('[JSJaCJingle] _peer_got_stream > Got user media.', 4);
 
-      (self.get_local_view()).attr('src', url);
       self._set_local_stream(stream);
 
-      if(callback)
-        callback();
+      self.util_peer_stream_attach(
+        self.get_local_view(),
+        stream
+      );
 
-      self.get_debug().log('[JSJaCJingle] _peer_got_stream > Got stream.', 4);
+      if(callback) callback();
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_got_stream > URL.createObjectURL() method not available.', 1);
+      self.get_debug().log('[JSJaCJingle] _peer_got_stream > ' + e, 1);
     }
   };
 
@@ -2447,7 +2489,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._peer_got_stream_failed = function(error) {
-    self.get_debug().log('[JSJaCJingle] _peer_got_stream_failed > Stream failed.', 1);
+    self.get_debug().log('[JSJaCJingle] _peer_got_stream_failed > Failed.', 1);
   };
 
   /**
