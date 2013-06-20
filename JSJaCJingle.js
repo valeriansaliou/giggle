@@ -176,11 +176,11 @@ JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.jingle]       = 1;
 JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_SECURITY_REQUIRED.jingle]      = 1;
 
 var XMPP_ERRORS                     = {};
-XMPP_ERRORS[XMPP_ERROR_FEATURE_NOT_IMPLEMENTED]                       = 1;
-XMPP_ERRORS[XMPP_ERROR_SERVICE_UNAVAILABLE]                           = 1;
-XMPP_ERRORS[XMPP_ERROR_REDIRECT]                                      = 1;
-XMPP_ERRORS[XMPP_ERROR_RESOURCE_CONSTRAINT]                           = 1;
-XMPP_ERRORS[XMPP_ERROR_BAD_REQUEST]                                   = 1;
+XMPP_ERRORS[XMPP_ERROR_FEATURE_NOT_IMPLEMENTED.xmpp]                  = 1;
+XMPP_ERRORS[XMPP_ERROR_SERVICE_UNAVAILABLE.xmpp]                      = 1;
+XMPP_ERRORS[XMPP_ERROR_REDIRECT.xmpp]                                 = 1;
+XMPP_ERRORS[XMPP_ERROR_RESOURCE_CONSTRAINT.xmpp]                      = 1;
+XMPP_ERRORS[XMPP_ERROR_BAD_REQUEST.xmpp]                              = 1;
 
 var JSJAC_JINGLE_REASONS            = {};
 JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION]         = 1;
@@ -979,8 +979,19 @@ function JSJaCJingle(args) {
    * Sends the Jingle transport replace
    */
   self.send_error = function(stanza, error) {
-    if(!(error.jingle in JSJAC_JINGLE_ERRORS)) {
+    // Assert
+    if(!('type' in error)) {
+      self.get_debug().log('[JSJaCJingle] send_error > Type unknown.', 1);
+      return;
+    }
+
+    if('jingle' in error && !(error.jingle in JSJAC_JINGLE_ERRORS)) {
       self.get_debug().log('[JSJaCJingle] send_error > Jingle condition unknown.', 1);
+      return;
+    }
+
+    if('xmpp' in error && !(error.xmpp in XMPP_ERRORS)) {
+      self.get_debug().log('[JSJaCJingle] send_error > XMPP condition unknown.', 1);
       return;
     }
 
@@ -988,10 +999,10 @@ function JSJaCJingle(args) {
 
     var error_node = stanza.getNode().appendChild(stanza.buildNode('error', {'xmlns': NS_CLIENT, 'type': error.type}));
 
-    error_node.appendChild(stanza.buildNode(error.xmpp, {'xmlns': NS_STANZAS}));
-    error_node.appendChild(stanza.buildNode(error.jingle, {'xmlns': NS_JINGLE_ERRORS}));
+    if('xmpp'   in error) error_node.appendChild(stanza.buildNode(error.xmpp,   { 'xmlns': NS_STANZAS       }));
+    if('jingle' in error) error_node.appendChild(stanza.buildNode(error.jingle, { 'xmlns': NS_JINGLE_ERRORS }));
 
-    self.get_debug().log('[JSJaCJingle] send_error > Sent: ' + error.jingle, 2);
+    self.get_debug().log('[JSJaCJingle] send_error > Sent: ' + (error.jingle || error.xmpp), 2);
   };
 
 
@@ -1006,7 +1017,7 @@ function JSJaCJingle(args) {
    */
   self.handle_content_accept = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_content_accept > Handled.', 4);
   };
@@ -1017,7 +1028,7 @@ function JSJaCJingle(args) {
    */
   self.handle_content_add = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_content_add > Handled.', 4);
   };
@@ -1028,7 +1039,7 @@ function JSJaCJingle(args) {
    */
   self.handle_content_modify = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_content_modify > Handled.', 4);
   };
@@ -1039,7 +1050,7 @@ function JSJaCJingle(args) {
    */
   self.handle_content_reject = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_content_reject > Handled.', 4);
   };
@@ -1050,7 +1061,7 @@ function JSJaCJingle(args) {
    */
   self.handle_content_remove = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_content_remove > Handled.', 4);
   };
@@ -1061,7 +1072,7 @@ function JSJaCJingle(args) {
    */
   self.handle_description_info = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_description_info > Handled.', 4);
   };
@@ -1072,7 +1083,7 @@ function JSJaCJingle(args) {
    */
   self.handle_security_info = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_security_info > Handled.', 4);
   };
@@ -1111,7 +1122,7 @@ function JSJaCJingle(args) {
         break;
 
       default:
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+        self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     }
 
     self.get_debug().log('[JSJaCJingle] handle_session_accept > Handled.', 4);
@@ -1181,7 +1192,7 @@ function JSJaCJingle(args) {
         break;
 
       default:
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+        self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     }
 
     self.get_debug().log('[JSJaCJingle] handle_session_info > Handled.', 4);
@@ -1192,8 +1203,6 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info_success = function(stanza) {
-    // TODO
-
     self.get_debug().log('[JSJaCJingle] handle_session_info_success > Handled.', 4);
   };
 
@@ -1202,8 +1211,6 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info_error = function(stanza) {
-    // TODO
-
     self.get_debug().log('[JSJaCJingle] handle_session_info_error > Handled.', 4);
   };
 
@@ -1212,9 +1219,32 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info_request = function(stanza) {
-    // TODO: reply to info request!
+    // Parse stanza
+    var info_name = self.util_stanza_session_info();
+    var info_result = false;
 
-    self.get_debug().log('[JSJaCJingle] handle_session_info_request > Handled.', 4);
+    switch(info_name) {
+      case JSJAC_JINGLE_SESSION_INFO_ACTIVE:
+        info_result = true; break;
+    }
+
+    if(info_result) {
+      // Process info actions
+      self.send(stanza.getID(), 'result');
+
+      // Trigger info success custom callback
+      (self._get_session_info_success())(self, stanza);
+
+      self.get_debug().log('[JSJaCJingle] handle_session_info_request > Handled (name: ' + (info_name || 'undefined') + ')', 4);
+    } else {
+      // Send error reply
+      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+
+      // Trigger info error custom callback
+      (self._get_session_info_error())(self, stanza);
+
+      self.get_debug().log('[JSJaCJingle] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ')', 2);
+    }
   };
 
   /**
@@ -1242,7 +1272,7 @@ function JSJaCJingle(args) {
         break;
 
       default:
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+        self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     }
 
     self.get_debug().log('[JSJaCJingle] handle_session_initiate > Handled.', 4);
@@ -1329,7 +1359,7 @@ function JSJaCJingle(args) {
         break;
 
       default:
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+        self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     }
   };
 
@@ -1380,7 +1410,7 @@ function JSJaCJingle(args) {
    */
   self.handle_transport_accept = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_transport_accept > Handled.', 4);
   };
@@ -1391,7 +1421,7 @@ function JSJaCJingle(args) {
    */
   self.handle_transport_info = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_transport_info > Handled.', 4);
   };
@@ -1402,7 +1432,7 @@ function JSJaCJingle(args) {
    */
   self.handle_transport_reject = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_transport_reject > Handled.', 4);
   };
@@ -1413,7 +1443,7 @@ function JSJaCJingle(args) {
    */
   self.handle_transport_replace = function(stanza) {
     // Not implemented for now
-    self.send_error(stanza, JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO);
+    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
     self.get_debug().log('[JSJaCJingle] handle_transport_replace > Handled.', 4);
   };
