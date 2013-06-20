@@ -100,7 +100,7 @@ var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transpor
  * JSJAC JINGLE CONSTANTS
  */
 
-var JSJAC_JINGLE_AVAILABLE = navigator.WEBRTC_GET_MEDIA ? true : false;
+var JSJAC_JINGLE_AVAILABLE = WEBRTC_GET_MEDIA ? true : false;
 
 var JSJAC_JINGLE_STANZA_TIMEOUT                     = 10000;
 var JSJAC_JINGLE_STANZA_ID_PRE                      = 'jj_';
