@@ -62,6 +62,9 @@ var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transpor
  * JSJAC JINGLE CONSTANTS
  */
 
+var JSJAC_JINGLE_STANZA_TIMEOUT                     = 10000;
+var JSJAC_JINGLE_STANZA_ID_PRE                      = 'jj_';
+
 var JSJAC_JINGLE_STATUS_INACTIVE                    = 'inactive';
 var JSJAC_JINGLE_STATUS_INITIATING                  = 'initiating';
 var JSJAC_JINGLE_STATUS_INITIATED                   = 'initiated';
@@ -439,6 +442,21 @@ function JSJaCJingle(args) {
   self._sdp_message = '';
 
   /**
+   * @private
+   */
+  self._id = 0;
+
+  /**
+   * @private
+   */
+  self._sent_id = {};
+
+  /**
+   * @private
+   */
+  self._received_id = {};
+
+  /**
    * Register stanza handler
    */
   (self._connection).registerHandler('iq', self.handle);
@@ -511,14 +529,18 @@ function JSJaCJingle(args) {
     var stanza = new JSJaCIQ();
     stanza.setTo(self.get_to());
 
-    if(id) stanza.setID(id);
     if(type) stanza.setType(type);
+
+    if(!id) id = self._get_id_new();
+    stanza.setID(id);
 
     if(type == 'set') {
       if(!(action && action in JSJAC_JINGLE_ACTIONS)) {
         self.get_debug().log('[JSJaCJingle] send > Stanza action unknown: ' + (action || 'undefined'), 1);
         return;
       }
+
+      self._set_sent_id(id);
 
       // Submit to registered handler
       switch(action) {
@@ -596,6 +618,9 @@ function JSJaCJingle(args) {
 
     // Don't handle action-less Jingle stanzas there...
     if(!action) return;
+
+    var id = stanza.getID();
+    if(id) self._set_received_id(id);
 
     self._set_action_last(action);
 
@@ -803,6 +828,12 @@ function JSJaCJingle(args) {
       return;
     }
 
+    // Schedule error timeout
+    self.util_stanza_timeout({
+      external:   self._get_session_accept_error(),
+      internal:   self.handle_session_accept_error
+    });
+
     self.get_debug().log('[JSJaCJingle] send_session_accept > Sent.', 4);
   };
 
@@ -853,6 +884,12 @@ function JSJaCJingle(args) {
       return;
     }
 
+    // Schedule error timeout
+    self.util_stanza_timeout({
+      external:   self._get_session_initiate_error(),
+      internal:   self.handle_session_initiate_error
+    });
+
     self.get_debug().log('[JSJaCJingle] send_session_initiate > Sent.', 4);
   };
 
@@ -888,6 +925,12 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] send_session_terminate > Stanza type must either be set or result.', 1);
       return;
     }
+
+    // Schedule error timeout
+    self.util_stanza_timeout({
+      external:   self._get_session_terminate_error(),
+      internal:   self.handle_session_terminate_error
+    });
 
     self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent.', 4);
   };
@@ -1681,6 +1724,44 @@ function JSJaCJingle(args) {
     return self._sdp_message;
   };
 
+  /**
+   * @private
+   */
+  self._get_id = function() {
+    return self._id;
+  };
+
+  /**
+   * @private
+   */
+  self._get_id_last = function() {
+    return JSJAC_JINGLE_STANZA_ID_PRE + self._get_id();
+  };
+
+  /**
+   * @private
+   */
+  self._get_id_new = function() {
+    var trans_id = self._get_id() + 1;
+    self._set_id(trans_id);
+
+    return JSJAC_JINGLE_STANZA_ID_PRE + trans_id;
+  };
+
+  /**
+   * @private
+   */
+  self._get_sent_id = function() {
+    return self._sent_id;
+  };
+
+  /**
+   * @private
+   */
+  self._get_received_id = function() {
+    return self._received_id;
+  };
+
 
 
   /**
@@ -1918,6 +1999,27 @@ function JSJaCJingle(args) {
     self._sdp_message = sdp_message;
   };
 
+  /**
+   * @private
+   */
+  self._set_id = function(id) {
+    self._id = id;
+  };
+
+  /**
+   * @private
+   */
+  self._set_sent_id = function(sent_id) {
+    (self._get_sent_id())[sent_id] = 1;
+  };
+
+  /**
+   * @private
+   */
+  self._set_received_id = function(received_id) {
+    (self._get_received_id())[received_id] = 1;
+  };
+
 
 
   /**
@@ -1982,6 +2084,25 @@ function JSJaCJingle(args) {
     }
 
     return null;
+  };
+
+  /**
+   * Set a timeout limit to a stanza
+   */
+  self.util_stanza_timeout = function(handlers) {
+    var t_id = self._get_id_last();
+    var t_sid = self.get_sid();
+    var t_status = self.get_status();
+
+    setTimeout(function() {
+      // State did not change?
+      if(self.get_sid() == t_sid && self.get_status() == t_status && !(t_id in self._get_received_id())) {
+        self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza timeout.', 2);
+
+        (handlers.external)(self);
+        (handlers.internal)();
+      }
+    }, JSJAC_JINGLE_STANZA_TIMEOUT);
   };
 
   /**
