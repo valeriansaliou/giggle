@@ -87,6 +87,9 @@ var WEBRTC_CONFIGURATION = {
   }
 };
 
+var R_WEBRTC_SDP_ICE_CANDIDATE = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\d{1,10}) ([a-zA-Z0-9:\.]{1,45}) (\d{1,5}) (typ) (host|srflx|prflx|relay)( (raddr) ([a-zA-Z0-9:\.]{1,45}) (rport) (\d{1,5}))?( (generation) (\d))?/i;
+var R_WEBRTC_SDP_PAYLOAD = /^(.+)$/i;
+
 
 
 /**
@@ -2176,6 +2179,8 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_candidates_local = function(candidate_id, candidate_data) {
+    if(!candidate_data['id']) return;
+
     if(!(candidate_id in self._candidates_local))
       self._candidates_local[candidate_id] = [];
 
@@ -2361,6 +2366,15 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Generates a random ID value
+   * @return ID value
+   * @type string
+   */
+  self.util_generate_id = function() {
+    return cnonce(10);
+  };
+
+  /**
    * Get my connection JID
    * @return JID value
    * @type string
@@ -2381,6 +2395,40 @@ function JSJaCJingle(args) {
       element.autoplay = true;
       element.src = URL.createObjectURL(stream);
     }
+  };
+
+  /**
+   * Parses an SDP candidate message
+   * @return parsed object
+   * @type object
+   */
+  self.util_sdp_parse_candidate = function(sdp_candidate) {
+    if(!sdp_candidate) return {};
+    
+    var e         = 0;
+    var candidate = {};
+    var matches   = R_WEBRTC_SDP_ICE_CANDIDATE.exec(sdp_candidate);
+
+    // Matches!
+    if(matches) {
+      candidate['component']  = matches[2]  || e++;
+      candidate['foundation'] = matches[2]  || e++;
+      candidate['generation'] = matches[16] || e++;
+      candidate['id']         = self.util_generate_id();
+      candidate['ip']         = matches[5]  || e++;
+      candidate['network']    = 0;
+      candidate['port']       = matches[6]  || e++;
+      candidate['priority']   = matches[4]  || e++;
+      candidate['protocol']   = matches[3]  || e++;
+      candidate['rel-addr']   = matches[11];
+      candidate['rel-port']   = matches[13];
+      candidate['type']       = matches[8]  || e++;
+    }
+
+    // Incomplete?
+    if(e != 0) return {};
+
+    return candidate;
   };
 
 
@@ -2410,15 +2458,15 @@ function JSJaCJingle(args) {
 
       // Event: onicecandidate
       self._get_peer_connection().onicecandidate = function(e) {
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate', 2);
-
         if(e.candidate) {
           // Store received candidate
-          var candidate_label = e.candidate.sdpMLineIndex;
           var candidate_id    = e.candidate.sdpMid;
           var candidate_data  = e.candidate.candidate;
 
-          self._set_candidates_local(candidate_id, candidate_data);
+          // Convert SDP raw data to an object
+          var candidate_obj   = self.util_sdp_parse_candidate(candidate_data);
+
+          self._set_candidates_local(candidate_id, candidate_obj);
 
           self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got a candidate (id: ' + candidate_id + ')', 4);
 
