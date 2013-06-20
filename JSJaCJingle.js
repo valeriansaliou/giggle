@@ -907,7 +907,7 @@ function JSJaCJingle(args) {
       if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATING  || 
            self.get_status() == JSJAC_JINGLE_STATUS_INITIATED   ||
            self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING   ||
-           self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED)) {
+           self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED    )) {
         self.get_debug().log('[JSJaCJingle] send_session_terminate > Resource neither initiating, initiated, accepting nor accepted (status: ' + self.get_status() + ').', 1);
         return;
       }
@@ -1310,91 +1310,153 @@ function JSJaCJingle(args) {
     self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
     // Initialize content session read
-    var rd_content_session = {};
-    var rd_sid = null;
+    var rd_content = {};
+    var rd_sid = self.util_stanza_sid(stanza);
 
-    // Parse initiate stanza
-    var jingle = stanza.getChild(stanza, NS_JINGLE);
+    // Request is valid?
+    if(rd_sid) {
+      // Parse initiate stanza
+      var jingle = self.util_stanza_jingle(stanza);
 
-    if(jingle) {
-      // Attrs
-      var jingle_initiator = jingle.getAttribute('creator') || null;
-      var jingle_sid = jingle.getAttribute('sid') || null;
-
-      // Childs
-      var content = jingle.getChild('content', NS_JINGLE);
-
-      if(content) {
-        // Attrs
-        var content_creator = content.getAttribute('creator') || null;
-        var content_name = content.getAttribute('name') || null;
-
+      if(jingle) {
         // Childs
-        var description = jingle.getChild('description', NS_JINGLE_APPS_RTP);
-        var transport = jingle.getChild('transport', NS_JINGLE_TRANSPORTS_ICEUDP);
+        var content = jingle.getElementsByTagNameNS(NS_JINGLE, 'content');
 
-        if(description) {
+        if(content.length) {
+          content = content[0];
+
           // Attrs
-          var description_media = description.getAttribute('media') || null;
+          var content_creator = content.getAttribute('creator') || null;
+          var content_name    = content.getAttribute('name')    || null;
 
           // Childs
-          var payload_type = description.getChild('payload-type', NS_JINGLE_APPS_RTP);
+          var description = content.getElementsByTagNameNS(NS_JINGLE_APPS_RTP, 'description');
+          var transport   = content.getElementsByTagNameNS(NS_JINGLE_TRANSPORTS_ICEUDP, 'transport');
 
-          for(i in payload_type) {
-            /* XEP-0167 http://xmpp.org/extensions/xep-0167.html */
+          // Push (if requirements satisfied)
+          if(content_creator && content_name) {
+            rd_content['creator'] = content_creator;
+            rd_content['name']    = content_name;
 
-            var cur_payload_type = payload_type[i];
+            if(description.length) {
+              description = description[0];
 
-            // Attrs
-            var cur_payload_type_channels = cur_payload_type.getAttribute('channels') || null;
-            var cur_payload_type_clockrate = cur_payload_type.getAttribute('clockrate') || null;
-            var cur_payload_type_id = cur_payload_type.getAttribute('id') || null;
-            var cur_payload_type_maxptime = cur_payload_type.getAttribute('maxptime') || null;
-            var cur_payload_type_name = cur_payload_type.getAttribute('name') || null;
-            var cur_payload_type_ptime = cur_payload_type.getAttribute('ptime') || null;
-          }
-        }
+              // Attrs
+              var description_media = description.getAttribute('media') || null;
+              var description_ssrc  = description.getAttribute('ssrc')  || null;
 
-        if(transport) {
-          // Attrs
-          var transport_pwd = transport.getAttribute('pwd') || null;
-          var transport_ufrag = transport.getAttribute('ufrag') || null;
+              // Childs
+              var payload_type = description.getElementsByTagNameNS(NS_JINGLE_APPS_RTP, 'payload-type');
 
-          // Childs
-          var candidate = transport.getChild('candidate', NS_JINGLE_TRANSPORTS_ICEUDP);
+              // Push (if requirements satisfied)
+              if(description_media) {
+                rd_content['description']          = {};
+                rd_content['description']['media'] = description_media;
+                rd_content['description']['ssrc']  = description_ssrc;
 
-          for(j in candidate) {
-            /* XEP-0176 http://xmpp.org/extensions/xep-0176.html */
+                for(i in payload_type) {
+                  /* XEP-0167 http://xmpp.org/extensions/xep-0167.html */
 
-            var cur_candidate = candidate[j];
+                  var cur_payload_type = payload_type[i];
 
-            // Attrs
-            var cur_candidate_component = cur_candidate.getAttribute('component') || null;
-            var cur_candidate_foundation = cur_candidate.getAttribute('foundation') || null;
-            var cur_candidate_generation = cur_candidate.getAttribute('generation') || null;
-            var cur_candidate_id = cur_candidate.getAttribute('id') || null;
-            var cur_candidate_ip = cur_candidate.getAttribute('ip') || null;
-            var cur_candidate_network = cur_candidate.getAttribute('network') || null;
-            var cur_candidate_port = cur_candidate.getAttribute('port') || null;
-            var cur_candidate_priority = cur_candidate.getAttribute('priority') || null;
-            var cur_candidate_protocol = cur_candidate.getAttribute('protocol') || null;
-            var cur_candidate_rel_addr = cur_candidate.getAttribute('rel-addr') || null;
-            var cur_candidate_rel_port = cur_candidate.getAttribute('rel-port') || null;
-            var cur_candidate_type = cur_candidate.getAttribute('type') || null;
+                  // Attrs
+                  var cur_payload_type_channels  = cur_payload_type.getAttribute('channels')  || null;
+                  var cur_payload_type_clockrate = cur_payload_type.getAttribute('clockrate') || null;
+                  var cur_payload_type_id        = cur_payload_type.getAttribute('id')        || null;
+                  var cur_payload_type_maxptime  = cur_payload_type.getAttribute('maxptime')  || null;
+                  var cur_payload_type_name      = cur_payload_type.getAttribute('name')      || null;
+                  var cur_payload_type_ptime     = cur_payload_type.getAttribute('ptime')     || null;
+
+                  // Push (if requirements satisfied)
+                  if(cur_payload_type_id) {
+                    rd_content['description'][cur_payload_type_id]              = {};
+                    rd_content['description'][cur_payload_type_id]['channels']  = cur_payload_type_channels;
+                    rd_content['description'][cur_payload_type_id]['clockrate'] = cur_payload_type_clockrate;
+                    rd_content['description'][cur_payload_type_id]['id']        = cur_payload_type_id;
+                    rd_content['description'][cur_payload_type_id]['maxptime']  = cur_payload_type_maxptime;
+                    rd_content['description'][cur_payload_type_id]['name']      = cur_payload_type_name;
+                    rd_content['description'][cur_payload_type_id]['ptime']     = cur_payload_type_ptime;
+                  }
+                }
+              }
+
+              if(transport.length) {
+                transport = transport[0];
+
+                // Attrs
+                var transport_pwd   = transport.getAttribute('pwd')   || null;
+                var transport_ufrag = transport.getAttribute('ufrag') || null;
+
+                // Childs
+                var candidate = transport.getElementsByTagNameNS(NS_JINGLE_TRANSPORTS_ICEUDP, 'candidate');
+
+                // Push (no requirement there)
+                if(true) {
+                  rd_content['transport']          = {};
+                  rd_content['transport']['pwd']   = transport_pwd;
+                  rd_content['transport']['ufrag'] = transport_ufrag;
+
+                  for(j in candidate) {
+                    /* XEP-0176 http://xmpp.org/extensions/xep-0176.html */
+
+                    var cur_candidate = candidate[j];
+
+                    // Attrs
+                    var cur_candidate_component  = cur_candidate.getAttribute('component')  || null;
+                    var cur_candidate_foundation = cur_candidate.getAttribute('foundation') || null;
+                    var cur_candidate_generation = cur_candidate.getAttribute('generation') || null;
+                    var cur_candidate_id         = cur_candidate.getAttribute('id')         || null;
+                    var cur_candidate_ip         = cur_candidate.getAttribute('ip')         || null;
+                    var cur_candidate_network    = cur_candidate.getAttribute('network')    || null;
+                    var cur_candidate_port       = cur_candidate.getAttribute('port')       || null;
+                    var cur_candidate_priority   = cur_candidate.getAttribute('priority')   || null;
+                    var cur_candidate_protocol   = cur_candidate.getAttribute('protocol')   || null;
+                    var cur_candidate_rel_addr   = cur_candidate.getAttribute('rel-addr')   || null;
+                    var cur_candidate_rel_port   = cur_candidate.getAttribute('rel-port')   || null;
+                    var cur_candidate_type       = cur_candidate.getAttribute('type')       || null;
+
+                    // Push (if requirements satisfied)
+                    if(cur_candidate_component   &&
+                       cur_candidate_foundation  &&
+                       cur_candidate_generation  &&
+                       cur_candidate_id          &&
+                       cur_candidate_ip          &&
+                       cur_candidate_network     &&
+                       cur_candidate_port        &&
+                       cur_candidate_priority    &&
+                       cur_candidate_protocol    &&
+                       cur_candidate_type        ) {
+                      rd_content['transport'][cur_candidate_id]               = {};
+                      rd_content['transport'][cur_candidate_id]['component']  = cur_candidate_component;
+                      rd_content['transport'][cur_candidate_id]['foundation'] = cur_candidate_foundation;
+                      rd_content['transport'][cur_candidate_id]['generation'] = cur_candidate_generation;
+                      rd_content['transport'][cur_candidate_id]['id']         = cur_candidate_id;
+                      rd_content['transport'][cur_candidate_id]['ip']         = cur_candidate_ip;
+                      rd_content['transport'][cur_candidate_id]['network']    = cur_candidate_network;
+                      rd_content['transport'][cur_candidate_id]['port']       = cur_candidate_port;
+                      rd_content['transport'][cur_candidate_id]['priority']   = cur_candidate_priority;
+                      rd_content['transport'][cur_candidate_id]['protocol']   = cur_candidate_protocol;
+                      rd_content['transport'][cur_candidate_id]['rel-addr']   = cur_candidate_rel_addr;
+                      rd_content['transport'][cur_candidate_id]['rel-port']   = cur_candidate_rel_addr;
+                      rd_content['transport'][cur_candidate_id]['type']       = cur_candidate_type;
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
-    }
 
-    if(rd_sid) {
+      // Check content values support
       var accept_content_session = false;
 
       // TODO: self._set_content_session(sid, content_session)
         // TODO: accept_content_session = true if one match
-        // TODO: remove unmatching items from rd_content_session
+        // TODO: remove unmatching items from rd_content
 
       if(accept_content_session) {
-        self._set_content_session(rd_sid, rd_content_session);
+        self._set_content_session(rd_sid, rd_content);
 
         // TODO: success?! (send back matching items)
       } else {
@@ -2170,7 +2232,7 @@ function JSJaCJingle(args) {
    */
   self.util_stanza_sid = function(stanza) {
     try {
-      return self.util_stanza_jingle(stanza).getAttribute('sid') || null;
+      return (self.util_stanza_jingle(stanza)).getAttribute('sid') || null;
     } catch(e) {
       return null;
     }
@@ -2191,11 +2253,11 @@ function JSJaCJingle(args) {
    * @type string
    */
   self.util_stanza_terminate_reason = function(stanza) {
-    var reason = self.util_stanza_jingle(stanza).getChild('reason', NS_JINGLE);
+    var reason = (self.util_stanza_jingle(stanza)).getElementsByTagName('reason');
 
-    if(reason) {
+    if(reason.length) {
       for(cur_reason in JSJAC_JINGLE_REASONS)
-        if(reason.getChild(cur_reason, NS_JINGLE)) return cur_reason;
+        if((reason[0]).getElementsByTagName(cur_reason, NS_JINGLE).length) return cur_reason;
     }
 
     return null;
