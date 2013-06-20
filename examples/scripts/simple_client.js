@@ -12,6 +12,12 @@ var SC_CONNECTED = false;
 var SC_PRESENCE = {};
 
 $(document).ready(function() {
+	// Check for WebRTC support
+	if(!JSJAC_JINGLE_AVAILABLE) {
+		$('#fieldset_login').attr('disabled', true);
+		$('#not_supported:hidden').animate({'height': 'toggle', 'opacity': 'toggle'}, 400);
+	}
+
 	// Submit first form
 	$('#form_login').submit(function() {
 		try {

@@ -36,6 +36,44 @@
 
 
 /**
+ * JINGLE WEBRTC
+ */
+
+var WEBRTC_GET_MEDIA           = ( navigator.getUserMedia           ||
+                                   navigator.webkitGetUserMedia     ||
+                                   navigator.mozGetUserMedia        ||
+                                   navigator.msGetUserMedia         );
+
+var WEBRTC_PEER_CONNECTION     = ( window.webkitRTCPeerConnection   ||
+                                   window.mozRTCPeerConnection      ||
+                                   window.RTCPeerConnection         );
+
+var WEBRTC_SESSION_DESCRIPTION = ( window.RTCSessionDescription     ||
+                                   window.mozRTCSessionDescription  ||
+                                   window.RTCSessionDescription     );
+
+var WEBRTC_ICE_CANDIDATE       = ( window.RTCIceCandidate           ||
+                                   window.mozRTCIceCandidate        ||
+                                   window.RTCIceCandidate           );
+
+var WEBRTC_CONFIGURATION = {
+  iceServers  : {
+    'iceServers' : [{
+      'url': 'stun:stun.l.google.com:19302'
+    }]
+  },
+
+  constraints : {
+    'mandatory'  : {
+      'OfferToReceiveAudio': true,
+      'OfferToReceiveVideo': true
+    }
+  }
+};
+
+
+
+/**
  * JINGLE NAMESPACES
  */
 
@@ -61,6 +99,8 @@ var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transpor
 /**
  * JSJAC JINGLE CONSTANTS
  */
+
+var JSJAC_JINGLE_AVAILABLE = navigator.WEBRTC_GET_MEDIA ? true : false;
 
 var JSJAC_JINGLE_STANZA_TIMEOUT                     = 10000;
 var JSJAC_JINGLE_STANZA_ID_PRE                      = 'jj_';
@@ -244,6 +284,10 @@ JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]          = 1;
  * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
  */
 function JSJaCJingle(args) {
+  // WebRTC not supported?
+  if(!JSJAC_JINGLE_AVAILABLE)
+    return;
+
   var self = this;
 
   if(args && args.session_initiate_pending)
@@ -526,7 +570,7 @@ function JSJaCJingle(args) {
    */
   self.send = function(type, args) {
     // Assert
-    if(typeof(args) != 'object') args = {};
+    if(typeof args != 'object') args = {};
 
     // Build stanza
     var stanza = new JSJaCIQ();
@@ -683,7 +727,7 @@ function JSJaCJingle(args) {
    * Registers a given handler on a given Jingle stanza
    */
   self.register_handler = function(action, fn) {
-    if(typeof(fn) != 'function') {
+    if(typeof fn != 'function') {
       self.get_debug().log('[JSJaCJingle] register_handler > fn parameter not passed or not a function!', 1);
 
       return false;
@@ -1339,6 +1383,8 @@ function JSJaCJingle(args) {
             rd_content['name']    = content_name;
 
             if(description.length) {
+              /* XEP-0167 http://xmpp.org/extensions/xep-0167.html */
+
               description = description[0];
 
               // Attrs
@@ -1350,13 +1396,12 @@ function JSJaCJingle(args) {
 
               // Push (if requirements satisfied)
               if(description_media) {
-                rd_content['description']          = {};
-                rd_content['description']['media'] = description_media;
-                rd_content['description']['ssrc']  = description_ssrc;
+                rd_content['description']             = {};
+                rd_content['description']['media']    = description_media;
+                rd_content['description']['ssrc']     = description_ssrc;
+                rd_content['description']['payloads'] = {};
 
-                for(i in payload_type) {
-                  /* XEP-0167 http://xmpp.org/extensions/xep-0167.html */
-
+                for(var i = 0; i < payload_type.length; i++) {
                   var cur_payload_type = payload_type[i];
 
                   // Attrs
@@ -1369,18 +1414,20 @@ function JSJaCJingle(args) {
 
                   // Push (if requirements satisfied)
                   if(cur_payload_type_id) {
-                    rd_content['description'][cur_payload_type_id]              = {};
-                    rd_content['description'][cur_payload_type_id]['channels']  = cur_payload_type_channels;
-                    rd_content['description'][cur_payload_type_id]['clockrate'] = cur_payload_type_clockrate;
-                    rd_content['description'][cur_payload_type_id]['id']        = cur_payload_type_id;
-                    rd_content['description'][cur_payload_type_id]['maxptime']  = cur_payload_type_maxptime;
-                    rd_content['description'][cur_payload_type_id]['name']      = cur_payload_type_name;
-                    rd_content['description'][cur_payload_type_id]['ptime']     = cur_payload_type_ptime;
+                    rd_content['description']['payloads'][cur_payload_type_id]              = {};
+                    rd_content['description']['payloads'][cur_payload_type_id]['channels']  = cur_payload_type_channels;
+                    rd_content['description']['payloads'][cur_payload_type_id]['clockrate'] = cur_payload_type_clockrate;
+                    rd_content['description']['payloads'][cur_payload_type_id]['id']        = cur_payload_type_id;
+                    rd_content['description']['payloads'][cur_payload_type_id]['maxptime']  = cur_payload_type_maxptime;
+                    rd_content['description']['payloads'][cur_payload_type_id]['name']      = cur_payload_type_name;
+                    rd_content['description']['payloads'][cur_payload_type_id]['ptime']     = cur_payload_type_ptime;
                   }
                 }
               }
 
               if(transport.length) {
+                /* XEP-0176 http://xmpp.org/extensions/xep-0176.html */
+
                 transport = transport[0];
 
                 // Attrs
@@ -1392,13 +1439,12 @@ function JSJaCJingle(args) {
 
                 // Push (no requirement there)
                 if(true) {
-                  rd_content['transport']          = {};
-                  rd_content['transport']['pwd']   = transport_pwd;
-                  rd_content['transport']['ufrag'] = transport_ufrag;
+                  rd_content['transport']               = {};
+                  rd_content['transport']['pwd']        = transport_pwd;
+                  rd_content['transport']['ufrag']      = transport_ufrag;
+                  rd_content['transport']['candidates'] = {};
 
-                  for(j in candidate) {
-                    /* XEP-0176 http://xmpp.org/extensions/xep-0176.html */
-
+                  for(var j = 0; j < candidate.length; j++) {
                     var cur_candidate = candidate[j];
 
                     // Attrs
@@ -1426,19 +1472,19 @@ function JSJaCJingle(args) {
                        cur_candidate_priority    &&
                        cur_candidate_protocol    &&
                        cur_candidate_type        ) {
-                      rd_content['transport'][cur_candidate_id]               = {};
-                      rd_content['transport'][cur_candidate_id]['component']  = cur_candidate_component;
-                      rd_content['transport'][cur_candidate_id]['foundation'] = cur_candidate_foundation;
-                      rd_content['transport'][cur_candidate_id]['generation'] = cur_candidate_generation;
-                      rd_content['transport'][cur_candidate_id]['id']         = cur_candidate_id;
-                      rd_content['transport'][cur_candidate_id]['ip']         = cur_candidate_ip;
-                      rd_content['transport'][cur_candidate_id]['network']    = cur_candidate_network;
-                      rd_content['transport'][cur_candidate_id]['port']       = cur_candidate_port;
-                      rd_content['transport'][cur_candidate_id]['priority']   = cur_candidate_priority;
-                      rd_content['transport'][cur_candidate_id]['protocol']   = cur_candidate_protocol;
-                      rd_content['transport'][cur_candidate_id]['rel-addr']   = cur_candidate_rel_addr;
-                      rd_content['transport'][cur_candidate_id]['rel-port']   = cur_candidate_rel_addr;
-                      rd_content['transport'][cur_candidate_id]['type']       = cur_candidate_type;
+                      rd_content['transport']['candidates'][cur_candidate_id]               = {};
+                      rd_content['transport']['candidates'][cur_candidate_id]['component']  = cur_candidate_component;
+                      rd_content['transport']['candidates'][cur_candidate_id]['foundation'] = cur_candidate_foundation;
+                      rd_content['transport']['candidates'][cur_candidate_id]['generation'] = cur_candidate_generation;
+                      rd_content['transport']['candidates'][cur_candidate_id]['id']         = cur_candidate_id;
+                      rd_content['transport']['candidates'][cur_candidate_id]['ip']         = cur_candidate_ip;
+                      rd_content['transport']['candidates'][cur_candidate_id]['network']    = cur_candidate_network;
+                      rd_content['transport']['candidates'][cur_candidate_id]['port']       = cur_candidate_port;
+                      rd_content['transport']['candidates'][cur_candidate_id]['priority']   = cur_candidate_priority;
+                      rd_content['transport']['candidates'][cur_candidate_id]['protocol']   = cur_candidate_protocol;
+                      rd_content['transport']['candidates'][cur_candidate_id]['rel-addr']   = cur_candidate_rel_addr;
+                      rd_content['transport']['candidates'][cur_candidate_id]['rel-port']   = cur_candidate_rel_addr;
+                      rd_content['transport']['candidates'][cur_candidate_id]['type']       = cur_candidate_type;
                     }
                   }
                 }
@@ -1451,13 +1497,12 @@ function JSJaCJingle(args) {
       // Check content values support
       var accept_content_session = false;
 
-      // TODO: self._set_content_session(sid, content_session)
         // TODO: accept_content_session = true if one match
         // TODO: remove unmatching items from rd_content
 
       if(accept_content_session) {
         self._set_content_session(rd_sid, rd_content);
-
+        
         // TODO: success?! (send back matching items)
       } else {
         self.send('set', {
@@ -1612,7 +1657,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_initiate_pending = function() {
-    if(typeof(self._session_initiate_pending) == 'function')
+    if(typeof self._session_initiate_pending == 'function')
       return self._session_initiate_pending;
 
     return function() {};
@@ -1622,7 +1667,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_initiate_success = function() {
-    if(typeof(self._session_initiate_success) == 'function')
+    if(typeof self._session_initiate_success == 'function')
       return self._session_initiate_success;
 
     return function(stanza) {};
@@ -1632,7 +1677,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_initiate_error = function() {
-    if(typeof(self._session_initiate_error) == 'function')
+    if(typeof self._session_initiate_error == 'function')
       return self._session_initiate_error;
 
     return function(stanza) {};
@@ -1642,7 +1687,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_initiate_request = function() {
-    if(typeof(self._session_initiate_request) == 'function')
+    if(typeof self._session_initiate_request == 'function')
       return self._session_initiate_request;
 
     return function(stanza) {};
@@ -1652,7 +1697,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_accept_pending = function() {
-    if(typeof(self._session_accept_pending) == 'function')
+    if(typeof self._session_accept_pending == 'function')
       return self._session_accept_pending;
 
     return function() {};
@@ -1662,7 +1707,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_accept_success = function() {
-    if(typeof(self._session_accept_success) == 'function')
+    if(typeof self._session_accept_success == 'function')
       return self._session_accept_success;
 
     return function(stanza) {};
@@ -1672,7 +1717,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_accept_error = function() {
-    if(typeof(self._session_accept_error) == 'function')
+    if(typeof self._session_accept_error == 'function')
       return self._session_accept_error;
 
     return function(stanza) {};
@@ -1682,7 +1727,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_accept_request = function() {
-    if(typeof(self._session_accept_request) == 'function')
+    if(typeof self._session_accept_request == 'function')
       return self._session_accept_request;
 
     return function(stanza) {};
@@ -1692,7 +1737,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_info_pending = function() {
-    if(typeof(self._session_info_pending) == 'function')
+    if(typeof self._session_info_pending == 'function')
       return self._session_info_pending;
 
     return function() {};
@@ -1702,7 +1747,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_info_success = function() {
-    if(typeof(self._session_info_success) == 'function')
+    if(typeof self._session_info_success == 'function')
       return self._session_info_success;
 
     return function(stanza) {};
@@ -1712,7 +1757,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_info_error = function() {
-    if(typeof(self._session_info_error) == 'function')
+    if(typeof self._session_info_error == 'function')
       return self._session_info_error;
 
     return function(stanza) {};
@@ -1722,7 +1767,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_info_request = function() {
-    if(typeof(self._session_info_request) == 'function')
+    if(typeof self._session_info_request == 'function')
       return self._session_info_request;
 
     return function(stanza) {};
@@ -1732,7 +1777,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_terminate_pending = function() {
-    if(typeof(self._session_terminate_pending) == 'function')
+    if(typeof self._session_terminate_pending == 'function')
       return self._session_terminate_pending;
 
     return function() {};
@@ -1742,7 +1787,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_terminate_success = function() {
-    if(typeof(self._session_terminate_success) == 'function')
+    if(typeof self._session_terminate_success == 'function')
       return self._session_terminate_success;
 
     return function(stanza) {};
@@ -1752,7 +1797,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_terminate_error = function() {
-    if(typeof(self._session_terminate_error) == 'function')
+    if(typeof self._session_terminate_error == 'function')
       return self._session_terminate_error;
 
     return function(stanza) {};
@@ -1762,7 +1807,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_session_terminate_request = function() {
-    if(typeof(self._session_terminate_request) == 'function')
+    if(typeof self._session_terminate_request == 'function')
       return self._session_terminate_request;
 
     return function(stanza) {};
@@ -1874,7 +1919,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_handlers = function(action) {
-    if(action && typeof(self._handlers[action]) == 'function')
+    if(action && typeof self._handlers[action] == 'function')
       return self._handlers[action];
 
     return function(stanza) {};

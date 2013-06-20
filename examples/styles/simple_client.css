@@ -2,7 +2,7 @@
   JSJaCJingle.js Simple Client
 
   @fileoverview Stylesheet for the client
-  
+
   @url https://github.com/valeriansaliou/jsjac-jingle
   @author Valérian Saliou
   @license Mozilla Public License (MPL)
@@ -109,6 +109,13 @@ fieldset video {
 
 fieldset:disabled video {
 	opacity: 0.2 !important;
+}
+
+#not_supported {
+	font-size: 19px;
+	text-transform: uppercase;
+	margin: 20px 0 40px 0;
+	display: none;
 }
 
 .login_notif,
