@@ -484,7 +484,7 @@ function JSJaCJingle(args) {
 
     // Process init actions
     (self._get_connection()).registerIQSet('jingle', NS_JINGLE, self.handle);
-    self.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_INITIATE);
+    self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
   };
 
   /**
@@ -501,7 +501,7 @@ function JSJaCJingle(args) {
     (self._get_session_accept_pending())(self);
 
     // Process accept actions
-    self.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_ACCEPT);
+    self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_ACCEPT });
   };
 
   /**
@@ -518,32 +518,35 @@ function JSJaCJingle(args) {
     (self._get_session_terminate_pending())(self);
 
     // Process terminate actions
-    self.send(null, 'set', JSJAC_JINGLE_ACTION_SESSION_TERMINATE);
+    self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_TERMINATE });
   };
 
   /**
    * Sends a given Jingle stanza packet
    */
-  self.send = function(id, type, action) {
+  self.send = function(type, args) {
+    // Assert
+    if(typeof(args) != 'object') args = {};
+
     // Build stanza
     var stanza = new JSJaCIQ();
     stanza.setTo(self.get_to());
 
     if(type) stanza.setType(type);
 
-    if(!id) id = self._get_id_new();
-    stanza.setID(id);
+    if(!args.id) args.id = self._get_id_new();
+    stanza.setID(args.id);
 
     if(type == 'set') {
-      if(!(action && action in JSJAC_JINGLE_ACTIONS)) {
-        self.get_debug().log('[JSJaCJingle] send > Stanza action unknown: ' + (action || 'undefined'), 1);
+      if(!(args.action && args.action in JSJAC_JINGLE_ACTIONS)) {
+        self.get_debug().log('[JSJaCJingle] send > Stanza action unknown: ' + (args.action || 'undefined'), 1);
         return;
       }
 
-      self._set_sent_id(id);
+      self._set_sent_id(args.id);
 
       // Submit to registered handler
-      switch(action) {
+      switch(args.action) {
         case JSJAC_JINGLE_ACTION_CONTENT_ACCEPT:
           self.send_content_accept(stanza); break;
 
@@ -575,7 +578,7 @@ function JSJaCJingle(args) {
           self.send_session_initiate(stanza, 'set'); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_TERMINATE:
-          self.send_session_terminate(stanza, 'set', 'success'); break;//TODO: dynamic reason mapping
+          self.send_session_terminate(stanza, 'set', (args.reason || JSJAC_JINGLE_REASON_SUCCESS)); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT:
           self.send_transport_accept(stanza); break;
@@ -930,7 +933,7 @@ function JSJaCJingle(args) {
       internal:   self.handle_session_terminate_error
     });
 
-    self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent.', 4);
+    self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + (arg || 'undefined') + ')', 4);
   };
 
   /**
@@ -1228,7 +1231,7 @@ function JSJaCJingle(args) {
 
     if(info_result) {
       // Process info actions
-      self.send(stanza.getID(), 'result');
+      self.send('result', { id: stanza.getID() });
 
       // Trigger info success custom callback
       (self._get_session_info_success())(self, stanza);
@@ -1306,6 +1309,10 @@ function JSJaCJingle(args) {
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
+    // Initialize content session read
+    var rd_content_session = {};
+    var rd_sid = null;
+
     // Parse initiate stanza
     var jingle = stanza.getChild(stanza, NS_JINGLE);
 
@@ -1334,13 +1341,17 @@ function JSJaCJingle(args) {
           var payload_type = description.getChild('payload-type', NS_JINGLE_APPS_RTP);
 
           for(i in payload_type) {
+            /* XEP-0167 http://xmpp.org/extensions/xep-0167.html */
+
             var cur_payload_type = payload_type[i];
 
             // Attrs
-            var cur_payload_type_id = cur_payload_type.getAttribute('id') || null;
-            var cur_payload_type_name = cur_payload_type.getAttribute('name') || null;
-            var cur_payload_type_clockrate = cur_payload_type.getAttribute('clockrate') || null;
             var cur_payload_type_channels = cur_payload_type.getAttribute('channels') || null;
+            var cur_payload_type_clockrate = cur_payload_type.getAttribute('clockrate') || null;
+            var cur_payload_type_id = cur_payload_type.getAttribute('id') || null;
+            var cur_payload_type_maxptime = cur_payload_type.getAttribute('maxptime') || null;
+            var cur_payload_type_name = cur_payload_type.getAttribute('name') || null;
+            var cur_payload_type_ptime = cur_payload_type.getAttribute('ptime') || null;
           }
         }
 
@@ -1353,6 +1364,8 @@ function JSJaCJingle(args) {
           var candidate = transport.getChild('candidate', NS_JINGLE_TRANSPORTS_ICEUDP);
 
           for(j in candidate) {
+            /* XEP-0176 http://xmpp.org/extensions/xep-0176.html */
+
             var cur_candidate = candidate[j];
 
             // Attrs
@@ -1365,12 +1378,33 @@ function JSJaCJingle(args) {
             var cur_candidate_port = cur_candidate.getAttribute('port') || null;
             var cur_candidate_priority = cur_candidate.getAttribute('priority') || null;
             var cur_candidate_protocol = cur_candidate.getAttribute('protocol') || null;
-            var cur_candidate_type = cur_candidate.getAttribute('type') || null;
             var cur_candidate_rel_addr = cur_candidate.getAttribute('rel-addr') || null;
             var cur_candidate_rel_port = cur_candidate.getAttribute('rel-port') || null;
+            var cur_candidate_type = cur_candidate.getAttribute('type') || null;
           }
         }
       }
+    }
+
+    if(rd_sid) {
+      var accept_content_session = false;
+
+      // TODO: self._set_content_session(sid, content_session)
+        // TODO: accept_content_session = true if one match
+        // TODO: remove unmatching items from rd_content_session
+
+      if(accept_content_session) {
+        self._set_content_session(rd_sid, rd_content_session);
+
+        // TODO: success?! (send back matching items)
+      } else {
+        self.send('set', {
+                          action: JSJAC_JINGLE_ACTION_SESSION_TERMINATE,
+                          reason: JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS
+                         });
+      }
+    } else {
+      self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
     }
 
     self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Handled.', 4);
@@ -1447,7 +1481,7 @@ function JSJaCJingle(args) {
   self.handle_session_terminate_request = function(stanza) {
     // Process terminate actions
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
-    self.send(stanza.getID(), 'result');
+    self.send('result', { id: stanza.getID() });
 
     // Trigger terminate success custom callback
     (self._get_session_terminate_success())(self, stanza);
@@ -1716,8 +1750,8 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._get_content_session = function() {
-    return self._content_session;
+  self._get_content_session = function(sid) {
+    return (sid in self._content_session) ? self._content_session[sid] : {};
   };
 
   /**
@@ -2006,8 +2040,8 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._set_content_session = function(content_session) {
-    self._content_session = content_session;
+  self._set_content_session = function(sid, content_session) {
+    self._content_session[sid] = content_session;
   };
 
   /**
