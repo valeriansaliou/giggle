@@ -808,7 +808,6 @@ function JSJaCJingle(args) {
       }
 
       // Change session status
-      // TODO: if stanza:sid == self:sid
       self._set_status(JSJAC_JINGLE_STATUS_ACCEPTING);
 
       // Build Jingle stanza
@@ -859,7 +858,6 @@ function JSJaCJingle(args) {
       }
 
       // Change session status
-      // TODO: if stanza:sid == self:sid
       self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
       // Build Jingle stanza
@@ -1283,13 +1281,7 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate_success = function(stanza) {
-    // TODO
-    // 1. Check the IQ ID
-    // 2. Match, accept and change current status
-    // DO THIS UPPER-LEVEL - PARENT FUNCTION!
-
     // Change session status
-    // TODO: if stanza:sid == self:sid
     self._set_status(JSJAC_JINGLE_STATUS_INITIATED);
 
     self.get_debug().log('[JSJaCJingle] handle_session_initiate_success > Handled.', 4);
@@ -1300,10 +1292,7 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate_error = function(stanza) {
-    // TODO
-
     // Change session status
-    // TODO: if stanza:sid == self:sid
     self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
     self.get_debug().log('[JSJaCJingle] handle_session_initiate_error > Handled.', 4);
@@ -1314,11 +1303,75 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate_request = function(stanza) {
-    // TODO: reply to initiate request!
-
     // Change session status
-    // TODO: if stanza:sid == self:sid
     self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
+
+    // Parse initiate stanza
+    var jingle = stanza.getChild(stanza, NS_JINGLE);
+
+    if(jingle) {
+      // Attrs
+      var jingle_initiator = jingle.getAttribute('creator') || null;
+      var jingle_sid = jingle.getAttribute('sid') || null;
+
+      // Childs
+      var content = jingle.getChild('content', NS_JINGLE);
+
+      if(content) {
+        // Attrs
+        var content_creator = content.getAttribute('creator') || null;
+        var content_name = content.getAttribute('name') || null;
+
+        // Childs
+        var description = jingle.getChild('description', NS_JINGLE_APPS_RTP);
+        var transport = jingle.getChild('transport', NS_JINGLE_TRANSPORTS_ICEUDP);
+
+        if(description) {
+          // Attrs
+          var description_media = description.getAttribute('media') || null;
+
+          // Childs
+          var payload_type = description.getChild('payload-type', NS_JINGLE_APPS_RTP);
+
+          for(i in payload_type) {
+            var cur_payload_type = payload_type[i];
+
+            // Attrs
+            var cur_payload_type_id = cur_payload_type.getAttribute('id') || null;
+            var cur_payload_type_name = cur_payload_type.getAttribute('name') || null;
+            var cur_payload_type_clockrate = cur_payload_type.getAttribute('clockrate') || null;
+            var cur_payload_type_channels = cur_payload_type.getAttribute('channels') || null;
+          }
+        }
+
+        if(transport) {
+          // Attrs
+          var transport_pwd = transport.getAttribute('pwd') || null;
+          var transport_ufrag = transport.getAttribute('ufrag') || null;
+
+          // Childs
+          var candidate = transport.getChild('candidate', NS_JINGLE_TRANSPORTS_ICEUDP);
+
+          for(j in candidate) {
+            var cur_candidate = candidate[j];
+
+            // Attrs
+            var cur_candidate_component = cur_candidate.getAttribute('component') || null;
+            var cur_candidate_foundation = cur_candidate.getAttribute('foundation') || null;
+            var cur_candidate_generation = cur_candidate.getAttribute('generation') || null;
+            var cur_candidate_id = cur_candidate.getAttribute('id') || null;
+            var cur_candidate_ip = cur_candidate.getAttribute('ip') || null;
+            var cur_candidate_network = cur_candidate.getAttribute('network') || null;
+            var cur_candidate_port = cur_candidate.getAttribute('port') || null;
+            var cur_candidate_priority = cur_candidate.getAttribute('priority') || null;
+            var cur_candidate_protocol = cur_candidate.getAttribute('protocol') || null;
+            var cur_candidate_type = cur_candidate.getAttribute('type') || null;
+            var cur_candidate_rel_addr = cur_candidate.getAttribute('rel-addr') || null;
+            var cur_candidate_rel_port = cur_candidate.getAttribute('rel-port') || null;
+          }
+        }
+      }
+    }
 
     self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Handled.', 4);
   };
@@ -1369,7 +1422,6 @@ function JSJaCJingle(args) {
    */
   self.handle_session_terminate_success = function(stanza) {
     // Change session status
-    // TODO: if stanza:sid == self:sid
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_success > Handled.', 4);
@@ -1380,11 +1432,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_terminate_error = function(stanza) {
-    // TODO: force termination
-
     // Change session status
-    // TODO: if stanza:sid == self:sid
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
+
+    // TODO: force termination
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_error > Handled.', 4);
   };
@@ -2106,11 +2157,11 @@ function JSJaCJingle(args) {
    * @type string
    */
   self.util_stanza_terminate_reason = function(stanza) {
-    var reason = self.util_stanza_jingle(stanza).getElementsByTagName('reason');
+    var reason = self.util_stanza_jingle(stanza).getChild('reason', NS_JINGLE);
 
-    if(reason.length) {
+    if(reason) {
       for(cur_reason in JSJAC_JINGLE_REASONS)
-        if(((reason[0]).getElementsByTagName(cur_reason)).length) return cur_reason;
+        if(reason.getChild(cur_reason, NS_JINGLE)) return cur_reason;
     }
 
     return null;
