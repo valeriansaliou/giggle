@@ -15,7 +15,7 @@ Jingle could have be implemented in a dirty-way there, so that "It just works". 
 
 We wanted to avoid such possible security exploits: imagine a friend of you wants to disturb your call, and send you a session-terminate with a wrong SID. In a quick-and-dirty implementation, the request would have been dropped because the call is already ongoing, but the client-side handlers would still have been fired, thus modifying the UI.
 
-JSJaCJingle.js simply DOES NOT fire the custom event handlers that you may have defined, so that you don't have to check each incoming packet is secure (session is authorized, the Jingle session flow is respected). It's all mind-free for you guys!
+JSJaCJingle.js simply DOES NOT fire the custom event handlers that you may have defined, so that you don't have to check yourself that each incoming packet is safe, thus to ensure your client implementation of Jingle is rock-solid (safe: session is authorized AND stanza sender is authorized AND the Jingle session flow is respected). It's all mind-free for you guys!
 
 ## How To Use?
 
