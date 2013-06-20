@@ -45,24 +45,22 @@ var WEBRTC_GET_MEDIA           = ( navigator.getUserMedia           ||
                                    navigator.msGetUserMedia         )
                                   .bind(navigator);
 
-var WEBRTC_PEER_CONNECTION     = ( window.webkitRTCPeerConnection   ||
-                                   window.mozRTCPeerConnection      ||
-                                   window.RTCPeerConnection         );
+var WEBRTC_PEER_CONNECTION     = ( window.RTCPeerConnection         ||
+                                   window.webkitRTCPeerConnection   ||
+                                   window.mozRTCPeerConnection      );
 
 var WEBRTC_SESSION_DESCRIPTION = ( window.RTCSessionDescription     ||
-                                   window.mozRTCSessionDescription  ||
-                                   window.RTCSessionDescription     );
+                                   window.mozRTCSessionDescription  );
 
 var WEBRTC_ICE_CANDIDATE       = ( window.RTCIceCandidate           ||
-                                   window.mozRTCIceCandidate        ||
-                                   window.RTCIceCandidate           );
+                                   window.mozRTCIceCandidate        );
 
 var WEBRTC_CONFIGURATION = {
   peer_connection : {
     config        : {
       iceServers : [{
         // TODO: configurable
-        'url': 'stun:stun.l.google.com:19302'
+        'url': 'stun:stun.jappix.com'
       }]
     },
 
@@ -449,6 +447,11 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._payloads_local = [];
+
+  /**
+   * @private
+   */
   self._candidates_local = {};
 
   /**
@@ -485,11 +488,6 @@ function JSJaCJingle(args) {
    * @private
    */
   self._peer_connection = null;
-
-  /**
-   * @private
-   */
-  self._sdp_message = '';
 
   /**
    * @private
@@ -537,11 +535,15 @@ function JSJaCJingle(args) {
 
     // Initialize WebRTC
     self._peer_get_user_media(function() {
-      self._peer_connection_create(function(sdp_message) {
+      self._peer_connection_create(function() {
         // Parse SDP message
-        console.log(sdp_message);
-        alert('SDP!');
+        console.log('PAYLOADS:');
+        console.log(self._get_payloads_local());
 
+        console.log('CANDIDATES:');
+        console.log(self._get_candidates_local());
+
+        //TODO: we got everything needed, let's kick some asses now and send this over the wires! ;)
         // Send SDP data over Jingle/XMPP
         //self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
       })
@@ -1874,8 +1876,15 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._get_candidates_local = function(candidate_id) {
-    return (candidate_id in self._candidates_local) ? self._candidates_local[candidate_id] : [];
+  self._get_payloads_local = function() {
+    return self._payloads_local;
+  };
+
+  /**
+   * @private
+   */
+  self._get_candidates_local = function() {
+    return self._candidates_local;
   };
 
   /**
@@ -1955,13 +1964,6 @@ function JSJaCJingle(args) {
   self._get_peer_connection = function() {
     return self._peer_connection;
   }
-
-  /**
-   * @private
-   */
-  self._get_sdp_message = function() {
-    return self._sdp_message;
-  };
 
   /**
    * @private
@@ -2166,6 +2168,13 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._set_payloads_local = function(payload_data) {
+    self._payloads_local.push(payload_data);
+  };
+
+  /**
+   * @private
+   */
   self._set_candidates_local = function(candidate_id, candidate_data) {
     if(!(candidate_id in self._candidates_local))
       self._candidates_local[candidate_id] = [];
@@ -2234,13 +2243,6 @@ function JSJaCJingle(args) {
    */
   self._set_peer_connection = function(peer_connection) {
     self._peer_connection = peer_connection;
-  };
-
-  /**
-   * @private
-   */
-  self._set_sdp_message = function(sdp_message) {
-    self._sdp_message = sdp_message;
   };
 
   /**
@@ -2403,6 +2405,9 @@ function JSJaCJingle(args) {
       // Add local stream
       self._get_peer_connection().addStream(self._get_local_stream());
 
+      // Create offer
+      self._get_peer_connection().createOffer(self._peer_got_description);
+
       // Event: onicecandidate
       self._get_peer_connection().onicecandidate = function(e) {
         self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate', 2);
@@ -2495,6 +2500,20 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._peer_got_description = function(session_description) {
+    try {
+      self.get_debug().log('[JSJaCJingle] _peer_got_description > Got description.', 4);
+
+      self._get_peer_connection().setLocalDescription(session_description);
+      self._set_payloads_local(session_description.sdp);
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _peer_got_stream > ' + e, 1);
+    }
+  };
+
+  /**
+   * @private
+   */
   self._peer_get_json_from_sdp = function(message) {
     try {
       return JSON.parse(msg.substring(4));
@@ -2554,7 +2573,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._peer_jingle_to_sdp = function(sdp_message_callback) {
+  self._peer_jingle_to_sdp = function(stanza) {
     // TODO
 
     self.get_debug().log('[JSJaCJingle] _peer_jingle_to_sdp > Done.', 4);
@@ -2563,7 +2582,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._peer_sdp_to_jingle = function(sdp_message_callback) {
+  self._peer_sdp_to_jingle = function(stanza, sdp_message) {
     // TODO
 
     self.get_debug().log('[JSJaCJingle] _peer_sdp_to_jingle > Done.', 4);
