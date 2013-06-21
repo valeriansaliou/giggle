@@ -1,6 +1,6 @@
 /**
  * @fileoverview JSJaC Jingle library, implementation of XEP-0166.
- * Built originally for Uno.im service requirements
+ * Written originally for Uno.im service requirements
  *
  * @url https://github.com/valeriansaliou/jsjac-jingle
  * @depends https://github.com/sstrigler/JSJaC
