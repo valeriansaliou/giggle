@@ -88,7 +88,15 @@ var WEBRTC_CONFIGURATION = {
 };
 
 var R_WEBRTC_SDP_ICE_CANDIDATE = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\d{1,10}) ([a-zA-Z0-9:\.]{1,45}) (\d{1,5}) (typ) (host|srflx|prflx|relay)( (raddr) ([a-zA-Z0-9:\.]{1,45}) (rport) (\d{1,5}))?( (generation) (\d))?/i;
-var R_WEBRTC_SDP_PAYLOAD = /^(.+)$/i;
+
+var R_WEBRTC_SDP_ICE_PAYLOAD   = {
+  rtpmap   : /^a=rtpmap:(\d+) ((\w+)\/(\d+)(\/(\w+))?)?/i,
+  pwd      : /^a=ice-pwd:(\S+)/i,
+  ufrag    : /^a=ice-ufrag:(\S+)/i,
+  ptime    : /^a=ptime:(\d+)/i,
+  maxptime : /^a=maxptime:(\d+)/i,
+  media    : /^m=(audio|video|application|data) /i
+};
 
 
 
@@ -185,6 +193,9 @@ var JSJAC_JINGLE_SESSION_INFO_RINGING               = 'ringing';
 var JSJAC_JINGLE_SESSION_INFO_UNHOLD                = 'unhold';
 var JSJAC_JINGLE_SESSION_INFO_UNMUTE                = 'unmute';
 
+var JSJAC_JINGLE_MEDIA_AUDIO                        = 'audio';
+var JSJAC_JINGLE_MEDIA_VIDEO                        = 'video';
+
 
 
 /**
@@ -257,6 +268,10 @@ JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_MUTE]            = 1;
 JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_RINGING]         = 1;
 JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNHOLD]          = 1;
 JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]          = 1;
+
+var JSJAC_JINGLE_MEDIAS             = {};
+JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                         = 1;
+JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = 1;
 
 
 
@@ -2172,7 +2187,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_payloads_local = function(payload_data) {
-    self._payloads_local.push(payload_data);
+    self._payloads_local = payload_data;
   };
 
   /**
@@ -2398,6 +2413,122 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Parses an SDP payload message
+   * @return parsed object
+   * @type object
+   */
+  self.util_sdp_parse_payload = function(sdp_payload) {
+    if(!sdp_payload || sdp_payload.indexOf('\n') == -1) return {};
+
+    // Common vars
+    var payload   = {};
+    var lines     = sdp_payload.split('\n');
+
+    var e = 0;
+    var cur_line    = null;
+    var cur_media   = null;
+    var cur_rtpmap  = {};
+
+    var m_rtpmap, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
+
+    // Common functions
+    var init_media = function(media, sub, sub_default) {
+      if(!('media' in payload))              payload['media']             = {};
+      if(!(media in payload['media']))       payload['media'][media]      = {};
+      if(!(sub in payload['media'][media]))  payload['media'][media][sub] = sub_default;
+    };
+
+    for(i in lines) {
+      var cur_line = lines[i];
+
+      m_rtpmap = (R_WEBRTC_SDP_ICE_PAYLOAD.rtpmap).exec(cur_line);
+
+      // 'rtpmap' line?
+      if(m_rtpmap) {
+        if(!cur_media || !(cur_media in JSJAC_JINGLE_MEDIAS)) continue;
+
+        console.log('RTPMAP: ' + cur_line);
+
+        // Populate current object
+        e = 0;
+        cur_rtpmap = {};
+
+        cur_rtpmap['channels']  = m_rtpmap[6];
+        cur_rtpmap['clockrate'] = m_rtpmap[4];
+        cur_rtpmap['id']        = m_rtpmap[1] || e++;
+        cur_rtpmap['name']      = m_rtpmap[3];
+
+        // Incomplete?
+        if(e != 0) continue;
+
+        // Push it to parent array
+        init_media(cur_media, 'data', []);
+
+        ((payload.media)[cur_media]['data']).push(cur_rtpmap);
+
+        continue;
+      }
+
+      m_pwd = (R_WEBRTC_SDP_ICE_PAYLOAD.pwd).exec(cur_line);
+
+      // 'pwd' line?
+      if(m_pwd) {
+        console.log('PWD: ' + cur_line);
+
+        payload['pwd'] = m_pwd[1]; continue;
+      }
+
+      m_ufrag = (R_WEBRTC_SDP_ICE_PAYLOAD.ufrag).exec(cur_line);
+
+      // 'ufrag' line?
+      if(m_ufrag) {
+        console.log('UFRAG: ' + cur_line);
+
+        payload['ufrag'] = m_ufrag[1]; continue;
+      }
+
+      m_ptime = (R_WEBRTC_SDP_ICE_PAYLOAD.ptime).exec(cur_line);
+
+      // 'ptime' line?
+      if(m_ptime) {
+        console.log('PTIME: ' + cur_line);
+
+        // Push it to parent array
+        init_media(cur_media, 'attrs', {});
+
+        payload['media'][cur_media]['attrs']['ptime'] = m_ptime[1];
+
+        continue;
+      }
+
+      m_maxptime = (R_WEBRTC_SDP_ICE_PAYLOAD.maxptime).exec(cur_line);
+
+      // 'maxptime' line?
+      if(m_maxptime) {
+        console.log('MAXPTIME: ' + cur_line);
+
+        // Push it to parent array
+        init_media(cur_media, 'attrs', {});
+
+        payload['media'][cur_media]['attrs']['maxptime'] = m_maxptime[1];
+
+        continue;
+      }
+
+      m_media = (R_WEBRTC_SDP_ICE_PAYLOAD.media).exec(cur_line);
+
+      // 'audio/video' line?
+      if(m_media) {
+        console.log('MEDIA: ' + cur_line);
+
+        cur_media = m_media[1]; continue;
+      }
+    }
+
+    return payload;
+  };
+
+  /**
    * Parses an SDP candidate message
    * @return parsed object
    * @type object
@@ -2469,8 +2600,6 @@ function JSJaCJingle(args) {
           self._set_candidates_local(candidate_id, candidate_obj);
 
           self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got a candidate (id: ' + candidate_id + ')', 4);
-
-          // TODO: push it to available candidates object
         } else {
           self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Received everything', 4);
 
@@ -2553,7 +2682,11 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Got description.', 4);
 
       self._get_peer_connection().setLocalDescription(session_description);
-      self._set_payloads_local(session_description.sdp);
+
+      // Convert SDP raw data to an object
+      var payload_obj   = self.util_sdp_parse_payload(session_description.sdp);
+
+      self._set_payloads_local(payload_obj);
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_got_stream > ' + e, 1);
     }
