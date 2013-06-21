@@ -95,6 +95,7 @@ var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   ufrag    : /^a=ice-ufrag:(\S+)/i,
   ptime    : /^a=ptime:(\d+)/i,
   maxptime : /^a=maxptime:(\d+)/i,
+  ssrc     : /^a=ssrc:(\d+)/i,
   media    : /^m=(audio|video|application|data) /i
 };
 
@@ -131,6 +132,8 @@ var JSJAC_JINGLE_AVAILABLE                          = WEBRTC_GET_MEDIA ? true : 
 
 var JSJAC_JINGLE_STANZA_TIMEOUT                     = 10000;
 var JSJAC_JINGLE_STANZA_ID_PRE                      = 'jj_';
+
+var JSJAC_JINGLE_CONTENT_NAME                       = 'conference';
 
 var JSJAC_JINGLE_STATUS_INACTIVE                    = 'inactive';
 var JSJAC_JINGLE_STATUS_INITIATING                  = 'initiating';
@@ -422,6 +425,12 @@ function JSJaCJingle(args) {
      */
     self._to = args.to;
 
+  if(args && args.name)
+    /**
+     * @private
+     */
+    self._name = args.name;
+
   if(args && args.local_view)
     /**
      * @private
@@ -531,9 +540,9 @@ function JSJaCJingle(args) {
 
 
   /**
-   * Initializes a new Jingle session.
+   * Initiates a new Jingle session.
    */
-  self.initialize = function() {
+  self.initiate = function() {
     // Slot unavailable?
     if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
       self.get_debug().log('[JSJaCJingle] init > Cannot init, resource not inactive (status: ' + self.get_status() + ').', 1)
@@ -542,6 +551,7 @@ function JSJaCJingle(args) {
 
     // Set session values
     self._set_sid(self.util_generate_sid());
+    self._set_name(JSJAC_JINGLE_CONTENT_NAME);
     self._set_initiator(self.util_connection_jid());
     self._set_responder(self.get_to());
 
@@ -554,16 +564,9 @@ function JSJaCJingle(args) {
     // Initialize WebRTC
     self._peer_get_user_media(function() {
       self._peer_connection_create(function() {
-        // Parse SDP message
-        console.log('PAYLOADS:');
-        console.log(self._get_payloads_local());
+        self.get_debug().log('[JSJaCJingle] init > Ready to send init data over Jingle.', 2);
 
-        console.log('CANDIDATES:');
-        console.log(self._get_candidates_local());
-
-        //TODO: we got everything needed, let's kick some asses now and send this over the wires! ;)
-        // Send SDP data over Jingle/XMPP
-        //self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
+        self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
       })
     });
   };
@@ -902,8 +905,7 @@ function JSJaCJingle(args) {
                                                   'sid': self.get_sid()
                                                }));
 
-      var content = jingle.appendChild(stanza.buildNode('content', {'xmlns': NS_JINGLE, 'creator': 'TODO', 'name': 'TODO'}));
-      content.appendChild(stanza.buildNode(reason, {'xmlns': NS_JINGLE}));
+      // TODO
     } else if(type == 'result') {
       stanza.setID(arg);
     } else {
@@ -944,6 +946,9 @@ function JSJaCJingle(args) {
       // Change session status
       self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
+      // Build session content
+      self._util_generate_content_session();
+
       // Build Jingle stanza
       var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', {
                                                   'xmlns': NS_JINGLE,
@@ -952,8 +957,7 @@ function JSJaCJingle(args) {
                                                   'sid': self.get_sid()
                                                }));
 
-      var content = jingle.appendChild(stanza.buildNode('content', {'xmlns': NS_JINGLE, 'creator': 'TODO', 'name': 'TODO'}));
-      // TODO
+      self._util_stanza_content_session(stanza, jingle, self.get_sid());
     } else if(type == 'result') {
       if(!arg) {
         self.get_debug().log('[JSJaCJingle] send_session_initiate > Argument not provided.', 1);
@@ -1949,6 +1953,15 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Gets the name value
+   * @return name value
+   * @type string
+   */
+  self.get_name = function() {
+    return self._name;
+  };
+
+  /**
    * Gets the initiator value
    * @return initiator value
    * @type string
@@ -2240,6 +2253,13 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._set_name = function(name) {
+    self._name = name;
+  };
+
+  /**
+   * @private
+   */
   self._set_initiator = function(initiator) {
     self._initiator = initiator;
   };
@@ -2291,6 +2311,15 @@ function JSJaCJingle(args) {
   /**
    * JSJSAC JINGLE UTILITIES
    */
+
+  /**
+   * Gets the Jingle node from a stanza
+   * @return Jingle node
+   * @type DOM
+   */
+  self.util_stanza_set_attribute = function(stanza, name, value) {
+    if(name && value) stanza.setAttribute(name, value);
+  };
 
   /**
    * Gets the Jingle node from a stanza
@@ -2372,6 +2401,126 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Generates the current session content stanza
+   */
+  self._util_stanza_content_session = function(stanza, jingle, sid) {
+    var content_session = self._get_content_session(sid);
+
+    var content = jingle.appendChild(stanza.buildNode('content', { 'xmlns': NS_JINGLE }));
+
+    self.util_stanza_set_attribute(content, 'creator', content_session['creator']);
+    self.util_stanza_set_attribute(content, 'name',    content_session['name']);
+
+    // Build description
+    for(cur_media in content_session['description']) {
+      var cs_description = content_session['description'][cur_media];
+      var cs_d_attrs     = cs_description['attrs'];
+      var cs_d_data      = cs_description['data'];
+
+      var description = content.appendChild(stanza.buildNode('description', { 'xmlns': NS_JINGLE_APPS_RTP }));
+
+      self.util_stanza_set_attribute(description, 'media', cur_media);
+
+      for(cur_description_attr in cs_d_attrs)
+          self.util_stanza_set_attribute(description, cur_description_attr, cs_d_attrs[cur_description_attr]);
+
+      for(i in cs_d_data) {
+        var cs_d_p = cs_d_data[i];
+
+        var payload_type = description.appendChild(stanza.buildNode('payload-type', { 'xmlns': NS_JINGLE_APPS_RTP }));
+
+        for(cur_payload_attr in cs_d_p)
+          self.util_stanza_set_attribute(payload_type, cur_payload_attr, cs_d_p[cur_payload_attr]);
+      }
+    }
+
+    // Build transport
+    var cs_transport = content_session['transport'];
+    var cs_t_attrs   = cs_transport['attrs'];
+    var cs_t_data    = cs_transport['data'];
+
+    var transport = content.appendChild(stanza.buildNode('transport', { 'xmlns': NS_JINGLE_TRANSPORTS_ICEUDP }));
+
+    for(cur_transport_attr in cs_t_attrs)
+          self.util_stanza_set_attribute(transport, cur_transport_attr, cs_t_attrs[cur_transport_attr]);
+
+    for(cur_candidate_hash in cs_t_data) {
+      var cs_t_c = cs_t_data[cur_candidate_hash];
+
+      var candidate = transport.appendChild(stanza.buildNode('candidate', { 'xmlns': NS_JINGLE_TRANSPORTS_ICEUDP }));
+
+      for(cur_candidate_attr in cs_t_c)
+        self.util_stanza_set_attribute(candidate, cur_candidate_attr, cs_t_c[cur_candidate_attr]);
+    }
+  };
+
+  /**
+   * Generates the session content (initial state)
+   */
+  self._util_generate_content_session = function() {
+    // Generation process
+    var content_session = {};
+
+    content_session['creator']     = 'initiator';//TODO: dynamic value mapping, either initiator or responder
+    content_session['name']        = self.get_name();
+    content_session['description'] = {};
+    content_session['transport']   = {};
+
+    // Loop on payloads
+    var payloads = self._get_payloads_local();
+    var description_cpy, description_ptime, description_maxptime;
+
+    if('media' in payloads) {
+      for(cur_media in payloads['media']) {
+        if(!(cur_media in JSJAC_JINGLE_MEDIAS)) continue;
+
+        description_cpy      = payloads['media'][cur_media];
+        description_ptime    = description_cpy['attrs']['ptime'];
+        description_maxptime = description_cpy['attrs']['maxptime'];
+
+        delete description_cpy['attrs']['ptime'];
+        delete description_cpy['attrs']['maxptime'];
+
+        for(i in description_cpy['data']) {
+          description_cpy['data'][i]['ptime']    = description_ptime;
+          description_cpy['data'][i]['maxptime'] = description_maxptime;
+        }
+
+        content_session['description'][cur_media] = description_cpy;
+      }
+    }
+
+    // Loop on transports (candidates)
+    var transports = self._get_candidates_local();
+    var transport_cpy, transport_id, transport_hash;
+
+    content_session['transport']['data']           = {};
+    content_session['transport']['attrs']          = {};
+    content_session['transport']['attrs']['pwd']   = payloads['pwd'];
+    content_session['transport']['attrs']['ufrag'] = payloads['ufrag'];
+
+    for(cur_media in transports) {
+      if(!(cur_media in JSJAC_JINGLE_MEDIAS)) continue;
+
+      for(j in transports[cur_media]) {
+        // Generate transport hash (avoids duplicate transports)
+        transport_cpy = transports[cur_media][j];
+        transport_id = transport_cpy['id'];
+
+        delete transport_cpy['id'];
+
+        transport_hash = self.util_checksum_object(transport_cpy);
+        transport_cpy['id'] = transport_id;
+
+        content_session['transport']['data'][transport_hash] = transports[cur_media][j];
+      }
+    }
+
+    // Storage process
+    self._set_content_session(self.get_sid(), content_session);
+  };
+
+  /**
    * Generates a random SID value
    * @return SID value
    * @type string
@@ -2387,6 +2536,33 @@ function JSJaCJingle(args) {
    */
   self.util_generate_id = function() {
     return cnonce(10);
+  };
+
+  /**
+   * Generates the checksum of an object
+   * @return MD5 checksum value
+   * @type string
+   */
+  self.util_checksum_object = function(object) {
+    // Assert
+    if(typeof object != 'object')
+      return null;
+
+    // Sort
+    var object_keys = [];
+
+    for(key_p in object)
+      object_keys.push(key_p);
+
+    object_keys.sort();
+
+    // Generate trace string
+    var object_str  = '';
+
+    for(key_s in object_keys)
+      object_str += (object[object_keys[key_s]] || '') + ',';
+
+    return hex_md5(object_str);
   };
 
   /**
@@ -2447,8 +2623,6 @@ function JSJaCJingle(args) {
       if(m_rtpmap) {
         if(!cur_media || !(cur_media in JSJAC_JINGLE_MEDIAS)) continue;
 
-        console.log('RTPMAP: ' + cur_line);
-
         // Populate current object
         e = 0;
         cur_rtpmap = {};
@@ -2473,8 +2647,6 @@ function JSJaCJingle(args) {
 
       // 'pwd' line?
       if(m_pwd) {
-        console.log('PWD: ' + cur_line);
-
         payload['pwd'] = m_pwd[1]; continue;
       }
 
@@ -2482,8 +2654,6 @@ function JSJaCJingle(args) {
 
       // 'ufrag' line?
       if(m_ufrag) {
-        console.log('UFRAG: ' + cur_line);
-
         payload['ufrag'] = m_ufrag[1]; continue;
       }
 
@@ -2491,8 +2661,6 @@ function JSJaCJingle(args) {
 
       // 'ptime' line?
       if(m_ptime) {
-        console.log('PTIME: ' + cur_line);
-
         // Push it to parent array
         init_media(cur_media, 'attrs', {});
 
@@ -2505,8 +2673,6 @@ function JSJaCJingle(args) {
 
       // 'maxptime' line?
       if(m_maxptime) {
-        console.log('MAXPTIME: ' + cur_line);
-
         // Push it to parent array
         init_media(cur_media, 'attrs', {});
 
@@ -2515,12 +2681,22 @@ function JSJaCJingle(args) {
         continue;
       }
 
+      m_ssrc = (R_WEBRTC_SDP_ICE_PAYLOAD.ssrc).exec(cur_line);
+
+      // 'ssrc' line?
+      if(m_ssrc) {
+        // Push it to parent array
+        init_media(cur_media, 'attrs', {});
+
+        payload['media'][cur_media]['attrs']['ssrc'] = m_ssrc[1];
+
+        continue;
+      }
+
       m_media = (R_WEBRTC_SDP_ICE_PAYLOAD.media).exec(cur_line);
 
       // 'audio/video' line?
       if(m_media) {
-        console.log('MEDIA: ' + cur_line);
-
         cur_media = m_media[1]; continue;
       }
     }
@@ -2543,11 +2719,11 @@ function JSJaCJingle(args) {
     // Matches!
     if(matches) {
       candidate['component']  = matches[2]  || e++;
-      candidate['foundation'] = matches[2]  || e++;
+      candidate['foundation'] = matches[1]  || e++;
       candidate['generation'] = matches[16] || e++;
       candidate['id']         = self.util_generate_id();
       candidate['ip']         = matches[5]  || e++;
-      candidate['network']    = 0;
+      candidate['network']    = '0';
       candidate['port']       = matches[6]  || e++;
       candidate['priority']   = matches[4]  || e++;
       candidate['protocol']   = matches[3]  || e++;
@@ -2763,7 +2939,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._peer_sdp_to_jingle = function(stanza, sdp_message) {
+  self._peer_sdp_to_jingle = function(stanza) {
     // TODO
 
     self.get_debug().log('[JSJaCJingle] _peer_sdp_to_jingle > Done.', 4);

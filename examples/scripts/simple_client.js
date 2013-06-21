@@ -296,7 +296,7 @@ $(document).ready(function() {
 					};
 
 					// Let's go!
-					(new JSJaCJingle(args)).initialize();
+					(new JSJaCJingle(args)).initiate();
 				} catch(e) {
 					alert('jingle > ' + e);
 				}
