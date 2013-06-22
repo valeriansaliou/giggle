@@ -273,9 +273,10 @@ JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_RINGING]         = 1;
 JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNHOLD]          = 1;
 JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]          = 1;
 
+// TODO-LATER: labels shouldn't be hard-coded!
 var JSJAC_JINGLE_MEDIAS             = {};
-JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                         = { label: '0' };//TODO: label shouldn't be hard-coded!
-JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = { label: '1' };//TODO: label shouldn't be hard-coded!
+JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                         = { label: '0' };
+JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = { label: '1' };
 
 
 
@@ -1253,7 +1254,7 @@ function JSJaCJingle(args) {
                                           candidate: message.payload.candidate
                                       }));*/
 
-    //TODO: self._set_content_session(sid, );
+    // TODO: self._set_content_session(sid, );
 
     self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Handled.', 4);
   };
@@ -1445,22 +1446,14 @@ function JSJaCJingle(args) {
         }
       }
 
-      // Check content values support
-      var accept_content_session = false;
+      self._set_content_session(rd_sid, rd_content);
+      
+      // TODO: send result
+      // TODO: trigger the ongoing call handler for lib user
 
-        // TODO: accept_content_session = true if one match
-        // TODO: remove unmatching items from rd_content
-
-      if(accept_content_session) {
-        self._set_content_session(rd_sid, rd_content);
-        
-        // TODO: success?! (send back matching items)
-      } else {
-        self.send('set', {
-                          action: JSJAC_JINGLE_ACTION_SESSION_TERMINATE,
-                          reason: JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS
-                         });
-      }
+      // TODO-LATER: send an unsupported transport reply if there's no way the session can work
+      //             will need to request for our own SDP, parse it, compare with friend's one
+      //             issue: SDP can cause a little delay which will delay the ring handler trigger
     } else {
       self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
     }
@@ -2616,7 +2609,7 @@ function JSJaCJingle(args) {
 
       // Content session
       self._util_generate_content_session(
-        'initiator', //TODO: dynamic value mapping, either initiator or responder
+        'initiator', // TODO: dynamic value mapping, either initiator or responder
         self.get_name(),
         self._get_payloads_local(),
         self._get_candidates_local()
