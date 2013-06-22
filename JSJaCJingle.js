@@ -702,7 +702,7 @@ function JSJaCJingle(args) {
     // Don't handle non-Jingle stanzas there...
     if(!jingle) return;
 
-    var action = jingle.getAttribute('action');
+    var action = self.util_stanza_get_attribute(jingle, 'action');
 
     // Don't handle action-less Jingle stanzas there...
     if(!action) return;
@@ -947,8 +947,8 @@ function JSJaCJingle(args) {
       // Change session status
       self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
-      // Build session content
-      self._util_generate_content_session();
+      // Build content session
+      self._util_initialize_content_session();
 
       // Build Jingle stanza
       var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', {
@@ -1409,7 +1409,6 @@ function JSJaCJingle(args) {
     self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
     // Initialize content session read
-    var rd_content = {};
     var rd_sid = self.util_stanza_sid(stanza);
 
     // Request is valid?
@@ -1425,126 +1424,23 @@ function JSJaCJingle(args) {
           content = content[0];
 
           // Attrs
-          var content_creator = content.getAttribute('creator') || null;
-          var content_name    = content.getAttribute('name')    || null;
+          var content_creator = self.util_stanza_get_attribute(content, 'creator');
+          var content_name    = self.util_stanza_get_attribute(content, 'name');
 
-          // Childs
-          var description = content.getElementsByTagNameNS(NS_JINGLE_APPS_RTP, 'description');
-          var transport   = content.getElementsByTagNameNS(NS_JINGLE_TRANSPORTS_ICEUDP, 'transport');
-
-          // Push (if requirements satisfied)
+          // Generate full content session
           if(content_creator && content_name) {
-            rd_content['creator'] = content_creator;
-            rd_content['name']    = content_name;
+            self._set_content_session(
+              // Session ID
+              rd_sid,
 
-            if(description.length) {
-              /* XEP-0167 http://xmpp.org/extensions/xep-0167.html */
-
-              description = description[0];
-
-              // Attrs
-              var description_media = description.getAttribute('media') || null;
-              var description_ssrc  = description.getAttribute('ssrc')  || null;
-
-              // Childs
-              var payload_type = description.getElementsByTagNameNS(NS_JINGLE_APPS_RTP, 'payload-type');
-
-              // Push (if requirements satisfied)
-              if(description_media) {
-                rd_content['description']             = {};
-                rd_content['description']['media']    = description_media;
-                rd_content['description']['ssrc']     = description_ssrc;
-                rd_content['description']['payloads'] = {};
-
-                for(var i = 0; i < payload_type.length; i++) {
-                  var cur_payload_type = payload_type[i];
-
-                  // Attrs
-                  var cur_payload_type_channels  = cur_payload_type.getAttribute('channels')  || null;
-                  var cur_payload_type_clockrate = cur_payload_type.getAttribute('clockrate') || null;
-                  var cur_payload_type_id        = cur_payload_type.getAttribute('id')        || null;
-                  var cur_payload_type_maxptime  = cur_payload_type.getAttribute('maxptime')  || null;
-                  var cur_payload_type_name      = cur_payload_type.getAttribute('name')      || null;
-                  var cur_payload_type_ptime     = cur_payload_type.getAttribute('ptime')     || null;
-
-                  // Push (if requirements satisfied)
-                  if(cur_payload_type_id) {
-                    rd_content['description']['payloads'][cur_payload_type_id]              = {};
-                    rd_content['description']['payloads'][cur_payload_type_id]['channels']  = cur_payload_type_channels;
-                    rd_content['description']['payloads'][cur_payload_type_id]['clockrate'] = cur_payload_type_clockrate;
-                    rd_content['description']['payloads'][cur_payload_type_id]['id']        = cur_payload_type_id;
-                    rd_content['description']['payloads'][cur_payload_type_id]['maxptime']  = cur_payload_type_maxptime;
-                    rd_content['description']['payloads'][cur_payload_type_id]['name']      = cur_payload_type_name;
-                    rd_content['description']['payloads'][cur_payload_type_id]['ptime']     = cur_payload_type_ptime;
-                  }
-                }
-              }
-
-              if(transport.length) {
-                /* XEP-0176 http://xmpp.org/extensions/xep-0176.html */
-
-                transport = transport[0];
-
-                // Attrs
-                var transport_pwd   = transport.getAttribute('pwd')   || null;
-                var transport_ufrag = transport.getAttribute('ufrag') || null;
-
-                // Childs
-                var candidate = transport.getElementsByTagNameNS(NS_JINGLE_TRANSPORTS_ICEUDP, 'candidate');
-
-                // Push (no requirement there)
-                if(true) {
-                  rd_content['transport']               = {};
-                  rd_content['transport']['pwd']        = transport_pwd;
-                  rd_content['transport']['ufrag']      = transport_ufrag;
-                  rd_content['transport']['candidates'] = {};
-
-                  for(var j = 0; j < candidate.length; j++) {
-                    var cur_candidate = candidate[j];
-
-                    // Attrs
-                    var cur_candidate_component  = cur_candidate.getAttribute('component')  || null;
-                    var cur_candidate_foundation = cur_candidate.getAttribute('foundation') || null;
-                    var cur_candidate_generation = cur_candidate.getAttribute('generation') || null;
-                    var cur_candidate_id         = cur_candidate.getAttribute('id')         || null;
-                    var cur_candidate_ip         = cur_candidate.getAttribute('ip')         || null;
-                    var cur_candidate_network    = cur_candidate.getAttribute('network')    || null;
-                    var cur_candidate_port       = cur_candidate.getAttribute('port')       || null;
-                    var cur_candidate_priority   = cur_candidate.getAttribute('priority')   || null;
-                    var cur_candidate_protocol   = cur_candidate.getAttribute('protocol')   || null;
-                    var cur_candidate_rel_addr   = cur_candidate.getAttribute('rel-addr')   || null;
-                    var cur_candidate_rel_port   = cur_candidate.getAttribute('rel-port')   || null;
-                    var cur_candidate_type       = cur_candidate.getAttribute('type')       || null;
-
-                    // Push (if requirements satisfied)
-                    if(cur_candidate_component   &&
-                       cur_candidate_foundation  &&
-                       cur_candidate_generation  &&
-                       cur_candidate_id          &&
-                       cur_candidate_ip          &&
-                       cur_candidate_network     &&
-                       cur_candidate_port        &&
-                       cur_candidate_priority    &&
-                       cur_candidate_protocol    &&
-                       cur_candidate_type        ) {
-                      rd_content['transport']['candidates'][cur_candidate_id]               = {};
-                      rd_content['transport']['candidates'][cur_candidate_id]['component']  = cur_candidate_component;
-                      rd_content['transport']['candidates'][cur_candidate_id]['foundation'] = cur_candidate_foundation;
-                      rd_content['transport']['candidates'][cur_candidate_id]['generation'] = cur_candidate_generation;
-                      rd_content['transport']['candidates'][cur_candidate_id]['id']         = cur_candidate_id;
-                      rd_content['transport']['candidates'][cur_candidate_id]['ip']         = cur_candidate_ip;
-                      rd_content['transport']['candidates'][cur_candidate_id]['network']    = cur_candidate_network;
-                      rd_content['transport']['candidates'][cur_candidate_id]['port']       = cur_candidate_port;
-                      rd_content['transport']['candidates'][cur_candidate_id]['priority']   = cur_candidate_priority;
-                      rd_content['transport']['candidates'][cur_candidate_id]['protocol']   = cur_candidate_protocol;
-                      rd_content['transport']['candidates'][cur_candidate_id]['rel-addr']   = cur_candidate_rel_addr;
-                      rd_content['transport']['candidates'][cur_candidate_id]['rel-port']   = cur_candidate_rel_addr;
-                      rd_content['transport']['candidates'][cur_candidate_id]['type']       = cur_candidate_type;
-                    }
-                  }
-                }
-              }
-            }
+              // Content session
+              self._util_generate_content_session(
+                content_creator,
+                content_name,
+                self.util_stanza_parse_payload(stanza),
+                self.util_stanza_parse_candidate(stanza)
+              )
+            );
           }
         }
       }
@@ -2332,14 +2228,18 @@ function JSJaCJingle(args) {
    * @type string
    */
   self.util_stanza_get_attribute = function(stanza, name) {
-    return (name && stanza.length) ? (stanza.getAttribute(name) || null) : null;
+    try {
+      return name ? (stanza.getAttribute(name) || null) : null;
+    } catch(e) {
+      return null;
+    }
   };
 
   /**
    * Sets the attribute value to a stanza element
    */
   self.util_stanza_set_attribute = function(stanza, name, value) {
-    if(name && value && stanza.length) stanza.setAttribute(name, value);
+    if(name && value && stanza) stanza.setAttribute(name, value);
   };
 
   /**
@@ -2370,11 +2270,7 @@ function JSJaCJingle(args) {
    * @type string
    */
   self.util_stanza_sid = function(stanza) {
-    try {
-      return (self.util_stanza_jingle(stanza)).getAttribute('sid') || null;
-    } catch(e) {
-      return null;
-    }
+    return self.util_stanza_get_attribute(stanza, 'sid');
   };
 
   /**
@@ -2441,39 +2337,76 @@ function JSJaCJingle(args) {
    * @type object
    */
   self.util_stanza_parse_payload = function(stanza_payload) {
-    var jingle  = self.util_stanza_jingle(stanza);
-    var payload = {};
+    var jingle      = self.util_stanza_jingle(stanza_payload);
+    var payload_obj = {};
 
     var content = jingle.getElementsByTagNameNS('content', NS_JINGLE);
 
     if(!content.length) return {};
 
-    var description = content.getElementsByTagNameNS('description', NS_JINGLE_APPS_RTP);
-    var d_media     = self.util_stanza_get_attribute(description, 'name');
-
-    if(!description.length || !d_media) return {};
-
-    var e, payload, cur_payload_arr;
-
     // Parse session description
+    var description = content.getElementsByTagNameNS('description', NS_JINGLE_APPS_RTP);
+    
+    if(!description.length) return {};
+
+    // Common vars
+    var cur_description, cd_media, cd_ssrc, payload, e, cur_payload, cur_payload_arr;
+
+    // Common functions
+    var init_media = function(media) {
+      if(!('media' in payload_obj))                  payload_obj['media']                 = {};
+      if(!(media   in payload_obj['media']))         payload_obj['media'][media]          = {};
+
+      if(!('attrs' in payload_obj['media'][media]))  payload_obj['media'][media]['attrs'] = {};
+      if(!('data'  in payload_obj['media'][media]))  payload_obj['media'][media]['data']  = [];
+    };
+
+    // Loop on multiple descriptions
     for(var i = 0; i < description.length; i++) {
-      e = 0;
-      payload = description[i];
-      cur_payload_arr = {};
+      cur_description = description[i];
 
-      cur_payload_arr['channels']  = self.util_stanza_get_attribute(payload, 'channels');
-      cur_payload_arr['clockrate'] = self.util_stanza_get_attribute(payload, 'clockrate');
-      cur_payload_arr['id']        = self.util_stanza_get_attribute(payload, 'id') || e++;
-      cur_payload_arr['maxptime']  = self.util_stanza_get_attribute(payload, 'maxptime');
-      cur_payload_arr['name']      = self.util_stanza_get_attribute(payload, 'name');
-      cur_payload_arr['ptime']     = self.util_stanza_get_attribute(payload, 'ptime');
+      cd_media = self.util_stanza_get_attribute(cur_description, 'media');
+      cd_ssrc  = self.util_stanza_get_attribute(cur_description, 'ssrc');
 
-      if(e != 0) continue;
+      if(!cd_media) continue;
+
+      payload = content.getElementsByTagNameNS('payload-type', NS_JINGLE_APPS_RTP);
+
+      if(!payload.length) continue;
+
+      // Initialize current description
+      init_media(cd_media);
+      payload_obj['media'][cd_media]['attrs']['ssrc'] = cd_ssrc;
+
+      // Loop on multiple payloads
+      for(var j = 0; j < payload.length; j++) {
+        e               = 0;
+        cur_payload     = payload[j];
+        cur_payload_arr = {};
+
+        cur_payload_arr['channels']  = self.util_stanza_get_attribute(cur_payload, 'channels');
+        cur_payload_arr['clockrate'] = self.util_stanza_get_attribute(cur_payload, 'clockrate');
+        cur_payload_arr['id']        = self.util_stanza_get_attribute(cur_payload, 'id') || e++;
+        cur_payload_arr['maxptime']  = self.util_stanza_get_attribute(cur_payload, 'maxptime');
+        cur_payload_arr['name']      = self.util_stanza_get_attribute(cur_payload, 'name');
+        cur_payload_arr['ptime']     = self.util_stanza_get_attribute(cur_payload, 'ptime');
+
+        if(e != 0) continue;
+
+        // Push current payload
+        (payload_obj['media'][cd_media]['data']).push(cur_payload_arr);
+      }
     }
 
-    
+    // Parse transport (need to get 'ufrag' and 'pwd' there)
+    var transport = content.getElementsByTagNameNS('transport', NS_JINGLE_TRANSPORTS_ICEUDP);
 
-    return payload;
+    if(!transport.length) return {};
+
+    payload_obj['pwd']   = self.util_stanza_get_attribute(transport, 'pwd');
+    payload_obj['ufrag'] = self.util_stanza_get_attribute(transport, 'ufrag');
+
+    return payload_obj;
   };
 
   /**
@@ -2482,16 +2415,79 @@ function JSJaCJingle(args) {
    * @type object
    */
   self.util_stanza_parse_candidate = function(stanza_candidate) {
-    var jingle = self.util_stanza_jingle(stanza);
-    var candidate = {};
+    var jingle        = self.util_stanza_jingle(stanza_candidate);
+    var candidate_obj = {};
 
-    // TODO
+    var content = jingle.getElementsByTagNameNS('content', NS_JINGLE);
 
-    return candidate;
+    if(!content.length) return {};
+
+    // Parse transport candidates
+    var transport = content.getElementsByTagNameNS('transport', NS_JINGLE_TRANSPORTS_ICEUDP);
+    
+    if(!transport.length) return {};
+
+    var candidate = content.getElementsByTagNameNS('candidate', NS_JINGLE_TRANSPORTS_ICEUDP);
+
+    if(!candidate.length) return {};
+
+    // Common vars
+    var candidate_arr = [];
+
+    var e, cur_candidate, cur_candidate_arr, cur_description, cd_media;
+
+    // Common functions
+    var init_media = function(media) {
+      if(!(media in candidate_obj)) candidate_obj[media] = [];
+    };
+
+    // Loop on multiple candidates
+    for(var j = 0; j < candidate.length; j++) {
+      e                 = 0;
+      cur_candidate     = candidate[j];
+      cur_candidate_arr = {};
+
+      cur_candidate_arr['component']  = self.util_stanza_get_attribute(cur_candidate, 'component')   || e++;
+      cur_candidate_arr['foundation'] = self.util_stanza_get_attribute(cur_candidate, 'foundation')  || e++;
+      cur_candidate_arr['generation'] = self.util_stanza_get_attribute(cur_candidate, 'generation')  || e++;
+      cur_candidate_arr['id']         = self.util_stanza_get_attribute(cur_candidate, 'id')          || e++;
+      cur_candidate_arr['ip']         = self.util_stanza_get_attribute(cur_candidate, 'ip')          || e++;
+      cur_candidate_arr['network']    = self.util_stanza_get_attribute(cur_candidate, 'network')     || e++;
+      cur_candidate_arr['port']       = self.util_stanza_get_attribute(cur_candidate, 'port')        || e++;
+      cur_candidate_arr['priority']   = self.util_stanza_get_attribute(cur_candidate, 'priority')    || e++;
+      cur_candidate_arr['protocol']   = self.util_stanza_get_attribute(cur_candidate, 'protocol')    || e++;
+      cur_candidate_arr['rel-addr']   = self.util_stanza_get_attribute(cur_candidate, 'rel-addr');
+      cur_candidate_arr['rel-port']   = self.util_stanza_get_attribute(cur_candidate, 'rel-port');
+      cur_candidate_arr['type']       = self.util_stanza_get_attribute(cur_candidate, 'type')        || e++;
+
+      if(e != 0) continue;
+
+      // Push current candidate
+      candidate_arr.push(cur_candidate_arr);
+    }
+
+    // Read available medias from description
+    var description = content.getElementsByTagNameNS('description', NS_JINGLE_APPS_RTP);
+    
+    if(!description.length) return {};
+
+    for(var i = 0; i < description.length; i++) {
+      cur_description = description[i];
+
+      cd_media = self.util_stanza_get_attribute(cur_description, 'media');
+
+      // Initialize current media transport
+      init_media(cd_media);
+
+      // Push candidates to current media
+      candidate_obj[cd_media] = candidate_arr;
+    }
+
+    return candidate_obj;
   };
 
   /**
-   * Generates the current session content stanza
+   * Generates the current content session stanza
    */
   self._util_stanza_content_session = function(stanza, jingle, sid) {
     var content_session = self._get_content_session(sid);
@@ -2545,19 +2541,20 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates the session content (initial state)
+   * Generates the content session
+   * @return content session value
+   * @type object
    */
-  self._util_generate_content_session = function() {
+  self._util_generate_content_session = function(creator, name, payloads, transports) {
     // Generation process
     var content_session = {};
 
-    content_session['creator']     = 'initiator';//TODO: dynamic value mapping, either initiator or responder
-    content_session['name']        = self.get_name();
+    content_session['creator']     = creator;
+    content_session['name']        = name;
     content_session['description'] = {};
     content_session['transport']   = {};
 
     // Loop on payloads
-    var payloads = self._get_payloads_local();
     var description_cpy, description_ptime, description_maxptime;
 
     if('media' in payloads) {
@@ -2581,7 +2578,6 @@ function JSJaCJingle(args) {
     }
 
     // Loop on transports (candidates)
-    var transports = self._get_candidates_local();
     var transport_cpy, transport_id, transport_hash;
 
     content_session['transport']['data']           = {};
@@ -2607,7 +2603,25 @@ function JSJaCJingle(args) {
     }
 
     // Storage process
-    self._set_content_session(self.get_sid(), content_session);
+    return content_session;
+  };
+
+  /**
+   * Generates the initial content session
+   */
+  self._util_initialize_content_session = function() {
+    self._set_content_session(
+      // Session ID
+      self.get_sid(),
+
+      // Content session
+      self._util_generate_content_session(
+        'initiator', //TODO: dynamic value mapping, either initiator or responder
+        self.get_name(),
+        self._get_payloads_local(),
+        self._get_candidates_local()
+      )
+    );
   };
 
   /**
@@ -2699,9 +2713,9 @@ function JSJaCJingle(args) {
 
     // Common functions
     var init_media = function(media, sub, sub_default) {
-      if(!('media' in payload))              payload['media']             = {};
-      if(!(media in payload['media']))       payload['media'][media]      = {};
-      if(!(sub in payload['media'][media]))  payload['media'][media][sub] = sub_default;
+      if(!('media' in payload))                  payload['media']             = {};
+      if(!(media   in payload['media']))         payload['media'][media]      = {};
+      if(!(sub     in payload['media'][media]))  payload['media'][media][sub] = sub_default;
     };
 
     for(i in lines) {
