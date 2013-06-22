@@ -15,7 +15,7 @@
  * Implements: XEP-0166
  * URL: http://xmpp.org/extensions/xep-0166.html
 
- * This negociation example associates JSJaCJingle.js methods to a real workflow
+ * This negotiation example associates JSJaCJingle.js methods to a real workflow
  * We assume in this workflow example remote user accepts the call he gets
 
  * 1.cmt Local user wants to start a WebRTC session with remote user
@@ -134,6 +134,7 @@ var JSJAC_JINGLE_STANZA_TIMEOUT                     = 10000;
 var JSJAC_JINGLE_STANZA_ID_PRE                      = 'jj_';
 
 var JSJAC_JINGLE_CONTENT_NAME                       = 'conference';
+var JSJAC_JINGLE_NETWORK                            = '0';
 
 var JSJAC_JINGLE_STATUS_INACTIVE                    = 'inactive';
 var JSJAC_JINGLE_STATUS_INITIATING                  = 'initiating';
@@ -273,8 +274,8 @@ JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNHOLD]          = 1;
 JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]          = 1;
 
 var JSJAC_JINGLE_MEDIAS             = {};
-JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                         = 1;
-JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = 1;
+JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                         = { label: '0' };//TODO: label shouldn't be hard-coded!
+JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = { label: '1' };//TODO: label shouldn't be hard-coded!
 
 
 
@@ -564,7 +565,7 @@ function JSJaCJingle(args) {
     // Initialize WebRTC
     self._peer_get_user_media(function() {
       self._peer_connection_create(function() {
-        self.get_debug().log('[JSJaCJingle] init > Ready to send init data over Jingle.', 2);
+        self.get_debug().log('[JSJaCJingle] init > Ready to begin Jingle negotiation.', 2);
 
         self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
       })
@@ -1239,7 +1240,20 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_accept_request = function(stanza) {
-    // TODO
+    // Extract SDP data from packet
+    // TODO: session description
+    // TODO: transport candidates
+
+    // Set it to remote view
+    // TODO: session description >> 
+                                      /*self._get_peer_connection().setRemoteDescription(new WEBRTC_SESSION_DESCRIPTION(message.payload));*/
+    // TODO: transport candidates >> 
+                                      /*self._get_peer_connection().addIceCandidate(new WEBRTC_ICE_CANDIDATE({
+                                          sdpMLineIndex: message.payload.label,
+                                          candidate: message.payload.candidate
+                                      }));*/
+
+    //TODO: self._set_content_session(sid, );
 
     self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Handled.', 4);
   };
@@ -1306,7 +1320,7 @@ function JSJaCJingle(args) {
    */
   self.handle_session_info_request = function(stanza) {
     // Parse stanza
-    var info_name = self.util_stanza_session_info();
+    var info_name = self.util_stanza_session_info(stanza);
     var info_result = false;
 
     switch(info_name) {
@@ -2313,12 +2327,19 @@ function JSJaCJingle(args) {
    */
 
   /**
-   * Gets the Jingle node from a stanza
-   * @return Jingle node
-   * @type DOM
+   * Gets the attribute value from a stanza element
+   * @return Attribute value
+   * @type string
+   */
+  self.util_stanza_get_attribute = function(stanza, name) {
+    return (name && stanza.length) ? (stanza.getAttribute(name) || null) : null;
+  };
+
+  /**
+   * Sets the attribute value to a stanza element
    */
   self.util_stanza_set_attribute = function(stanza, name, value) {
-    if(name && value) stanza.setAttribute(name, value);
+    if(name && value && stanza.length) stanza.setAttribute(name, value);
   };
 
   /**
@@ -2382,6 +2403,20 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Gets a stanza session info
+   * @return reason code
+   * @type string
+   */
+  self.util_stanza_session_info = function(stanza) {
+    var jingle = self.util_stanza_jingle(stanza);
+
+    for(cur_info in JSJAC_JINGLE_SESSION_INFOS)
+      if(jingle.getElementsByTagName(cur_info, NS_JINGLE_APPS_RTP_INFO).length) return cur_info;
+
+    return null;
+  };
+
+  /**
    * Set a timeout limit to a stanza
    */
   self.util_stanza_timeout = function(handlers) {
@@ -2398,6 +2433,61 @@ function JSJaCJingle(args) {
         (handlers.internal)();
       }
     }, JSJAC_JINGLE_STANZA_TIMEOUT);
+  };
+
+  /**
+   * Parses a Jingle payload stanza
+   * @return parsed object
+   * @type object
+   */
+  self.util_stanza_parse_payload = function(stanza_payload) {
+    var jingle  = self.util_stanza_jingle(stanza);
+    var payload = {};
+
+    var content = jingle.getElementsByTagNameNS('content', NS_JINGLE);
+
+    if(!content.length) return {};
+
+    var description = content.getElementsByTagNameNS('description', NS_JINGLE_APPS_RTP);
+    var d_media     = self.util_stanza_get_attribute(description, 'name');
+
+    if(!description.length || !d_media) return {};
+
+    var e, payload, cur_payload_arr;
+
+    // Parse session description
+    for(var i = 0; i < description.length; i++) {
+      e = 0;
+      payload = description[i];
+      cur_payload_arr = {};
+
+      cur_payload_arr['channels']  = self.util_stanza_get_attribute(payload, 'channels');
+      cur_payload_arr['clockrate'] = self.util_stanza_get_attribute(payload, 'clockrate');
+      cur_payload_arr['id']        = self.util_stanza_get_attribute(payload, 'id') || e++;
+      cur_payload_arr['maxptime']  = self.util_stanza_get_attribute(payload, 'maxptime');
+      cur_payload_arr['name']      = self.util_stanza_get_attribute(payload, 'name');
+      cur_payload_arr['ptime']     = self.util_stanza_get_attribute(payload, 'ptime');
+
+      if(e != 0) continue;
+    }
+
+    
+
+    return payload;
+  };
+
+  /**
+   * Parses a Jingle candidate stanza
+   * @return parsed object
+   * @type object
+   */
+  self.util_stanza_parse_candidate = function(stanza_candidate) {
+    var jingle = self.util_stanza_jingle(stanza);
+    var candidate = {};
+
+    // TODO
+
+    return candidate;
   };
 
   /**
@@ -2723,7 +2813,7 @@ function JSJaCJingle(args) {
       candidate['generation'] = matches[16] || e++;
       candidate['id']         = self.util_generate_id();
       candidate['ip']         = matches[5]  || e++;
-      candidate['network']    = '0';
+      candidate['network']    = JSJAC_JINGLE_NETWORK;
       candidate['port']       = matches[6]  || e++;
       candidate['priority']   = matches[4]  || e++;
       candidate['protocol']   = matches[3]  || e++;
@@ -2774,10 +2864,8 @@ function JSJaCJingle(args) {
           var candidate_obj   = self.util_sdp_parse_candidate(candidate_data);
 
           self._set_candidates_local(candidate_id, candidate_obj);
-
-          self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got a candidate (id: ' + candidate_id + ')', 4);
         } else {
-          self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Received everything', 4);
+          self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got candidates.', 4);
 
           // Execute what's next
           sdp_message_callback();
@@ -2859,6 +2947,8 @@ function JSJaCJingle(args) {
 
       self._get_peer_connection().setLocalDescription(session_description);
 
+      self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for candidates...', 4);
+
       // Convert SDP raw data to an object
       var payload_obj   = self.util_sdp_parse_payload(session_description.sdp);
 
@@ -2925,23 +3015,5 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] _peer_generate_json_from_sdp > Generated.', 4);
 
     return str + '\n}';
-  };
-
-  /**
-   * @private
-   */
-  self._peer_jingle_to_sdp = function(stanza) {
-    // TODO
-
-    self.get_debug().log('[JSJaCJingle] _peer_jingle_to_sdp > Done.', 4);
-  };
-
-  /**
-   * @private
-   */
-  self._peer_sdp_to_jingle = function(stanza) {
-    // TODO
-
-    self.get_debug().log('[JSJaCJingle] _peer_sdp_to_jingle > Done.', 4);
   };
 }
