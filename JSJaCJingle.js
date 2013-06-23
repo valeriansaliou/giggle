@@ -1185,7 +1185,7 @@ function JSJaCJingle(args) {
   self.handle_session_accept = function(stanza) {
     // Security preconditions
     if(!self.util_stanza_safe(stanza)) {
-      self.get_debug().log('[JSJaCJingle] handle_session_terminate > Dropped unsafe stanza.', 2);
+      self.get_debug().log('[JSJaCJingle] handle_session_accept > Dropped unsafe stanza.', 2);
 
       self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
       return;
@@ -1243,22 +1243,102 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_accept_request = function(stanza) {
-    // Extract SDP data from packet
-    // TODO: session description
-    // TODO: transport candidates
+    // Common vars
+    var req_error = false;
+    var rd_sid, rd_content,
+        jingle, content, content_creator, content_name,
+        accept_payload, accept_candidate, accept_sdp,
+        cur_candidate_obj;
 
-    // Set it to remote view
-    // TODO: session description >> 
-                                      /*self._get_peer_connection().setRemoteDescription(new WEBRTC_SESSION_DESCRIPTION(message.payload));*/
-    // TODO: transport candidates >> 
-                                      /*self._get_peer_connection().addIceCandidate(new WEBRTC_ICE_CANDIDATE({
-                                          sdpMLineIndex: message.payload.label,
-                                          candidate: message.payload.candidate
-                                      }));*/
+    // Change session status
+    self._set_status(JSJAC_JINGLE_STATUS_INITIATED);
 
-    // TODO: self._set_content_session(sid, );
+    // Accept content session read
+    rd_sid = self.util_stanza_sid(stanza);
 
-    self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Handled.', 4);
+    // Request is valid?
+    if(rd_sid) {
+      // Parse initiate stanza
+      jingle = self.util_stanza_jingle(stanza);
+
+      if(jingle) {
+        // Childs
+        content = jingle.getElementsByTagNameNS(NS_JINGLE, 'content');
+
+        if(content.length) {
+          content = content[0];
+
+          // Attrs
+          content_creator = self.util_stanza_get_attribute(content, 'creator');
+          content_name    = self.util_stanza_get_attribute(content, 'name');
+
+          // Generate full content session
+          if(content_creator && content_name) {
+            accept_payload   = self.util_stanza_parse_payload(stanza);
+            accept_candidate = self.util_stanza_parse_candidate(stanza);
+          } else {
+            req_error = true;
+          }
+        } else {
+          req_error = true;
+        }
+      } else {
+        req_error = true;
+      }
+    } else {
+      req_error = true;
+    }
+
+    if(!req_error) {
+      // Generate and store content session
+      rd_content = self._util_generate_content_session(
+        content_creator,
+        content_name,
+        accept_payload,
+        accept_candidate
+      );
+
+      self._set_content_session(rd_sid, rd_content);
+
+      // Process accept actions
+      self.send('result', { id: stanza.getID() });
+
+      // Trigger accept success custom callback
+      (self._get_session_accept_success())(self, stanza);
+
+      // Apply SDP data
+      accept_sdp = self.util_generate_sdp(accept_payload, accept_candidate);
+
+      // Set it to PeerConnection
+      self._get_peer_connection().setRemoteDescription(
+        new WEBRTC_SESSION_DESCRIPTION(accept_sdp.description)
+      );
+
+      for(cur_candidate in accept_sdp.candidates) {
+        cur_candidate_obj = (accept_sdp.candidates)[cur_candidate];
+
+        self._get_peer_connection().addIceCandidate(
+          new WEBRTC_ICE_CANDIDATE({
+            sdpMLineIndex: cur_candidate_obj.label,
+            candidate: cur_candidate_obj.candidate
+          })
+        );
+      }
+
+      // TODO-LATER: send an unsupported transport reply if there's no way the session can work
+      //             will need to request for our own SDP, parse it, compare with friend's one
+      //             issue: SDP can cause a little delay which will delay the ring handler trigger
+
+      self.get_debug().log('[JSJaCJingle] handle_session_info_request > Handled.', 4);
+    } else {
+      // Send error reply
+      self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
+
+      // Trigger success error custom callback
+      (self._get_session_accept_error())(self, stanza);
+
+      self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Error.', 2);
+    }
   };
 
   /**
@@ -1328,6 +1408,7 @@ function JSJaCJingle(args) {
 
     switch(info_name) {
       case JSJAC_JINGLE_SESSION_INFO_ACTIVE:
+      case JSJAC_JINGLE_SESSION_INFO_RINGING:
         info_result = true; break;
     }
 
@@ -1411,42 +1492,56 @@ function JSJaCJingle(args) {
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
+    // Common vars
+    var req_error = false;
+    var rd_sid, rd_content,
+        jingle, content, content_creator, content_name,
+        accept_payload, accept_candidate;
+
     // Initialize content session read
-    var rd_sid = self.util_stanza_sid(stanza);
+    rd_sid = self.util_stanza_sid(stanza);
 
     // Request is valid?
     if(rd_sid) {
       // Parse initiate stanza
-      var jingle = self.util_stanza_jingle(stanza);
+      jingle = self.util_stanza_jingle(stanza);
 
       if(jingle) {
         // Childs
-        var content = jingle.getElementsByTagNameNS(NS_JINGLE, 'content');
+        content = jingle.getElementsByTagNameNS(NS_JINGLE, 'content');
 
         if(content.length) {
           content = content[0];
 
           // Attrs
-          var content_creator = self.util_stanza_get_attribute(content, 'creator');
-          var content_name    = self.util_stanza_get_attribute(content, 'name');
+          content_creator = self.util_stanza_get_attribute(content, 'creator');
+          content_name    = self.util_stanza_get_attribute(content, 'name');
 
-          // Generate full content session
+          // Generate content session
           if(content_creator && content_name) {
-            self._set_content_session(
-              // Session ID
-              rd_sid,
-
-              // Content session
-              self._util_generate_content_session(
-                content_creator,
-                content_name,
-                self.util_stanza_parse_payload(stanza),
-                self.util_stanza_parse_candidate(stanza)
-              )
-            );
+            accept_payload   = self.util_stanza_parse_payload(stanza);
+            accept_candidate = self.util_stanza_parse_candidate(stanza);
+          } else {
+            req_error = true;
           }
+        } else {
+          req_error = true;
         }
+      } else {
+        req_error = true;
       }
+    } else {
+      req_error = true;
+    }
+
+    if(!req_error) {
+      // Generate and store content session
+      rd_content = self._util_generate_content_session(
+        content_creator,
+        content_name,
+        accept_payload,
+        accept_candidate
+      );
 
       self._set_content_session(rd_sid, rd_content);
       
@@ -1456,11 +1551,17 @@ function JSJaCJingle(args) {
       // TODO-LATER: send an unsupported transport reply if there's no way the session can work
       //             will need to request for our own SDP, parse it, compare with friend's one
       //             issue: SDP can cause a little delay which will delay the ring handler trigger
-    } else {
-      self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
-    }
 
-    self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Handled.', 4);
+      self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Handled.', 4);
+    } else {
+      // Send error reply
+      self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
+
+      // Trigger success error custom callback
+      (self._get_session_initiate_error())(self, stanza);
+
+      self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Error.', 2);
+    }
   };
 
   /**
@@ -2265,7 +2366,10 @@ function JSJaCJingle(args) {
    * @type string
    */
   self.util_stanza_sid = function(stanza) {
-    return self.util_stanza_get_attribute(stanza, 'sid');
+    return self.util_stanza_get_attribute(
+      self.util_stanza_jingle(stanza),
+      'sid'
+    );
   };
 
   /**
@@ -2739,32 +2843,104 @@ function JSJaCJingle(args) {
    * @type string
    */
   self.util_generate_sdp_description = function(payloads) {
-    var payloads_str = {};
+    var payloads_obj = {};
+    var payloads_str = '';
 
     // TODO: do not hardcode values there!
 
-    // Parse payloads
+    // Common vars
+    var i, j,
+        pwd, ufrag,
+        bundle_str, bundle_media,
+        cur_media, cur_media_obj, cur_payload, cur_payload_obj, cur_crypto, cur_crypto_obj;
+
+    // Read initial data
+    pwd   = payloads['pwd'];
+    ufrag = payloads['ufrag'];
+
+    // Payloads headers
     payloads_str += 'v=0';
     payloads_str += 'o=- 952338584 2 IN IP4 127.0.0.1';
     payloads_str += 's=-';
     payloads_str += 't=0 0';
-    payloads_str += 'a=group:BUNDLE audio video';
+
+    // Add bundles line
+    bundle_str = 'a=group:BUNDLE';
+
+    for(bundle_media in payloads)
+      bundle_str += ' ' + bundle_media;
+
+    payloads_str += bundle_str;
+
     payloads_str += 'a=msid-semantic: WMS IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1';
 
-    for(i in payloads) {
-      payloads_str += 'm=audio 1 RTP/SAVPF 111 103 104 0 8 107 106 105 13 126';
-      payloads_str += '';
-      payloads_str += '';
-      payloads_str += '';
-      payloads_str += '';
-      payloads_str += '';
-      payloads_str += '';
-      payloads_str += '';
-      payloads_str += '';
-      payloads_str += '';
+    // Add media groups
+    for(cur_media in payloads) {
+      cur_media_obj = payloads[cur_media];
+      cur_attrs     = cur_media_obj['attrs'];
+      cur_payload   = cur_media_obj['payload'];
+      cur_crypto    = cur_media_obj['crypto'];
+
+      payloads_str += 'm=' + cur_media + ' 1 RTP/SAVPF';
+      payloads_str += 'c=IN IP4 0.0.0.0';
+      payloads_str += 'a=rtcp:1 IN IP4 0.0.0.0';
+
+      if(ufrag)  payloads_str += 'a=ice-ufrag:' + ufrag;
+      if(pwd)    payloads_str += 'a=ice-pwd:' + pwd;
+
+      payloads_str += 'a=ice-options:google-ice';
+      payloads_str += 'a=fingerprint:sha-256 C1:F6:D6:FC:FD:EC:DD:EE:14:EB:10:43:C8:D1:CB:4B:7F:79:1D:F2:E7:FA:D3:F7:4A:56:F5:CD:D2:21:85:B7';
+
+      if(cur_media == JSJAC_JINGLE_MEDIA_AUDIO)
+        payload_str += 'a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level';
+      else if(cur_media == JSJAC_JINGLE_MEDIA_VIDEO)
+        payload_str += 'a=extmap:2 urn:ietf:params:rtp-hdrext:toffset';
+
+      payloads_str += 'a=sendrecv';
+      payloads_str += 'a=mid:audio';
+      payloads_str += 'a=rtcp-mux';
+
+      for(i in cur_crypto) {
+        cur_crypto_obj = cur_crypto[i];
+
+        payloads_str += 'a=crypto:'                     + 
+                        cur_crypto_obj['tag']           + ' ' + 
+                        cur_crypto_obj['crypto-suite']  + ' ' + 
+                        cur_crypto_obj['key-params']    + 
+                        (cur_crypto_obj['session-params'] ? (' ' + cur_crypto_obj['session-params']) : '');
+      }
+
+      for(j in cur_payload) {
+        cur_payload_obj = cur_payload[j];
+
+        payloads_str += 'a=rtpmap:' + 
+                        cur_payload_obj['id']           + ' ' + 
+                        cur_payload_obj['name']         + '/' + 
+                        cur_payload_obj['clockrate']    + 
+                        (cur_payload_obj['channels'] ? ('/' + cur_payload_obj['channels']) : '');
+      }
+
+      if(cur_attrs['ptime'])     payloads_str += 'a=ptime:'    + cur_attrs['ptime'];
+      if(cur_attrs['maxptime'])  payloads_str += 'a=maxptime:' + cur_attrs['maxptime'];
+
+      if(cur_media == JSJAC_JINGLE_MEDIA_AUDIO) {
+        payloads_str += 'a=ssrc:1763784905 cname:FIaQzPAFtiUjAMyU';
+        payloads_str += 'a=ssrc:1763784905 msid:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1 IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1a0';
+        payloads_str += 'a=ssrc:1763784905 mslabel:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1';
+        payloads_str += 'a=ssrc:1763784905 label:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1a0';
+      } else if(cur_media == JSJAC_JINGLE_MEDIA_VIDEO) {
+        payloads_str += 'a=ssrc:1216991425 cname:FIaQzPAFtiUjAMyU';
+        payloads_str += 'a=ssrc:1216991425 msid:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1 IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1v0';
+        payloads_str += 'a=ssrc:1216991425 mslabel:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1';
+        payloads_str += 'a=ssrc:1216991425 label:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1v0';
+      }
     }
 
-    return payloads_str;
+    // Push to object
+    payloads_obj.type = 'offer'; // TODO: either offer or answer!
+    payloads_obj.sdp  = payloads_str;
+
+    return payloads_obj;
   };
 
   /**
@@ -2901,10 +3077,10 @@ function JSJaCJingle(args) {
         e = 0;
         cur_crypto = {};
 
-        cur_crypto['crypto-suite']   = m_crypto[6]  || e++;
-        cur_crypto['key-params']     = m_crypto[4]  || e++;
-        cur_crypto['session-params'] = m_crypto[1];
-        cur_crypto['tag']            = m_crypto[3]  || e++;
+        cur_crypto['crypto-suite']   = m_crypto[2]  || e++;
+        cur_crypto['key-params']     = m_crypto[3]  || e++;
+        cur_crypto['session-params'] = m_crypto[5];
+        cur_crypto['tag']            = m_crypto[1]  || e++;
 
         // Incomplete?
         if(e != 0) continue;

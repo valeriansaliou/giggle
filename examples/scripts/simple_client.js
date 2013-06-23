@@ -11,6 +11,19 @@
 var SC_CONNECTED = false;
 var SC_PRESENCE = {};
 
+function url_param(name) {
+	try {
+		var uri_param = (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [,null])[1];
+
+		if(uri_param)
+			return decodeURI(uri_param);
+
+		return null;
+	} catch(e) {
+		return null;
+	}
+}
+
 $(document).ready(function() {
 	// Check for WebRTC support
 	if(!JSJAC_JINGLE_AVAILABLE) {
@@ -335,4 +348,16 @@ $(document).ready(function() {
 			return false;
 		}
 	});
+
+	// Check for URL parameters
+	var param_bosh = url_param('bosh');
+	var param_jid  = url_param('jid');
+	var param_pwd  = url_param('pwd');
+	var param_go   = url_param('go');
+
+	if(param_bosh)  $('#form_login input[name="login_bosh"]').val(param_bosh);
+	if(param_jid)   $('#form_login input[name="login_jid"]').val(param_jid);
+	if(param_pwd)   $('#form_login input[name="login_pwd"]').val(param_pwd);
+
+	if(param_go == '1')  $('#form_login').submit();
 });
