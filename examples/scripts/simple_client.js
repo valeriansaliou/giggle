@@ -11,6 +11,112 @@
 var SC_CONNECTED = false;
 var SC_PRESENCE = {};
 
+var JINGLE = null;
+
+var ARGS = {
+    // Configuration (required)
+    connection: null,
+    to: null,
+    local_view: document.getElementById('video_local'),
+    remote_view: document.getElementById('video_remote'),
+    debug: (new JSJaCConsoleLogger(4)),
+
+    // Custom handlers (optional)
+    session_initiate_pending: function(self) {
+    	$('.call_notif').hide();
+        $('#call_info').text('Initializing...').show();
+
+        console.log('session_initiate_pending');
+    },
+
+    session_initiate_success: function(self, stanza) {
+        $('.call_notif').hide();
+        $('#call_success').text('Initialized.').show();
+
+        // Request for Jingle session to be accepted
+       	self.accept();
+
+        console.log('session_initiate_success');
+    },
+
+    session_initiate_error: function(self, stanza) {
+        $('.call_notif').hide();
+        $('#call_error').text('Could not initialize.').show();
+
+        console.log('session_initiate_error');
+    },
+
+    session_initiate_request: function(self, stanza) {
+		console.log('session_initiate_request');
+	},
+
+    session_accept_pending: function(self) {
+        $('.call_notif').hide();
+        $('#call_info').text('Waiting to be accepted...').show();
+
+        console.log('session_accept_pending');
+    },
+
+    session_accept_success: function(self, stanza) {
+        $('.call_notif').hide();
+        $('#call_success').text('Accepted.').show();
+
+        console.log('session_accept_success');
+    },
+
+    session_accept_error: function(self, stanza) {
+        $('.call_notif').hide();
+        $('#call_error').text('Could not be accepted.').show();
+
+        console.log('session_accept_error');
+    },
+
+    session_accept_request: function(self, stanza) {
+		console.log('session_accept_request');
+	},
+
+    session_info_pending: function(self) {
+		console.log('session_info_pending');
+	},
+
+	session_info_success: function(self, stanza) {
+		console.log('session_info_success');
+	},
+
+	session_info_error: function(self, stanza) {
+		console.log('session_info_error');
+	},
+
+	session_info_request: function(self, stanza) {
+		console.log('session_info_request');
+	},
+
+    session_terminate_pending: function(self) {
+        $('.call_notif').hide();
+        $('#call_info').text('Terminating...').show();
+
+        console.log('session_terminate_pending');
+    },
+
+    session_terminate_success: function(self, stanza) {
+        $('.call_notif').hide();
+        $('#call_success').text('Terminated.').show();
+
+        console.log('session_terminate_success');
+    },
+
+    session_terminate_error: function(self, stanza) {
+        $('.call_notif').hide();
+        $('#call_error').text('Could not terminate.').show();
+
+        console.log('session_terminate_error');
+    },
+
+    session_terminate_request: function(self, stanza) {
+        console.log('session_terminate_request');
+    }
+};
+
 function url_param(name) {
 	try {
 		var uri_param = (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [,null])[1];
@@ -56,6 +162,8 @@ $(document).ready(function() {
 
 				con = new JSJaCHttpBindingConnection(oArgs);
 				
+				ARGS.connection = con;
+
 				// Configure handlers
 				con.registerHandler('onconnect', function() {
 					try {
@@ -71,6 +179,19 @@ $(document).ready(function() {
 
 						// Initial presence
 						con.send(new JSJaCPresence());
+
+						// Initialize JSJaCJingle router
+						new JSJaCJingle_listen({
+							connection: con,
+
+							handle_session_initiate: function(stanza) {
+								ARGS.to = stanza.getFrom() || null;
+
+								// Let's go!
+								JINGLE = new JSJaCJingle(ARGS);
+								JINGLE.initiate();
+							}
+						});
 					} catch(e) {
 						alert('onconnect > ' + e);
 					}
@@ -203,113 +324,11 @@ $(document).ready(function() {
 				$('#call_info').text('Launching...').show();
 
 				try {
-					// JSJaCJingle arguments
-					var args = {
-					    // Configuration (required)
-					    connection: con,
-					    to: call_jid,
-					    local_view: document.getElementById('video_local'),
-					    remote_view: document.getElementById('video_remote'),
-					    debug: (new JSJaCConsoleLogger(4)),
-
-					    // Custom handlers (optional)
-					    session_initiate_pending: function(self) {
-					    	$('.call_notif').hide();
-					        $('#call_info').text('Initializing...').show();
-
-					        console.log('session_initiate_pending');
-					    },
-
-					    session_initiate_success: function(self, stanza) {
-					        $('.call_notif').hide();
-					        $('#call_success').text('Initialized.').show();
-
-					        // Request for Jingle session to be accepted
-					       	self.accept();
-
-					        console.log('session_initiate_success');
-					    },
-
-					    session_initiate_error: function(self, stanza) {
-					        $('.call_notif').hide();
-					        $('#call_error').text('Could not initialize.').show();
-
-					        console.log('session_initiate_error');
-					    },
-
-					    session_initiate_request: function(self, stanza) {
-							console.log('session_initiate_request');
-						},
-
-					    session_accept_pending: function(self) {
-					        $('.call_notif').hide();
-					        $('#call_info').text('Waiting to be accepted...').show();
-
-					        console.log('session_accept_pending');
-					    },
-
-					    session_accept_success: function(self, stanza) {
-					        $('.call_notif').hide();
-					        $('#call_success').text('Accepted.').show();
-
-					        console.log('session_accept_success');
-					    },
-
-					    session_accept_error: function(self, stanza) {
-					        $('.call_notif').hide();
-					        $('#call_error').text('Could not be accepted.').show();
-
-					        console.log('session_accept_error');
-					    },
-
-					    session_accept_request: function(self, stanza) {
-							console.log('session_accept_request');
-						},
-
-					    session_info_pending: function(self) {
-							console.log('session_info_pending');
-						},
-
-						session_info_success: function(self, stanza) {
-							console.log('session_info_success');
-						},
-
-						session_info_error: function(self, stanza) {
-							console.log('session_info_error');
-						},
-
-						session_info_request: function(self, stanza) {
-							console.log('session_info_request');
-						},
-
-					    session_terminate_pending: function(self) {
-					        $('.call_notif').hide();
-					        $('#call_info').text('Terminating...').show();
-
-					        console.log('session_terminate_pending');
-					    },
-
-					    session_terminate_success: function(self, stanza) {
-					        $('.call_notif').hide();
-					        $('#call_success').text('Terminated.').show();
-
-					        console.log('session_terminate_success');
-					    },
-
-					    session_terminate_error: function(self, stanza) {
-					        $('.call_notif').hide();
-					        $('#call_error').text('Could not terminate.').show();
-
-					        console.log('session_terminate_error');
-					    },
-
-					    session_terminate_request: function(self, stanza) {
-					        console.log('session_terminate_request');
-					    }
-					};
+					ARGS.to = call_jid;
 
 					// Let's go!
-					(new JSJaCJingle(args)).initiate();
+					JINGLE = new JSJaCJingle(ARGS);
+					JINGLE.initiate();
 				} catch(e) {
 					alert('jingle > ' + e);
 				}

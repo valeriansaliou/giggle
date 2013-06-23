@@ -282,7 +282,7 @@ JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = { label:
 
 
 /**
- * JSJSAC JINGLE GENERAL METHODS
+ * JSJSAC JINGLE METHODS
  */
 
 /**
@@ -416,12 +416,6 @@ function JSJaCJingle(args) {
      */
     self._session_terminate_request = args.session_terminate_request;
 
-  if(args && args.connection)
-    /**
-     * @private
-     */
-    self._connection = args.connection;
-
   if(args && args.to)
     /**
      * @private
@@ -534,12 +528,6 @@ function JSJaCJingle(args) {
    */
   self._received_id = {};
 
-  /**
-   * Register stanza handler
-   */
-  (self._connection).registerHandler('iq', self.handle);
-  // TODO: ondestroy >> unregisterHandler('iq', self.handle)
-
 
 
   /**
@@ -561,8 +549,8 @@ function JSJaCJingle(args) {
     // Trigger init pending custom callback
     (self._get_session_initiate_pending())(self);
 
-    // Process init actions
-    (self._get_connection()).registerIQSet('jingle', NS_JINGLE, self.handle);
+    // Register session to common router
+    JSJaCJingle_listen.add(self.get_sid(), self);
 
     // Initialize WebRTC
     self._peer_get_user_media(function() {
@@ -1481,6 +1469,11 @@ function JSJaCJingle(args) {
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
+    // Remove this session from router
+    JSJaCJingle_listen.remove(self.get_sid());
+
+    // TODO-LATER: auto-destroy self object + this
+
     self.get_debug().log('[JSJaCJingle] handle_session_initiate_error > Handled.', 4);
   };
 
@@ -1535,6 +1528,20 @@ function JSJaCJingle(args) {
     }
 
     if(!req_error) {
+      // Set session values
+      self._set_sid(rd_sid);
+      self._set_name(content_name);
+      self._set_to(self.util_stanza_from(stanza));
+      self._set_initiator(content_creator);
+      self._set_responder(self.util_connection_jid());
+
+      // Trigger init pending custom callback
+      //(self._get_session_initiate_pending())(self);
+      // TODO: useful there?!
+
+      // Register session to common router
+      JSJaCJingle_listen.add(rd_sid, self);
+
       // Generate and store content session
       rd_content = self._util_generate_content_session(
         content_creator,
@@ -1544,6 +1551,19 @@ function JSJaCJingle(args) {
       );
 
       self._set_content_session(rd_sid, rd_content);
+
+      // Initialize WebRTC
+      self._peer_get_user_media(function() {
+        self._peer_connection_create(function() {
+          // Build content session
+          self._util_initialize_content_session();
+
+          // Start Jingle negociation
+          self.get_debug().log('[JSJaCJingle] init > Ready to begin Jingle negotiation.', 2);
+
+          self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_ACCEPT });
+        })
+      });
       
       // TODO: send result
       // TODO: trigger the ongoing call handler for lib user
@@ -1612,6 +1632,11 @@ function JSJaCJingle(args) {
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
+    // Remove this session from router
+    JSJaCJingle_listen.remove(self.get_sid());
+
+    // TODO-LATER: auto-destroy self object + this
+
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_success > Handled.', 4);
   };
 
@@ -1623,7 +1648,10 @@ function JSJaCJingle(args) {
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
-    // TODO: force termination
+    // Remove this session from router
+    JSJaCJingle_listen.remove(self.get_sid());
+
+    // TODO-LATER: auto-destroy self object + this
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_error > Handled.', 4);
   };
@@ -1697,7 +1725,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_connection = function() {
-    return self._connection;
+    return JSJaCJingle_listen.connection;
   };
 
   /**
@@ -2045,13 +2073,6 @@ function JSJaCJingle(args) {
   /**
    * JSJSAC JINGLE SETTERS
    */
-
-  /**
-   * @private
-   */
-  self._set_connection = function(connection) {
-    self._connection = connection;
-  };
 
   /**
    * @private
@@ -3375,5 +3396,110 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] _peer_generate_json_from_sdp > Generated.', 4);
 
     return str + '\n}';
+  };
+}
+
+
+
+/**
+ * Creates a new XMPP Jingle session.
+ * @class Somewhat abstract base class for XMPP Jingle sessions. Contains all
+ * of the code in common for all Jingle sessions
+ * @constructor
+ * @param {Object} args Jingle session arguments.
+ * @param {JSJaConnection} args.connection The XMPP connection.
+ * @param {function} args.session_initiate_pending The initiate pending custom handler.
+ * @param {function} args.session_initiate_success The initiate success custom handler.
+ * @param {function} args.session_initiate_error The initiate error custom handler.
+ * @param {function} args.session_initiate_request The initiate request custom handler.
+ * @param {function} args.session_accept_pending The accept pending custom handler.
+ * @param {function} args.session_accept_success The accept success custom handler.
+ * @param {function} args.session_accept_error The accept error custom handler.
+ * @param {function} args.session_accept_request The accept request custom handler.
+ * @param {function} args.session_info_pending The info pending custom handler.
+ * @param {function} args.session_info_success The info success custom handler.
+ * @param {function} args.session_info_error The info error custom handler.
+ * @param {function} args.session_info_request The info request custom handler.
+ * @param {function} args.session_terminate_pending The terminate pending custom handler.
+ * @param {function} args.session_terminate_success The terminate success custom handler.
+ * @param {function} args.session_terminate_error The terminate error custom handler.
+ * @param {function} args.session_terminate_request The terminate request custom handler.
+ * @param {DOM} args.local_view The path to the local stream view element.
+ * @param {DOM} args.remote_view The path to the remote stream view element.
+ * @param {string} args.to The full JID to start the Jingle session with.
+ * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
+ */
+function JSJaCJingle_listen(args) {
+  // WebRTC not supported?
+  if(!JSJAC_JINGLE_AVAILABLE)
+    return;
+
+  var self = this;
+
+  if(!JSJaCJingle_listen.sessions) JSJaCJingle_listen.sessions = {};
+
+  if(args && args.connection)
+    /**
+     * @public
+     */
+    JSJaCJingle_listen.connection = args.connection;
+  else
+    return;
+
+  if(args && args.handle_session_initiate)
+    /**
+     * @public
+     */
+    JSJaCJingle_listen.handle_session_initiate = args.handle_session_initiate;
+  else
+    return;
+
+  // Incoming IQs handler
+  (JSJaCJingle_listen.connection).registerHandler('iq', self._handle);
+
+  /**
+   * @private
+   */
+  self._handle = function(stanza) {
+    // Route the incoming stanza
+    var jingle = stanza.getChild('jingle', NS_JINGLE);
+
+    if(!jingle)
+      return;
+
+    var sid = jingle.getAttribute('sid');
+    var action = jingle.getAttribute('action');
+
+    // Don't handle action-less Jingle stanzas there...
+    if(!action) return;
+
+    // New session? Or registered one?
+    if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && JSJaCJingle_listen.read(sid) == null) {
+      JSJaCJingle_listen.handle_session_initiate(stanza);
+    } else {
+      // Pass to session handler
+      (JSJaCJingle_listen.read(sid)).handle(stanza);
+    }
+  };
+
+  /**
+   * Adds the given session to router
+   */
+  self.add = function(sid, obj) {
+    JSJaCJingle_listen.sessions[sid] = obj;
+  };
+
+  /**
+   * Adds the given session to router
+   */
+  self.read = function(sid) {
+    return (sid in JSJaCJingle_listen.sessions) ? JSJaCJingle_listen.sessions[sid] : null;
+  };
+
+  /**
+   * Removes the given session from router
+   */
+  self.remove = function(sid) {
+    delete JSJaCJingle_listen.sessions[sid];
   };
 }
