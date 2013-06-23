@@ -17,8 +17,8 @@ var ARGS = {
     // Configuration (required)
     connection: null,
     to: null,
-    local_view: document.getElementById('video_local'),
-    remote_view: document.getElementById('video_remote'),
+    local_view: null,
+    remote_view: null,
     debug: (new JSJaCConsoleLogger(4)),
 
     // Custom handlers (optional)
@@ -33,9 +33,15 @@ var ARGS = {
         $('.call_notif').hide();
         $('#call_success').text('Initialized.').show();
 
-        // Request for Jingle session to be accepted
-       	self.accept();
-
+        // This is an incoming call
+        if(self.is_responder()) {
+	        // Request for Jingle session to be accepted
+	        if(confirm("Incoming call from " + self.util_stanza_from(stanza) + "\n\nAccept?"))
+	       		self.accept();
+	       	else
+	       		self.terminate(JSJAC_JINGLE_REASON_DECLINE);
+	    }
+	    
         console.log('session_initiate_success');
     },
 
@@ -161,8 +167,6 @@ $(document).ready(function() {
 				oArgs.httpbase = login_bosh;
 
 				con = new JSJaCHttpBindingConnection(oArgs);
-				
-				ARGS.connection = con;
 
 				// Configure handlers
 				con.registerHandler('onconnect', function() {
@@ -173,6 +177,7 @@ $(document).ready(function() {
 						$('#form_login button').hide();
 						$('#login_disconnect').show();
 
+						$('#form_login').find('button').removeAttr('disabled');
 						$('#fieldset_call').removeAttr('disabled');
 
 						SC_CONNECTED = true;
@@ -181,15 +186,18 @@ $(document).ready(function() {
 						con.send(new JSJaCPresence());
 
 						// Initialize JSJaCJingle router
-						new JSJaCJingle_listen({
+						JSJaCJingle_listen({
 							connection: con,
 
-							handle_session_initiate: function(stanza) {
-								ARGS.to = stanza.getFrom() || null;
+							initiate: function(stanza) {
+								// Session values
+								ARGS.to 		 = stanza.getFrom() || null;
+								ARGS.local_view  = document.getElementById('video_local');
+								ARGS.remote_view = document.getElementById('video_remote');
 
 								// Let's go!
 								JINGLE = new JSJaCJingle(ARGS);
-								JINGLE.initiate();
+								JINGLE.handle(stanza);
 							}
 						});
 					} catch(e) {
@@ -206,7 +214,7 @@ $(document).ready(function() {
 						else
 							$('#login_error').text('Invalid credentials.').show();
 
-						$('#form_login').find('input').removeAttr('disabled');
+						$('#form_login').find('input, button').removeAttr('disabled');
 						$('#form_login button').show();
 						$('#login_disconnect').hide();
 
@@ -296,7 +304,7 @@ $(document).ready(function() {
 				con.connect(oArgs);
 
 				// Disable form
-				$('#form_login').find('input').attr('disabled', true);
+				$('#form_login').find('input, button').attr('disabled', true);
 			} else {
 				$('#login_error').text('Please fill the form.').show();
 			}
@@ -324,7 +332,10 @@ $(document).ready(function() {
 				$('#call_info').text('Launching...').show();
 
 				try {
+					// Session values
 					ARGS.to = call_jid;
+					ARGS.local_view  = document.getElementById('video_local');
+					ARGS.remote_view = document.getElementById('video_remote');
 
 					// Let's go!
 					JINGLE = new JSJaCJingle(ARGS);
