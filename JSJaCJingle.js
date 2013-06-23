@@ -96,6 +96,7 @@ var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   ptime    : /^a=ptime:(\d+)/i,
   maxptime : /^a=maxptime:(\d+)/i,
   ssrc     : /^a=ssrc:(\d+)/i,
+  crypto   : /^a=crypto:(\d{1,9}) (\w+) ([\S+])( ([\S+]))?/i,
   media    : /^m=(audio|video|application|data) /i
 };
 
@@ -566,6 +567,10 @@ function JSJaCJingle(args) {
     // Initialize WebRTC
     self._peer_get_user_media(function() {
       self._peer_connection_create(function() {
+        // Build content session
+        self._util_initialize_content_session();
+
+        // Start Jingle negociation
         self.get_debug().log('[JSJaCJingle] init > Ready to begin Jingle negotiation.', 2);
 
         self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
@@ -947,9 +952,6 @@ function JSJaCJingle(args) {
 
       // Change session status
       self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
-
-      // Build content session
-      self._util_initialize_content_session();
 
       // Build Jingle stanza
       var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', {
@@ -2343,19 +2345,23 @@ function JSJaCJingle(args) {
     if(!description.length) return {};
 
     // Common vars
-    var cur_description, cd_media, cd_ssrc, payload, e, cur_payload, cur_payload_arr;
+    var i, j, k,
+        cur_description, cd_media, cd_ssrc,
+        payload, e, cur_payload, cur_payload_arr,
+        encryption, crypto, cur_crypto, cur_crypto_arr;
 
     // Common functions
     var init_media = function(media) {
-      if(!('media' in payload_obj))                  payload_obj['media']                 = {};
-      if(!(media   in payload_obj['media']))         payload_obj['media'][media]          = {};
+      if(!('media'    in payload_obj))                  payload_obj['media']                   = {};
+      if(!(media      in payload_obj['media']))         payload_obj['media'][media]            = {};
 
-      if(!('attrs' in payload_obj['media'][media]))  payload_obj['media'][media]['attrs'] = {};
-      if(!('data'  in payload_obj['media'][media]))  payload_obj['media'][media]['data']  = [];
+      if(!('attrs'    in payload_obj['media'][media]))  payload_obj['media'][media]['attrs']   = {};
+      if(!('payload'  in payload_obj['media'][media]))  payload_obj['media'][media]['payload'] = [];
+      if(!('crypto'   in payload_obj['media'][media]))  payload_obj['media'][media]['crypto']  = [];
     };
 
     // Loop on multiple descriptions
-    for(var i = 0; i < description.length; i++) {
+    for(i = 0; i < description.length; i++) {
       cur_description = description[i];
 
       cd_media = self.util_stanza_get_attribute(cur_description, 'media');
@@ -2363,31 +2369,55 @@ function JSJaCJingle(args) {
 
       if(!cd_media) continue;
 
-      payload = content.getElementsByTagNameNS('payload-type', NS_JINGLE_APPS_RTP);
-
-      if(!payload.length) continue;
-
       // Initialize current description
       init_media(cd_media);
       payload_obj['media'][cd_media]['attrs']['ssrc'] = cd_ssrc;
 
       // Loop on multiple payloads
-      for(var j = 0; j < payload.length; j++) {
-        e               = 0;
-        cur_payload     = payload[j];
-        cur_payload_arr = {};
+      payload = content.getElementsByTagNameNS('payload-type', NS_JINGLE_APPS_RTP);
 
-        cur_payload_arr['channels']  = self.util_stanza_get_attribute(cur_payload, 'channels');
-        cur_payload_arr['clockrate'] = self.util_stanza_get_attribute(cur_payload, 'clockrate');
-        cur_payload_arr['id']        = self.util_stanza_get_attribute(cur_payload, 'id') || e++;
-        cur_payload_arr['maxptime']  = self.util_stanza_get_attribute(cur_payload, 'maxptime');
-        cur_payload_arr['name']      = self.util_stanza_get_attribute(cur_payload, 'name');
-        cur_payload_arr['ptime']     = self.util_stanza_get_attribute(cur_payload, 'ptime');
+      if(payload.length) {
+        for(j = 0; j < payload.length; j++) {
+          e               = 0;
+          cur_payload     = payload[j];
+          cur_payload_arr = {};
 
-        if(e != 0) continue;
+          cur_payload_arr['channels']  = self.util_stanza_get_attribute(cur_payload, 'channels');
+          cur_payload_arr['clockrate'] = self.util_stanza_get_attribute(cur_payload, 'clockrate');
+          cur_payload_arr['id']        = self.util_stanza_get_attribute(cur_payload, 'id') || e++;
+          cur_payload_arr['maxptime']  = self.util_stanza_get_attribute(cur_payload, 'maxptime');
+          cur_payload_arr['name']      = self.util_stanza_get_attribute(cur_payload, 'name');
+          cur_payload_arr['ptime']     = self.util_stanza_get_attribute(cur_payload, 'ptime');
 
-        // Push current payload
-        (payload_obj['media'][cd_media]['data']).push(cur_payload_arr);
+          if(e != 0) continue;
+
+          // Push current payload
+          (payload_obj['media'][cd_media]['payload']).push(cur_payload_arr);
+        }
+      }
+
+      // Parse the encryption element
+      encryption = content.getElementsByTagNameNS('encryption', NS_JINGLE_APPS_RTP);
+
+      if(encryption.length) {
+        // Loop on multiple cryptos
+        crypto = encryption.getElementsByTagNameNS('crypto', NS_JINGLE_APPS_RTP);
+
+        for(k = 0; k < crypto.length; k++) {
+          e              = 0;
+          cur_crypto     = crypto[k];
+          cur_crypto_arr = {};
+
+          cur_crypto_arr['crypto-suite']   = self.util_stanza_get_attribute(cur_crypto, 'crypto-suite');
+          cur_crypto_arr['key-params']     = self.util_stanza_get_attribute(cur_crypto, 'key-params');
+          cur_crypto_arr['session-params'] = self.util_stanza_get_attribute(cur_crypto, 'session-params')  || e++;
+          cur_crypto_arr['tag']            = self.util_stanza_get_attribute(cur_crypto, 'tag');
+
+          if(e != 0) continue;
+
+          // Push current crypto
+          (payload_obj['media'][cd_media]['crypto']).push(cur_crypto_arr);
+        }
       }
     }
 
@@ -2494,7 +2524,8 @@ function JSJaCJingle(args) {
     for(cur_media in content_session['description']) {
       var cs_description = content_session['description'][cur_media];
       var cs_d_attrs     = cs_description['attrs'];
-      var cs_d_data      = cs_description['data'];
+      var cs_d_payload   = cs_description['payload'];
+      var cs_d_crypto    = cs_description['crypto'];
 
       var description = content.appendChild(stanza.buildNode('description', { 'xmlns': NS_JINGLE_APPS_RTP }));
 
@@ -2503,13 +2534,22 @@ function JSJaCJingle(args) {
       for(cur_description_attr in cs_d_attrs)
           self.util_stanza_set_attribute(description, cur_description_attr, cs_d_attrs[cur_description_attr]);
 
-      for(i in cs_d_data) {
-        var cs_d_p = cs_d_data[i];
+      for(i in cs_d_payload) {
+        var cs_d_p = cs_d_payload[i];
 
         var payload_type = description.appendChild(stanza.buildNode('payload-type', { 'xmlns': NS_JINGLE_APPS_RTP }));
 
         for(cur_payload_attr in cs_d_p)
           self.util_stanza_set_attribute(payload_type, cur_payload_attr, cs_d_p[cur_payload_attr]);
+      }
+
+      for(j in cs_d_crypto) {
+        var cs_d_c = cs_d_crypto[j];
+
+        var crypto = description.appendChild(stanza.buildNode('crypto', { 'xmlns': NS_JINGLE_APPS_RTP }));
+
+        for(cur_crypto_attr in cs_d_c)
+          self.util_stanza_set_attribute(crypto, cur_crypto_attr, cs_d_c[cur_crypto_attr]);
       }
     }
 
@@ -2561,9 +2601,9 @@ function JSJaCJingle(args) {
         delete description_cpy['attrs']['ptime'];
         delete description_cpy['attrs']['maxptime'];
 
-        for(i in description_cpy['data']) {
-          description_cpy['data'][i]['ptime']    = description_ptime;
-          description_cpy['data'][i]['maxptime'] = description_maxptime;
+        for(i in description_cpy['description']) {
+          description_cpy['description'][i]['ptime']    = description_ptime;
+          description_cpy['description'][i]['maxptime'] = description_maxptime;
         }
 
         content_session['description'][cur_media] = description_cpy;
@@ -2615,6 +2655,116 @@ function JSJaCJingle(args) {
         self._get_candidates_local()
       )
     );
+  };
+
+  /**
+   * Generates SDP data from payloads and candidates
+   * @return SDP data
+   * @type object
+   */
+  self.util_generate_sdp = function(payloads, candidates) {
+    return {
+      candidates  : self.util_generate_sdp_candidates(candidates),
+      description : self.util_generate_sdp_description(payloads)
+    };
+  };
+
+  /**
+   * Generates SDP candidates from candidates
+   * @return SDP candidates
+   * @type object
+   */
+  self.util_generate_sdp_candidates = function(candidates) {
+    var candidates_obj = {};
+
+    // Parse candidates
+    var cur_media, cur_candidate, cur_label, cur_candidate_str;
+
+    for(cur_media in candidates) {
+      cur_candidate     = candidates[cur_media];
+
+      cur_label         = JSJAC_JINGLE_MEDIAS[cur_media]['label'];
+      cur_candidate_str = '';
+
+      cur_candidate_str += 'a=candidate:';
+      cur_candidate_str += cur_candidate['foundation'];
+      cur_candidate_str += ' ';
+      cur_candidate_str += cur_candidate['component'];
+      cur_candidate_str += ' ';
+      cur_candidate_str += cur_candidate['protocol'];
+      cur_candidate_str += ' ';
+      cur_candidate_str += cur_candidate['priority'];
+      cur_candidate_str += ' ';
+      cur_candidate_str += cur_candidate['ip'];
+      cur_candidate_str += ' ';
+      cur_candidate_str += cur_candidate['port'];
+      cur_candidate_str += ' ';
+      cur_candidate_str += cur_candidate['component'];
+      cur_candidate_str += ' ';
+      cur_candidate_str += 'typ';
+      cur_candidate_str += ' ';
+      cur_candidate_str += cur_candidate['type'];
+
+      if(cur_candidate['rel-addr'] && cur_candidate['rel-port']) {
+        cur_candidate_str += ' ';
+        cur_candidate_str += 'raddr';
+        cur_candidate_str += ' ';
+        cur_candidate_str += cur_candidate['rel-addr'];
+        cur_candidate_str += ' ';
+        cur_candidate_str += 'rport';
+        cur_candidate_str += ' ';
+        cur_candidate_str += cur_candidate['rel-port'];
+      }
+
+      if(cur_candidate['generation']) {
+        cur_candidate_str += ' ';
+        cur_candidate_str += 'generation';
+        cur_candidate_str += ' ';
+        cur_candidate_str += cur_candidate['generation'];
+      }
+
+      candidates_obj.push({
+        label     : cur_label,
+        id        : cur_media,
+        candidate : cur_candidate_str
+      });
+    }
+
+    return candidates_obj;
+  };
+
+  /**
+   * Generates SDP payloads from payloads
+   * @return SDP payloads
+   * @type string
+   */
+  self.util_generate_sdp_description = function(payloads) {
+    var payloads_str = {};
+
+    // TODO: do not hardcode values there!
+
+    // Parse payloads
+    payloads_str += 'v=0';
+    payloads_str += 'o=- 952338584 2 IN IP4 127.0.0.1';
+    payloads_str += 's=-';
+    payloads_str += 't=0 0';
+    payloads_str += 'a=group:BUNDLE audio video';
+    payloads_str += 'a=msid-semantic: WMS IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1';
+
+    for(i in payloads) {
+      payloads_str += 'm=audio 1 RTP/SAVPF 111 103 104 0 8 107 106 105 13 126';
+      payloads_str += '';
+      payloads_str += '';
+      payloads_str += '';
+      payloads_str += '';
+      payloads_str += '';
+      payloads_str += '';
+      payloads_str += '';
+      payloads_str += '';
+      payloads_str += '';
+    }
+
+    return payloads_str;
   };
 
   /**
@@ -2701,8 +2851,9 @@ function JSJaCJingle(args) {
     var cur_line    = null;
     var cur_media   = null;
     var cur_rtpmap  = {};
+    var cur_crypto  = {};
 
-    var m_rtpmap, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
+    var m_rtpmap, m_crypto, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
 
     // Common functions
     var init_media = function(media, sub, sub_default) {
@@ -2733,9 +2884,35 @@ function JSJaCJingle(args) {
         if(e != 0) continue;
 
         // Push it to parent array
-        init_media(cur_media, 'data', []);
+        init_media(cur_media, 'payload', []);
 
-        ((payload.media)[cur_media]['data']).push(cur_rtpmap);
+        ((payload.media)[cur_media]['payload']).push(cur_rtpmap);
+
+        continue;
+      }
+
+      m_crypto = (R_WEBRTC_SDP_ICE_PAYLOAD.crypto).exec(cur_line);
+
+      // 'crypto' line?
+      if(m_crypto) {
+        if(!cur_media || !(cur_media in JSJAC_JINGLE_MEDIAS)) continue;
+
+        // Populate current object
+        e = 0;
+        cur_crypto = {};
+
+        cur_crypto['crypto-suite']   = m_crypto[6]  || e++;
+        cur_crypto['key-params']     = m_crypto[4]  || e++;
+        cur_crypto['session-params'] = m_crypto[1];
+        cur_crypto['tag']            = m_crypto[3]  || e++;
+
+        // Incomplete?
+        if(e != 0) continue;
+
+        // Push it to parent array
+        init_media(cur_media, 'crypto', []);
+
+        ((payload.media)[cur_media]['crypto']).push(cur_crypto);
 
         continue;
       }
