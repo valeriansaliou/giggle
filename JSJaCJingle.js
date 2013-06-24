@@ -3022,7 +3022,7 @@ function JSJaCJingle(args) {
       for(i in cur_c_media) {
         cur_candidate = cur_c_media[i];
 
-        cur_label         = parseInt(JSJAC_JINGLE_MEDIAS[cur_media]['label']);
+        cur_label         = JSJAC_JINGLE_MEDIAS[cur_media]['label'];
         cur_candidate_str = '';
 
         cur_candidate_str += 'a=candidate:';
@@ -3037,8 +3037,6 @@ function JSJaCJingle(args) {
         cur_candidate_str += cur_candidate['ip'];
         cur_candidate_str += ' ';
         cur_candidate_str += cur_candidate['port'];
-        cur_candidate_str += ' ';
-        cur_candidate_str += cur_candidate['component'];
         cur_candidate_str += ' ';
         cur_candidate_str += 'typ';
         cur_candidate_str += ' ';
