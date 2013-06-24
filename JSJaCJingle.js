@@ -511,6 +511,16 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._payloads_remote = [];
+
+  /**
+   * @private
+   */
+  self._candidates_remote = {};
+
+  /**
+   * @private
+   */
   self._initiator = '';
 
   /**
@@ -1280,11 +1290,11 @@ function JSJaCJingle(args) {
   self.handle_session_accept_request = function(stanza) {
     // Common vars
     var req_error = false;
-    var i,
+    var i, j,
         rd_sid, rd_content,
         jingle, content, content_creator, content_name,
         accept_payload, accept_candidate, accept_sdp,
-        cur_candidate_obj;
+        cur_candidate_id, cur_accept_candidate, cur_candidate_obj;
 
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_INITIATED);
@@ -1333,7 +1343,16 @@ function JSJaCJingle(args) {
         accept_candidate
       );
 
+      // Store remote data
       self._set_content_remote(rd_content);
+      self._set_payloads_remote(accept_payload);
+
+      for(cur_candidate_id in accept_candidate) {
+        cur_accept_candidate = accept_candidate[cur_candidate_id];
+
+        for(i in cur_accept_candidate)
+          self._set_candidates_remote(cur_candidate_id, cur_accept_candidate[i]);
+      }
 
       // Process accept actions
       self.send('result', { id: stanza.getID() });
@@ -1349,8 +1368,8 @@ function JSJaCJingle(args) {
         new WEBRTC_SESSION_DESCRIPTION(accept_sdp.description)
       );
 
-      for(i in accept_sdp.candidates) {
-        cur_candidate_obj = (accept_sdp.candidates)[i];
+      for(j in accept_sdp.candidates) {
+        cur_candidate_obj = (accept_sdp.candidates)[j];
 
         self._get_peer_connection().addIceCandidate(
           new WEBRTC_ICE_CANDIDATE({
@@ -1534,9 +1553,11 @@ function JSJaCJingle(args) {
 
     // Common vars
     var req_error = false;
-    var rd_from, rd_sid, rd_content,
+    var i,
+        rd_from, rd_sid, rd_content,
         jingle, content, content_creator, content_name,
-        accept_payload, accept_candidate;
+        accept_payload, accept_candidate,
+        cur_candidate_id, cur_accept_candidate;
 
     rd_from = self.util_stanza_from(stanza);
     rd_sid  = self.util_stanza_sid(stanza);
@@ -1597,7 +1618,16 @@ function JSJaCJingle(args) {
         accept_candidate
       );
 
+      // Store remote data
       self._set_content_remote(rd_content);
+      self._set_payloads_remote(accept_payload);
+
+      for(cur_candidate_id in accept_candidate) {
+        cur_accept_candidate = accept_candidate[cur_candidate_id];
+
+        for(i in cur_accept_candidate)
+          self._set_candidates_remote(cur_candidate_id, cur_accept_candidate[i]);
+      }
 
       // TODO-LATER: send an unsupported transport reply if there's no way the session can work
       //             will need to request for our own SDP, parse it, compare with friend's one
@@ -1983,6 +2013,20 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._get_payloads_remote = function() {
+    return self._payloads_remote;
+  };
+
+  /**
+   * @private
+   */
+  self._get_candidates_remote = function() {
+    return self._candidates_remote;
+  };
+
+  /**
+   * @private
+   */
   self._get_content_local = function() {
     return self._content_local;
   };
@@ -2306,6 +2350,25 @@ function JSJaCJingle(args) {
       self._candidates_local[candidate_id] = [];
 
     (self._candidates_local[candidate_id]).push(candidate_data);
+  };
+
+  /**
+   * @private
+   */
+  self._set_payloads_remote = function(payload_data) {
+    self._payloads_remote = payload_data;
+  };
+
+  /**
+   * @private
+   */
+  self._set_candidates_remote = function(candidate_id, candidate_data) {
+    if(!candidate_data['id']) return;
+
+    if(!(candidate_id in self._candidates_remote))
+      self._candidates_remote[candidate_id] = [];
+
+    (self._candidates_remote[candidate_id]).push(candidate_data);
   };
 
   /**
@@ -3450,10 +3513,25 @@ function JSJaCJingle(args) {
       self._get_peer_connection().addStream(self._get_local_stream()); 
 
       // Create offer
-      if(self.is_initiator())
+      if(self.is_initiator()) {
+        // Local description
         self._get_peer_connection().createOffer(self._peer_got_description,  null, WEBRTC_CONFIGURATION.create_offer);
-      else
-        self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
+
+        // Then, wait for responder to send back its remote description
+      } else {
+        // Remote description
+        var accept_payload = self._get_payloads_remote();
+        var accept_candidate = self._get_candidates_remote();
+
+        self._get_peer_connection().setRemoteDescription(
+          new WEBRTC_SESSION_DESCRIPTION(
+            (self.util_generate_sdp(accept_payload, accept_candidate)).description
+          )
+        );
+
+        // Local description
+        //self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
+      }
 
       self.get_debug().log('[JSJaCJingle] _peer_connection_create > Done.', 4);
     } catch(e) {
