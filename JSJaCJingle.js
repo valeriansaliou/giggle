@@ -34,7 +34,8 @@
  * 4.hdl Remote user sends back a type='result' to '4.snd' stanza (ack)
  */
 
-
+var RAW_SDP_LOCAL = null;
+var RAW_SDP_REMOTE = null;
 /**
  * JINGLE WEBRTC
  */
@@ -1309,9 +1310,12 @@ function JSJaCJingle(args) {
       jingle = self.util_stanza_jingle(stanza);
 
       if(jingle) {
+        // TODO: remove this
+        RAW_SDP_REMOTE = $(stanza.getNode()).find('sdp').text();
+
         // Childs
         content = self.util_stanza_get_element(jingle, 'content', NS_JINGLE);
-
+        
         if(content.length) {
           content = content[0];
 
@@ -1365,18 +1369,20 @@ function JSJaCJingle(args) {
       // Apply SDP data
       accept_sdp = self.util_generate_sdp(WEBRTC_SDP_TYPE_OFFER, accept_payload, accept_candidate);
 
-      // Set it to PeerConnection
+      // Remote description
       self._get_peer_connection().setRemoteDescription(
-        new WEBRTC_SESSION_DESCRIPTION(accept_sdp.description)
+        new WEBRTC_SESSION_DESCRIPTION({ type: 'answer', sdp: RAW_SDP_REMOTE })
       );
 
+      // ICE candidates
       for(j in accept_sdp.candidates) {
         cur_candidate_obj = (accept_sdp.candidates)[j];
 
         self._get_peer_connection().addIceCandidate(
           new WEBRTC_ICE_CANDIDATE({
-            sdpMLineIndex: cur_candidate_obj.label,
-            candidate: cur_candidate_obj.candidate
+            sdpMLineIndex : cur_candidate_obj.label,
+            sdpMid        : cur_candidate_obj.id,
+            candidate     : cur_candidate_obj.candidate
           })
         );
       }
@@ -1570,6 +1576,9 @@ function JSJaCJingle(args) {
       jingle = self.util_stanza_jingle(stanza);
 
       if(jingle) {
+        // TODO: remove this
+        RAW_SDP_REMOTE = $(stanza.getNode()).find('sdp').text();
+
         // Childs
         content = self.util_stanza_get_element(jingle, 'content', NS_JINGLE);
 
@@ -2839,6 +2848,8 @@ function JSJaCJingle(args) {
   self._util_stanza_content_local = function(stanza, jingle) {
     var content_local = self._get_content_local();
 
+    var sdp = jingle.appendChild(stanza.buildNode('sdp', { 'xmlns': 'urn:uno:sdp' }, RAW_SDP_LOCAL));
+
     var content = jingle.appendChild(stanza.buildNode('content', { 'xmlns': NS_JINGLE }));
 
     self.util_stanza_set_attribute(content, 'creator', content_local['creator']);
@@ -2867,7 +2878,7 @@ function JSJaCJingle(args) {
           self.util_stanza_set_attribute(payload_type, cur_payload_attr, cs_d_p[cur_payload_attr]);
       }
 
-      if(cs_d_crypto.length) {
+      if(cs_d_crypto && cs_d_crypto.length) {
         var encryption = description.appendChild(stanza.buildNode('encryption', { 'xmlns': NS_JINGLE_APPS_RTP }));
 
         for(j in cs_d_crypto) {
@@ -3011,7 +3022,7 @@ function JSJaCJingle(args) {
       for(i in cur_c_media) {
         cur_candidate = cur_c_media[i];
 
-        cur_label         = JSJAC_JINGLE_MEDIAS[cur_media]['label'];
+        cur_label         = parseInt(JSJAC_JINGLE_MEDIAS[cur_media]['label']);
         cur_candidate_str = '';
 
         cur_candidate_str += 'a=candidate:';
@@ -3050,6 +3061,8 @@ function JSJaCJingle(args) {
           cur_candidate_str += ' ';
           cur_candidate_str += cur_candidate['generation'];
         }
+
+        cur_candidate_str   += WEBRTC_SDP_LINE_BREAK;
 
         candidates_arr.push({
           label     : cur_label,
@@ -3521,25 +3534,35 @@ function JSJaCJingle(args) {
 
         // Then, wait for responder to send back its remote description
       } else {
-        // Remote description
-        var remote_desc = new WEBRTC_SESSION_DESCRIPTION(
-            (self.util_generate_sdp(
-              WEBRTC_SDP_TYPE_ANSWER,
-              self._get_payloads_remote(),
-              self._get_candidates_remote()
-            )).description
-          );
+        // Apply SDP data
+        accept_sdp = self.util_generate_sdp(
+          WEBRTC_SDP_TYPE_OFFER,
+          self._get_payloads_remote(),
+          self._get_candidates_remote()
+        );
 
+        // Remote description
         self._get_peer_connection().setRemoteDescription(new WEBRTC_SESSION_DESCRIPTION(
-          (self.util_generate_sdp(
-            WEBRTC_SDP_TYPE_ANSWER,
-            self._get_payloads_remote(),
-            self._get_candidates_remote()
-          )).description
+          { type: 'offer', sdp: RAW_SDP_REMOTE }
         ));
 
         // Local description
         self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
+
+        // ICE candidates
+        var cur_candidate_obj;
+
+        for(i in accept_sdp.candidates) {
+          cur_candidate_obj = (accept_sdp.candidates)[i];
+
+          self._get_peer_connection().addIceCandidate(
+            new WEBRTC_ICE_CANDIDATE({
+              sdpMLineIndex : cur_candidate_obj.label,
+              sdpMid        : cur_candidate_obj.id,
+              candidate     : cur_candidate_obj.candidate
+            })
+          );
+        }
       }
 
       self.get_debug().log('[JSJaCJingle] _peer_connection_create > Done.', 4);
@@ -3599,7 +3622,7 @@ function JSJaCJingle(args) {
   self._peer_got_description = function(session_description) {
     try {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Got local description.', 4);
-
+      RAW_SDP_LOCAL = session_description.sdp;
       self._get_peer_connection().setLocalDescription(session_description);
 
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 4);
