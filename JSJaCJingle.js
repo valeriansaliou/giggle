@@ -3520,17 +3520,19 @@ function JSJaCJingle(args) {
         // Then, wait for responder to send back its remote description
       } else {
         // Remote description
-        var accept_payload = self._get_payloads_remote();
-        var accept_candidate = self._get_candidates_remote();
-
         self._get_peer_connection().setRemoteDescription(
           new WEBRTC_SESSION_DESCRIPTION(
-            (self.util_generate_sdp(accept_payload, accept_candidate)).description
+            (self.util_generate_sdp(
+              self._get_payloads_remote(),
+              self._get_candidates_remote()
+            )).description
           )
         );
 
         // Local description
-        //self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
+        setTimeout(function() {
+          self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
+        }, 2000);
       }
 
       self.get_debug().log('[JSJaCJingle] _peer_connection_create > Done.', 4);
