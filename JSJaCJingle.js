@@ -133,7 +133,7 @@ var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transpor
 
 var JSJAC_JINGLE_AVAILABLE                          = WEBRTC_GET_MEDIA ? true : false;
 
-var JSJAC_JINGLE_STANZA_TIMEOUT                     = 30;
+var JSJAC_JINGLE_STANZA_TIMEOUT                     = 20;
 var JSJAC_JINGLE_STANZA_ID_PRE                      = 'jj_';
 
 var JSJAC_JINGLE_CONTENT_NAME                       = 'conference';
@@ -1657,10 +1657,16 @@ function JSJaCJingle(args) {
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
+    // Detach media streams from DOM view
+    self._set_local_stream(null);
+    self._set_remote_stream(null);
+
+    // Close the media stream
+    if(self._get_peer_connection())
+      self._get_peer_connection().close();
+
     // Remove this session from router
     JSJaCJingle_remove(self.get_sid());
-
-    // TODO-LATER: auto-destroy self object + this
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_success > Handled.', 4);
   };
@@ -1690,7 +1696,8 @@ function JSJaCJingle(args) {
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
     self.send('result', { id: stanza.getID() });
 
-    // Trigger terminate success custom callback
+    // Trigger terminate success callbacks
+    self.handle_session_terminate_success(stanza);
     (self._get_session_terminate_success())(self, stanza);
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > Handled (reason: ' + (self.util_stanza_terminate_reason(stanza) || 'undefined') + ')', 4);
@@ -2236,7 +2243,11 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_local_stream = function(local_stream) {
+    if(!local_stream && self._local_stream) (self._local_stream).stop();
+
     self._local_stream = local_stream;
+
+    (self.get_local_view()).pause();
     (self.get_local_view()).src = local_stream ? URL.createObjectURL(self._get_local_stream()) : '';
   };
 
@@ -2244,7 +2255,11 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_remote_stream = function(remote_stream) {
+    if(!remote_stream && self._remote_stream) (self._remote_stream).stop();
+
     self._remote_stream = remote_stream;
+
+    (self.get_remote_view()).pause();
     (self.get_remote_view()).src = remote_stream ? URL.createObjectURL(self._get_remote_stream()) : '';
   };
 
@@ -3176,6 +3191,19 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Detaches a stream source
+   */
+  self.util_peer_stream_detach = function(element, stream) {
+    if(navigator.mozGetUserMedia) {
+      element.mozSrcObject = stream;
+      element.play();
+    } else {
+      element.autoplay = true;
+      element.src = URL.createObjectURL(stream);
+    }
+  };
+
+  /**
    * Parses an SDP payload message
    * @return parsed object
    * @type object
@@ -3371,12 +3399,6 @@ function JSJaCJingle(args) {
         )
       );
 
-      // Add local stream
-      self._get_peer_connection().addStream(self._get_local_stream());
-
-      // Create offer
-      self._get_peer_connection().createOffer(self._peer_got_description);
-
       // Event: onicecandidate
       self._get_peer_connection().onicecandidate = function(e) {
         if(e.candidate) {
@@ -3412,6 +3434,15 @@ function JSJaCJingle(args) {
         self._set_remote_stream(null);
       };
 
+      // Add local stream
+      self._get_peer_connection().addStream(self._get_local_stream());
+
+      // Create offer
+      if(self.is_initiator())
+        self._get_peer_connection().createOffer(self._peer_got_description);
+      else
+        self._get_peer_connection().createAnswer(self._peer_got_description);
+
       self.get_debug().log('[JSJaCJingle] _peer_connection_create > Done.', 4);
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 1);
@@ -3427,8 +3458,8 @@ function JSJaCJingle(args) {
 
       WEBRTC_GET_MEDIA(
         WEBRTC_CONFIGURATION.get_user_media,
-        self._peer_got_stream.bind(this, callback),
-        self._peer_got_stream_failed.bind(this)
+        self._peer_got_user_media_success.bind(this, callback),
+        self._peer_got_user_media_error.bind(this)
       );
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_get_user_media > ' + e, 1);
@@ -3438,9 +3469,9 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._peer_got_stream = function(callback, stream) {
+  self._peer_got_user_media_success = function(callback, stream) {
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_got_stream > Got user media.', 4);
+      self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Got user media.', 4);
 
       self._set_local_stream(stream);
 
@@ -3451,15 +3482,21 @@ function JSJaCJingle(args) {
 
       if(callback) callback();
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_got_stream > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > ' + e, 1);
     }
   };
 
   /**
    * @private
    */
-  self._peer_got_stream_failed = function(error) {
-    self.get_debug().log('[JSJaCJingle] _peer_got_stream_failed > Failed.', 1);
+  self._peer_got_user_media_error = function(error) {
+    if(self.is_responder())
+      self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
+
+    self.handle_session_initiate_error();
+    (self._get_session_initiate_error())(self);
+
+    self.get_debug().log('[JSJaCJingle] _peer_got_user_media_error > Failed.', 1);
   };
 
   /**
@@ -3467,78 +3504,19 @@ function JSJaCJingle(args) {
    */
   self._peer_got_description = function(session_description) {
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_got_description > Got description.', 4);
+      self.get_debug().log('[JSJaCJingle] _peer_got_description > Got local description.', 4);
 
       self._get_peer_connection().setLocalDescription(session_description);
 
-      self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for candidates...', 4);
+      self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 4);
 
       // Convert SDP raw data to an object
       var payload_obj   = self.util_sdp_parse_payload(session_description.sdp);
 
       self._set_payloads_local(payload_obj);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_got_stream > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle] _peer_got_description > ' + e, 1);
     }
-  };
-
-  /**
-   * @private
-   */
-  self._peer_get_json_from_sdp = function(message) {
-    try {
-      return JSON.parse(msg.substring(4));
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_get_json_from_sdp > JSON parser not available.', 1);
-    }
-
-    return null;
-  };
-
-  /**
-   * @private
-   */
-  self._peer_xml_html_node = function(html) {
-    // From Strophe.js (License: MIT)
-    if(window.DOMParser) {
-      parser = new DOMParser();
-      node = parser.parseFromString(html, 'text/xml');
-    } else {
-      node = new ActiveXObject('Microsoft.XMLDOM');
-      node.async = 'false';
-      node.loadXML(html);
-    }
-
-    self.get_debug().log('[JSJaCJingle] _peer_xml_html_node > Done.', 4);
-
-    return node;
-  };
-
-  /**
-   * @private
-   */
-  self._peer_generate_json_from_sdp = function(sdp, info) {
-    var str = 'SDP\n{\n';
-
-    if(info.attr('answererid'))
-      str += '   "answererSessionId" : "' + info.attr('answererid') + '",\n';
-
-    str += '   "messageType" : "' + info.attr('type') + '",\n';
-
-    if(info.attr('offererid'))
-      str += '   "offererSessionId" : "' + info.attr('offererid') + '",\n';
-
-    if(sdp)
-      str += '   "sdp" : "' + sdp + '",\n';
-
-    str += '   "seq" : ' + parseInt(info.attr('seq'), 10);
-
-    if(info.attr('tiebreaker'))
-      str += ',\n   "tieBreaker" : ' + parseInt(info.attr('tiebreaker'), 10);
-
-    self.get_debug().log('[JSJaCJingle] _peer_generate_json_from_sdp > Generated.', 4);
-
-    return str + '\n}';
   };
 }
 
