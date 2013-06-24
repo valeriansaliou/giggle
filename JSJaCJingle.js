@@ -102,6 +102,8 @@ var WEBRTC_CONFIGURATION = {
 };
 
 var WEBRTC_SDP_LINE_BREAK      = '\r\n';
+var WEBRTC_SDP_TYPE_OFFER      = 'offer';
+var WEBRTC_SDP_TYPE_ANSWER     = 'answer';
 
 var R_WEBRTC_SDP_ICE_CANDIDATE = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\d{1,10}) ([a-zA-Z0-9:\.]{1,45}) (\d{1,5}) (typ) (host|srflx|prflx|relay)( (raddr) ([a-zA-Z0-9:\.]{1,45}) (rport) (\d{1,5}))?( (generation) (\d))?/i;
 
@@ -1302,7 +1304,7 @@ function JSJaCJingle(args) {
     rd_sid = self.util_stanza_sid(stanza);
 
     // Request is valid?
-    if(rd_sid) {
+    if(rd_sid && self.is_initiator()) {
       // Parse initiate stanza
       jingle = self.util_stanza_jingle(stanza);
 
@@ -1361,7 +1363,7 @@ function JSJaCJingle(args) {
       (self._get_session_accept_success())(self, stanza);
 
       // Apply SDP data
-      accept_sdp = self.util_generate_sdp(accept_payload, accept_candidate);
+      accept_sdp = self.util_generate_sdp(WEBRTC_SDP_TYPE_OFFER, accept_payload, accept_candidate);
 
       // Set it to PeerConnection
       self._get_peer_connection().setRemoteDescription(
@@ -2984,10 +2986,10 @@ function JSJaCJingle(args) {
    * @return SDP data
    * @type object
    */
-  self.util_generate_sdp = function(payloads, candidates) {
+  self.util_generate_sdp = function(type, payloads, candidates) {
     return {
       candidates  : self.util_generate_sdp_candidates(candidates),
-      description : self.util_generate_sdp_description(payloads)
+      description : self.util_generate_sdp_description(type, payloads)
     };
   };
 
@@ -3065,7 +3067,7 @@ function JSJaCJingle(args) {
    * @return SDP payloads
    * @type string
    */
-  self.util_generate_sdp_description = function(payloads) {
+  self.util_generate_sdp_description = function(type, payloads) {
     var payloads_obj = {};
     var payloads_str = '';
 
@@ -3195,7 +3197,7 @@ function JSJaCJingle(args) {
     }
 
     // Push to object
-    payloads_obj.type = 'offer'; // TODO: either offer or answer!
+    payloads_obj.type = type;
     payloads_obj.sdp  = payloads_str;
 
     return payloads_obj;
@@ -3520,19 +3522,24 @@ function JSJaCJingle(args) {
         // Then, wait for responder to send back its remote description
       } else {
         // Remote description
-        self._get_peer_connection().setRemoteDescription(
-          new WEBRTC_SESSION_DESCRIPTION(
+        var remote_desc = new WEBRTC_SESSION_DESCRIPTION(
             (self.util_generate_sdp(
+              WEBRTC_SDP_TYPE_ANSWER,
               self._get_payloads_remote(),
               self._get_candidates_remote()
             )).description
-          )
-        );
+          );
+
+        self._get_peer_connection().setRemoteDescription(new WEBRTC_SESSION_DESCRIPTION(
+          (self.util_generate_sdp(
+            WEBRTC_SDP_TYPE_ANSWER,
+            self._get_payloads_remote(),
+            self._get_candidates_remote()
+          )).description
+        ));
 
         // Local description
-        setTimeout(function() {
-          self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
-        }, 2000);
+        self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
       }
 
       self.get_debug().log('[JSJaCJingle] _peer_connection_create > Done.', 4);
