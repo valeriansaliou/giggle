@@ -2329,10 +2329,8 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_remote_stream = function(remote_stream) {
-    if(!remote_stream && self._remote_stream) {
+    if(!remote_stream && self._remote_stream)
       (self.get_remote_view()).pause();
-      (self._remote_stream).stop();
-    }
 
     self._remote_stream = remote_stream;
 

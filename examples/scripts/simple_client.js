@@ -67,6 +67,9 @@ var ARGS = {
         $('.call_notif').hide();
         $('#call_success').text('Accepted.').show();
 
+        $('#form_live').find('button').removeAttr('disabled');
+		$('#fieldset_live').removeAttr('disabled');
+
         console.log('session_accept_success');
     },
 
@@ -358,6 +361,8 @@ $(document).ready(function() {
 		try {
 			if(!SC_CONNECTED)
 				return false;
+
+			JINGLE.terminate();
 
 			$('.live_notif').hide();
 		} catch(e) {
