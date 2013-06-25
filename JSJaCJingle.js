@@ -2409,7 +2409,6 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_payloads_local = function(name, payload_data) {
-    console.log('NAME ' + name, payload_data);
     self._payloads_local[name] = payload_data;
   };
 
@@ -3025,7 +3024,7 @@ function JSJaCJingle(args) {
    */
   self._util_stanza_content_local = function(stanza, jingle) {
     var content_local = self._get_content_local();
-    console.log('CONTENT_LOCAL', content_local);
+    
     for(c in content_local) {
       var cur_content = content_local[c];
 
@@ -3168,6 +3167,12 @@ function JSJaCJingle(args) {
    * @type object
    */
   self._util_generate_content = function(creator, name, senders, payloads, transports) {
+    console.log('_util_generate_content >> FROM: creator', creator);
+    console.log('_util_generate_content >> FROM: name', name);
+    console.log('_util_generate_content >> FROM: senders', senders);
+    console.log('_util_generate_content >> FROM: payloads', payloads);
+    console.log('_util_generate_content >> FROM: transports', transports);
+
     // Generation process
     var content_obj = {};
 
@@ -3633,10 +3638,7 @@ function JSJaCJingle(args) {
     if(!sdp_payload || sdp_payload.indexOf('\n') == -1) return {};
 
     // Common vars
-    var payload   = {
-      'descriptions' : {},
-      'transports'   : {}
-    };
+    var payload   = {};
 
     var lines     = sdp_payload.split('\n');
     var cur_media = null;
@@ -3648,16 +3650,29 @@ function JSJaCJingle(args) {
         m_rtpmap, m_rtcp_fb, m_rtcp_fb_trr_int, m_crypto, m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
 
     // Common functions
-    var init_content = function(name, sub, sub_default) {
-      if(!(name in payload['descriptions']))        payload['descriptions'][name]      = {};
-      if(!(sub  in payload['descriptions'][name]))  payload['descriptions'][name][sub] = sub_default;
+    var init_content = function(name) {
+      if(!(name in payload))  payload[name] = {};
+    };
+
+    var init_descriptions = function(name, sub, sub_default) {
+      init_content(name);
+
+      if(!('descriptions' in payload[name]))        payload[name]['descriptions']      = {};
+      if(!(sub  in payload[name]['descriptions']))  payload[name]['descriptions'][sub] = sub_default;
+    };
+
+    var init_transports = function(name, sub, sub_default) {
+      init_content(name);
+
+      if(!('transports' in payload[name]))        payload[name]['transports']      = {};
+      if(!(sub  in payload[name]['transports']))  payload[name]['transports'][sub] = sub_default;
     };
 
     var init_payload = function(name, id) {
-      init_content(name, 'payload', {});
+      init_descriptions(name, 'payload', {});
 
-      if(!(id in payload['descriptions'][name]['payload'])) {
-        payload['descriptions'][name]['payload'][id] = {
+      if(!(id in payload[name]['descriptions']['payload'])) {
+        payload[name]['descriptions']['payload'][id] = {
           'attrs'           : {},
           'rtcp-fb'         : [],
           'rtcp-fb-trr-int' : []
@@ -3696,7 +3711,7 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_payload(cur_media, cur_rtpmap_id);
 
-        payload['descriptions'][cur_media]['payload'][cur_rtpmap_id]['attrs'] = cur_rtpmap;
+        payload[cur_media]['descriptions']['payload'][cur_rtpmap_id]['attrs'] = cur_rtpmap;
 
         continue;
       }
@@ -3720,13 +3735,13 @@ function JSJaCJingle(args) {
 
         // Push it to parent array
         if(cur_rtcp_fb_id == '*') {
-          init_content(cur_media, 'rtcp-fb', []);
+          init_descriptions(cur_media, 'rtcp-fb', []);
 
-          (payload['descriptions'][cur_media]['rtcp-fb']).push(cur_rtcp_fb);
+          (payload[cur_media]['descriptions']['rtcp-fb']).push(cur_rtcp_fb);
         } else {
           init_payload(cur_media, cur_rtcp_fb_id);
 
-          (payload['descriptions'][cur_media]['payload'][cur_rtcp_fb_id]['rtcp-fb']).push(cur_rtcp_fb);
+          (payload[cur_media]['descriptions']['payload'][cur_rtcp_fb_id]['rtcp-fb']).push(cur_rtcp_fb);
         }
 
         continue;
@@ -3751,7 +3766,7 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_payload(cur_media, cur_rtcp_fb_trr_int_id);
 
-        (payload['descriptions'][cur_media]['payload'][cur_rtcp_fb_trr_int_id]['rtcp-fb-trr-int']).push(cur_rtcp_fb_trr_int);
+        (payload[cur_media]['descriptions']['payload'][cur_rtcp_fb_trr_int_id]['rtcp-fb-trr-int']).push(cur_rtcp_fb_trr_int);
 
         continue;
       }
@@ -3773,9 +3788,9 @@ function JSJaCJingle(args) {
         if(e != 0) continue;
 
         // Push it to parent array
-        init_content(cur_media, 'crypto', []);
+        init_descriptions(cur_media, 'crypto', []);
 
-        (payload['descriptions'][cur_media]['crypto']).push(cur_crypto);
+        (payload[cur_media]['descriptions']['crypto']).push(cur_crypto);
 
         continue;
       }
@@ -3785,9 +3800,9 @@ function JSJaCJingle(args) {
       // 'ptime' line?
       if(m_ptime) {
         // Push it to parent array
-        init_content(cur_media, 'attrs', {});
+        init_descriptions(cur_media, 'attrs', {});
 
-        payload['descriptions'][cur_media]['attrs']['ptime'] = m_ptime[1];
+        payload[cur_media]['descriptions']['attrs']['ptime'] = m_ptime[1];
 
         continue;
       }
@@ -3797,9 +3812,9 @@ function JSJaCJingle(args) {
       // 'maxptime' line?
       if(m_maxptime) {
         // Push it to parent array
-        init_content(cur_media, 'attrs', {});
+        init_descriptions(cur_media, 'attrs', {});
 
-        payload['descriptions'][cur_media]['attrs']['maxptime'] = m_maxptime[1];
+        payload[cur_media]['descriptions']['attrs']['maxptime'] = m_maxptime[1];
 
         continue;
       }
@@ -3809,9 +3824,9 @@ function JSJaCJingle(args) {
       // 'ssrc' line?
       if(m_ssrc) {
         // Push it to parent array
-        init_content(cur_media, 'attrs', {});
+        init_descriptions(cur_media, 'attrs', {});
 
-        payload['descriptions'][cur_media]['attrs']['ssrc'] = m_ssrc[1];
+        payload[cur_media]['descriptions']['attrs']['ssrc'] = m_ssrc[1];
 
         continue;
       }
@@ -3821,7 +3836,7 @@ function JSJaCJingle(args) {
       // 'rtcp-mux' line?
       if(m_rtcp_mux) {
         // Push it to parent array
-        init_content(cur_media, 'rtcp-mux', 1);
+        init_descriptions(cur_media, 'rtcp-mux', 1);
 
         continue;
       }
@@ -3842,9 +3857,9 @@ function JSJaCJingle(args) {
         if(e != 0) continue;
 
         // Push it to parent array
-        init_content(cur_media, 'rtp-hdrext', []);
+        init_descriptions(cur_media, 'rtp-hdrext', []);
 
-        (payload['descriptions'][cur_media]['rtp-hdrext']).push(cur_extmap);
+        (payload[cur_media]['descriptions']['rtp-hdrext']).push(cur_extmap);
 
         continue;
       }
@@ -3864,7 +3879,7 @@ function JSJaCJingle(args) {
         if(e != 0) continue;
 
         // Push it to parent array
-        payload['transports']['fingerprint'] = cur_fingerprint;
+        init_transports(cur_media, 'fingerprint', cur_fingerprint);
 
         continue;
       }
@@ -3873,18 +3888,16 @@ function JSJaCJingle(args) {
 
       // 'pwd' line?
       if(m_pwd) {
-        payload['transports']['pwd'] = m_pwd[1]; continue;
+        init_transports(cur_media, 'pwd', m_pwd[1]); continue;
       }
 
       m_ufrag = (R_WEBRTC_SDP_ICE_PAYLOAD.ufrag).exec(cur_line);
 
       // 'ufrag' line?
       if(m_ufrag) {
-        payload['transports']['ufrag'] = m_ufrag[1]; continue;
+        init_transports(cur_media, 'ufrag', m_ufrag[1]); continue;
       }
     }
-
-    console.log('HAPPILY GENERATED PLD', payload);
 
     return payload;
   };
