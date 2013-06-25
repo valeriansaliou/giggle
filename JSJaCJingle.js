@@ -116,15 +116,19 @@ var WEBRTC_SDP_TYPE_ANSWER     = 'answer';
 var R_WEBRTC_SDP_ICE_CANDIDATE = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\d{1,10}) ([a-zA-Z0-9:\.]{1,45}) (\d{1,5}) (typ) (host|srflx|prflx|relay)( (raddr) ([a-zA-Z0-9:\.]{1,45}) (rport) (\d{1,5}))?( (generation) (\d))?/i;
 
 var R_WEBRTC_SDP_ICE_PAYLOAD   = {
-  rtpmap      : /^a=rtpmap:(\d+) (([^\s\/]+)\/(\d+)(\/([^\s\/]+))?)?/i,
-  pwd         : /^a=ice-pwd:(\S+)/i,
-  ufrag       : /^a=ice-ufrag:(\S+)/i,
-  ptime       : /^a=ptime:(\d+)/i,
-  maxptime    : /^a=maxptime:(\d+)/i,
-  ssrc        : /^a=ssrc:(\d+)/i,
-  crypto      : /^a=crypto:(\d{1,9}) (\w+) ([\S+])( ([\S+]))?/i,
-  fingerprint : /^a=fingerprint:(\S+) (\S+)/i,
-  media       : /^m=(audio|video|application|data) /i
+  rtpmap          : /^a=rtpmap:(\d+) (([^\s\/]+)\/(\d+)(\/([^\s\/]+))?)?/i,
+  rtcp_fb         : /^a=rtcp-fb:(\S+) (\S+)( (\S+))?/i,
+  rtcp_fb_trr_int : /^a=rtcp-fb:(\d+) trr-int (\d+)/i,
+  pwd             : /^a=ice-pwd:(\S+)/i,
+  ufrag           : /^a=ice-ufrag:(\S+)/i,
+  ptime           : /^a=ptime:(\d+)/i,
+  maxptime        : /^a=maxptime:(\d+)/i,
+  ssrc            : /^a=ssrc:(\d+)/i,
+  rtcp_mux        : /^a=rtcp-mux/i,
+  crypto          : /^a=crypto:(\d{1,9}) (\w+) ([\S+])( ([\S+]))?/i,
+  fingerprint     : /^a=fingerprint:(\S+) (\S+)/i,
+  extmap          : /^a=extmap:([^\s\/]+)(\/([^\s\/]+))? (\S+)/i,
+  media           : /^m=(audio|video|application|data) /i
 };
 
 
@@ -140,6 +144,8 @@ var NS_JINGLE_APPS_RTP                              = 'urn:xmpp:jingle:apps:rtp:
 var NS_JINGLE_APPS_RTP_INFO                         = 'urn:xmpp:jingle:apps:rtp:info:1';
 var NS_JINGLE_APPS_RTP_AUDIO                        = 'urn:xmpp:jingle:apps:rtp:audio';
 var NS_JINGLE_APPS_RTP_VIDEO                        = 'urn:xmpp:jingle:apps:rtp:video';
+var NS_JINGLE_APPS_RTP_RTP_HDREXT                   = 'urn:xmpp:jingle:apps:rtp:rtp-hdrext:0';
+var NS_JINGLE_APPS_RTP_RTCP_FB                      = 'urn:xmpp:jingle:apps:rtp:rtcp-fb:0';
 var NS_JINGLE_APPS_STUB                             = 'urn:xmpp:jingle:apps:stub:0';
 var NS_JINGLE_APPS_DTLS                             = 'urn:xmpp:tmp:jingle:apps:dtls:0';
 
@@ -148,8 +154,32 @@ var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transport
 
 var NS_JINGLE_SECURITY_STUB                         = 'urn:xmpp:jingle:security:stub:0';
 
+var NS_IETF_RFC_3264                                = 'urn:ietf:rfc:3264';
+
 var R_NS_JINGLE_APP                                 = /^urn:xmpp:jingle:app:(\w+)(:(\w+))?(:(\d+))?$/;
 var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transport:(\w+)$/;
+
+var MAP_DISCO_JINGLE                                = [
+  /* http://xmpp.org/extensions/xep-0166.html#support */
+  /* http://xmpp.org/extensions/xep-0167.html#support */
+  NS_JINGLE,
+  NS_JINGLE_APPS_RTP,
+  NS_JINGLE_APPS_RTP_AUDIO,
+  NS_JINGLE_APPS_RTP_VIDEO,
+
+  /* http://xmpp.org/extensions/xep-0176.html#support */
+  NS_JINGLE_TRANSPORTS_ICEUDP,
+  NS_IETF_RFC_3264,
+
+  /* http://xmpp.org/extensions/xep-0293.html#determining-support */
+  NS_JINGLE_APPS_RTP_RTCP_FB,
+
+  /* http://xmpp.org/extensions/xep-0294.html#determining-support */
+  NS_JINGLE_APPS_RTP_RTP_HDREXT,
+
+  /* http://xmpp.org/extensions/xep-0320.html#disco */
+  NS_JINGLE_APPS_DTLS
+];
 
 
 
@@ -164,6 +194,11 @@ var JSJAC_JINGLE_STANZA_ID_PRE                      = 'jj_';
 
 var JSJAC_JINGLE_CONTENT_NAME                       = 'conference';
 var JSJAC_JINGLE_NETWORK                            = '0';
+
+var JSJAC_JINGLE_SENDERS_BOTH                       = { jingle: 'both',      sdp: 'sendrecv' };
+var JSJAC_JINGLE_SENDERS_INITIATOR                  = { jingle: 'initiator', sdp: 'sendonly' };
+var JSJAC_JINGLE_SENDERS_NONE                       = { jingle: 'none',      sdp: 'inactive' };
+var JSJAC_JINGLE_SENDERS_RESPONDER                  = { jingle: 'responder', sdp: 'recvonly' };
 
 var JSJAC_JINGLE_STATUS_INACTIVE                    = 'inactive';
 var JSJAC_JINGLE_STATUS_INITIATING                  = 'initiating';
@@ -234,6 +269,12 @@ var JSJAC_JINGLE_MEDIA_VIDEO                        = 'video';
 /**
  * JSJSAC JINGLE CONSTANTS MAPPING
  */
+
+var JSJAC_JINGLE_SENDERS            = {};
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_BOTH.jingle]                = JSJAC_JINGLE_SENDERS_BOTH.sdp;
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_INITIATOR.jingle]           = JSJAC_JINGLE_SENDERS_INITIATOR.sdp;
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_NONE.jingle]                = JSJAC_JINGLE_SENDERS_NONE.sdp;
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_RESPONDER.jingle]           = JSJAC_JINGLE_SENDERS_RESPONDER.sdp;
 
 var JSJAC_JINGLE_STATUSES           = {};
 JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INACTIVE]                   = 1;
@@ -352,8 +393,7 @@ var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
  */
 function JSJaCJingle(args) {
   // WebRTC not supported?
-  if(!JSJAC_JINGLE_AVAILABLE)
-    return;
+  if(!JSJAC_JINGLE_AVAILABLE) return;
 
   var self = this;
 
@@ -548,7 +588,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._action_last = '';
+  self._senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
 
   /**
    * @private
@@ -595,6 +635,7 @@ function JSJaCJingle(args) {
     // Set session values
     self._set_sid(self.util_generate_sid());
     self._set_name(JSJAC_JINGLE_CONTENT_NAME);
+    self._set_senders(JSJAC_JINGLE_SENDERS_BOTH.jingle);
     self._set_initiator(self.util_connection_jid());
     self._set_responder(self.get_to());
 
@@ -764,8 +805,6 @@ function JSJaCJingle(args) {
 
     var id = stanza.getID();
     if(id) self._set_received_id(id);
-
-    self._set_action_last(action);
 
     // Submit to registered handler
     switch(action) {
@@ -1304,7 +1343,8 @@ function JSJaCJingle(args) {
     var req_error = false;
     var i, j,
         rd_sid, rd_content,
-        jingle, content, content_creator, content_name,
+        jingle, content,
+        content_creator, content_name, content_senders,
         accept_payload, accept_candidate, accept_sdp,
         cur_candidate_id, cur_accept_candidate, cur_candidate_obj;
 
@@ -1330,6 +1370,7 @@ function JSJaCJingle(args) {
           // Attrs
           content_creator = self.util_stanza_get_attribute(content, 'creator');
           content_name    = self.util_stanza_get_attribute(content, 'name');
+          content_senders = self.util_stanza_get_attribute(content, 'senders');
 
           // Generate full content data
           if(content_creator && content_name) {
@@ -1353,6 +1394,7 @@ function JSJaCJingle(args) {
       rd_content = self._util_generate_content(
         content_creator,
         content_name,
+        content_senders,
         accept_payload,
         accept_candidate
       );
@@ -1571,7 +1613,8 @@ function JSJaCJingle(args) {
     var req_error = false;
     var i,
         rd_from, rd_sid, rd_content,
-        jingle, content, content_creator, content_name,
+        jingle, content,
+        content_creator, content_name, content_senders,
         accept_payload, accept_candidate,
         cur_candidate_id, cur_accept_candidate;
 
@@ -1595,6 +1638,7 @@ function JSJaCJingle(args) {
           // Attrs
           content_creator = self.util_stanza_get_attribute(content, 'creator');
           content_name    = self.util_stanza_get_attribute(content, 'name');
+          content_senders = self.util_stanza_get_attribute(content, 'senders');
 
           // Generate content data
           if(content_creator && content_name) {
@@ -1617,6 +1661,7 @@ function JSJaCJingle(args) {
       // Set session values
       self._set_sid(rd_sid);
       self._set_name(content_name);
+      self._set_senders(content_senders);
       self._set_to(rd_from);
       self._set_initiator(rd_from);
       self._set_responder(self.util_connection_jid());
@@ -1632,6 +1677,7 @@ function JSJaCJingle(args) {
       rd_content = self._util_generate_content(
         content_creator,
         content_name,
+        content_senders,
         accept_payload,
         accept_candidate
       );
@@ -2066,15 +2112,6 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Gets the action_last value
-   * @return action_last value
-   * @type string
-   */
-  self.get_action_last = function() {
-    return self._action_last;
-  };
-
-  /**
    * Gets the status value
    * @return status value
    * @type string
@@ -2099,6 +2136,15 @@ function JSJaCJingle(args) {
    */
   self.get_name = function() {
     return self._name;
+  };
+
+  /**
+   * Gets the senders value
+   * @return senders value
+   * @type string
+   */
+  self.get_senders = function() {
+    return self._senders;
   };
 
   /**
@@ -2413,13 +2459,6 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._set_action_last = function(action_last) {
-    self._action_last = action_last;
-  };
-
-  /**
-   * @private
-   */
   self._set_status = function(status) {
     self._status = status;
   };
@@ -2436,6 +2475,15 @@ function JSJaCJingle(args) {
    */
   self._set_name = function(name) {
     self._name = name;
+  };
+
+  /**
+   * @private
+   */
+  self._set_senders = function(senders) {
+    if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
+
+    self._senders = senders;
   };
 
   /**
@@ -2702,20 +2750,34 @@ function JSJaCJingle(args) {
     if(!description.length) return {};
 
     // Common vars
-    var i, j, k,
+    var i, j, k, l, m, n, o,
         cur_description, cd_media, cd_ssrc,
-        payload, e, cur_payload, cur_payload_arr,
-        encryption, crypto, cur_crypto, cur_crypto_arr;
+        rtcp_fb_common, cur_p_rtcp_fb_common, cur_p_rtcp_fb_common_arr,
+        payload, e, cur_payload, cur_payload_arr, cur_payload_id,
+        encryption, crypto, cur_crypto, cur_crypto_arr,
+        rtp_hdrext, cur_rtp_hdrext, cur_rtp_hdrext_arr,
+        rtcp_mux;
 
     // Common functions
     var init_media = function(media) {
-      if(!('media'    in payload_obj))                  payload_obj['media']                   = {};
-      if(!(media      in payload_obj['media']))         payload_obj['media'][media]            = {};
+      if(!('media'            in payload_obj))                             payload_obj['media']                                       = {};
+      if(!(media              in payload_obj['media']))                    payload_obj['media'][media]                                = {};
 
-      if(!('attrs'    in payload_obj['media'][media]))  payload_obj['media'][media]['attrs']   = {};
-      if(!('payload'  in payload_obj['media'][media]))  payload_obj['media'][media]['payload'] = [];
-      if(!('crypto'   in payload_obj['media'][media]))  payload_obj['media'][media]['crypto']  = [];
+      if(!('attrs'            in payload_obj['media'][media]))             payload_obj['media'][media]['attrs']                       = {};
+      if(!('rtcp-fb'          in payload_obj['media'][media]))             payload_obj['media'][media]['rtcp-fb']                     = [];
+      if(!('payload'          in payload_obj['media'][media]))             payload_obj['media'][media]['payload']                     = {};
+      if(!('crypto'           in payload_obj['media'][media]))             payload_obj['media'][media]['crypto']                      = [];
+      if(!('rtp-hdrext'       in payload_obj['media'][media]))             payload_obj['media'][media]['rtp-hdrext']                  = [];
+      if(!('rtcp-mux'         in payload_obj['media'][media]))             payload_obj['media'][media]['rtcp-mux']                    = 0;
     };
+
+    var init_payload = function(media, id) {
+      if(!(id                 in payload_obj['media'][media]['payload']))      payload_obj['media'][media]['payload'][id]                    = {};
+
+      if(!('attrs'            in payload_obj['media'][media]['payload'][id]))  payload_obj['media'][media]['payload'][id]['attrs']           = {};
+      if(!('rtcp-fb'          in payload_obj['media'][media]['payload'][id]))  payload_obj['media'][media]['payload'][id]['rtcp-fb']         = [];
+      if(!('rtcp-fb-trr-int'  in payload_obj['media'][media]['payload'][id]))  payload_obj['media'][media]['payload'][id]['rtcp-fb-trr-int'] = [];
+    }
 
     // Loop on multiple descriptions
     for(i = 0; i < description.length; i++) {
@@ -2729,6 +2791,25 @@ function JSJaCJingle(args) {
       // Initialize current description
       init_media(cd_media);
       payload_obj['media'][cd_media]['attrs']['ssrc'] = cd_ssrc;
+
+      // Loop on common RTCP-FB
+      rtcp_fb_common = self.util_stanza_get_element(cur_description, 'rtcp-fb', NS_JINGLE_APPS_RTP_RTCP_FB);
+
+      if(rtcp_fb_common.length) {
+        for(o = 0; o < rtcp_fb_common.length; o++) {
+          e = 0;
+          cur_p_rtcp_fb_common = rtcp_fb_common[o];
+          cur_p_rtcp_fb_common_arr = {};
+
+          cur_p_rtcp_fb_common_arr['type']    = self.util_stanza_get_attribute(cur_p_rtcp_fb_common, 'type')  || e++;
+          cur_p_rtcp_fb_common_arr['subtype'] = self.util_stanza_get_attribute(cur_p_rtcp_fb_common, 'subtype');
+
+          if(e != 0) continue;
+
+          // Push current crypto
+          (payload_obj['media'][cd_media]['rtcp-fb']).push(cur_p_rtcp_fb_common_arr);
+        }
+      }
 
       // Loop on multiple payloads
       payload = self.util_stanza_get_element(content, 'payload-type', NS_JINGLE_APPS_RTP);
@@ -2748,8 +2829,49 @@ function JSJaCJingle(args) {
 
           if(e != 0) continue;
 
+          // Initialize current payload
+          cur_payload_id = cur_payload_arr['id'];
+          init_payload(cd_media, cur_payload_id);
+
           // Push current payload
-          (payload_obj['media'][cd_media]['payload']).push(cur_payload_arr);
+          payload_obj['media'][cd_media]['payload'][cur_payload_id]['attrs'] = cur_payload_arr;
+
+          // Loop on multiple RTCP-FB
+          rtcp_fb = self.util_stanza_get_element(cur_payload, 'rtcp-fb', NS_JINGLE_APPS_RTP_RTCP_FB);
+
+          if(rtcp_fb.length) {
+            for(m = 0; m < rtcp_fb.length; m++) {
+              e = 0;
+              cur_p_rtcp_fb = rtcp_fb[m];
+              cur_p_rtcp_fb_arr = {};
+
+              cur_p_rtcp_fb_arr['type']    = self.util_stanza_get_attribute(cur_p_rtcp_fb, 'type')  || e++;
+              cur_p_rtcp_fb_arr['subtype'] = self.util_stanza_get_attribute(cur_p_rtcp_fb, 'subtype');
+
+              if(e != 0) continue;
+
+              // Push current crypto
+              (payload_obj['media'][cd_media]['payload'][cur_payload_id]['rtcp-fb']).push(cur_p_rtcp_fb_arr);
+            }
+          }
+
+          // Loop on multiple RTCP-FB-TRR-INT
+          rtcp_fb_trr_int = self.util_stanza_get_element(cur_payload, 'rtcp-fb-trr-int', NS_JINGLE_APPS_RTP_RTCP_FB);
+
+          if(rtcp_fb_trr_int.length) {
+            for(n = 0; n < rtcp_fb_trr_int.length; m++) {
+              e = 0;
+              cur_p_rtcp_fb_trr_int = rtcp_fb_trr_int[n];
+              cur_p_rtcp_fb_trr_arr = {};
+
+              cur_p_rtcp_fb_trr_int_arr['value'] = self.util_stanza_get_attribute(cur_p_rtcp_fb_trr_int, 'value')  || e++;
+
+              if(e != 0) continue;
+
+              // Push current crypto
+              (payload_obj['media'][cd_media]['payload'][cur_payload_id]['rtcp-fb-trr-int']).push(cur_p_rtcp_fb_trr_int_arr);
+            }
+          }
         }
       }
 
@@ -2776,6 +2898,31 @@ function JSJaCJingle(args) {
           (payload_obj['media'][cd_media]['crypto']).push(cur_crypto_arr);
         }
       }
+
+      // Parse the RTP-HDREXT element
+      rtp_hdrext = self.util_stanza_get_element(cur_description, 'rtp-hdrext', NS_JINGLE_APPS_RTP_RTP_HDREXT);
+
+      if(rtp_hdrext.length) {
+        for(l = 0; l < rtp_hdrext.length; l++) {
+          e                  = 0;
+          cur_rtp_hdrext     = rtp_hdrext[l];
+          cur_rtp_hdrext_arr = {};
+
+          cur_rtp_hdrext_arr['id']      = self.util_stanza_get_attribute(cur_rtp_hdrext, 'id')   || e++;
+          cur_rtp_hdrext_arr['uri']     = self.util_stanza_get_attribute(cur_rtp_hdrext, 'uri')  || e++;
+          cur_rtp_hdrext_arr['senders'] = self.util_stanza_get_attribute(cur_rtp_hdrext, 'senders');
+
+          if(e != 0) continue;
+
+          // Push current RTP-HDREXT
+          (payload_obj['media'][cd_media]['rtp-hdrext']).push(cur_rtp_hdrext_arr);
+        }
+      }
+
+      // Parse the RTCP-MUX element
+      rtcp_mux = self.util_stanza_get_element(cur_description, 'rtcp-mux', NS_JINGLE_APPS_RTP);
+
+      payload_obj['media'][cd_media]['rtcp-mux'] = 1;
     }
 
     // Parse transport (need to get 'ufrag' and 'pwd' there)
@@ -2875,7 +3022,7 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates the current content remote stanza
+   * Generates the current content local stanza
    */
   self._util_stanza_content_local = function(stanza, jingle) {
     var content_local = self._get_content_local();
@@ -2889,39 +3036,102 @@ function JSJaCJingle(args) {
 
     // Build description
     for(cur_media in content_local['description']) {
-      var cs_description = content_local['description'][cur_media];
-      var cs_d_attrs     = cs_description['attrs'];
-      var cs_d_payload   = cs_description['payload'];
-      var cs_d_crypto    = cs_description['crypto'];
+      var cs_description  = content_local['description'][cur_media];
+      var cs_d_attrs      = cs_description['attrs'];
+      var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
+      var cs_d_payload    = cs_description['payload'];
+      var cs_d_crypto     = cs_description['crypto'];
+      var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
+      var cs_d_rtcp_mux   = cs_description['rtcp-mux'];
 
       var description = content.appendChild(stanza.buildNode('description', { 'xmlns': NS_JINGLE_APPS_RTP }));
 
       self.util_stanza_set_attribute(description, 'media', cur_media);
 
+      // Description attributes
       for(cur_description_attr in cs_d_attrs)
           self.util_stanza_set_attribute(description, cur_description_attr, cs_d_attrs[cur_description_attr]);
 
-      for(i in cs_d_payload) {
-        var cs_d_p = cs_d_payload[i];
+      // RTCP-FB (common)
+      if(cs_d_rtcp_fb && cs_d_rtcp_fb.length) {
+        for(l in cs_d_rtcp_fb) {
+          var cs_d_rf = cs_d_rtcp_fb[l];
 
-        var payload_type = description.appendChild(stanza.buildNode('payload-type', { 'xmlns': NS_JINGLE_APPS_RTP }));
+          var rtcp_fb_common = description.appendChild(stanza.buildNode('rtcp-fb', { 'xmlns': NS_JINGLE_APPS_RTP_RTCP_FB }));
 
-        for(cur_payload_attr in cs_d_p)
-          self.util_stanza_set_attribute(payload_type, cur_payload_attr, cs_d_p[cur_payload_attr]);
+          for(cur_rtcp_fb_common_attr in cs_d_rf)
+            self.util_stanza_set_attribute(rtcp_fb_common, cur_rtcp_fb_common_attr, cs_d_rf[cur_rtcp_fb_common_attr]);
+        }
       }
 
+      // Payload-type
+      if(cs_d_payload) {
+        for(i in cs_d_payload) {
+          var cs_d_p                 = cs_d_payload[i];
+          var cs_d_p_attrs           = cs_d_p['attrs'];
+          var cs_d_p_rtcp_fb         = cs_d_p['rtcp-fb'];
+          var cs_d_p_rtcp_fb_trr_int = cs_d_p['rtcp-fb-trr-int'];
+
+          var payload_type = description.appendChild(stanza.buildNode('payload-type', { 'xmlns': NS_JINGLE_APPS_RTP }));
+
+          for(cur_payload_attr in cs_d_p_attrs)
+            self.util_stanza_set_attribute(payload_type, cur_payload_attr, cs_d_p_attrs[cur_payload_attr]);
+
+          // RTCP-FB (sub)
+          if(cs_d_p_rtcp_fb && cs_d_p_rtcp_fb.length) {
+            for(m in cs_d_p_rtcp_fb) {
+              var cs_d_p_rf = cs_d_p_rtcp_fb[m];
+
+              var rtcp_fb_sub = payload_type.appendChild(stanza.buildNode('rtcp-fb', { 'xmlns': NS_JINGLE_APPS_RTP_RTCP_FB }));
+
+              for(cur_rtcp_fb_sub_attr in cs_d_p_rf)
+                self.util_stanza_set_attribute(rtcp_fb_sub, cur_rtcp_fb_sub_attr, cs_d_p_rf[cur_rtcp_fb_sub_attr]);
+            }
+          }
+
+          // RTCP-FB-TRR-INT
+          if(cs_d_p_rtcp_fb_trr_int && cs_d_p_rtcp_fb_trr_int.length) {
+            for(n in cs_d_p_rtcp_fb_trr_int) {
+              var cs_d_p_rfti = cs_d_p_rtcp_fb_trr_int[n];
+
+              var rtcp_fb_trr_int = payload_type.appendChild(stanza.buildNode('rtcp-fb-trr-int', { 'xmlns': NS_JINGLE_APPS_RTP_RTCP_FB }));
+
+              for(cur_rtcp_fb_trr_int_attr in cs_d_p_rfti)
+                self.util_stanza_set_attribute(rtcp_fb_trr_int, cur_rtcp_fb_trr_int_attr, cs_d_p_rfti[cur_rtcp_fb_trr_int_attr]);
+            }
+          }
+        }
+      }
+
+      // Encryption
       if(cs_d_crypto && cs_d_crypto.length) {
         var encryption = description.appendChild(stanza.buildNode('encryption', { 'xmlns': NS_JINGLE_APPS_RTP }));
 
         for(j in cs_d_crypto) {
           var cs_d_c = cs_d_crypto[j];
 
-          var crypto = description.appendChild(stanza.buildNode('crypto', { 'xmlns': NS_JINGLE_APPS_RTP }));
+          var crypto = encryption.appendChild(stanza.buildNode('crypto', { 'xmlns': NS_JINGLE_APPS_RTP }));
 
           for(cur_crypto_attr in cs_d_c)
             self.util_stanza_set_attribute(crypto, cur_crypto_attr, cs_d_c[cur_crypto_attr]);
         }
       }
+
+      // RTP-HDREXT
+      if(cs_d_rtp_hdrext && cs_d_rtp_hdrext.length) {
+        for(k in cs_d_rtp_hdrext) {
+          var cs_d_h = cs_d_rtp_hdrext[k];
+
+          var rtp_hdrext = description.appendChild(stanza.buildNode('rtp-hdrext', { 'xmlns': NS_JINGLE_APPS_RTP_RTP_HDREXT }));
+
+          for(cur_rtp_hdrext_attr in cs_d_h)
+            self.util_stanza_set_attribute(rtp_hdrext, cur_rtp_hdrext_attr, cs_d_h[cur_rtp_hdrext_attr]);
+        }
+      }
+
+      // RTCP-MUX
+      if(cs_d_rtcp_mux)
+        description.appendChild(stanza.buildNode('rtcp-mux', { 'xmlns': NS_JINGLE_APPS_RTP }));
     }
 
     // Build transport
@@ -2956,12 +3166,13 @@ function JSJaCJingle(args) {
    * @return content data value
    * @type object
    */
-  self._util_generate_content = function(creator, name, payloads, transports) {
+  self._util_generate_content = function(creator, name, senders, payloads, transports) {
     // Generation process
     var content_obj = {};
 
     content_obj['creator']     = creator;
     content_obj['name']        = name;
+    content_obj['senders']     = senders;
     content_obj['description'] = {};
     content_obj['transport']   = {};
 
@@ -3028,6 +3239,7 @@ function JSJaCJingle(args) {
       self._util_generate_content(
         'initiator', // TODO: dynamic value mapping, either initiator or responder
         self.get_name(),
+        self.get_senders(),
         self._get_payloads_local(),
         self._get_candidates_local()
       )
@@ -3124,13 +3336,18 @@ function JSJaCJingle(args) {
     var payloads_obj = {};
     var payloads_str = '';
 
-    // TODO: do not hardcode values there!
-
     // Common vars
-    var i, j,
+    var i, j, k, l, m, n,
         media, pwd, ufrag,
-        bundle_str, bundle_media,
-        cur_media, cur_media_obj, cur_payload, cur_payload_obj, cur_crypto, cur_crypto_obj;
+        cur_media, cur_media_obj,
+        cur_attrs, cur_rtcp_fb, cur_crypto,
+        cur_rtcp_fb_obj,
+        cur_payload, cur_payload_obj, cur_payload_obj_attrs, cur_payload_obj_id,
+        cur_payload_obj_rtcp_fb, cur_payload_obj_rtcp_fb_obj,
+        cur_payload_obj_rtcp_fb_ttr_int, cur_payload_obj_rtcp_fb_ttr_int_obj,
+        cur_crypto, cur_crypto_obj,
+        cur_rtp_hdrext, cur_rtp_hdrext_obj,
+        cur_rtcp_mux;
 
     // Read initial data
     media       = payloads['media'];
@@ -3141,35 +3358,32 @@ function JSJaCJingle(args) {
     // Payloads headers
     payloads_str += 'v=0';
     payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += 'o=- 952338584 2 IN IP4 127.0.0.1';
+    payloads_str += 'o=- 952338584 2 IN IP4 127.0.0.1'; // TODO: no hardcoding!
     payloads_str += WEBRTC_SDP_LINE_BREAK;
     payloads_str += 's=-';
     payloads_str += WEBRTC_SDP_LINE_BREAK;
     payloads_str += 't=0 0';
     payloads_str += WEBRTC_SDP_LINE_BREAK;
 
-    // Add bundles line
-    bundle_str = 'a=group:BUNDLE';
-
-    for(bundle_media in media)
-      bundle_str += ' ' + bundle_media;
-
-    payloads_str += bundle_str;
-    payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-    payloads_str += 'a=msid-semantic: WMS IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1';
+    // Add bundle line
+    payloads_str += 'a=group:BUNDLE ' + Object.keys(media).join(' ');
     payloads_str += WEBRTC_SDP_LINE_BREAK;
 
     // Add media groups
     for(cur_media in media) {
-      cur_media_obj = media[cur_media];
+      cur_media_obj  = media[cur_media];
 
-      cur_attrs     = cur_media_obj['attrs'];
-      cur_payload   = cur_media_obj['payload'];
-      cur_crypto    = cur_media_obj['crypto'];
+      cur_attrs      = cur_media_obj['attrs'];
+      cur_rtcp_fb    = cur_media_obj['rtcp-fb'];
+      cur_payload    = cur_media_obj['payload'];
+      cur_crypto     = cur_media_obj['crypto'];
+      cur_rtp_hdrext = cur_media_obj['rtp-hdrext'];
+      cur_rtcp_mux   = cur_media_obj['rtcp-mux'];
 
-      payloads_str += 'm=' + cur_media + ' 1 RTP/SAVPF';
+      // Current media
+      payloads_str += self.util_generate_sdp_description_media(cur_media, cur_crypto, fingerprint, cur_payload);
       payloads_str += WEBRTC_SDP_LINE_BREAK;
+
       payloads_str += 'c=IN IP4 0.0.0.0';
       payloads_str += WEBRTC_SDP_LINE_BREAK;
       payloads_str += 'a=rtcp:1 IN IP4 0.0.0.0';
@@ -3178,28 +3392,50 @@ function JSJaCJingle(args) {
       if(ufrag)  payloads_str += 'a=ice-ufrag:' + ufrag + WEBRTC_SDP_LINE_BREAK;
       if(pwd)    payloads_str += 'a=ice-pwd:' + pwd + WEBRTC_SDP_LINE_BREAK;
 
-      payloads_str += 'a=ice-options:google-ice';
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
+      // TODO: really needed?!
+      // payloads_str += 'a=ice-options:google-ice';
+      // payloads_str += WEBRTC_SDP_LINE_BREAK;
 
       if(fingerprint && fingerprint['hash'] && fingerprint['value']) {
         payloads_str += 'a=fingerprint:' + fingerprint['hash'] + ' ' + fingerprint['value'];
         payloads_str += WEBRTC_SDP_LINE_BREAK;
       }
 
-      if(cur_media == JSJAC_JINGLE_MEDIA_AUDIO)
-        payloads_str += 'a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level' + WEBRTC_SDP_LINE_BREAK;
-      else if(cur_media == JSJAC_JINGLE_MEDIA_VIDEO)
-        payloads_str += 'a=extmap:2 urn:ietf:params:rtp-hdrext:toffset' + WEBRTC_SDP_LINE_BREAK;
+      // RTP-HDREXT
+      if(cur_rtp_hdrext && cur_rtp_hdrext.length) {
+        for(i in cur_rtp_hdrext) {
+          cur_rtp_hdrext_obj = cur_rtp_hdrext[i];
 
-      payloads_str += 'a=sendrecv';
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
-      payloads_str += 'a=mid:audio';
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
-      payloads_str += 'a=rtcp-mux';
+          payloads_str += 'a=extmap:' + cur_rtp_hdrext_obj['id'];
+
+          if(cur_rtp_hdrext_obj['senders'])
+            payloads_str += '/' + cur_rtp_hdrext_obj['senders'];
+
+          payloads_str += ' ' + cur_rtp_hdrext_obj['uri'];
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
+      }
+
+      // Senders
+      payloads_str += 'a=' + JSJAC_JINGLE_SENDERS[self.get_senders()];
       payloads_str += WEBRTC_SDP_LINE_BREAK;
 
-      for(i in cur_crypto) {
-        cur_crypto_obj = cur_crypto[i];
+      // Name
+      payloads_str += 'a=mid:' + self.get_name();
+      payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+      // RTCP-MUX
+      // WARNING: no spec!
+      // See: http://code.google.com/p/libjingle/issues/detail?id=309
+      //      http://mail.jabber.org/pipermail/jingle/2011-December/001761.html
+      if(cur_rtcp_mux) {
+        payloads_str += 'a=rtcp-mux';
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+      }
+
+      // 'encryption'
+      for(j in cur_crypto) {
+        cur_crypto_obj = cur_crypto[j];
 
         payloads_str += 'a=crypto:'                     + 
                         cur_crypto_obj['tag']           + ' ' + 
@@ -3210,47 +3446,70 @@ function JSJaCJingle(args) {
         payloads_str += WEBRTC_SDP_LINE_BREAK;
       }
 
-      for(j in cur_payload) {
-        cur_payload_obj = cur_payload[j];
+      // 'rtcp-fb' (common)
+      for(n in cur_rtcp_fb) {
+        cur_rtcp_fb_obj = cur_rtcp_fb[n];
 
-        payloads_str += 'a=rtpmap:' + cur_payload_obj['id'];
+        payloads_str += 'a=rtcp-fb:*';
+        payloads_str += ' ' + cur_rtcp_fb_obj['type'];
 
-        if(cur_payload_obj['name']) {
-          payloads_str += ' ' + cur_payload_obj['name'];
+        if(cur_rtcp_fb_obj['subtype'])
+          payloads_str += ' ' + cur_rtcp_fb_obj['subtype'];
 
-          if(cur_payload_obj['clockrate']) {
-            payloads_str += '/' + cur_payload_obj['clockrate'];
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+      }
 
-            if(cur_payload_obj['channels'])
-              payloads_str += '/' + cur_payload_obj['channels'];
+      // 'payload-type'
+      for(k in cur_payload) {
+        cur_payload_obj                 = cur_payload[k];
+        cur_payload_obj_attrs           = cur_payload_obj['attrs'];
+        cur_payload_obj_rtcp_fb         = cur_payload_obj['rtcp-fb'];
+        cur_payload_obj_rtcp_fb_ttr_int = cur_payload_obj['rtcp-fb-trr-int'];
+
+        cur_payload_obj_id              = cur_payload_obj_attrs['id'];
+
+        payloads_str += 'a=rtpmap:' + cur_payload_obj_id;
+
+        // 'rtpmap'
+        if(cur_payload_obj_attrs['name']) {
+          payloads_str += ' ' + cur_payload_obj_attrs['name'];
+
+          if(cur_payload_obj_attrs['clockrate']) {
+            payloads_str += '/' + cur_payload_obj_attrs['clockrate'];
+
+            if(cur_payload_obj_attrs['channels'])
+              payloads_str += '/' + cur_payload_obj_attrs['channels'];
           }
         }
 
         payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+        // 'rtcp-fb' (sub)
+        for(l in cur_payload_obj_rtcp_fb) {
+          cur_payload_obj_rtcp_fb_obj = cur_payload_obj_rtcp_fb[l];
+
+          payloads_str += 'a=rtcp-fb:' + cur_payload_obj_id;
+          payloads_str += ' ' + cur_payload_obj_rtcp_fb_obj['type'];
+
+          if(cur_payload_obj_rtcp_fb_obj['subtype'])
+            payloads_str += ' ' + cur_payload_obj_rtcp_fb_obj['subtype'];
+
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
+
+        // 'rtcp-fb-ttr-int' (sub)
+        for(m in cur_payload_obj_rtcp_fb_ttr_int) {
+          cur_payload_obj_rtcp_fb_ttr_int_obj = cur_payload_obj_rtcp_fb_ttr_int[m];
+
+          payloads_str += 'a=rtcp-fb:' + cur_payload_obj_id;
+          payloads_str += ' ' + 'trr-int';
+          payloads_str += ' ' + cur_payload_obj_rtcp_fb_ttr_int_obj['value'];
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
       }
 
       if(cur_attrs['ptime'])     payloads_str += 'a=ptime:'    + cur_attrs['ptime'] + WEBRTC_SDP_LINE_BREAK;
       if(cur_attrs['maxptime'])  payloads_str += 'a=maxptime:' + cur_attrs['maxptime'] + WEBRTC_SDP_LINE_BREAK;
-
-      if(cur_media == JSJAC_JINGLE_MEDIA_AUDIO) {
-        payloads_str += 'a=ssrc:1763784905 cname:FIaQzPAFtiUjAMyU';
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-        payloads_str += 'a=ssrc:1763784905 msid:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1 IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1a0';
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-        payloads_str += 'a=ssrc:1763784905 mslabel:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1';
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-        payloads_str += 'a=ssrc:1763784905 label:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1a0';
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      } else if(cur_media == JSJAC_JINGLE_MEDIA_VIDEO) {
-        payloads_str += 'a=ssrc:1216991425 cname:FIaQzPAFtiUjAMyU';
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-        payloads_str += 'a=ssrc:1216991425 msid:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1 IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1v0';
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-        payloads_str += 'a=ssrc:1216991425 mslabel:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1';
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-        payloads_str += 'a=ssrc:1216991425 label:IaGkDGqtkFxhrJqAvMPN7QENu9BB54YhiKh1v0';
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      }
     }
 
     // Push to object
@@ -3258,6 +3517,30 @@ function JSJaCJingle(args) {
     payloads_obj.sdp  = payloads_str;
 
     return payloads_obj;
+  };
+
+  /**
+   * Generates SDP media line from payloads
+   * @return SDP media line
+   * @type string
+   */
+  self.util_generate_sdp_description_media = function(media, crypto, fingerprint, payload) {
+    var i;
+    var type_ids = [];
+    var sdp_media = 'm=' + media + ' 1 ';
+
+    // Protocol
+    if((crypto && crypto.length) || (fingerprint && fingerprint['hash'] && fingerprint['value']))
+      sdp_media += 'RTP/SAVPF';
+    else
+      sdp_media += 'RTP/AVPF';
+
+    // Payload type IDs
+    for(i in payload) type_ids.push(payload[i]['attrs']['id']);
+
+    sdp_media += ' ' + type_ids.join(' ');
+
+    return sdp_media;
   };
 
   /**
@@ -3349,20 +3632,29 @@ function JSJaCJingle(args) {
     var payload         = {};
     var lines           = sdp_payload.split('\n');
 
-    var e               = 0;
-    var cur_line        = null;
     var cur_media       = null;
-    var cur_rtpmap      = {};
-    var cur_crypto      = {};
-    var cur_fingerprint = {};
 
-    var m_rtpmap, m_crypto, m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
+    var e,
+        cur_line, cur_rtpmap, cur_rtcp_fb, cur_rtcp_fb_trr_int,
+        cur_crypto, cur_fingerprint, cur_extmap,
+        cur_rtpmap_id, cur_rtcp_fb_id,
+        m_rtpmap, m_rtcp_fb, m_rtcp_fb_trr_int, m_crypto, m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
 
     // Common functions
     var init_media = function(media, sub, sub_default) {
       if(!('media' in payload))                  payload['media']             = {};
       if(!(media   in payload['media']))         payload['media'][media]      = {};
       if(!(sub     in payload['media'][media]))  payload['media'][media][sub] = sub_default;
+    };
+
+    var init_payload = function(media, id) {
+      init_media(media, 'payload', {});
+
+      if(!(id in payload['media'][media]['payload']))  payload['media'][media]['payload'][id] = {
+        'attrs'           : {},
+        'rtcp-fb'         : [],
+        'rtcp-fb-trr-int' : []
+      };
     };
 
     for(i in lines) {
@@ -3372,8 +3664,6 @@ function JSJaCJingle(args) {
 
       // 'rtpmap' line?
       if(m_rtpmap) {
-        if(!cur_media || !(cur_media in JSJAC_JINGLE_MEDIAS)) continue;
-
         // Populate current object
         e = 0;
         cur_rtpmap = {};
@@ -3386,10 +3676,67 @@ function JSJaCJingle(args) {
         // Incomplete?
         if(e != 0) continue;
 
-        // Push it to parent array
-        init_media(cur_media, 'payload', []);
+        cur_rtpmap_id = cur_rtpmap['id'];
 
-        (payload['media'][cur_media]['payload']).push(cur_rtpmap);
+        // Push it to parent array
+        init_payload(cur_media, cur_rtpmap_id);
+
+        payload['media'][cur_media]['payload'][cur_rtpmap_id]['attrs'] = cur_rtpmap;
+
+        continue;
+      }
+
+      m_rtcp_fb = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_fb).exec(cur_line);
+
+      // 'rtcp-fb' line?
+      if(m_rtcp_fb) {
+        // Populate current object
+        e = 0;
+        cur_rtcp_fb = {};
+
+        cur_rtcp_fb['id']      = m_rtcp_fb[1] || e++;
+        cur_rtcp_fb['type']    = m_rtcp_fb[2];
+        cur_rtcp_fb['subtype'] = m_rtcp_fb[4];
+
+        // Incomplete?
+        if(e != 0) continue;
+
+        cur_rtcp_fb_id = cur_rtcp_fb['id'];
+
+        // Push it to parent array
+        if(cur_rtcp_fb_id == '*') {
+          init_media(cur_media, 'rtcp-fb', []);
+
+          (payload['media'][cur_media]['rtcp-fb']).push(cur_rtcp_fb);
+        } else {
+          init_payload(cur_media, cur_rtcp_fb_id);
+
+          (payload['media'][cur_media]['payload'][cur_rtcp_fb_id]['rtcp-fb']).push(cur_rtcp_fb);
+        }
+
+        continue;
+      }
+
+      m_rtcp_fb_trr_int = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_fb_trr_int).exec(cur_line);
+
+      // 'rtcp-fb-trr-int' line?
+      if(m_rtcp_fb_trr_int) {
+        // Populate current object
+        e = 0;
+        cur_rtcp_fb_trr_int = {};
+
+        cur_rtcp_fb_trr_int['id']      = m_rtcp_fb_trr_int[1] || e++;
+        cur_rtcp_fb_trr_int['value']   = m_rtcp_fb_trr_int[2] || e++;
+
+        // Incomplete?
+        if(e != 0) continue;
+
+        cur_rtcp_fb_trr_int_id = cur_rtcp_fb_trr_int['id'];
+
+        // Push it to parent array
+        init_payload(cur_media, cur_rtcp_fb_trr_int_id);
+
+        (payload['media'][cur_media]['payload'][cur_rtcp_fb_trr_int_id]['rtcp-fb-trr-int']).push(cur_rtcp_fb_trr_int);
 
         continue;
       }
@@ -3398,8 +3745,6 @@ function JSJaCJingle(args) {
 
       // 'crypto' line?
       if(m_crypto) {
-        if(!cur_media || !(cur_media in JSJAC_JINGLE_MEDIAS)) continue;
-
         // Populate current object
         e = 0;
         cur_crypto = {};
@@ -3486,6 +3831,39 @@ function JSJaCJingle(args) {
         init_media(cur_media, 'attrs', {});
 
         payload['media'][cur_media]['attrs']['ssrc'] = m_ssrc[1];
+
+        continue;
+      }
+
+      m_rtcp_mux = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_mux).exec(cur_line);
+
+      // 'rtcp-mux' line?
+      if(m_rtcp_mux) {
+        // Push it to parent array
+        init_media(cur_media, 'rtcp-mux', 1);
+
+        continue;
+      }
+
+      m_extmap = (R_WEBRTC_SDP_ICE_PAYLOAD.extmap).exec(cur_line);
+
+      // 'extmap' line?
+      if(m_extmap) {
+        // Populate current object
+        e = 0;
+        cur_extmap = {};
+
+        cur_extmap['id']      = m_extmap[1]  || e++;
+        cur_extmap['uri']     = m_extmap[4]  || e++;
+        cur_extmap['senders'] = m_extmap[3];
+
+        // Incomplete?
+        if(e != 0) continue;
+
+        // Push it to parent array
+        init_media(cur_media, 'rtp-hdrext', []);
+
+        (payload['media'][cur_media]['rtp-hdrext']).push(cur_extmap);
 
         continue;
       }
@@ -3713,8 +4091,7 @@ function JSJaCJingle(args) {
  */
 function JSJaCJingle_listen(args) {
   // WebRTC not supported?
-  if(!JSJAC_JINGLE_AVAILABLE)
-    return;
+  if(!JSJAC_JINGLE_AVAILABLE) return;
 
   if(args && args.connection)
     JSJAC_JINGLE_STORE_CONNECTION = args.connection;
@@ -3730,6 +4107,9 @@ function JSJaCJingle_listen(args) {
  * Routes Jingle stanzas
  */
 function JSJaCJingle_route(stanza) {
+  // WebRTC not supported?
+  if(!JSJAC_JINGLE_AVAILABLE) return;
+
   // Route the incoming stanza
   var jingle = stanza.getChild('jingle', NS_JINGLE);
 
@@ -3757,13 +4137,21 @@ function JSJaCJingle_route(stanza) {
  * Adds a new Jingle session
  */
 function JSJaCJingle_add(sid, obj) {
+  // WebRTC not supported?
+  if(!JSJAC_JINGLE_AVAILABLE) return;
+
   JSJAC_JINGLE_STORE_SESSIONS[sid] = obj;
 }
 
 /**
  * Reads a new Jingle session
+ * @return Session
+ * @type object
  */
 function JSJaCJingle_read(sid) {
+  // WebRTC not supported?
+  if(!JSJAC_JINGLE_AVAILABLE) return {};
+
   return (sid in JSJAC_JINGLE_STORE_SESSIONS) ? JSJAC_JINGLE_STORE_SESSIONS[sid] : null;
 }
 
@@ -3771,5 +4159,21 @@ function JSJaCJingle_read(sid) {
  * Removes a new Jingle session
  */
 function JSJaCJingle_remove(sid) {
+  // WebRTC not supported?
+  if(!JSJAC_JINGLE_AVAILABLE)
+    return;
+
   delete JSJAC_JINGLE_STORE_SESSIONS[sid];
+}
+
+/**
+ * Maps the Jingle disco features
+ * @return Feature namespaces
+ * @type array
+ */
+function JSJaCJingle_disco() {
+  // WebRTC not supported?
+  if(!JSJAC_JINGLE_AVAILABLE) return [];
+
+  return MAP_DISCO_JINGLE;
 }
