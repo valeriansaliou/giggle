@@ -124,7 +124,7 @@ var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   maxptime        : /^a=maxptime:(\d+)/i,
   ssrc            : /^a=ssrc:(\d+)/i,
   rtcp_mux        : /^a=rtcp-mux/i,
-  crypto          : /^a=crypto:(\d{1,9}) (\w+) ([\S+])( ([\S+]))?/i,
+  crypto          : /^a=crypto:(\d{1,9}) (\w+) (\S+)( (\S+))?/i,
   fingerprint     : /^a=fingerprint:(\S+) (\S+)/i,
   extmap          : /^a=extmap:([^\s\/]+)(\/([^\s\/]+))? (\S+)/i,
   media           : /^m=(audio|video|application|data) /i
@@ -3024,80 +3024,81 @@ function JSJaCJingle(args) {
    */
   self._util_stanza_content_local = function(stanza, jingle) {
     var content_local = self._get_content_local();
-    
-    for(c in content_local) {
-      var cur_content = content_local[c];
+
+    console.log('_util_stanza_content_local >> ALL CONTENT', content_local);
+
+    for(cur_media in content_local) {
+      var cur_content = content_local[cur_media];
 
       var content = jingle.appendChild(stanza.buildNode('content', { 'xmlns': NS_JINGLE }));
 
       self.util_stanza_set_attribute(content, 'creator', cur_content['creator']);
       self.util_stanza_set_attribute(content, 'name',    cur_content['name']);
+      self.util_stanza_set_attribute(content, 'senders', cur_content['senders']);
 
       // Build description
-      for(cur_media in cur_content['description']) {
-        var cs_description  = cur_content['description'][cur_media];
-        var cs_d_attrs      = cs_description['attrs'];
-        var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
-        var cs_d_payload    = cs_description['payload'];
-        var cs_d_crypto     = cs_description['crypto'];
-        var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
-        var cs_d_rtcp_mux   = cs_description['rtcp-mux'];
+      var cs_description  = cur_content['description'];
+      var cs_d_attrs      = cs_description['attrs'];
+      var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
+      var cs_d_payload    = cs_description['payload'];
+      var cs_d_crypto     = cs_description['crypto'];
+      var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
+      var cs_d_rtcp_mux   = cs_description['rtcp-mux'];
 
-        var description = content.appendChild(stanza.buildNode('description', { 'xmlns': NS_JINGLE_APPS_RTP }));
+      var description = content.appendChild(stanza.buildNode('description', { 'xmlns': NS_JINGLE_APPS_RTP }));
 
-        self.util_stanza_set_attribute(description, 'media', cur_media);
+      self.util_stanza_set_attribute(description, cur_media);
 
-        // Description attributes
-        for(cur_description_attr in cs_d_attrs)
-            self.util_stanza_set_attribute(description, cur_description_attr, cs_d_attrs[cur_description_attr]);
+      // Description attributes
+      for(cur_description_attr in cs_d_attrs)
+          self.util_stanza_set_attribute(description, cur_description_attr, cs_d_attrs[cur_description_attr]);
 
-        // RTCP-FB (common)
-        if(cs_d_rtcp_fb && cs_d_rtcp_fb.length) {
-          for(l in cs_d_rtcp_fb) {
-            var cs_d_rf = cs_d_rtcp_fb[l];
+      // RTCP-FB (common)
+      if(cs_d_rtcp_fb && cs_d_rtcp_fb.length) {
+        for(l in cs_d_rtcp_fb) {
+          var cs_d_rf = cs_d_rtcp_fb[l];
 
-            var rtcp_fb_common = description.appendChild(stanza.buildNode('rtcp-fb', { 'xmlns': NS_JINGLE_APPS_RTP_RTCP_FB }));
+          var rtcp_fb_common = description.appendChild(stanza.buildNode('rtcp-fb', { 'xmlns': NS_JINGLE_APPS_RTP_RTCP_FB }));
 
-            for(cur_rtcp_fb_common_attr in cs_d_rf)
-              self.util_stanza_set_attribute(rtcp_fb_common, cur_rtcp_fb_common_attr, cs_d_rf[cur_rtcp_fb_common_attr]);
-          }
+          for(cur_rtcp_fb_common_attr in cs_d_rf)
+            self.util_stanza_set_attribute(rtcp_fb_common, cur_rtcp_fb_common_attr, cs_d_rf[cur_rtcp_fb_common_attr]);
         }
+      }
 
-        // Payload-type
-        if(cs_d_payload) {
-          for(i in cs_d_payload) {
-            var cs_d_p                 = cs_d_payload[i];
-            var cs_d_p_attrs           = cs_d_p['attrs'];
-            var cs_d_p_rtcp_fb         = cs_d_p['rtcp-fb'];
-            var cs_d_p_rtcp_fb_trr_int = cs_d_p['rtcp-fb-trr-int'];
+      // Payload-type
+      if(cs_d_payload) {
+        for(i in cs_d_payload) {
+          var cs_d_p                 = cs_d_payload[i];
+          var cs_d_p_attrs           = cs_d_p['attrs'];
+          var cs_d_p_rtcp_fb         = cs_d_p['rtcp-fb'];
+          var cs_d_p_rtcp_fb_trr_int = cs_d_p['rtcp-fb-trr-int'];
 
-            var payload_type = description.appendChild(stanza.buildNode('payload-type', { 'xmlns': NS_JINGLE_APPS_RTP }));
+          var payload_type = description.appendChild(stanza.buildNode('payload-type', { 'xmlns': NS_JINGLE_APPS_RTP }));
 
-            for(cur_payload_attr in cs_d_p_attrs)
-              self.util_stanza_set_attribute(payload_type, cur_payload_attr, cs_d_p_attrs[cur_payload_attr]);
+          for(cur_payload_attr in cs_d_p_attrs)
+            self.util_stanza_set_attribute(payload_type, cur_payload_attr, cs_d_p_attrs[cur_payload_attr]);
 
-            // RTCP-FB (sub)
-            if(cs_d_p_rtcp_fb && cs_d_p_rtcp_fb.length) {
-              for(m in cs_d_p_rtcp_fb) {
-                var cs_d_p_rf = cs_d_p_rtcp_fb[m];
+          // RTCP-FB (sub)
+          if(cs_d_p_rtcp_fb && cs_d_p_rtcp_fb.length) {
+            for(m in cs_d_p_rtcp_fb) {
+              var cs_d_p_rf = cs_d_p_rtcp_fb[m];
 
-                var rtcp_fb_sub = payload_type.appendChild(stanza.buildNode('rtcp-fb', { 'xmlns': NS_JINGLE_APPS_RTP_RTCP_FB }));
+              var rtcp_fb_sub = payload_type.appendChild(stanza.buildNode('rtcp-fb', { 'xmlns': NS_JINGLE_APPS_RTP_RTCP_FB }));
 
-                for(cur_rtcp_fb_sub_attr in cs_d_p_rf)
-                  self.util_stanza_set_attribute(rtcp_fb_sub, cur_rtcp_fb_sub_attr, cs_d_p_rf[cur_rtcp_fb_sub_attr]);
-              }
+              for(cur_rtcp_fb_sub_attr in cs_d_p_rf)
+                self.util_stanza_set_attribute(rtcp_fb_sub, cur_rtcp_fb_sub_attr, cs_d_p_rf[cur_rtcp_fb_sub_attr]);
             }
+          }
 
-            // RTCP-FB-TRR-INT
-            if(cs_d_p_rtcp_fb_trr_int && cs_d_p_rtcp_fb_trr_int.length) {
-              for(n in cs_d_p_rtcp_fb_trr_int) {
-                var cs_d_p_rfti = cs_d_p_rtcp_fb_trr_int[n];
+          // RTCP-FB-TRR-INT
+          if(cs_d_p_rtcp_fb_trr_int && cs_d_p_rtcp_fb_trr_int.length) {
+            for(n in cs_d_p_rtcp_fb_trr_int) {
+              var cs_d_p_rfti = cs_d_p_rtcp_fb_trr_int[n];
 
-                var rtcp_fb_trr_int = payload_type.appendChild(stanza.buildNode('rtcp-fb-trr-int', { 'xmlns': NS_JINGLE_APPS_RTP_RTCP_FB }));
+              var rtcp_fb_trr_int = payload_type.appendChild(stanza.buildNode('rtcp-fb-trr-int', { 'xmlns': NS_JINGLE_APPS_RTP_RTCP_FB }));
 
-                for(cur_rtcp_fb_trr_int_attr in cs_d_p_rfti)
-                  self.util_stanza_set_attribute(rtcp_fb_trr_int, cur_rtcp_fb_trr_int_attr, cs_d_p_rfti[cur_rtcp_fb_trr_int_attr]);
-              }
+              for(cur_rtcp_fb_trr_int_attr in cs_d_p_rfti)
+                self.util_stanza_set_attribute(rtcp_fb_trr_int, cur_rtcp_fb_trr_int_attr, cs_d_p_rfti[cur_rtcp_fb_trr_int_attr]);
             }
           }
         }
@@ -3136,7 +3137,7 @@ function JSJaCJingle(args) {
       // Build transport
       var cs_transport     = cur_content['transport'];
       var cs_t_attrs       = cs_transport['attrs'];
-      var cs_t_data        = cs_transport['data'];
+      var cs_t_candidate   = cs_transport['candidate'];
       var cs_t_fingerprint = cs_transport['fingerprint'];
 
       var transport = content.appendChild(stanza.buildNode('transport', { 'xmlns': NS_JINGLE_TRANSPORTS_ICEUDP }));
@@ -3150,8 +3151,8 @@ function JSJaCJingle(args) {
         self.util_stanza_set_attribute(fingerprint, 'hash', cs_t_fingerprint['hash']);
       }
 
-      for(cur_candidate_hash in cs_t_data) {
-        var cs_t_c = cs_t_data[cur_candidate_hash];
+      for(m in cs_t_candidate) {
+        var cs_t_c = cs_t_candidate[m];
 
         var candidate = transport.appendChild(stanza.buildNode('candidate', { 'xmlns': NS_JINGLE_TRANSPORTS_ICEUDP }));
 
@@ -3167,11 +3168,11 @@ function JSJaCJingle(args) {
    * @type object
    */
   self._util_generate_content = function(creator, name, senders, payloads, transports) {
-    console.log('_util_generate_content >> FROM: creator', creator);
-    console.log('_util_generate_content >> FROM: name', name);
-    console.log('_util_generate_content >> FROM: senders', senders);
-    console.log('_util_generate_content >> FROM: payloads', payloads);
-    console.log('_util_generate_content >> FROM: transports', transports);
+    console.log('_util_generate_content >> INPUT: creator', creator);
+    console.log('_util_generate_content >> INPUT: name', name);
+    console.log('_util_generate_content >> INPUT: senders', senders);
+    console.log('_util_generate_content >> INPUT: payloads', payloads);
+    console.log('_util_generate_content >> INPUT: transports', transports);
 
     // Generation process
     var content_obj = {};
@@ -3182,56 +3183,34 @@ function JSJaCJingle(args) {
     content_obj['description'] = {};
     content_obj['transport']   = {};
 
-    // Loop on payloads
-    var description_cpy, description_ptime, description_maxptime;
+    // Generate description
+    var description_cpy      = payloads['descriptions'];
+    var description_ptime    = description_cpy['attrs']['ptime'];
+    var description_maxptime = description_cpy['attrs']['maxptime'];
 
-    if('media' in payloads) {
-      for(cur_media in payloads['media']) {
-        if(!(cur_media in JSJAC_JINGLE_MEDIAS)) continue;
+    delete description_cpy['attrs']['ptime'];
+    delete description_cpy['attrs']['maxptime'];
 
-        description_cpy      = payloads['media'][cur_media];
-        description_ptime    = description_cpy['attrs']['ptime'];
-        description_maxptime = description_cpy['attrs']['maxptime'];
+    for(i in description_cpy['payload']) {
+      if(!('attrs' in description_cpy['payload'][i]))
+        description_cpy['payload'][i]['attrs']           = {};
 
-        delete description_cpy['attrs']['ptime'];
-        delete description_cpy['attrs']['maxptime'];
-
-        for(i in description_cpy['description']) {
-          description_cpy['description'][i]['ptime']    = description_ptime;
-          description_cpy['description'][i]['maxptime'] = description_maxptime;
-        }
-
-        content_obj['description'][cur_media] = description_cpy;
-      }
+      description_cpy['payload'][i]['attrs']['ptime']    = description_ptime;
+      description_cpy['payload'][i]['attrs']['maxptime'] = description_maxptime;
     }
 
-    // Loop on transports (candidates)
-    var transport_cpy, transport_id, transport_hash;
+    content_obj['description'] = description_cpy;
 
-    content_obj['transport']['data']           = {};
+    // Generate transport
+    content_obj['transport']['candidate']      = transports;
     content_obj['transport']['attrs']          = {};
-    content_obj['transport']['attrs']['pwd']   = payloads['pwd'];
-    content_obj['transport']['attrs']['ufrag'] = payloads['ufrag'];
+    content_obj['transport']['attrs']['pwd']   = payloads['transports']['pwd'];
+    content_obj['transport']['attrs']['ufrag'] = payloads['transports']['ufrag'];
 
-    if(payloads['fingerprint'])
-      content_obj['transport']['fingerprint']    = payloads['fingerprint'];
+    if(payloads['transports']['fingerprint'])
+      content_obj['transport']['fingerprint']  = payloads['transports']['fingerprint'];
 
-    for(cur_media in transports) {
-      if(!(cur_media in JSJAC_JINGLE_MEDIAS)) continue;
-
-      for(j in transports[cur_media]) {
-        // Generate transport hash (avoids duplicate transports)
-        transport_cpy = transports[cur_media][j];
-        transport_id = transport_cpy['id'];
-
-        delete transport_cpy['id'];
-
-        transport_hash = self.util_checksum_object(transport_cpy);
-        transport_cpy['id'] = transport_id;
-
-        content_obj['transport']['data'][transport_hash] = transports[cur_media][j];
-      }
-    }
+    console.log('_util_generate_content >> OUT: content_obj', content_obj);
 
     // Storage process
     return content_obj;
@@ -3580,33 +3559,6 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates the checksum of an object
-   * @return MD5 checksum value
-   * @type string
-   */
-  self.util_checksum_object = function(object) {
-    // Assert
-    if(typeof object != 'object')
-      return null;
-
-    // Sort
-    var object_keys = [];
-
-    for(key_p in object)
-      object_keys.push(key_p);
-
-    object_keys.sort();
-
-    // Generate trace string
-    var object_str  = '';
-
-    for(key_s in object_keys)
-      object_str += (object[object_keys[key_s]] || '') + ',';
-
-    return hex_md5(object_str);
-  };
-
-  /**
    * Get my connection JID
    * @return JID value
    * @type string
@@ -3783,6 +3735,8 @@ function JSJaCJingle(args) {
         cur_crypto['key-params']     = m_crypto[3]  || e++;
         cur_crypto['session-params'] = m_crypto[5];
         cur_crypto['tag']            = m_crypto[1]  || e++;
+
+        console.log('CRYPTO-REGEX', m_crypto);
 
         // Incomplete?
         if(e != 0) continue;
