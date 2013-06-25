@@ -9,6 +9,14 @@ To be used with JSJaC from Stefan Strigler, available there: https://github.com/
 
 Made with love by the happy folks at Jappix https://jappix.com/
 
+## Online Demo
+
+You can try JSJaCJingle.js there: https://demo.frenchtouch.pro/valerian.saliou/jsjac-jingle/examples/simple_client.html
+
+Open it on 2 separate tabs or 2 different computers, and login with 2 different XMPP accounts. Then, paste the full JID of the other connected account in the call field.
+
+The call should then be initiated, and after a while the video will come.
+
 ## Notes About Security
 
 Jingle could have be implemented in a dirty-way there, so that "It just works". But it's **NOT** the case. JSJaCJingle.js has been thought as secure on its basis.
