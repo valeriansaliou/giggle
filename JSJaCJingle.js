@@ -10,25 +10,32 @@
 
 
 /**
- * Workflow
+ * Implements:
  *
- * Implements: XEP-0166
- * URL: http://xmpp.org/extensions/xep-0166.html
-
+ * XEP-0166: http://xmpp.org/extensions/xep-0166.html
+ * XEP-0167: http://xmpp.org/extensions/xep-0167.html
+ * XEP-0176: http://xmpp.org/extensions/xep-0176.html
+ * XEP-0293: http://xmpp.org/extensions/xep-0293.html
+ * XEP-0294: http://xmpp.org/extensions/xep-0294.html
+ * XEP-0320: http://xmpp.org/extensions/xep-0320.html
+ *
+ *
+ * Workflow:
+ *
  * This negotiation example associates JSJaCJingle.js methods to a real workflow
  * We assume in this workflow example remote user accepts the call he gets
-
+ *
  * 1.cmt Local user wants to start a WebRTC session with remote user
  * 1.snd Local user sends a session-initiate type='set'
  * 1.hdl Remote user sends back a type='result' to '1.snd' stanza (ack)
-
+ *
  * 2.cmt Local user waits silently for remote user to send a session-accept
  * 2.hdl Remote user sends a session-accept type='set'
  * 2.snd Local user sends back a type='result' to '2.hdl' stanza (ack)
-
+ *
  * 3.cmt WebRTC session starts
  * 3.cmt Users chat, and chat, and chat. Happy Jabbering to them!
-
+ *
  * 4.cmt Local user wants to stop WebRTC session with remote user
  * 4.snd Local user sends a session-terminate type='set'
  * 4.hdl Remote user sends back a type='result' to '4.snd' stanza (ack)
@@ -109,14 +116,15 @@ var WEBRTC_SDP_TYPE_ANSWER     = 'answer';
 var R_WEBRTC_SDP_ICE_CANDIDATE = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\d{1,10}) ([a-zA-Z0-9:\.]{1,45}) (\d{1,5}) (typ) (host|srflx|prflx|relay)( (raddr) ([a-zA-Z0-9:\.]{1,45}) (rport) (\d{1,5}))?( (generation) (\d))?/i;
 
 var R_WEBRTC_SDP_ICE_PAYLOAD   = {
-  rtpmap   : /^a=rtpmap:(\d+) (([^\s\/]+)\/(\d+)(\/([^\s\/]+))?)?/i,
-  pwd      : /^a=ice-pwd:(\S+)/i,
-  ufrag    : /^a=ice-ufrag:(\S+)/i,
-  ptime    : /^a=ptime:(\d+)/i,
-  maxptime : /^a=maxptime:(\d+)/i,
-  ssrc     : /^a=ssrc:(\d+)/i,
-  crypto   : /^a=crypto:(\d{1,9}) (\w+) ([\S+])( ([\S+]))?/i,
-  media    : /^m=(audio|video|application|data) /i
+  rtpmap      : /^a=rtpmap:(\d+) (([^\s\/]+)\/(\d+)(\/([^\s\/]+))?)?/i,
+  pwd         : /^a=ice-pwd:(\S+)/i,
+  ufrag       : /^a=ice-ufrag:(\S+)/i,
+  ptime       : /^a=ptime:(\d+)/i,
+  maxptime    : /^a=maxptime:(\d+)/i,
+  ssrc        : /^a=ssrc:(\d+)/i,
+  crypto      : /^a=crypto:(\d{1,9}) (\w+) ([\S+])( ([\S+]))?/i,
+  fingerprint : /^a=fingerprint:(\S+) (\S+)/i,
+  media       : /^m=(audio|video|application|data) /i
 };
 
 
@@ -133,6 +141,7 @@ var NS_JINGLE_APPS_RTP_INFO                         = 'urn:xmpp:jingle:apps:rtp:
 var NS_JINGLE_APPS_RTP_AUDIO                        = 'urn:xmpp:jingle:apps:rtp:audio';
 var NS_JINGLE_APPS_RTP_VIDEO                        = 'urn:xmpp:jingle:apps:rtp:video';
 var NS_JINGLE_APPS_STUB                             = 'urn:xmpp:jingle:apps:stub:0';
+var NS_JINGLE_APPS_DTLS                             = 'urn:xmpp:tmp:jingle:apps:dtls:0';
 
 var NS_JINGLE_TRANSPORTS_ICEUDP                     = 'urn:xmpp:jingle:transports:ice-udp:1';
 var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transports:stub:0';
@@ -2509,6 +2518,23 @@ function JSJaCJingle(args) {
    */
 
   /**
+   * Gets the node value from a stanza element
+   * @return Node value
+   * @type string
+   */
+  self.util_stanza_get_value = function(stanza) {
+    try {
+      return stanza.firstChild.nodeValue || null;
+    } catch(e) {
+      try {
+        return (stanza[0]).firstChild.nodeValue || null;
+      } catch(e) {
+        return null;
+      }
+    }
+  };
+
+  /**
    * Gets the attribute value from a stanza element
    * @return Attribute value
    * @type string
@@ -2757,8 +2783,16 @@ function JSJaCJingle(args) {
 
     if(!transport.length) return {};
 
-    payload_obj['pwd']   = self.util_stanza_get_attribute(transport, 'pwd');
-    payload_obj['ufrag'] = self.util_stanza_get_attribute(transport, 'ufrag');
+    payload_obj['pwd']          = self.util_stanza_get_attribute(transport, 'pwd');
+    payload_obj['ufrag']        = self.util_stanza_get_attribute(transport, 'ufrag');
+
+    var fingerprint = self.util_stanza_get_element(transport, 'fingerprint', NS_JINGLE_APPS_DTLS);
+
+    if(fingerprint.length) {
+      payload_obj['fingerprint']          = {};
+      payload_obj['fingerprint']['hash']  = self.util_stanza_get_attribute(fingerprint, 'hash');
+      payload_obj['fingerprint']['value'] = self.util_stanza_get_value(fingerprint);
+    }
 
     return payload_obj;
   };
@@ -2891,14 +2925,21 @@ function JSJaCJingle(args) {
     }
 
     // Build transport
-    var cs_transport = content_local['transport'];
-    var cs_t_attrs   = cs_transport['attrs'];
-    var cs_t_data    = cs_transport['data'];
+    var cs_transport     = content_local['transport'];
+    var cs_t_attrs       = cs_transport['attrs'];
+    var cs_t_data        = cs_transport['data'];
+    var cs_t_fingerprint = cs_transport['fingerprint'];
 
     var transport = content.appendChild(stanza.buildNode('transport', { 'xmlns': NS_JINGLE_TRANSPORTS_ICEUDP }));
 
     for(cur_transport_attr in cs_t_attrs)
           self.util_stanza_set_attribute(transport, cur_transport_attr, cs_t_attrs[cur_transport_attr]);
+
+    if(cs_t_fingerprint && cs_t_fingerprint['hash'] && cs_t_fingerprint['value']) {
+      var fingerprint = transport.appendChild(stanza.buildNode('fingerprint', { 'xmlns': NS_JINGLE_APPS_DTLS }, cs_t_fingerprint['value']));
+
+      self.util_stanza_set_attribute(fingerprint, 'hash', cs_t_fingerprint['hash']);
+    }
 
     for(cur_candidate_hash in cs_t_data) {
       var cs_t_c = cs_t_data[cur_candidate_hash];
@@ -2954,6 +2995,9 @@ function JSJaCJingle(args) {
     content_obj['transport']['attrs']          = {};
     content_obj['transport']['attrs']['pwd']   = payloads['pwd'];
     content_obj['transport']['attrs']['ufrag'] = payloads['ufrag'];
+
+    if(payloads['fingerprint'])
+      content_obj['transport']['fingerprint']    = payloads['fingerprint'];
 
     for(cur_media in transports) {
       if(!(cur_media in JSJAC_JINGLE_MEDIAS)) continue;
@@ -3089,9 +3133,10 @@ function JSJaCJingle(args) {
         cur_media, cur_media_obj, cur_payload, cur_payload_obj, cur_crypto, cur_crypto_obj;
 
     // Read initial data
-    media = payloads['media'];
-    pwd   = payloads['pwd'];
-    ufrag = payloads['ufrag'];
+    media       = payloads['media'];
+    pwd         = payloads['pwd'];
+    ufrag       = payloads['ufrag'];
+    fingerprint = payloads['fingerprint'];
 
     // Payloads headers
     payloads_str += 'v=0';
@@ -3135,8 +3180,11 @@ function JSJaCJingle(args) {
 
       payloads_str += 'a=ice-options:google-ice';
       payloads_str += WEBRTC_SDP_LINE_BREAK;
-      payloads_str += 'a=fingerprint:sha-256 C1:F6:D6:FC:FD:EC:DD:EE:14:EB:10:43:C8:D1:CB:4B:7F:79:1D:F2:E7:FA:D3:F7:4A:56:F5:CD:D2:21:85:B7';
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+      if(fingerprint && fingerprint['hash'] && fingerprint['value']) {
+        payloads_str += 'a=fingerprint:' + fingerprint['hash'] + ' ' + fingerprint['value'];
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+      }
 
       if(cur_media == JSJAC_JINGLE_MEDIA_AUDIO)
         payloads_str += 'a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level' + WEBRTC_SDP_LINE_BREAK;
@@ -3298,16 +3346,17 @@ function JSJaCJingle(args) {
     if(!sdp_payload || sdp_payload.indexOf('\n') == -1) return {};
 
     // Common vars
-    var payload   = {};
-    var lines     = sdp_payload.split('\n');
+    var payload         = {};
+    var lines           = sdp_payload.split('\n');
 
-    var e = 0;
-    var cur_line    = null;
-    var cur_media   = null;
-    var cur_rtpmap  = {};
-    var cur_crypto  = {};
+    var e               = 0;
+    var cur_line        = null;
+    var cur_media       = null;
+    var cur_rtpmap      = {};
+    var cur_crypto      = {};
+    var cur_fingerprint = {};
 
-    var m_rtpmap, m_crypto, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
+    var m_rtpmap, m_crypto, m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
 
     // Common functions
     var init_media = function(media, sub, sub_default) {
@@ -3340,7 +3389,7 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_media(cur_media, 'payload', []);
 
-        ((payload.media)[cur_media]['payload']).push(cur_rtpmap);
+        (payload['media'][cur_media]['payload']).push(cur_rtpmap);
 
         continue;
       }
@@ -3366,7 +3415,27 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_media(cur_media, 'crypto', []);
 
-        ((payload.media)[cur_media]['crypto']).push(cur_crypto);
+        (payload['media'][cur_media]['crypto']).push(cur_crypto);
+
+        continue;
+      }
+
+      m_fingerprint = (R_WEBRTC_SDP_ICE_PAYLOAD.fingerprint).exec(cur_line);
+
+      // 'fingerprint' line?
+      if(m_fingerprint) {
+        // Populate current object
+        e = 0;
+        cur_fingerprint = {};
+
+        cur_fingerprint['hash']  = m_fingerprint[1]  || e++;
+        cur_fingerprint['value'] = m_fingerprint[2]  || e++;
+
+        // Incomplete?
+        if(e != 0) continue;
+
+        // Push it to parent array
+        payload['fingerprint'] = cur_fingerprint;
 
         continue;
       }
