@@ -2321,7 +2321,8 @@ function JSJaCJingle(args) {
 
     self.util_peer_stream_attach(
       self.get_local_view(),
-      self._local_stream
+      self._local_stream,
+      true
     );
   };
 
@@ -2338,7 +2339,8 @@ function JSJaCJingle(args) {
 
     self.util_peer_stream_attach(
       self.get_remote_view(),
-      self._remote_stream
+      self._remote_stream,
+      false
     );
   };
 
@@ -3280,11 +3282,13 @@ function JSJaCJingle(args) {
   /**
    * Attaches a stream source
    */
-  self.util_peer_stream_attach = function(element, stream) {
+  self.util_peer_stream_attach = function(element, stream, mute) {
     if(navigator.mozGetUserMedia)
       element.play();
     else
       element.autoplay = true;
+
+    if(typeof mute == 'boolean') element.muted = mute;
   };
 
   /**
