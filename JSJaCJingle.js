@@ -34,7 +34,8 @@
  * 4.hdl Remote user sends back a type='result' to '4.snd' stanza (ack)
  */
 
-
+var RAW_SDP_LOCAL = null;  // TODO: hack, remove this
+var RAW_SDP_REMOTE = null; // TODO: hack, remove this
 /**
  * JINGLE WEBRTC
  */
@@ -1309,6 +1310,8 @@ function JSJaCJingle(args) {
       jingle = self.util_stanza_jingle(stanza);
 
       if(jingle) {
+        RAW_SDP_REMOTE = $(stanza.getNode()).find('sdp').text(); // TODO: hack, remove this
+
         // Childs
         content = self.util_stanza_get_element(jingle, 'content', NS_JINGLE);
         
@@ -1363,11 +1366,11 @@ function JSJaCJingle(args) {
       (self._get_session_accept_success())(self, stanza);
 
       // Apply SDP data
-      accept_sdp = self.util_generate_sdp(WEBRTC_SDP_TYPE_ANSWER, accept_payload, accept_candidate);
+      accept_sdp = self.util_generate_sdp(WEBRTC_SDP_TYPE_OFFER, accept_payload, accept_candidate);
 
       // Remote description
       self._get_peer_connection().setRemoteDescription(
-        new WEBRTC_SESSION_DESCRIPTION(accept_sdp.description)
+        new WEBRTC_SESSION_DESCRIPTION({ type: 'answer', sdp: RAW_SDP_REMOTE }) // TODO: hack, remove this
       );
 
       // ICE candidates
@@ -1572,6 +1575,8 @@ function JSJaCJingle(args) {
       jingle = self.util_stanza_jingle(stanza);
 
       if(jingle) {
+        RAW_SDP_REMOTE = $(stanza.getNode()).find('sdp').text(); // TODO: hack, remove this
+
         // Childs
         content = self.util_stanza_get_element(jingle, 'content', NS_JINGLE);
 
@@ -2841,6 +2846,8 @@ function JSJaCJingle(args) {
   self._util_stanza_content_local = function(stanza, jingle) {
     var content_local = self._get_content_local();
 
+    var sdp = jingle.appendChild(stanza.buildNode('sdp', { 'xmlns': 'urn:uno:sdp' }, RAW_SDP_LOCAL)); // TODO: hack, remove this
+
     var content = jingle.appendChild(stanza.buildNode('content', { 'xmlns': NS_JINGLE }));
 
     self.util_stanza_set_attribute(content, 'creator', content_local['creator']);
@@ -3533,9 +3540,9 @@ function JSJaCJingle(args) {
         );
 
         // Remote description
-        self._get_peer_connection().setRemoteDescription(
-          new WEBRTC_SESSION_DESCRIPTION(accept_sdp.description)
-        );
+        self._get_peer_connection().setRemoteDescription(new WEBRTC_SESSION_DESCRIPTION(
+          { type: 'offer', sdp: RAW_SDP_REMOTE } // TODO: hack, remove this
+        ));
 
         // Local description
         self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
@@ -3613,6 +3620,8 @@ function JSJaCJingle(args) {
   self._peer_got_description = function(session_description) {
     try {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Got local description.', 4);
+
+      RAW_SDP_LOCAL = session_description.sdp; // TODO: hack, remove this
 
       self._get_peer_connection().setLocalDescription(session_description);
 
