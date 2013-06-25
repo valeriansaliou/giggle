@@ -1620,60 +1620,11 @@ function JSJaCJingle(args) {
     self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
     // Common vars
-    var req_error = false;
-    var i, j,
-        rd_from, rd_sid, rd_content,
-        jingle, content, cur_content,
-        content_creator, content_name, content_senders,
-        cur_candidate_id, cur_accept_candidate;
-
-    rd_from = self.util_stanza_from(stanza);
-    rd_sid  = self.util_stanza_sid(stanza);
+    var rd_from = self.util_stanza_from(stanza);
+    var rd_sid  = self.util_stanza_sid(stanza);
 
     // Request is valid?
-    if(rd_sid) {
-      // Parse initiate stanza
-      jingle = self.util_stanza_jingle(stanza);
-
-      if(jingle) {
-        // Childs
-        content = self.util_stanza_get_element(jingle, 'content', NS_JINGLE);
-
-        if(content && content.length) {
-          for(j in content) {
-            cur_content = content[j];
-
-            // Attrs
-            content_name    = self.util_stanza_get_attribute(cur_content, 'name');
-            content_senders = self.util_stanza_get_attribute(cur_content, 'senders');
-            content_creator = self.util_stanza_get_attribute(cur_content, 'creator');
-
-            self._set_name(content_name);
-            self._set_senders(content_name, content_senders);
-            self._set_creator(content_name, content_creator);
-
-            // Nodes
-            self._set_payloads_remote(
-              content_name,
-              self.util_stanza_parse_payload(stanza)
-            );
-
-            self._set_candidates_remote(
-              content_name,
-              self.util_stanza_parse_candidate(stanza)
-            );
-          }
-        } else {
-          req_error = true;
-        }
-      } else {
-        req_error = true;
-      }
-    } else {
-      req_error = true;
-    }
-
-    if(!req_error) {
+    if(rd_sid && self.util_stanza_parse_content(stanza)) {
       // Set session values
       self._set_sid(rd_sid);
       self._set_to(rd_from);
@@ -2752,6 +2703,55 @@ function JSJaCJingle(args) {
       }
     }, (JSJAC_JINGLE_STANZA_TIMEOUT * 1000));
   };
+
+  /**
+   * Parses a Jingle payload stanza
+   * @return parsed object
+   * @type object
+   */
+  self.util_stanza_parse_content = function(stanza) {
+    var i, j,
+        jingle, content, cur_content,
+        content_creator, content_name, content_senders;
+
+    // Parse initiate stanza
+    jingle = self.util_stanza_jingle(stanza);
+
+    if(jingle) {
+      // Childs
+      content = self.util_stanza_get_element(jingle, 'content', NS_JINGLE);
+
+      if(content && content.length) {
+        for(j in content) {
+          cur_content = content[j];
+
+          // Attrs
+          content_name    = self.util_stanza_get_attribute(cur_content, 'name');
+          content_senders = self.util_stanza_get_attribute(cur_content, 'senders');
+          content_creator = self.util_stanza_get_attribute(cur_content, 'creator');
+
+          self._set_name(content_name);
+          self._set_senders(content_name, content_senders);
+          self._set_creator(content_name, content_creator);
+
+          // Nodes
+          self._set_payloads_remote(
+            content_name,
+            self.util_stanza_parse_payload(stanza)
+          );
+
+          self._set_candidates_remote(
+            content_name,
+            self.util_stanza_parse_candidate(stanza)
+          );
+        }
+
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   /**
    * Parses a Jingle payload stanza
