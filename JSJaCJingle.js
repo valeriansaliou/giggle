@@ -198,6 +198,9 @@ var JSJAC_JINGLE_SENDERS_INITIATOR                   = { jingle: 'initiator', sd
 var JSJAC_JINGLE_SENDERS_NONE                        = { jingle: 'none',      sdp: 'inactive' };
 var JSJAC_JINGLE_SENDERS_RESPONDER                   = { jingle: 'responder', sdp: 'recvonly' };
 
+var JSJAC_JINGLE_CREATOR_INITIATOR                   = 'initiator';
+var JSJAC_JINGLE_CREATOR_RESPONDER                   = 'responder';
+
 var JSJAC_JINGLE_STATUS_INACTIVE                     = 'inactive';
 var JSJAC_JINGLE_STATUS_INITIATING                   = 'initiating';
 var JSJAC_JINGLE_STATUS_INITIATED                    = 'initiated';
@@ -273,6 +276,10 @@ JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_BOTH.jingle]                = JSJAC_JI
 JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_INITIATOR.jingle]           = JSJAC_JINGLE_SENDERS_INITIATOR.sdp;
 JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_NONE.jingle]                = JSJAC_JINGLE_SENDERS_NONE.sdp;
 JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_RESPONDER.jingle]           = JSJAC_JINGLE_SENDERS_RESPONDER.sdp;
+
+var JSJAC_JINGLE_CREATORS           = {};
+JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_INITIATOR]                 = 1;
+JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_RESPONDER]                 = 1;
 
 var JSJAC_JINGLE_STATUSES           = {};
 JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INACTIVE]                   = 1;
@@ -589,6 +596,11 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._creator = {};
+
+  /**
+   * @private
+   */
   self._status = JSJAC_JINGLE_STATUS_INACTIVE;
 
   /**
@@ -636,6 +648,7 @@ function JSJaCJingle(args) {
     for(available_name in JSJAC_JINGLE_MEDIAS) {
       self._set_name(available_name);
       self._set_senders(available_name, JSJAC_JINGLE_SENDERS_BOTH.jingle);
+      self._set_creator(available_name, JSJAC_JINGLE_CREATOR_INITIATOR);
     }
 
     // Trigger init pending custom callback
@@ -1633,9 +1646,11 @@ function JSJaCJingle(args) {
             // Attrs
             content_name    = self.util_stanza_get_attribute(cur_content, 'name');
             content_senders = self.util_stanza_get_attribute(cur_content, 'senders');
+            content_creator = self.util_stanza_get_attribute(cur_content, 'creator');
 
             self._set_name(content_name);
             self._set_senders(content_name, content_senders);
+            self._set_creator(content_name, content_creator);
 
             // Nodes
             self._set_payloads_remote(
@@ -2136,9 +2151,21 @@ function JSJaCJingle(args) {
    */
   self.get_senders = function(name) {
     if(name)
-      return (name in self._senders) ? self._senders[name] : {};
+      return (name in self._senders) ? self._senders[name] : null;
 
     return self._senders;
+  };
+
+  /**
+   * Gets the creator value
+   * @return creator value
+   * @type string
+   */
+  self.get_creator = function(name) {
+    if(name)
+      return (name in self._creator) ? self._creator[name] : null;
+
+    return self._creator;
   };
 
   /**
@@ -2472,6 +2499,15 @@ function JSJaCJingle(args) {
     if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
 
     self._senders[name] = senders;
+  };
+
+  /**
+   * @private
+   */
+  self._set_creator = function(name, creator) {
+    if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
+
+    self._creator[name] = creator;
   };
 
   /**
@@ -3229,7 +3265,7 @@ function JSJaCJingle(args) {
         cur_name,
 
         self._util_generate_content(
-          JSJAC_JINGLE_SENDERS_INITIATOR.jingle,
+          self.get_creator(cur_name),
           cur_name,
           self.get_senders(cur_name),
           self._get_payloads_remote(cur_name),
