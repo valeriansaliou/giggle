@@ -186,86 +186,81 @@ var MAP_DISCO_JINGLE                                = [
  * JSJAC JINGLE CONSTANTS
  */
 
-var JSJAC_JINGLE_AVAILABLE                          = WEBRTC_GET_MEDIA ? true : false;
+var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true : false;
 
-var JSJAC_JINGLE_STANZA_TIMEOUT                     = 20;
-var JSJAC_JINGLE_STANZA_ID_PRE                      = 'jj_';
+var JSJAC_JINGLE_STANZA_TIMEOUT                      = 20;
+var JSJAC_JINGLE_STANZA_ID_PRE                       = 'jj_';
 
-var JSJAC_JINGLE_NETWORK                            = '0';
+var JSJAC_JINGLE_NETWORK                             = '0';
 
-var JSJAC_JINGLE_SENDERS_BOTH                       = { jingle: 'both',      sdp: 'sendrecv' };
-var JSJAC_JINGLE_SENDERS_INITIATOR                  = { jingle: 'initiator', sdp: 'sendonly' };
-var JSJAC_JINGLE_SENDERS_NONE                       = { jingle: 'none',      sdp: 'inactive' };
-var JSJAC_JINGLE_SENDERS_RESPONDER                  = { jingle: 'responder', sdp: 'recvonly' };
+var JSJAC_JINGLE_SENDERS_BOTH                        = { jingle: 'both',      sdp: 'sendrecv' };
+var JSJAC_JINGLE_SENDERS_INITIATOR                   = { jingle: 'initiator', sdp: 'sendonly' };
+var JSJAC_JINGLE_SENDERS_NONE                        = { jingle: 'none',      sdp: 'inactive' };
+var JSJAC_JINGLE_SENDERS_RESPONDER                   = { jingle: 'responder', sdp: 'recvonly' };
 
-var JSJAC_JINGLE_STATUS_INACTIVE                    = 'inactive';
-var JSJAC_JINGLE_STATUS_INITIATING                  = 'initiating';
-var JSJAC_JINGLE_STATUS_INITIATED                   = 'initiated';
-var JSJAC_JINGLE_STATUS_ACCEPTING                   = 'accepting';
-var JSJAC_JINGLE_STATUS_ACCEPTED                    = 'accepted';
-var JSJAC_JINGLE_STATUS_TERMINATING                 = 'terminating';
-var JSJAC_JINGLE_STATUS_TERMINATED                  = 'terminated';
+var JSJAC_JINGLE_STATUS_INACTIVE                     = 'inactive';
+var JSJAC_JINGLE_STATUS_INITIATING                   = 'initiating';
+var JSJAC_JINGLE_STATUS_INITIATED                    = 'initiated';
+var JSJAC_JINGLE_STATUS_ACCEPTING                    = 'accepting';
+var JSJAC_JINGLE_STATUS_ACCEPTED                     = 'accepted';
+var JSJAC_JINGLE_STATUS_TERMINATING                  = 'terminating';
+var JSJAC_JINGLE_STATUS_TERMINATED                   = 'terminated';
 
-var JSJAC_JINGLE_ACTION_CONTENT_ACCEPT              = 'content-accept';
-var JSJAC_JINGLE_ACTION_CONTENT_ADD                 = 'content-add';
-var JSJAC_JINGLE_ACTION_CONTENT_MODIFY              = 'content-modify';
-var JSJAC_JINGLE_ACTION_CONTENT_REJECT              = 'content-reject';
-var JSJAC_JINGLE_ACTION_CONTENT_REMOVE              = 'content-remove';
-var JSJAC_JINGLE_ACTION_DESCRIPTION_INFO            = 'description-info';
-var JSJAC_JINGLE_ACTION_SECURITY_INFO               = 'security-info';
-var JSJAC_JINGLE_ACTION_SESSION_ACCEPT              = 'session-accept';
-var JSJAC_JINGLE_ACTION_SESSION_INFO                = 'session-info';
-var JSJAC_JINGLE_ACTION_SESSION_INITIATE            = 'session-initiate';
-var JSJAC_JINGLE_ACTION_SESSION_TERMINATE           = 'session-terminate';
-var JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT            = 'transport-accept';
-var JSJAC_JINGLE_ACTION_TRANSPORT_INFO              = 'transport-info';
-var JSJAC_JINGLE_ACTION_TRANSPORT_REJECT            = 'transport-reject';
-var JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE           = 'transport-replace';
+var JSJAC_JINGLE_ACTION_CONTENT_ACCEPT               = 'content-accept';
+var JSJAC_JINGLE_ACTION_CONTENT_ADD                  = 'content-add';
+var JSJAC_JINGLE_ACTION_CONTENT_MODIFY               = 'content-modify';
+var JSJAC_JINGLE_ACTION_CONTENT_REJECT               = 'content-reject';
+var JSJAC_JINGLE_ACTION_CONTENT_REMOVE               = 'content-remove';
+var JSJAC_JINGLE_ACTION_DESCRIPTION_INFO             = 'description-info';
+var JSJAC_JINGLE_ACTION_SECURITY_INFO                = 'security-info';
+var JSJAC_JINGLE_ACTION_SESSION_ACCEPT               = 'session-accept';
+var JSJAC_JINGLE_ACTION_SESSION_INFO                 = 'session-info';
+var JSJAC_JINGLE_ACTION_SESSION_INITIATE             = 'session-initiate';
+var JSJAC_JINGLE_ACTION_SESSION_TERMINATE            = 'session-terminate';
+var JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT             = 'transport-accept';
+var JSJAC_JINGLE_ACTION_TRANSPORT_INFO               = 'transport-info';
+var JSJAC_JINGLE_ACTION_TRANSPORT_REJECT             = 'transport-reject';
+var JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE            = 'transport-replace';
 
-var JSJAC_JINGLE_ERROR_OUT_OF_BORDER                = { jingle: 'out-of-border',          xmpp: 'unexpected-request',         type: 'wait'   };
-var JSJAC_JINGLE_ERROR_TIE_BREAK                    = { jingle: 'tie-break',              xmpp: 'conflict',                   type: 'cancel' };
-var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION              = { jingle: 'unknown-session',        xmpp: 'item-not-found',             type: 'cancel' };
-var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO             = { jingle: 'unsupported-info',       xmpp: 'feature-not-implemented',    type: 'modify' };
-var JSJAC_JINGLE_ERROR_SECURITY_REQUIRED            = { jingle: 'security-required',      xmpp: 'not-acceptable',             type: 'cancel' };
+var JSJAC_JINGLE_ERROR_OUT_OF_BORDER                 = { jingle: 'out-of-border',          xmpp: 'unexpected-request',         type: 'wait'   };
+var JSJAC_JINGLE_ERROR_TIE_BREAK                     = { jingle: 'tie-break',              xmpp: 'conflict',                   type: 'cancel' };
+var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION               = { jingle: 'unknown-session',        xmpp: 'item-not-found',             type: 'cancel' };
+var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO              = { jingle: 'unsupported-info',       xmpp: 'feature-not-implemented',    type: 'modify' };
+var JSJAC_JINGLE_ERROR_SECURITY_REQUIRED             = { jingle: 'security-required',      xmpp: 'not-acceptable',             type: 'cancel' };
 
-var XMPP_ERROR_FEATURE_NOT_IMPLEMENTED              = { xmpp: 'feature-not-implemented',  type: 'cancel' };
-var XMPP_ERROR_SERVICE_UNAVAILABLE                  = { xmpp: 'service-unavailable',      type: 'cancel' };
-var XMPP_ERROR_REDIRECT                             = { xmpp: 'redirect',                 type: 'modify' };
-var XMPP_ERROR_RESOURCE_CONSTRAINT                  = { xmpp: 'resource-constraint',      type: 'wait'   };
-var XMPP_ERROR_BAD_REQUEST                          = { xmpp: 'bad-request',              type: 'cancel' };
+var XMPP_ERROR_FEATURE_NOT_IMPLEMENTED               = { xmpp: 'feature-not-implemented',  type: 'cancel' };
+var XMPP_ERROR_SERVICE_UNAVAILABLE                   = { xmpp: 'service-unavailable',      type: 'cancel' };
+var XMPP_ERROR_REDIRECT                              = { xmpp: 'redirect',                 type: 'modify' };
+var XMPP_ERROR_RESOURCE_CONSTRAINT                   = { xmpp: 'resource-constraint',      type: 'wait'   };
+var XMPP_ERROR_BAD_REQUEST                           = { xmpp: 'bad-request',              type: 'cancel' };
 
-var JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION         = 'alternative-session';
-var JSJAC_JINGLE_REASON_BUSY                        = 'busy';
-var JSJAC_JINGLE_REASON_CANCEL                      = 'cancel';
-var JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR          = 'connectivity-error';
-var JSJAC_JINGLE_REASON_DECLINE                     = 'decline';
-var JSJAC_JINGLE_REASON_EXPIRED                     = 'expired';
-var JSJAC_JINGLE_REASON_FAILED_APPLICATION          = 'failed-application';
-var JSJAC_JINGLE_REASON_FAILED_TRANSPORT            = 'failed-transport';
-var JSJAC_JINGLE_REASON_GENERAL_ERROR               = 'general-error';
-var JSJAC_JINGLE_REASON_GONE                        = 'gone';
-var JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS     = 'incompatible-parameters';
-var JSJAC_JINGLE_REASON_MEDIA_ERROR                 = 'media-error';
-var JSJAC_JINGLE_REASON_SECURITY_ERROR              = 'security-error';
-var JSJAC_JINGLE_REASON_SUCCESS                     = 'success';
-var JSJAC_JINGLE_REASON_TIMEOUT                     = 'timeout';
-var JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS    = 'unsupported-applications';
-var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS      = 'unsupported-transports';
+var JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION          = 'alternative-session';
+var JSJAC_JINGLE_REASON_BUSY                         = 'busy';
+var JSJAC_JINGLE_REASON_CANCEL                       = 'cancel';
+var JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR           = 'connectivity-error';
+var JSJAC_JINGLE_REASON_DECLINE                      = 'decline';
+var JSJAC_JINGLE_REASON_EXPIRED                      = 'expired';
+var JSJAC_JINGLE_REASON_FAILED_APPLICATION           = 'failed-application';
+var JSJAC_JINGLE_REASON_FAILED_TRANSPORT             = 'failed-transport';
+var JSJAC_JINGLE_REASON_GENERAL_ERROR                = 'general-error';
+var JSJAC_JINGLE_REASON_GONE                         = 'gone';
+var JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS      = 'incompatible-parameters';
+var JSJAC_JINGLE_REASON_MEDIA_ERROR                  = 'media-error';
+var JSJAC_JINGLE_REASON_SECURITY_ERROR               = 'security-error';
+var JSJAC_JINGLE_REASON_SUCCESS                      = 'success';
+var JSJAC_JINGLE_REASON_TIMEOUT                      = 'timeout';
+var JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS     = 'unsupported-applications';
+var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS       = 'unsupported-transports';
 
-var JSJAC_JINGLE_SESSION_INFO_ACTIVE                = 'active';
-var JSJAC_JINGLE_SESSION_INFO_HOLD                  = 'hold';
-var JSJAC_JINGLE_SESSION_INFO_MUTE                  = 'mute';
-var JSJAC_JINGLE_SESSION_INFO_RINGING               = 'ringing';
-var JSJAC_JINGLE_SESSION_INFO_UNHOLD                = 'unhold';
-var JSJAC_JINGLE_SESSION_INFO_UNMUTE                = 'unmute';
+var JSJAC_JINGLE_SESSION_INFO_ACTIVE                 = 'active';
+var JSJAC_JINGLE_SESSION_INFO_HOLD                   = 'hold';
+var JSJAC_JINGLE_SESSION_INFO_MUTE                   = 'mute';
+var JSJAC_JINGLE_SESSION_INFO_RINGING                = 'ringing';
+var JSJAC_JINGLE_SESSION_INFO_UNHOLD                 = 'unhold';
+var JSJAC_JINGLE_SESSION_INFO_UNMUTE                 = 'unmute';
 
-var JSJAC_JINGLE_MEDIA_AUDIO                        = 'audio';
-var JSJAC_JINGLE_MEDIA_VIDEO                        = 'video';
-
-var JSJAC_JINGLE_CONTENT_NAMES                      = {
-  JSJAC_JINGLE_MEDIA_AUDIO : 1,
-  JSJAC_JINGLE_MEDIA_VIDEO : 1
-};
+var JSJAC_JINGLE_MEDIA_AUDIO                         = 'audio';
+var JSJAC_JINGLE_MEDIA_VIDEO                         = 'video';
 
 
 
@@ -346,7 +341,6 @@ JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_RINGING]         = 1;
 JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNHOLD]          = 1;
 JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]          = 1;
 
-// TODO-LATER: labels shouldn't be hard-coded!
 var JSJAC_JINGLE_MEDIAS             = {};
 JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                         = { label: '0' };
 JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = { label: '1' };
@@ -636,12 +630,13 @@ function JSJaCJingle(args) {
 
     // Set session values
     self._set_sid(self.util_generate_sid());
-    self._set_senders(JSJAC_JINGLE_SENDERS_BOTH.jingle);
     self._set_initiator(self.util_connection_jid());
     self._set_responder(self.get_to());
 
-    for(available_name in JSJAC_JINGLE_CONTENT_NAMES)
+    for(available_name in JSJAC_JINGLE_MEDIAS) {
       self._set_name(available_name);
+      self._set_senders(available_name, JSJAC_JINGLE_SENDERS_BOTH.jingle);
+    }
 
     // Trigger init pending custom callback
     (self._get_session_initiate_pending())(self);
@@ -1419,7 +1414,7 @@ function JSJaCJingle(args) {
       (self._get_session_accept_success())(self, stanza);
 
       // Apply SDP data
-      accept_sdp = self.util_generate_sdp(WEBRTC_SDP_TYPE_OFFER, accept_payload, accept_candidate);
+      accept_sdp = self.util_sdp_generate(WEBRTC_SDP_TYPE_OFFER, accept_payload, accept_candidate);
 
       // Remote description
       self._get_peer_connection().setRemoteDescription(
@@ -1595,8 +1590,8 @@ function JSJaCJingle(args) {
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
-    // Remove this session from router
-    JSJaCJingle_remove(self.get_sid());
+    // Stop WebRTC
+    self._peer_stop();
 
     // TODO-LATER: auto-destroy self object + this
 
@@ -1760,16 +1755,8 @@ function JSJaCJingle(args) {
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
-    // Detach media streams from DOM view
-    self._set_local_stream(null);
-    self._set_remote_stream(null);
-
-    // Close the media stream
-    if(self._get_peer_connection())
-      self._get_peer_connection().close();
-
-    // Remove this session from router
-    JSJaCJingle_remove(self.get_sid());
+    // Stop WebRTC
+    self._peer_stop();
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_success > Handled.', 4);
   };
@@ -1782,8 +1769,8 @@ function JSJaCJingle(args) {
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
-    // Remove this session from router
-    JSJaCJingle_remove(self.get_sid());
+    // Stop WebRTC
+    self._peer_stop();
 
     // TODO-LATER: auto-destroy self object + this
 
@@ -2422,17 +2409,17 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_payloads_local = function(name, payload_data) {
+    console.log('NAME ' + name, payload_data);
     self._payloads_local[name] = payload_data;
   };
 
   /**
    * @private
    */
-  self._set_candidates_local = function(name, candidate_id, candidate_data) {
-    if(!(name in self._candidates_local))                self._candidates_local[name] = {};
-    if(!(candidate_id in self._candidates_local[name]))  self._candidates_local[name][candidate_id] = [];
+  self._set_candidates_local = function(name, candidate_data) {
+    if(!(name in self._candidates_local))                self._candidates_local[name] = [];
 
-    (self._candidates_local[name][candidate_id]).push(candidate_data);
+    (self._candidates_local[name]).push(candidate_data);
   };
 
   /**
@@ -3038,7 +3025,7 @@ function JSJaCJingle(args) {
    */
   self._util_stanza_content_local = function(stanza, jingle) {
     var content_local = self._get_content_local();
-
+    console.log('CONTENT_LOCAL', content_local);
     for(c in content_local) {
       var cur_content = content_local[c];
 
@@ -3256,9 +3243,9 @@ function JSJaCJingle(args) {
         self._util_generate_content(
           JSJAC_JINGLE_SENDERS_INITIATOR.jingle,
           cur_name,
-          self.get_senders(),
-          self._get_payloads_local(),
-          self._get_candidates_local()
+          self.get_senders(cur_name),
+          self._get_payloads_local(cur_name),
+          self._get_candidates_local(cur_name)
         )
       );
     }
@@ -3269,10 +3256,10 @@ function JSJaCJingle(args) {
    * @return SDP data
    * @type object
    */
-  self.util_generate_sdp = function(type, payloads, candidates) {
+  self.util_sdp_generate = function(type, payloads, candidates) {
     return {
-      candidates  : self.util_generate_sdp_candidates(candidates),
-      description : self.util_generate_sdp_description(type, payloads)
+      candidates  : self.util_sdp_generate_candidates(candidates),
+      description : self.util_sdp_generate_description(type, payloads)
     };
   };
 
@@ -3281,7 +3268,7 @@ function JSJaCJingle(args) {
    * @return SDP candidates
    * @type object
    */
-  self.util_generate_sdp_candidates = function(candidates) {
+  self.util_sdp_generate_candidates = function(candidates) {
     var candidates_arr = [];
 
     // Parse candidates
@@ -3350,7 +3337,7 @@ function JSJaCJingle(args) {
    * @return SDP payloads
    * @type string
    */
-  self.util_generate_sdp_description = function(type, payloads) {
+  self.util_sdp_generate_description = function(type, payloads) {
     var payloads_obj = {};
     var payloads_str = '';
 
@@ -3368,7 +3355,6 @@ function JSJaCJingle(args) {
         cur_rtcp_mux;
 
     // Read initial data
-    media       = payloads['media'];
     pwd         = payloads['pwd'];
     ufrag       = payloads['ufrag'];
     fingerprint = payloads['fingerprint'];
@@ -3384,12 +3370,12 @@ function JSJaCJingle(args) {
     payloads_str += WEBRTC_SDP_LINE_BREAK;
 
     // Add bundle line
-    payloads_str += 'a=group:BUNDLE ' + Object.keys(media).join(' ');
+    payloads_str += 'a=group:BUNDLE ' + Object.keys(payloads).join(' ');
     payloads_str += WEBRTC_SDP_LINE_BREAK;
 
     // Add media groups
-    for(cur_media in media) {
-      cur_media_obj  = media[cur_media];
+    for(cur_media in payloads) {
+      cur_media_obj  = payloads[cur_media];
 
       cur_attrs      = cur_media_obj['attrs'];
       cur_rtcp_fb    = cur_media_obj['rtcp-fb'];
@@ -3399,7 +3385,7 @@ function JSJaCJingle(args) {
       cur_rtcp_mux   = cur_media_obj['rtcp-mux'];
 
       // Current media
-      payloads_str += self.util_generate_sdp_description_media(cur_media, cur_crypto, fingerprint, cur_payload);
+      payloads_str += self.util_sdp_generate_description_media(cur_media, cur_crypto, fingerprint, cur_payload);
       payloads_str += WEBRTC_SDP_LINE_BREAK;
 
       payloads_str += 'c=IN IP4 0.0.0.0';
@@ -3542,7 +3528,7 @@ function JSJaCJingle(args) {
    * @return SDP media line
    * @type string
    */
-  self.util_generate_sdp_description_media = function(media, crypto, fingerprint, payload) {
+  self.util_sdp_generate_description_media = function(media, crypto, fingerprint, payload) {
     var i;
     var type_ids = [];
     var sdp_media = 'm=' + media + ' 1 ';
@@ -3647,10 +3633,13 @@ function JSJaCJingle(args) {
     if(!sdp_payload || sdp_payload.indexOf('\n') == -1) return {};
 
     // Common vars
-    var payload         = {};
-    var lines           = sdp_payload.split('\n');
+    var payload   = {
+      'descriptions' : {},
+      'transports'   : {}
+    };
 
-    var cur_media       = null;
+    var lines     = sdp_payload.split('\n');
+    var cur_media = null;
 
     var e,
         cur_line, cur_rtpmap, cur_rtcp_fb, cur_rtcp_fb_trr_int,
@@ -3659,24 +3648,32 @@ function JSJaCJingle(args) {
         m_rtpmap, m_rtcp_fb, m_rtcp_fb_trr_int, m_crypto, m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
 
     // Common functions
-    var init_content = function(media, sub, sub_default) {
-      if(!('media' in payload))                  payload['media']             = {};
-      if(!(media   in payload['media']))         payload['media'][media]      = {};
-      if(!(sub     in payload['media'][media]))  payload['media'][media][sub] = sub_default;
+    var init_content = function(name, sub, sub_default) {
+      if(!(name in payload['descriptions']))        payload['descriptions'][name]      = {};
+      if(!(sub  in payload['descriptions'][name]))  payload['descriptions'][name][sub] = sub_default;
     };
 
-    var init_payload = function(media, id) {
-      init_content(media, 'payload', {});
+    var init_payload = function(name, id) {
+      init_content(name, 'payload', {});
 
-      if(!(id in payload['media'][media]['payload']))  payload['media'][media]['payload'][id] = {
-        'attrs'           : {},
-        'rtcp-fb'         : [],
-        'rtcp-fb-trr-int' : []
-      };
+      if(!(id in payload['descriptions'][name]['payload'])) {
+        payload['descriptions'][name]['payload'][id] = {
+          'attrs'           : {},
+          'rtcp-fb'         : [],
+          'rtcp-fb-trr-int' : []
+        };
+      }
     };
 
     for(i in lines) {
       var cur_line = lines[i];
+
+      m_media = (R_WEBRTC_SDP_ICE_PAYLOAD.media).exec(cur_line);
+
+      // 'audio/video' line?
+      if(m_media) {
+        cur_media = m_media[1]; continue;
+      }
 
       m_rtpmap = (R_WEBRTC_SDP_ICE_PAYLOAD.rtpmap).exec(cur_line);
 
@@ -3699,7 +3696,7 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_payload(cur_media, cur_rtpmap_id);
 
-        payload['media'][cur_media]['payload'][cur_rtpmap_id]['attrs'] = cur_rtpmap;
+        payload['descriptions'][cur_media]['payload'][cur_rtpmap_id]['attrs'] = cur_rtpmap;
 
         continue;
       }
@@ -3725,11 +3722,11 @@ function JSJaCJingle(args) {
         if(cur_rtcp_fb_id == '*') {
           init_content(cur_media, 'rtcp-fb', []);
 
-          (payload['media'][cur_media]['rtcp-fb']).push(cur_rtcp_fb);
+          (payload['descriptions'][cur_media]['rtcp-fb']).push(cur_rtcp_fb);
         } else {
           init_payload(cur_media, cur_rtcp_fb_id);
 
-          (payload['media'][cur_media]['payload'][cur_rtcp_fb_id]['rtcp-fb']).push(cur_rtcp_fb);
+          (payload['descriptions'][cur_media]['payload'][cur_rtcp_fb_id]['rtcp-fb']).push(cur_rtcp_fb);
         }
 
         continue;
@@ -3754,7 +3751,7 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_payload(cur_media, cur_rtcp_fb_trr_int_id);
 
-        (payload['media'][cur_media]['payload'][cur_rtcp_fb_trr_int_id]['rtcp-fb-trr-int']).push(cur_rtcp_fb_trr_int);
+        (payload['descriptions'][cur_media]['payload'][cur_rtcp_fb_trr_int_id]['rtcp-fb-trr-int']).push(cur_rtcp_fb_trr_int);
 
         continue;
       }
@@ -3778,43 +3775,9 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_content(cur_media, 'crypto', []);
 
-        (payload['media'][cur_media]['crypto']).push(cur_crypto);
+        (payload['descriptions'][cur_media]['crypto']).push(cur_crypto);
 
         continue;
-      }
-
-      m_fingerprint = (R_WEBRTC_SDP_ICE_PAYLOAD.fingerprint).exec(cur_line);
-
-      // 'fingerprint' line?
-      if(m_fingerprint) {
-        // Populate current object
-        e = 0;
-        cur_fingerprint = {};
-
-        cur_fingerprint['hash']  = m_fingerprint[1]  || e++;
-        cur_fingerprint['value'] = m_fingerprint[2]  || e++;
-
-        // Incomplete?
-        if(e != 0) continue;
-
-        // Push it to parent array
-        payload['fingerprint'] = cur_fingerprint;
-
-        continue;
-      }
-
-      m_pwd = (R_WEBRTC_SDP_ICE_PAYLOAD.pwd).exec(cur_line);
-
-      // 'pwd' line?
-      if(m_pwd) {
-        payload['pwd'] = m_pwd[1]; continue;
-      }
-
-      m_ufrag = (R_WEBRTC_SDP_ICE_PAYLOAD.ufrag).exec(cur_line);
-
-      // 'ufrag' line?
-      if(m_ufrag) {
-        payload['ufrag'] = m_ufrag[1]; continue;
       }
 
       m_ptime = (R_WEBRTC_SDP_ICE_PAYLOAD.ptime).exec(cur_line);
@@ -3824,7 +3787,7 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_content(cur_media, 'attrs', {});
 
-        payload['media'][cur_media]['attrs']['ptime'] = m_ptime[1];
+        payload['descriptions'][cur_media]['attrs']['ptime'] = m_ptime[1];
 
         continue;
       }
@@ -3836,7 +3799,7 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_content(cur_media, 'attrs', {});
 
-        payload['media'][cur_media]['attrs']['maxptime'] = m_maxptime[1];
+        payload['descriptions'][cur_media]['attrs']['maxptime'] = m_maxptime[1];
 
         continue;
       }
@@ -3848,7 +3811,7 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_content(cur_media, 'attrs', {});
 
-        payload['media'][cur_media]['attrs']['ssrc'] = m_ssrc[1];
+        payload['descriptions'][cur_media]['attrs']['ssrc'] = m_ssrc[1];
 
         continue;
       }
@@ -3881,18 +3844,47 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_content(cur_media, 'rtp-hdrext', []);
 
-        (payload['media'][cur_media]['rtp-hdrext']).push(cur_extmap);
+        (payload['descriptions'][cur_media]['rtp-hdrext']).push(cur_extmap);
 
         continue;
       }
 
-      m_media = (R_WEBRTC_SDP_ICE_PAYLOAD.media).exec(cur_line);
+      m_fingerprint = (R_WEBRTC_SDP_ICE_PAYLOAD.fingerprint).exec(cur_line);
 
-      // 'audio/video' line?
-      if(m_media) {
-        cur_media = m_media[1]; continue;
+      // 'fingerprint' line?
+      if(m_fingerprint) {
+        // Populate current object
+        e = 0;
+        cur_fingerprint = {};
+
+        cur_fingerprint['hash']  = m_fingerprint[1]  || e++;
+        cur_fingerprint['value'] = m_fingerprint[2]  || e++;
+
+        // Incomplete?
+        if(e != 0) continue;
+
+        // Push it to parent array
+        payload['transports']['fingerprint'] = cur_fingerprint;
+
+        continue;
+      }
+
+      m_pwd = (R_WEBRTC_SDP_ICE_PAYLOAD.pwd).exec(cur_line);
+
+      // 'pwd' line?
+      if(m_pwd) {
+        payload['transports']['pwd'] = m_pwd[1]; continue;
+      }
+
+      m_ufrag = (R_WEBRTC_SDP_ICE_PAYLOAD.ufrag).exec(cur_line);
+
+      // 'ufrag' line?
+      if(m_ufrag) {
+        payload['transports']['ufrag'] = m_ufrag[1]; continue;
       }
     }
+
+    console.log('HAPPILY GENERATED PLD', payload);
 
     return payload;
   };
@@ -3998,7 +3990,7 @@ function JSJaCJingle(args) {
         // Then, wait for responder to send back its remote description
       } else {
         // Apply SDP data
-        accept_sdp = self.util_generate_sdp(
+        accept_sdp = self.util_sdp_generate(
           WEBRTC_SDP_TYPE_OFFER,
           self._get_payloads_remote(),
           self._get_candidates_remote()
@@ -4091,12 +4083,29 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 4);
 
       // Convert SDP raw data to an object
-      self._set_payloads_local(
-        self.util_sdp_parse_payload(session_description.sdp)
-      );
+      var payload_parsed = self.util_sdp_parse_payload(session_description.sdp);
+
+      for(c in payload_parsed)
+        self._set_payloads_local(c, payload_parsed[c]);
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > ' + e, 1);
     }
+  };
+
+  /**
+   * @private
+   */
+  self._peer_stop = function() {
+    // Detach media streams from DOM view
+    self._set_local_stream(null);
+    self._set_remote_stream(null);
+
+    // Close the media stream
+    if(self._get_peer_connection())
+      self._get_peer_connection().close();
+
+    // Remove this session from router
+    JSJaCJingle_remove(self.get_sid());
   };
 }
 
