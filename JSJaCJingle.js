@@ -1631,9 +1631,22 @@ function JSJaCJingle(args) {
             cur_content = content[j];
 
             // Attrs
-            content_creator = self.util_stanza_get_attribute(cur_content, 'creator');
             content_name    = self.util_stanza_get_attribute(cur_content, 'name');
             content_senders = self.util_stanza_get_attribute(cur_content, 'senders');
+
+            self._set_name(content_name);
+            self._set_senders(content_name, content_senders);
+
+            // Nodes
+            self._set_payloads_remote(
+              content_name,
+              self.util_stanza_parse_payload(stanza)
+            );
+
+            self._set_candidates_remote(
+              content_name,
+              self.util_stanza_parse_candidate(stanza)
+            );
           }
         } else {
           req_error = true;
@@ -1645,45 +1658,18 @@ function JSJaCJingle(args) {
       req_error = true;
     }
 
-    // Parse content and candidate
-    var accept_payload   = self.util_stanza_parse_payload(stanza);
-    var accept_candidate = self.util_stanza_parse_candidate(stanza);
-
     if(!req_error) {
       // Set session values
       self._set_sid(rd_sid);
-      self._set_name(content_name);
-      self._set_senders(content_senders);
       self._set_to(rd_from);
       self._set_initiator(rd_from);
       self._set_responder(self.util_connection_jid());
-
-      // Trigger init pending custom callback
-      //(self._get_session_initiate_pending())(self);
-      // TODO: useful there?!
 
       // Register session to common router
       JSJaCJingle_add(rd_sid, self);
 
       // Generate and store content data
-      rd_content = self._util_generate_content(
-        content_creator,
-        content_name,
-        content_senders,
-        accept_payload,
-        accept_candidate
-      );
-
-      // Store remote data
-      self._set_content_remote(content_name, rd_content);
-      self._set_payloads_remote(accept_payload);
-
-      for(cur_candidate_id in accept_candidate) {
-        cur_accept_candidate = accept_candidate[cur_candidate_id];
-
-        for(i in cur_accept_candidate)
-          self._set_candidates_remote(cur_candidate_id, cur_accept_candidate[i]);
-      }
+      self._util_initialize_content_remote();
 
       // TODO-LATER: send an unsupported transport reply if there's no way the session can work
       //             will need to request for our own SDP, parse it, compare with friend's one
@@ -2416,7 +2402,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_candidates_local = function(name, candidate_data) {
-    if(!(name in self._candidates_local))                self._candidates_local[name] = [];
+    if(!(name in self._candidates_local))  self._candidates_local[name] = [];
 
     (self._candidates_local[name]).push(candidate_data);
   };
@@ -2431,11 +2417,10 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._set_candidates_remote = function(name, candidate_id, candidate_data) {
-    if(!(name in self._candidates_remote))                self._candidates_remote[name] = {};
-    if(!(candidate_id in self._candidates_remote[name]))  self._candidates_remote[name][candidate_id] = [];
+  self._set_candidates_remote = function(name, candidate_data) {
+    if(!(name in self._candidates_remote))  self._candidates_remote[name] = [];
 
-    (self._candidates_remote[name][candidate_id]).push(candidate_data);
+    (self._candidates_remote[name]).push(candidate_data);
   };
 
   /**
@@ -3217,7 +3202,7 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates the initial content data
+   * Generates the initial local content data
    */
   self._util_initialize_content_local = function() {
     for(cur_name in self.get_name()) {
@@ -3230,6 +3215,25 @@ function JSJaCJingle(args) {
           self.get_senders(cur_name),
           self._get_payloads_local(cur_name),
           self._get_candidates_local(cur_name)
+        )
+      );
+    }
+  };
+
+  /**
+   * Generates the initial remote content data
+   */
+  self._util_initialize_content_remote = function() {
+    for(cur_name in self.get_name()) {
+      self._set_content_remote(
+        cur_name,
+
+        self._util_generate_content(
+          JSJAC_JINGLE_SENDERS_INITIATOR.jingle,
+          cur_name,
+          self.get_senders(cur_name),
+          self._get_payloads_remote(cur_name),
+          self._get_candidates_remote(cur_name)
         )
       );
     }
