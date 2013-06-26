@@ -1395,7 +1395,16 @@ function JSJaCJingle(args) {
 
       // Remote description
       self._get_peer_connection().setRemoteDescription(
-        new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)
+        (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
+
+        function() {
+          // Success (descriptions are compatible)
+        },
+
+        function() {
+          // Error (descriptions are incompatible)
+          self.terminate(JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS);
+        }
       );
 
       // ICE candidates
@@ -1411,11 +1420,8 @@ function JSJaCJingle(args) {
         );
       }
 
+      // Success reply
       self.send('result', { id: stanza.getID() });
-
-      // TODO-LATER: send an unsupported transport reply if there's no way the session can work
-      //             will need to request for our own SDP, parse it, compare with friend's one
-      //             issue: SDP can cause a little delay which will delay the ring handler trigger
     } else {
       // Send error reply
       self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
@@ -1607,10 +1613,6 @@ function JSJaCJingle(args) {
 
       // Generate and store content data
       self._util_initialize_content_remote();
-
-      // TODO-LATER: send an unsupported transport reply if there's no way the session can work
-      //             will need to request for our own SDP, parse it, compare with friend's one
-      //             issue: SDP can cause a little delay which will delay the ring handler trigger
 
       self.send('result', { id: stanza.getID() });
 
@@ -4119,6 +4121,17 @@ function JSJaCJingle(args) {
         }
       };
 
+      // Event: oniceconnectionstatechange
+      self._get_peer_connection().oniceconnectionstatechange = function(e) {
+        self.get_debug().log('[JSJaCJingle] _peer_connection_create > oniceconnectionstatechange', 2);
+
+        // Connection closed? (without terminating)
+        if(this.iceConnectionState == 'disconnected')
+          self.terminate(JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR);
+
+        self.get_debug().log('[JSJaCJingle] _peer_connection_create > oniceconnectionstatechange > (state: ' + this.iceConnectionState + ')', 2);
+      };
+
       // Event: onaddstream
       self._get_peer_connection().onaddstream = function(e) {
         if (!e) return;
@@ -4147,7 +4160,7 @@ function JSJaCJingle(args) {
 
       if(self.is_initiator()) {
         // Local description
-        self._get_peer_connection().createOffer(self._peer_got_description,  null, WEBRTC_CONFIGURATION.create_offer);
+        self._get_peer_connection().createOffer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_offer);
 
         // Then, wait for responder to send back its remote description
       } else {
@@ -4160,10 +4173,19 @@ function JSJaCJingle(args) {
 
         // Remote description
         self._get_peer_connection().setRemoteDescription(
-          new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)
+          (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
+
+          function() {
+            // Success (descriptions are compatible)
+          },
+
+          function() {
+            // Error (descriptions are incompatible)
+            self.terminate(JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS);
+          }
         );
 
-        // Local description
+        // Create answer
         self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
 
         // ICE candidates
