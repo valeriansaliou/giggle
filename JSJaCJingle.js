@@ -3550,8 +3550,6 @@ function JSJaCJingle(args) {
     payloads_obj.type = type;
     payloads_obj.sdp  = payloads_str;
 
-    console.log('SDP', payloads_obj);
-
     return payloads_obj;
   };
 
