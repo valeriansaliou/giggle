@@ -642,9 +642,11 @@ function JSJaCJingle(args) {
    * Initiates a new Jingle session.
    */
   self.initiate = function() {
+    self.get_debug().log('[JSJaCJingle] initiate', 4);
+
     // Slot unavailable?
     if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
-      self.get_debug().log('[JSJaCJingle] init > Cannot init, resource not inactive (status: ' + self.get_status() + ').', 1)
+      self.get_debug().log('[JSJaCJingle] init > Cannot init, resource not inactive (status: ' + self.get_status() + ').', 0);
       return;
     }
 
@@ -682,9 +684,11 @@ function JSJaCJingle(args) {
    * Accepts the Jingle session.
    */
   self.accept = function() {
+    self.get_debug().log('[JSJaCJingle] accept', 4);
+
     // Slot unavailable?
     if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED)) {
-      self.get_debug().log('[JSJaCJingle] init > Cannot accept, resource not initiated or terminated (status: ' + self.get_status() + ').', 1);
+      self.get_debug().log('[JSJaCJingle] accept > Cannot accept, resource not initiated or terminated (status: ' + self.get_status() + ').', 0);
       return;
     }
 
@@ -709,9 +713,11 @@ function JSJaCJingle(args) {
    * Terminates the Jingle session.
    */
   self.terminate = function(reason) {
+    self.get_debug().log('[JSJaCJingle] terminate', 4);
+
     // Slot unavailable?
     if(self.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
-      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource already terminated or inactive (status: ' + self.get_status() + ').', 1);
+      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource already terminated or inactive (status: ' + self.get_status() + ').', 0);
       return;
     }
 
@@ -726,6 +732,8 @@ function JSJaCJingle(args) {
    * Sends a given Jingle stanza packet
    */
   self.send = function(type, args) {
+    self.get_debug().log('[JSJaCJingle] send', 4);
+
     // Assert
     if(typeof args != 'object') args = {};
 
@@ -813,6 +821,8 @@ function JSJaCJingle(args) {
    * Handles a given Jingle stanza response
    */
   self.handle = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle', 4);
+
     var jingle = self.util_stanza_jingle(stanza);
 
     // Don't handle non-Jingle stanzas there...
@@ -882,6 +892,8 @@ function JSJaCJingle(args) {
    * Registers a given handler on a given Jingle stanza
    */
   self.register_handler = function(action, fn) {
+    self.get_debug().log('[JSJaCJingle] register_handler', 4);
+
     if(typeof fn != 'function') {
       self.get_debug().log('[JSJaCJingle] register_handler > fn parameter not passed or not a function!', 1);
 
@@ -891,7 +903,7 @@ function JSJaCJingle(args) {
     if(action && action in JSJAC_JINGLE_ACTIONS) {
       self._set_handlers(action, fn);
 
-      self.get_debug().log('[JSJaCJingle] register_handler > Registered handler for action: ' + action, 4);
+      self.get_debug().log('[JSJaCJingle] register_handler > Registered handler for action: ' + action, 3);
 
       return true;
     } else {
@@ -905,10 +917,12 @@ function JSJaCJingle(args) {
    * Unregisters the given handler on a given Jingle stanza
    */
   self.unregister_handler = function(action) {
+    self.get_debug().log('[JSJaCJingle] unregister_handler', 4);
+
     if(action in self._handlers) {
       delete self._handlers[action];
 
-      self.get_debug().log('[JSJaCJingle] unregister_handler > Unregistered handler for action: ' + action, 4);
+      self.get_debug().log('[JSJaCJingle] unregister_handler > Unregistered handler for action: ' + action, 3);
 
       return true;
     } else {
@@ -928,76 +942,78 @@ function JSJaCJingle(args) {
    * Sends the Jingle content accept
    */
   self.send_content_accept = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_content_accept > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_content_accept', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_content_accept > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_content_accept > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle content add
    */
   self.send_content_add = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_content_add > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_content_add', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_content_add > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_content_add > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle content modify
    */
   self.send_content_modify = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_content_modify > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_content_modify', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_content_modify > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_content_modify > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle content reject
    */
   self.send_content_reject = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_content_reject > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_content_reject', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_content_reject > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_content_reject > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle content remove
    */
   self.send_content_remove = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_content_remove > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_content_remove', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_content_remove > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_content_remove > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle description info
    */
   self.send_description_info = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_description_info > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_description_info', 4);
 
-    self.get_debug().log('[JSJaCJingle] Send description info.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_description_info > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle security info
    */
   self.send_security_info = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_security_info > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_security_info', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_security_info > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_security_info > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle session accept
    */
   self.send_session_accept = function(stanza, type, arg) {
+    self.get_debug().log('[JSJaCJingle] send_session_accept', 4);
+
     if(!arg && type == 'result') {
         self.get_debug().log('[JSJaCJingle] send_session_accept > Argument not provided.', 1);
         return;
@@ -1005,7 +1021,7 @@ function JSJaCJingle(args) {
 
     if(type == 'set') {
       if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING)) {
-        self.get_debug().log('[JSJaCJingle] send_session_accept > Resource not initiated (status: ' + self.get_status() + ').', 1);
+        self.get_debug().log('[JSJaCJingle] send_session_accept > Resource not initiated (status: ' + self.get_status() + ').', 0);
         return;
       }
 
@@ -1042,20 +1058,22 @@ function JSJaCJingle(args) {
    * Sends the Jingle session info
    */
   self.send_session_info = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_session_info > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_session_info', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_session_info > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_session_info > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle session initiate
    */
   self.send_session_initiate = function(stanza, type, arg) {
+    self.get_debug().log('[JSJaCJingle] send_session_initiate', 4);
+
     if(type == 'set') {
       if(!(self.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || 
            self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED)) {
-        self.get_debug().log('[JSJaCJingle] send_session_initiate > Resource not inactive or terminated (status: ' + self.get_status() + ').', 1);
+        self.get_debug().log('[JSJaCJingle] send_session_initiate > Resource not inactive or terminated (status: ' + self.get_status() + ').', 0);
         return;
       }
 
@@ -1090,13 +1108,15 @@ function JSJaCJingle(args) {
       internal:   self.handle_session_initiate_error
     });
 
-    self.get_debug().log('[JSJaCJingle] send_session_initiate > Sent.', 4);
+    self.get_debug().log('[JSJaCJingle] send_session_initiate > Sent.', 2);
   };
 
   /**
    * Sends the Jingle session terminate
    */
   self.send_session_terminate = function(stanza, type, arg) {
+    self.get_debug().log('[JSJaCJingle] send_session_terminate', 4);
+
     if(!arg) {
       self.get_debug().log('[JSJaCJingle] send_session_terminate > Argument not provided.', 1);
       return;
@@ -1107,7 +1127,7 @@ function JSJaCJingle(args) {
            self.get_status() == JSJAC_JINGLE_STATUS_INITIATED   ||
            self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING   ||
            self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED    )) {
-        self.get_debug().log('[JSJaCJingle] send_session_terminate > Resource neither initiating, initiated, accepting nor accepted (status: ' + self.get_status() + ').', 1);
+        self.get_debug().log('[JSJaCJingle] send_session_terminate > Resource neither initiating, initiated, accepting nor accepted (status: ' + self.get_status() + ').', 0);
         return;
       }
 
@@ -1136,53 +1156,55 @@ function JSJaCJingle(args) {
       internal:   self.handle_session_terminate_error
     });
 
-    self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + (arg || 'undefined') + ')', 4);
+    self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + (arg || 'undefined') + ')', 2);
   };
 
   /**
    * Sends the Jingle transport accept
    */
   self.send_transport_accept = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_transport_accept > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_transport_accept', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_transport_accept > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_transport_accept > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle transport info
    */
   self.send_transport_info = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_transport_info > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_transport_info', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_transport_info > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_transport_info > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle transport reject
    */
   self.send_transport_reject = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_transport_reject > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_transport_reject', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_transport_reject > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_transport_reject > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle transport replace
    */
   self.send_transport_replace = function(stanza) {
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_transport_replace > Feature not implemented!', 1);
+    self.get_debug().log('[JSJaCJingle] send_transport_replace', 4);
 
-    self.get_debug().log('[JSJaCJingle] send_transport_replace > Sent.', 4);
+    // Not implemented for now
+    self.get_debug().log('[JSJaCJingle] send_transport_replace > Feature not implemented!', 0);
   };
 
   /**
    * Sends the Jingle transport replace
    */
   self.send_error = function(stanza, error) {
+    self.get_debug().log('[JSJaCJingle] send_error', 4);
+
     // Assert
     if(!('type' in error)) {
       self.get_debug().log('[JSJaCJingle] send_error > Type unknown.', 1);
@@ -1220,10 +1242,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_content_accept = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_content_accept', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_content_accept > Handled.', 4);
   };
 
   /**
@@ -1231,10 +1253,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_content_add = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_content_add', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_content_add > Handled.', 4);
   };
 
   /**
@@ -1242,10 +1264,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_content_modify = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_content_modify', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_content_modify > Handled.', 4);
   };
 
   /**
@@ -1253,10 +1275,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_content_reject = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_content_reject', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_content_reject > Handled.', 4);
   };
 
   /**
@@ -1264,10 +1286,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_content_remove = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_content_remove', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_content_remove > Handled.', 4);
   };
 
   /**
@@ -1275,10 +1297,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_description_info = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_description_info', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_description_info > Handled.', 4);
   };
 
   /**
@@ -1286,10 +1308,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_security_info = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_security_info', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_security_info > Handled.', 4);
   };
 
   /**
@@ -1297,15 +1319,15 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_accept = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_accept', 4);
+
     // Security preconditions
     if(!self.util_stanza_safe(stanza)) {
-      self.get_debug().log('[JSJaCJingle] handle_session_accept > Dropped unsafe stanza.', 2);
+      self.get_debug().log('[JSJaCJingle] handle_session_accept > Dropped unsafe stanza.', 0);
 
       self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
       return;
     }
-
-    self.get_debug().log('[JSJaCJingle] handle_session_accept > Handled.', 4);
 
     // Can now safely dispatch the stanza
     switch(stanza.getType()) {
@@ -1337,10 +1359,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_accept_success = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_accept_success', 4);
+
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_ACCEPTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_session_accept_success > Handled.', 4);
   };
 
   /**
@@ -1348,10 +1370,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_accept_error = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_accept_error', 4);
+
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_INITIATED);
-
-    self.get_debug().log('[JSJaCJingle] handle_session_accept_error > Handled.', 4);
   };
 
   /**
@@ -1359,6 +1381,8 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_accept_request = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_accept_request', 4);
+
     // Common vars
     var i, cur_candidate_obj;
 
@@ -1405,8 +1429,6 @@ function JSJaCJingle(args) {
       // TODO-LATER: send an unsupported transport reply if there's no way the session can work
       //             will need to request for our own SDP, parse it, compare with friend's one
       //             issue: SDP can cause a little delay which will delay the ring handler trigger
-
-      self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Handled.', 4);
     } else {
       // Send error reply
       self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
@@ -1414,7 +1436,7 @@ function JSJaCJingle(args) {
       // Trigger success error custom callback
       (self._get_session_accept_error())(self, stanza);
 
-      self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Error.', 2);
+      self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Error.', 1);
     }
   };
 
@@ -1423,15 +1445,15 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_info', 4);
+
     // Security preconditions
     if(!self.util_stanza_safe(stanza)) {
-      self.get_debug().log('[JSJaCJingle] handle_session_terminate > Dropped unsafe stanza.', 2);
+      self.get_debug().log('[JSJaCJingle] handle_session_terminate > Dropped unsafe stanza.', 0);
 
       self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
       return;
     }
-
-    self.get_debug().log('[JSJaCJingle] handle_session_info > Handled.', 4);
 
     // Can now safely dispatch the stanza
     switch(stanza.getType()) {
@@ -1463,7 +1485,7 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_info_success > Handled.', 4);
+    self.get_debug().log('[JSJaCJingle] handle_session_info_success', 4);
   };
 
   /**
@@ -1471,7 +1493,7 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_info_error > Handled.', 4);
+    self.get_debug().log('[JSJaCJingle] handle_session_info_error', 4);
   };
 
   /**
@@ -1479,6 +1501,8 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info_request = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_info_request', 4);
+
     // Parse stanza
     var info_name = self.util_stanza_session_info(stanza);
     var info_result = false;
@@ -1496,7 +1520,7 @@ function JSJaCJingle(args) {
       // Trigger info success custom callback
       (self._get_session_info_success())(self, stanza);
 
-      self.get_debug().log('[JSJaCJingle] handle_session_info_request > Handled (name: ' + (info_name || 'undefined') + ')', 4);
+      self.get_debug().log('[JSJaCJingle] handle_session_info_request > (name: ' + (info_name || 'undefined') + ')', 3);
     } else {
       // Send error reply
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
@@ -1504,7 +1528,7 @@ function JSJaCJingle(args) {
       // Trigger info error custom callback
       (self._get_session_info_error())(self, stanza);
 
-      self.get_debug().log('[JSJaCJingle] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ')', 2);
+      self.get_debug().log('[JSJaCJingle] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ')', 1);
     }
   };
 
@@ -1513,7 +1537,7 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_initiate > Handled.', 4);
+    self.get_debug().log('[JSJaCJingle] handle_session_initiate', 4);
 
     switch(stanza.getType()) {
       case 'result':
@@ -1544,10 +1568,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate_success = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_initiate_success', 4);
+
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_INITIATED);
-
-    self.get_debug().log('[JSJaCJingle] handle_session_initiate_success > Handled.', 4);
   };
 
   /**
@@ -1555,6 +1579,8 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate_error = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_initiate_error', 4);
+
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
@@ -1563,8 +1589,6 @@ function JSJaCJingle(args) {
 
     // TODO: auto-destroy self object + this
     //       AT LEAST LOCK FURTHER INIT
-
-    self.get_debug().log('[JSJaCJingle] handle_session_initiate_error > Handled.', 4);
   };
 
   /**
@@ -1572,6 +1596,8 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate_request = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_initiate_request', 4);
+
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
@@ -1600,8 +1626,6 @@ function JSJaCJingle(args) {
       // Session initiate done
       self.handle_session_initiate_success(stanza);
       (self._get_session_initiate_success())(self, stanza);
-
-      self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Handled.', 4);
     } else {
       // Send error reply
       self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
@@ -1609,7 +1633,7 @@ function JSJaCJingle(args) {
       // Trigger success error custom callback
       (self._get_session_initiate_error())(self, stanza);
 
-      self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Error.', 2);
+      self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Error.', 1);
     }
   };
 
@@ -1618,17 +1642,17 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_terminate = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_terminate', 4);
+
     var type = stanza.getType();
 
     // Security preconditions
     if(!self.util_stanza_safe(stanza)) {
-      self.get_debug().log('[JSJaCJingle] handle_session_terminate > Dropped unsafe stanza.', 2);
+      self.get_debug().log('[JSJaCJingle] handle_session_terminate > Dropped unsafe stanza.', 0);
 
       self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
       return;
     }
-
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate > Handled.', 4);
 
     // Can now safely dispatch the stanza
     switch(stanza.getType()) {
@@ -1660,13 +1684,13 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_terminate_success = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_terminate_success', 4);
+
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
     // Stop WebRTC
     self._peer_stop();
-
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate_success > Handled.', 4);
   };
 
   /**
@@ -1674,6 +1698,8 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_terminate_error = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_terminate_error', 4);
+
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
@@ -1682,8 +1708,6 @@ function JSJaCJingle(args) {
 
     // TODO: auto-destroy self object + this
     //       AT LEAST LOCK FURTHER INIT
-
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate_error > Handled.', 4);
   };
 
   /**
@@ -1691,15 +1715,17 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_terminate_request = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_session_terminate_request', 4);
+
     // Process terminate actions
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
     self.send('result', { id: stanza.getID() });
-
+  
     // Trigger terminate success callbacks
     self.handle_session_terminate_success(stanza);
     (self._get_session_terminate_success())(self, stanza);
 
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > Handled (reason: ' + (self.util_stanza_terminate_reason(stanza) || 'undefined') + ')', 4);
+    self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > (reason: ' + (self.util_stanza_terminate_reason(stanza) || 'undefined') + ')', 3);
   };
 
   /**
@@ -1707,10 +1733,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_transport_accept = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_transport_accept', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_transport_accept > Handled.', 4);
   };
 
   /**
@@ -1718,10 +1744,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_transport_info = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_transport_info', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_transport_info > Handled.', 4);
   };
 
   /**
@@ -1729,10 +1755,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_transport_reject = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_transport_reject', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_transport_reject > Handled.', 4);
   };
 
   /**
@@ -1740,10 +1766,10 @@ function JSJaCJingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_transport_replace = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_transport_replace', 4);
+
     // Not implemented for now
     self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
-
-    self.get_debug().log('[JSJaCJingle] handle_transport_replace > Handled.', 4);
   };
 
 
@@ -4060,6 +4086,8 @@ function JSJaCJingle(args) {
    * @private
    */
   self._peer_connection_create = function(sdp_message_callback) {
+    self.get_debug().log('[JSJaCJingle] _peer_connection_create', 4);
+
     try {
       // Create the RTCPeerConnection object
       self._set_peer_connection(
@@ -4081,7 +4109,7 @@ function JSJaCJingle(args) {
 
           self._set_candidates_local(candidate_id, candidate_obj);
         } else {
-          self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got candidates.', 4);
+          self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got candidates.', 2);
 
           // Execute what's next
           sdp_message_callback();
@@ -4104,12 +4132,16 @@ function JSJaCJingle(args) {
 
         // Detach remote stream from DOM view
         self._set_remote_stream(null);
+
+        // TODO: Terminate call?
       };
 
       // Add local stream
       self._get_peer_connection().addStream(self._get_local_stream()); 
 
       // Create offer
+      self.get_debug().log('[JSJaCJingle] _peer_connection_create > Getting local description...', 2);
+
       if(self.is_initiator()) {
         // Local description
         self._get_peer_connection().createOffer(self._peer_got_description,  null, WEBRTC_CONFIGURATION.create_offer);
@@ -4146,8 +4178,6 @@ function JSJaCJingle(args) {
           );
         }
       }
-
-      self.get_debug().log('[JSJaCJingle] _peer_connection_create > Done.', 4);
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 1);
     }
@@ -4157,8 +4187,10 @@ function JSJaCJingle(args) {
    * @private
    */
   self._peer_get_user_media = function(callback) {
+    self.get_debug().log('[JSJaCJingle] _peer_get_user_media', 4);
+
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_get_user_media > Getting user media...', 4);
+      self.get_debug().log('[JSJaCJingle] _peer_get_user_media > Getting user media...', 2);
 
       WEBRTC_GET_MEDIA(
         WEBRTC_CONFIGURATION.get_user_media,
@@ -4174,8 +4206,10 @@ function JSJaCJingle(args) {
    * @private
    */
   self._peer_got_user_media_success = function(callback, stream) {
+    self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success', 4);
+
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Got user media.', 4);
+      self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Got user media.', 2);
 
       self._set_local_stream(stream);
 
@@ -4189,6 +4223,8 @@ function JSJaCJingle(args) {
    * @private
    */
   self._peer_got_user_media_error = function(error) {
+    self.get_debug().log('[JSJaCJingle] _peer_got_user_media_error', 4);
+
     if(self.is_responder())
       self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
 
@@ -4202,12 +4238,14 @@ function JSJaCJingle(args) {
    * @private
    */
   self._peer_got_description = function(sdp_local) {
+    self.get_debug().log('[JSJaCJingle] _peer_got_description', 4);
+
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_got_description > Got local description.', 4);
+      self.get_debug().log('[JSJaCJingle] _peer_got_description > Got local description.', 2);
 
       self._get_peer_connection().setLocalDescription(sdp_local);
 
-      self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 4);
+      self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 2);
 
       // Convert SDP raw data to an object
       var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
@@ -4223,6 +4261,8 @@ function JSJaCJingle(args) {
    * @private
    */
   self._peer_stop = function() {
+    self.get_debug().log('[JSJaCJingle] _peer_stop', 4);
+
     // Detach media streams from DOM view
     self._set_local_stream(null);
     self._set_remote_stream(null);
