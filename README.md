@@ -45,19 +45,19 @@ We assume your XMPP Web client is using JSJaC and has an active connection, stor
  * Note: You need to create the HTML5 audio or video elements yourself.
  *       JSJaCJingle.js needs them to display the WebRTC stream
  */
+```
 
-// Some context vars
-var ctx_connection = con;
-var ctx_to = 'julien@jappix.com/Jappix (42)';
-var ctx_hash = hex_md5(ctx_to);
+**You first need to create the args object, storing global JSJaCJingle configuration:**
 
+```javascript
 // JSJaCJingle arguments
-var args = {
+// Note: you don't need to pass them all, only the 4 first ones are required
+var ARGS = {
 	// Configuration (required)
-	connection: ctx_connection,
-	to: ctx_to,
-	local_view: document.getElementById('jingle-' + ctx_hash + '-local'),
-	remote_view: document.getElementById('jingle-' + ctx_hash + '-remote'),
+	connection: null,
+	to: null,
+	local_view: null,
+	remote_view: null,
 
 	// Custom handlers (optional)
 	session_initiate_pending: function(self) {
@@ -180,20 +180,45 @@ var args = {
 		console.log('session_terminate_request');
 	}
 };
+```
 
+**Then, launch JSJaCJingle listener on JSJaC connect:**
+
+```javascript
+// Call this on JSJaC connect (earlier in your code)
+// Role: listens for incoming Jingle calls
+con.registerHandler('onconnect', function() {
+	// Initialize JSJaCJingle router
+	JSJaCJingle_listen({
+		connection: con,
+
+		initiate: function(stanza) {
+			// Session values
+			ARGS.to 		 = stanza.getFrom() || null;
+			ARGS.local_view  = document.getElementById('video_local');
+			ARGS.remote_view = document.getElementById('video_remote');
+
+			// Let's go!
+			JINGLE = new JSJaCJingle(ARGS);
+			JINGLE.handle(stanza);
+		}
+	});
+});
+```
+
+**When you want to make a call when user press a button:**
+
+```javascript
 // Create the JSJaCJingle object
 var jingle = new JSJaCJingle(args);
 
 // Initialize the Jingle session
 // See: http://xmpp.org/extensions/xep-0166.html#protocol-initiate
 jingle.initiate();
-
-// Note: use (new JSJaCJingle(args)).initiate() if you don't require JSJaCJingle later
-
-// Now, refer to the custom handlers that we passed above!
-// Play hard with this lib, have fun!
-
-// If you have any enhancement idea or any bug to report,
-// Open tickets on: https://github.com/valeriansaliou/jsjac-jingle/issues
-
 ```
+
+Now, refer to the custom handlers that we passed above!
+**Play hard with this lib, have fun!**
+
+**If you have any enhancement idea or any bug to report,**
+Open tickets on: https://github.com/valeriansaliou/jsjac-jingle/issues

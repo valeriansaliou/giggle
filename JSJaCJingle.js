@@ -3181,6 +3181,12 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_generate_content = function(creator, name, senders, payloads, transports) {
+    console.log('_util_generate_content > creator', creator);
+    console.log('_util_generate_content > name', name);
+    console.log('_util_generate_content > senders', senders);
+    console.log('_util_generate_content > payloads', payloads);
+    console.log('_util_generate_content > transports', transports);
+
     // Generation process
     var content_obj = {};
 
