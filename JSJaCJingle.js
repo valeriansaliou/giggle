@@ -2542,14 +2542,19 @@ function JSJaCJingle(args) {
    * @type DOM
    */
   self.util_stanza_get_element = function(stanza, name, ns) {
+    // Assert
+    if(!stanza)        return [];
+    if(stanza.length)  stanza = stanza[0];
+
     try {
-      return stanza.getElementsByTagNameNS(ns, name);
+      // Get only in lower level (not all sub-levels)
+      var matches = stanza.getElementsByTagNameNS(ns, name);
+
+      if(matches[0].parentNode == stanza) return matches;
+
+      return [];
     } catch(e) {
-      try {
-        return (stanza[0]).getElementsByTagNameNS(ns, name);
-      } catch(e) {
-        return [];
-      }
+      return [];
     }
   };
 
@@ -2716,7 +2721,7 @@ function JSJaCJingle(args) {
     // Common vars
     var j, k, l, m, n, o,
         description, cd_media, cd_ssrc,
-        rtcp_fb_common, cur_p_rtcp_fb_common, cur_p_rtcp_fb_common_arr,
+        rtcp_fb_common, cur_rtcp_fb_common, cur_rtcp_fb_common_arr,
         payload, e, cur_payload, cur_payload_arr, cur_payload_id,
         encryption, crypto, cur_crypto, cur_crypto_arr,
         rtp_hdrext, cur_rtp_hdrext, cur_rtp_hdrext_arr,
@@ -2768,16 +2773,18 @@ function JSJaCJingle(args) {
       if(rtcp_fb_common.length) {
         for(o = 0; o < rtcp_fb_common.length; o++) {
           e = 0;
-          cur_p_rtcp_fb_common = rtcp_fb_common[o];
-          cur_p_rtcp_fb_common_arr = {};
+          cur_rtcp_fb_common = rtcp_fb_common[o];
+          cur_rtcp_fb_common_arr = {};
 
-          cur_p_rtcp_fb_common_arr['type']    = self.util_stanza_get_attribute(cur_p_rtcp_fb_common, 'type')  || e++;
-          cur_p_rtcp_fb_common_arr['subtype'] = self.util_stanza_get_attribute(cur_p_rtcp_fb_common, 'subtype');
+          cur_rtcp_fb_common_arr['type']    = self.util_stanza_get_attribute(cur_rtcp_fb_common, 'type')  || e++;
+          cur_rtcp_fb_common_arr['subtype'] = self.util_stanza_get_attribute(cur_rtcp_fb_common, 'subtype');
 
           if(e != 0) continue;
 
+          console.log('FB:COMMON', cur_rtcp_fb_common_arr);
+
           // Push current crypto
-          (payload_obj['descriptions']['rtcp-fb']).push(cur_p_rtcp_fb_common_arr);
+          (payload_obj['descriptions']['rtcp-fb']).push(cur_rtcp_fb_common_arr);
         }
       }
 
@@ -2821,6 +2828,8 @@ function JSJaCJingle(args) {
 
               if(e != 0) continue;
 
+              console.log('FB:SUB', cur_p_rtcp_fb_arr);
+
               // Push current crypto
               (payload_obj['descriptions']['payload'][cur_payload_id]['rtcp-fb']).push(cur_p_rtcp_fb_arr);
             }
@@ -2851,13 +2860,12 @@ function JSJaCJingle(args) {
 
       if(encryption.length) {
         encryption = encryption[0];
-console.log('encryption is there');
+
         // Loop on multiple cryptos
         crypto = self.util_stanza_get_element(encryption, 'crypto', NS_JINGLE_APPS_RTP);
 
         if(crypto.length) {
           for(k = 0; k < crypto.length; k++) {
-            console.log('crypto are there');
             e              = 0;
             cur_crypto     = crypto[k];
             cur_crypto_arr = {};
@@ -2866,9 +2874,9 @@ console.log('encryption is there');
             cur_crypto_arr['key-params']     = self.util_stanza_get_attribute(cur_crypto, 'key-params')    || e++;
             cur_crypto_arr['session-params'] = self.util_stanza_get_attribute(cur_crypto, 'session-params');
             cur_crypto_arr['tag']            = self.util_stanza_get_attribute(cur_crypto, 'tag')           || e++;
-            console.log('cur_crypto_arr', cur_crypto_arr);
+
             if(e != 0) continue;
-            console.log('cur_crypto_arr:PUSHED', cur_crypto_arr);
+
             // Push current crypto
             (payload_obj['descriptions']['crypto']).push(cur_crypto_arr);
           }
@@ -3304,8 +3312,9 @@ console.log('encryption is there');
     // Common vars
     var i, j, k, l, m, n,
         cur_media, cur_media_obj,
+        cur_senders, cur_name,
         cur_transports_obj, cur_description_obj,
-        cur_media, cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
+        cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
         cur_d_attrs, cur_d_rtcp_fb, cur_d_crypto,
         cur_d_rtcp_fb_obj,
         cur_d_payload, cur_d_payload_obj, cur_d_payload_obj_attrs, cur_d_payload_obj_id,
@@ -3331,16 +3340,18 @@ console.log('encryption is there');
 
     // Add media groups
     for(cur_media in payloads) {
-      cur_media_obj       = payloads[cur_media];
+      cur_media_obj         = payloads[cur_media];
+      cur_senders           = self.get_senders(cur_media);
+      cur_name              = self.get_name(cur_media) ? cur_media : null;
 
       // Transports
-      cur_transports_obj  = cur_media_obj['transports'];
+      cur_transports_obj    = cur_media_obj['transports'];
       cur_d_pwd             = cur_transports_obj['pwd'];
       cur_d_ufrag           = cur_transports_obj['ufrag'];
       cur_d_fingerprint     = cur_transports_obj['fingerprint'];
 
       // Descriptions
-      cur_description_obj = cur_media_obj['descriptions'];
+      cur_description_obj   = cur_media_obj['descriptions'];
       cur_d_attrs           = cur_description_obj['attrs'];
       cur_d_rtcp_fb         = cur_description_obj['rtcp-fb'];
       cur_d_payload         = cur_description_obj['payload'];
@@ -3385,12 +3396,16 @@ console.log('encryption is there');
       }
 
       // Senders
-      payloads_str += 'a=' + JSJAC_JINGLE_SENDERS[self.get_senders()];
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
+      if(cur_senders) {
+        payloads_str += 'a=' + JSJAC_JINGLE_SENDERS[cur_senders];
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+      }
 
       // Name
-      payloads_str += 'a=mid:' + self.get_name();
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
+      if(cur_name) {
+        payloads_str += 'a=mid:' + cur_name;
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+      }
 
       // RTCP-MUX
       // WARNING: no spec!
@@ -3483,6 +3498,8 @@ console.log('encryption is there');
     // Push to object
     payloads_obj.type = type;
     payloads_obj.sdp  = payloads_str;
+
+    console.log('SDP', payloads_obj);
 
     return payloads_obj;
   };
