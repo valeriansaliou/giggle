@@ -4209,13 +4209,15 @@ function JSJaCJingle(args) {
           }
         );
 
-        // Create answer
+        // Local description
         self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
 
         // ICE candidates
         var cur_candidate_obj;
 
         for(i in sdp_remote.candidates) {
+          cur_candidate_obj = (sdp_remote.candidates)[i];
+          
           self._get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
               sdpMLineIndex : cur_candidate_obj.label,
