@@ -39,11 +39,14 @@ var ARGS = {
 
         // This is an incoming call
         if(self.is_responder()) {
-	        // Request for Jingle session to be accepted
-	        if(confirm("Incoming call from " + self.util_stanza_from(stanza) + "\n\nAccept?"))
-	       		self.accept();
-	       	else
-	       		self.terminate(JSJAC_JINGLE_REASON_DECLINE);
+        	// Hard-fix: avoids the JSJaC packets group timer (that will delay success reply)
+        	setTimeout(function() {
+		        // Request for Jingle session to be accepted
+		        if(confirm("Incoming call from " + self.util_stanza_from(stanza) + "\n\nAccept?"))
+		       		self.accept();
+		       	else
+		       		self.terminate(JSJAC_JINGLE_REASON_DECLINE);
+		    }, 1000);
 	    }
     },
 

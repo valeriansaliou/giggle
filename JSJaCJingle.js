@@ -1143,7 +1143,7 @@ function JSJaCJingle(args) {
       external:   self._get_session_terminate_error()
     });
 
-    self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + (arg.reason || 'undefined') + ')', 2);
+    self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + (args.reason || 'undefined') + ')', 2);
   };
 
   /**
@@ -4324,8 +4324,6 @@ function JSJaCJingle_route(stanza) {
       sid = m_id ? m_id[2] : null;
     }
   }
-
-  console.log('HANDLED', sid);
 
   // New session? Or registered one?
   var session_route = JSJaCJingle_read(sid);
