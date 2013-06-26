@@ -116,6 +116,7 @@ var R_WEBRTC_SDP_ICE_CANDIDATE = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\
 
 var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   rtpmap          : /^a=rtpmap:(\d+) (([^\s\/]+)\/(\d+)(\/([^\s\/]+))?)?/i,
+  fmtp            : /^a=fmtp:(\d+) (.+)/i,
   rtcp_fb         : /^a=rtcp-fb:(\S+) (\S+)( (\S+))?/i,
   rtcp_fb_trr_int : /^a=rtcp-fb:(\d+) trr-int (\d+)/i,
   pwd             : /^a=ice-pwd:(\S+)/i,
@@ -1368,20 +1369,21 @@ function JSJaCJingle(args) {
       // Generate and store content data
       self._util_initialize_content_remote();
 
-      var accept_sdp = self.util_sdp_generate(
-        WEBRTC_SDP_TYPE_OFFER,
+      var sdp_remote = self.util_sdp_generate(
+        WEBRTC_SDP_TYPE_ANSWER,
         self._get_payloads_remote(),
         self._get_candidates_remote()
       );
 
       // Remote description
+      console.log('REMOTE DESCRIPTION', sdp_remote.description);
       self._get_peer_connection().setRemoteDescription(
-        new WEBRTC_SESSION_DESCRIPTION(accept_sdp.description)
+        new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)
       );
 
       // ICE candidates
-      for(i in accept_sdp.candidates) {
-        cur_candidate_obj = (accept_sdp.candidates)[i];
+      for(i in sdp_remote.candidates) {
+        cur_candidate_obj = (sdp_remote.candidates)[i];
 
         self._get_peer_connection().addIceCandidate(
           new WEBRTC_ICE_CANDIDATE({
@@ -2719,7 +2721,7 @@ function JSJaCJingle(args) {
     };
 
     // Common vars
-    var j, k, l, m, n, o,
+    var j, k, l, m, n, o, p,
         description, cd_media, cd_ssrc,
         rtcp_fb_common, cur_rtcp_fb_common, cur_rtcp_fb_common_arr,
         payload, e, cur_payload, cur_payload_arr, cur_payload_id,
@@ -2741,6 +2743,7 @@ function JSJaCJingle(args) {
       if(!(id                 in payload_obj['descriptions']['payload']))      payload_obj['descriptions']['payload'][id]                    = {};
 
       if(!('attrs'            in payload_obj['descriptions']['payload'][id]))  payload_obj['descriptions']['payload'][id]['attrs']           = {};
+      if(!('parameter'        in payload_obj['descriptions']['payload'][id]))  payload_obj['descriptions']['payload'][id]['parameter']       = [];
       if(!('rtcp-fb'          in payload_obj['descriptions']['payload'][id]))  payload_obj['descriptions']['payload'][id]['rtcp-fb']         = [];
       if(!('rtcp-fb-trr-int'  in payload_obj['descriptions']['payload'][id]))  payload_obj['descriptions']['payload'][id]['rtcp-fb-trr-int'] = [];
     }
@@ -2781,9 +2784,7 @@ function JSJaCJingle(args) {
 
           if(e != 0) continue;
 
-          console.log('FB:COMMON', cur_rtcp_fb_common_arr);
-
-          // Push current crypto
+          // Push current RTCP-FB
           (payload_obj['descriptions']['rtcp-fb']).push(cur_rtcp_fb_common_arr);
         }
       }
@@ -2814,6 +2815,25 @@ function JSJaCJingle(args) {
           // Push current payload
           payload_obj['descriptions']['payload'][cur_payload_id]['attrs'] = cur_payload_arr;
 
+          // Loop on multiple parameters
+          parameter = self.util_stanza_get_element(cur_payload, 'parameter', NS_JINGLE_APPS_RTP);
+
+          if(parameter.length) {
+            for(p = 0; p < parameter.length; p++) {
+              e = 0;
+              cur_p_parameter = parameter[p];
+              cur_p_parameter_arr = {};
+
+              cur_p_parameter_arr['name']  = self.util_stanza_get_attribute(cur_p_parameter, 'name')   || e++;
+              cur_p_parameter_arr['value'] = self.util_stanza_get_attribute(cur_p_parameter, 'value')  || e++;
+
+              if(e != 0) continue;
+
+              // Push current parameter
+              (payload_obj['descriptions']['payload'][cur_payload_id]['parameter']).push(cur_p_parameter_arr);
+            }
+          }
+
           // Loop on multiple RTCP-FB
           rtcp_fb = self.util_stanza_get_element(cur_payload, 'rtcp-fb', NS_JINGLE_APPS_RTP_RTCP_FB);
 
@@ -2828,9 +2848,7 @@ function JSJaCJingle(args) {
 
               if(e != 0) continue;
 
-              console.log('FB:SUB', cur_p_rtcp_fb_arr);
-
-              // Push current crypto
+              // Push current RTCP-FB
               (payload_obj['descriptions']['payload'][cur_payload_id]['rtcp-fb']).push(cur_p_rtcp_fb_arr);
             }
           }
@@ -2848,7 +2866,7 @@ function JSJaCJingle(args) {
 
               if(e != 0) continue;
 
-              // Push current crypto
+              // Push current RTCP-FB-TRR-INT
               (payload_obj['descriptions']['payload'][cur_payload_id]['rtcp-fb-trr-int']).push(cur_p_rtcp_fb_trr_int_arr);
             }
           }
@@ -3043,6 +3061,7 @@ function JSJaCJingle(args) {
         for(i in cs_d_payload) {
           var cs_d_p                 = cs_d_payload[i];
           var cs_d_p_attrs           = cs_d_p['attrs'];
+          var cs_d_p_parameter       = cs_d_p['parameter'];
           var cs_d_p_rtcp_fb         = cs_d_p['rtcp-fb'];
           var cs_d_p_rtcp_fb_trr_int = cs_d_p['rtcp-fb-trr-int'];
 
@@ -3050,6 +3069,18 @@ function JSJaCJingle(args) {
 
           for(cur_payload_attr in cs_d_p_attrs)
             self.util_stanza_set_attribute(payload_type, cur_payload_attr, cs_d_p_attrs[cur_payload_attr]);
+
+          // Parameter
+          if(cs_d_p_parameter && cs_d_p_parameter.length) {
+            for(p in cs_d_p_parameter) {
+              var cs_d_p_p = cs_d_p_parameter[p];
+
+              var parameter = payload_type.appendChild(stanza.buildNode('parameter', { 'xmlns': NS_JINGLE_APPS_RTP }));
+
+              for(cur_parameter_attr in cs_d_p_p)
+                self.util_stanza_set_attribute(parameter, cur_parameter_attr, cs_d_p_p[cur_parameter_attr]);
+            }
+          }
 
           // RTCP-FB (sub)
           if(cs_d_p_rtcp_fb && cs_d_p_rtcp_fb.length) {
@@ -3124,8 +3155,8 @@ function JSJaCJingle(args) {
         self.util_stanza_set_attribute(fingerprint, 'hash', cs_t_fingerprint['hash']);
       }
 
-      for(m in cs_t_candidate) {
-        var cs_t_c = cs_t_candidate[m];
+      for(o in cs_t_candidate) {
+        var cs_t_c = cs_t_candidate[o];
 
         var candidate = transport.appendChild(stanza.buildNode('candidate', { 'xmlns': NS_JINGLE_TRANSPORTS_ICEUDP }));
 
@@ -3310,7 +3341,7 @@ function JSJaCJingle(args) {
     var payloads_str = '';
 
     // Common vars
-    var i, j, k, l, m, n,
+    var i, j, k, l, m, n, o,
         cur_media, cur_media_obj,
         cur_senders, cur_name,
         cur_transports_obj, cur_description_obj,
@@ -3318,6 +3349,7 @@ function JSJaCJingle(args) {
         cur_d_attrs, cur_d_rtcp_fb, cur_d_crypto,
         cur_d_rtcp_fb_obj,
         cur_d_payload, cur_d_payload_obj, cur_d_payload_obj_attrs, cur_d_payload_obj_id,
+        cur_d_payload_obj_parameter,
         cur_d_payload_obj_rtcp_fb, cur_d_payload_obj_rtcp_fb_obj,
         cur_d_payload_obj_rtcp_fb_ttr_int, cur_d_payload_obj_rtcp_fb_ttr_int_obj,
         cur_d_crypto, cur_d_crypto_obj,
@@ -3327,7 +3359,7 @@ function JSJaCJingle(args) {
     // Payloads headers
     payloads_str += 'v=0';
     payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += 'o=- 952338584 2 IN IP4 127.0.0.1'; // TODO: no hardcoding!
+    payloads_str += 'o=- 3145753218 2 IN IP4 127.0.0.1'; // TODO: no hardcoding!
     payloads_str += WEBRTC_SDP_LINE_BREAK;
     payloads_str += 's=-';
     payloads_str += WEBRTC_SDP_LINE_BREAK;
@@ -3446,6 +3478,7 @@ function JSJaCJingle(args) {
       for(k in cur_d_payload) {
         cur_d_payload_obj                 = cur_d_payload[k];
         cur_d_payload_obj_attrs           = cur_d_payload_obj['attrs'];
+        cur_d_payload_obj_parameter       = cur_d_payload_obj['parameter'];
         cur_d_payload_obj_rtcp_fb         = cur_d_payload_obj['rtcp-fb'];
         cur_d_payload_obj_rtcp_fb_ttr_int = cur_d_payload_obj['rtcp-fb-trr-int'];
 
@@ -3467,6 +3500,21 @@ function JSJaCJingle(args) {
 
         payloads_str += WEBRTC_SDP_LINE_BREAK;
 
+        // 'parameter'
+        if(cur_d_payload_obj_parameter.length) {
+          payloads_str += 'a=fmtp:' + cur_d_payload_obj_id + ' ';
+
+          for(o in cur_d_payload_obj_parameter) {
+            cur_d_payload_obj_parameter_obj = cur_d_payload_obj_parameter[o];
+
+            payloads_str += cur_d_payload_obj_parameter_obj['name'];
+            payloads_str += '=';
+            payloads_str += cur_d_payload_obj_parameter_obj['value'];
+          }
+
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
+
         // 'rtcp-fb' (sub)
         for(l in cur_d_payload_obj_rtcp_fb) {
           cur_d_payload_obj_rtcp_fb_obj = cur_d_payload_obj_rtcp_fb[l];
@@ -3480,7 +3528,7 @@ function JSJaCJingle(args) {
           payloads_str += WEBRTC_SDP_LINE_BREAK;
         }
 
-        // 'rtcp-fb-ttr-int' (sub)
+        // 'rtcp-fb-ttr-int'
         for(m in cur_d_payload_obj_rtcp_fb_ttr_int) {
           cur_d_payload_obj_rtcp_fb_ttr_int_obj = cur_d_payload_obj_rtcp_fb_ttr_int[m];
 
@@ -3498,8 +3546,6 @@ function JSJaCJingle(args) {
     // Push to object
     payloads_obj.type = type;
     payloads_obj.sdp  = payloads_str;
-
-    console.log('SDP', payloads_obj);
 
     return payloads_obj;
   };
@@ -3592,11 +3638,14 @@ function JSJaCJingle(args) {
     var lines     = sdp_payload.split('\n');
     var cur_media = null;
 
-    var e,
-        cur_line, cur_rtpmap, cur_rtcp_fb, cur_rtcp_fb_trr_int,
+    var e, i, j,
+        cur_line,
+        cur_fmtp, cur_fmtp_id, cur_fmtp_values, cur_fmtp_attrs, cur_fmtp_key, cur_fmtp_value,
+        cur_rtpmap, cur_rtcp_fb, cur_rtcp_fb_trr_int,
         cur_crypto, cur_fingerprint, cur_extmap,
         cur_rtpmap_id, cur_rtcp_fb_id,
-        m_rtpmap, m_rtcp_fb, m_rtcp_fb_trr_int, m_crypto, m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
+        m_rtpmap, m_fmtp, m_rtcp_fb, m_rtcp_fb_trr_int, m_crypto,
+        m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
 
     // Common functions
     var init_content = function(name) {
@@ -3623,6 +3672,7 @@ function JSJaCJingle(args) {
       if(!(id in payload[name]['descriptions']['payload'])) {
         payload[name]['descriptions']['payload'][id] = {
           'attrs'           : {},
+          'parameter'       : [],
           'rtcp-fb'         : [],
           'rtcp-fb-trr-int' : []
         };
@@ -3666,6 +3716,43 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_payload(cur_media, cur_rtpmap_id);
         payload[cur_media]['descriptions']['payload'][cur_rtpmap_id]['attrs'] = cur_rtpmap;
+
+        continue;
+      }
+
+      m_fmtp = (R_WEBRTC_SDP_ICE_PAYLOAD.fmtp).exec(cur_line);
+
+      // 'fmtp' line?
+      if(m_fmtp) {
+        cur_fmtp_id = m_fmtp[1];
+
+        if(cur_fmtp_id) {
+          cur_fmtp_values = m_fmtp[2] ? (m_fmtp[2]).split(';') : [];
+
+          for(j in cur_fmtp_values) {
+            // Parse current attribute
+            cur_fmtp_attrs = cur_fmtp_values[j].split('=');
+            cur_fmtp_key   = cur_fmtp_attrs[0];
+            cur_fmtp_value = cur_fmtp_attrs[1];
+
+            while(cur_fmtp_key.length && !cur_fmtp_key[0])
+              cur_fmtp_key = cur_fmtp_key.substring(1);
+
+            // Populate current object
+            e = 0;
+            cur_fmtp = {};
+
+            cur_fmtp['name']  = cur_fmtp_key    || e++;
+            cur_fmtp['value'] = cur_fmtp_value  || e++;
+
+            // Incomplete?
+            if(e != 0) continue;
+
+            // Push it to parent array
+            init_payload(cur_media, cur_fmtp_id);
+            payload[cur_media]['descriptions']['payload'][cur_fmtp_id]['parameter'].push(cur_fmtp);
+          }
+        }
 
         continue;
       }
@@ -3949,15 +4036,16 @@ function JSJaCJingle(args) {
         // Then, wait for responder to send back its remote description
       } else {
         // Apply SDP data
-        accept_sdp = self.util_sdp_generate(
+        sdp_remote = self.util_sdp_generate(
           WEBRTC_SDP_TYPE_OFFER,
           self._get_payloads_remote(),
           self._get_candidates_remote()
         );
 
         // Remote description
+        console.log('REMOTE DESCRIPTION', sdp_remote.description);
         self._get_peer_connection().setRemoteDescription(
-          new WEBRTC_SESSION_DESCRIPTION(accept_sdp.description)
+          new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)
         );
 
         // Local description
@@ -3966,8 +4054,8 @@ function JSJaCJingle(args) {
         // ICE candidates
         var cur_candidate_obj;
 
-        for(i in accept_sdp.candidates) {
-          cur_candidate_obj = (accept_sdp.candidates)[i];
+        for(i in sdp_remote.candidates) {
+          cur_candidate_obj = (sdp_remote.candidates)[i];
 
           self._get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
@@ -4033,16 +4121,17 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._peer_got_description = function(session_description) {
+  self._peer_got_description = function(sdp_local) {
     try {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Got local description.', 4);
 
-      self._get_peer_connection().setLocalDescription(session_description);
+      console.log('LOCAL DESCRIPTION', sdp_local);
+      self._get_peer_connection().setLocalDescription(sdp_local);
 
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 4);
 
       // Convert SDP raw data to an object
-      var payload_parsed = self.util_sdp_parse_payload(session_description.sdp);
+      var payload_parsed = self.util_sdp_parse_payload(sdp_local.sdp);
       console.log('_set_payloads_local', payload_parsed);
       for(c in payload_parsed)
         self._set_payloads_local(c, payload_parsed[c]);
