@@ -186,6 +186,7 @@ var MAP_DISCO_JINGLE                                = [
 
 var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true : false;
 
+var JSJAC_JINGLE_PEER_TIMEOUT                        = 20;
 var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
 var JSJAC_JINGLE_STANZA_ID_PRE                       = 'jj';
 
@@ -1370,6 +1371,12 @@ function JSJaCJingle(args) {
   self.handle_session_accept_request = function(stanza) {
     self.get_debug().log('[JSJaCJingle] handle_session_accept_request', 4);
 
+    // Slot unavailable?
+    if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
+      self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Cannot handle, resource already accepted (status: ' + self.get_status() + ').', 0);
+      return;
+    }
+
     // Common vars
     var i, cur_candidate_obj;
 
@@ -1593,6 +1600,12 @@ function JSJaCJingle(args) {
   self.handle_session_initiate_request = function(stanza) {
     self.get_debug().log('[JSJaCJingle] handle_session_initiate_request', 4);
 
+    // Slot unavailable?
+    if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
+      self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Cannot handle, resource already initiated (status: ' + self.get_status() + ').', 0);
+      return;
+    }
+
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
@@ -1711,6 +1724,12 @@ function JSJaCJingle(args) {
    */
   self.handle_session_terminate_request = function(stanza) {
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_request', 4);
+
+    // Slot unavailable?
+    if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED)) {
+      self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Cannot handle, resource not active (status: ' + self.get_status() + ').', 0);
+      return;
+    }
 
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATING);
@@ -4125,9 +4144,14 @@ function JSJaCJingle(args) {
       self._get_peer_connection().oniceconnectionstatechange = function(e) {
         self.get_debug().log('[JSJaCJingle] _peer_connection_create > oniceconnectionstatechange', 2);
 
-        // Connection closed? (without terminating)
-        if(this.iceConnectionState == 'disconnected')
-          self.terminate(JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR);
+        // Connection errors?
+        switch(this.iceConnectionState) {
+          case 'disconnected':
+            self.terminate(JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR); break;
+
+          case 'checking':
+            self._peer_timeout(this.iceConnectionState); break;
+        }
 
         self.get_debug().log('[JSJaCJingle] _peer_connection_create > oniceconnectionstatechange > (state: ' + this.iceConnectionState + ')', 2);
       };
@@ -4192,8 +4216,6 @@ function JSJaCJingle(args) {
         var cur_candidate_obj;
 
         for(i in sdp_remote.candidates) {
-          cur_candidate_obj = (sdp_remote.candidates)[i];
-
           self._get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
               sdpMLineIndex : cur_candidate_obj.label,
@@ -4280,6 +4302,23 @@ function JSJaCJingle(args) {
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > ' + e, 1);
     }
+  };
+
+  /**
+   * Set a timeout limit to peer connection
+   */
+  self._peer_timeout = function(state) {
+    var t_sid = self.get_sid();
+ 
+    setTimeout(function(){
+      // State did not change?
+      if(self.get_sid() == t_sid && self._get_peer_connection().iceConnectionState == state) {
+        self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Peer timeout.', 2);
+
+        // Error (transports are incompatible)
+        self.terminate(JSJAC_JINGLE_REASON_FAILED_TRANSPORT);
+      }
+    }, (JSJAC_JINGLE_PEER_TIMEOUT * 1000));
   };
 
   /**
