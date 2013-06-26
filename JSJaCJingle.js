@@ -2490,6 +2490,48 @@ function JSJaCJingle(args) {
    */
 
   /**
+   * Clones a given object
+   * @return Cloned object
+   * @type object
+   */
+  self.util_object_clone = function(object) {
+    // Assert
+    if(object == null || typeof object != 'object') return object;
+
+    // Handle Date
+    if(object instanceof Date) {
+        var copy = new Date();
+        copy.setTime(object.getTime());
+
+        return copy;
+    }
+
+    // Handle Array
+    if(object instanceof Array) {
+        var copy = [];
+
+        for(var i = 0, len = object.length; i < len; i++)
+          copy[i] = self.util_object_clone(object[i]);
+
+        return copy;
+    }
+
+    // Handle Object
+    if(object instanceof Object) {
+        var copy = {};
+
+        for(var attr in object) {
+            if(object.hasOwnProperty(attr))
+              copy[attr] = self.util_object_clone(object[attr]);
+        }
+
+        return copy;
+    }
+
+    self.get_debug().log('[JSJaCJingle] util_object_clone > Cannot clone this object.', 1);
+  };
+
+  /**
    * Gets the node value from a stanza element
    * @return Node value
    * @type string
@@ -3182,7 +3224,7 @@ function JSJaCJingle(args) {
     content_obj['transport']   = {};
 
     // Generate description
-    var description_cpy      = payloads['descriptions'];
+    var description_cpy      = self.util_object_clone(payloads['descriptions']);
     var description_ptime    = description_cpy['attrs']['ptime'];
     var description_maxptime = description_cpy['attrs']['maxptime'];
 
@@ -3229,6 +3271,8 @@ function JSJaCJingle(args) {
         )
       );
     }
+
+    console.log('_set_content_local', self._get_content_local());
   };
 
   /**
