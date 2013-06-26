@@ -1361,7 +1361,7 @@ function JSJaCJingle(args) {
     var rd_sid = self.util_stanza_sid(stanza);
 
     // Request is valid?
-    if(rd_sid && self.is_initiator() && self.util_stanza_parse_content(stanza)) {
+    if(rd_sid && self.is_initiator() && self._util_stanza_parse_content(stanza)) {
       // Trigger accept success custom callback
       (self._get_session_accept_success())(self, stanza);
       // TODO: internal success callback, too?!
@@ -1369,7 +1369,7 @@ function JSJaCJingle(args) {
       // Generate and store content data
       self._util_initialize_content_remote();
 
-      var sdp_remote = self.util_sdp_generate(
+      var sdp_remote = self._util_sdp_generate(
         WEBRTC_SDP_TYPE_ANSWER,
         self._get_payloads_remote(),
         self._get_candidates_remote()
@@ -1572,7 +1572,7 @@ function JSJaCJingle(args) {
     var rd_sid  = self.util_stanza_sid(stanza);
 
     // Request is valid?
-    if(rd_sid && self.util_stanza_parse_content(stanza)) {
+    if(rd_sid && self._util_stanza_parse_content(stanza)) {
       // Set session values
       self._set_sid(rd_sid);
       self._set_to(rd_from);
@@ -1904,33 +1904,6 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Gets the local_view value
-   * @return local_view value
-   * @type DOM
-   */
-  self.get_local_view = function() {
-    return self._local_view;
-  };
-
-  /**
-   * Gets the remote_view value
-   * @return remote_view value
-   * @type DOM
-   */
-  self.get_remote_view = function() {
-    return self._remote_view;
-  };
-
-  /**
-   * Gets the debug value
-   * @return debug value
-   * @type JSJaCDebugger
-   */
-  self.get_debug = function() {
-    return self._debug;
-  };
-
-  /**
    * @private
    */
   self._get_local_stream = function() {
@@ -2002,6 +1975,61 @@ function JSJaCJingle(args) {
       return (name in self._content_remote) ? self._content_remote[name] : {};
 
     return self._content_remote;
+  };
+
+  /**
+   * @private
+   */
+  self._get_handlers = function(action) {
+    if(action && typeof self._handlers[action] == 'function')
+      return self._handlers[action];
+
+    return function(stanza) {};
+  };
+
+  /**
+   * @private
+   */
+  self._get_peer_connection = function() {
+    return self._peer_connection;
+  }
+
+  /**
+   * @private
+   */
+  self._get_id = function() {
+    return self._id;
+  };
+
+  /**
+   * @private
+   */
+  self._get_id_last = function() {
+    return JSJAC_JINGLE_STANZA_ID_PRE + self._get_id();
+  };
+
+  /**
+   * @private
+   */
+  self._get_id_new = function() {
+    var trans_id = self._get_id() + 1;
+    self._set_id(trans_id);
+
+    return JSJAC_JINGLE_STANZA_ID_PRE + trans_id;
+  };
+
+  /**
+   * @private
+   */
+  self._get_sent_id = function() {
+    return self._sent_id;
+  };
+
+  /**
+   * @private
+   */
+  self._get_received_id = function() {
+    return self._received_id;
   };
 
   /**
@@ -2086,58 +2114,30 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * @private
+   * Gets the local_view value
+   * @return local_view value
+   * @type DOM
    */
-  self._get_handlers = function(action) {
-    if(action && typeof self._handlers[action] == 'function')
-      return self._handlers[action];
-
-    return function(stanza) {};
+  self.get_local_view = function() {
+    return self._local_view;
   };
 
   /**
-   * @private
+   * Gets the remote_view value
+   * @return remote_view value
+   * @type DOM
    */
-  self._get_peer_connection = function() {
-    return self._peer_connection;
-  }
-
-  /**
-   * @private
-   */
-  self._get_id = function() {
-    return self._id;
+  self.get_remote_view = function() {
+    return self._remote_view;
   };
 
   /**
-   * @private
+   * Gets the debug value
+   * @return debug value
+   * @type JSJaCDebugger
    */
-  self._get_id_last = function() {
-    return JSJAC_JINGLE_STANZA_ID_PRE + self._get_id();
-  };
-
-  /**
-   * @private
-   */
-  self._get_id_new = function() {
-    var trans_id = self._get_id() + 1;
-    self._set_id(trans_id);
-
-    return JSJAC_JINGLE_STANZA_ID_PRE + trans_id;
-  };
-
-  /**
-   * @private
-   */
-  self._get_sent_id = function() {
-    return self._sent_id;
-  };
-
-  /**
-   * @private
-   */
-  self._get_received_id = function() {
-    return self._received_id;
+  self.get_debug = function() {
+    return self._debug;
   };
 
 
@@ -2275,51 +2275,6 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._set_debug = function(debug) {
-    self._debug = debug;
-  };
-
-  /**
-   * @private
-   */
-  self._set_local_stream = function(local_stream) {
-    if(!local_stream && self._local_stream) {
-      (self.get_local_view()).pause();
-      (self._local_stream).stop();
-    }
-
-    self._local_stream = local_stream;
-
-    (self.get_local_view()).src = local_stream ? URL.createObjectURL(self._get_local_stream()) : '';
-
-    self.util_peer_stream_attach(
-      self.get_local_view(),
-      self._local_stream,
-      true
-    );
-  };
-
-  /**
-   * @private
-   */
-  self._set_remote_stream = function(remote_stream) {
-    if(!remote_stream && self._remote_stream)
-      (self.get_remote_view()).pause();
-
-    self._remote_stream = remote_stream;
-
-    (self.get_remote_view()).src = remote_stream ? URL.createObjectURL(self._get_remote_stream()) : '';
-
-    self.util_peer_stream_attach(
-      self.get_remote_view(),
-      self._remote_stream,
-      false
-    );
-  };
-
-  /**
-   * @private
-   */
   self._set_payloads_local = function(name, payload_data) {
     self._payloads_local[name] = payload_data;
   };
@@ -2359,6 +2314,41 @@ function JSJaCJingle(args) {
    */
   self._set_content_remote = function(name, content_remote) {
     self._content_remote[name] = content_remote;
+  };
+
+  /**
+   * @private
+   */
+  self._set_handlers = function(action, handler) {
+    self._handlers[action] = handler;
+  };
+
+  /**
+   * @private
+   */
+  self._set_peer_connection = function(peer_connection) {
+    self._peer_connection = peer_connection;
+  };
+
+  /**
+   * @private
+   */
+  self._set_id = function(id) {
+    self._id = id;
+  };
+
+  /**
+   * @private
+   */
+  self._set_sent_id = function(sent_id) {
+    (self._get_sent_id())[sent_id] = 1;
+  };
+
+  /**
+   * @private
+   */
+  self._set_received_id = function(received_id) {
+    (self._get_received_id())[received_id] = 1;
   };
 
   /**
@@ -2424,36 +2414,46 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._set_handlers = function(action, handler) {
-    self._handlers[action] = handler;
+  self._set_debug = function(debug) {
+    self._debug = debug;
   };
 
   /**
    * @private
    */
-  self._set_peer_connection = function(peer_connection) {
-    self._peer_connection = peer_connection;
+  self._set_local_stream = function(local_stream) {
+    if(!local_stream && self._local_stream) {
+      (self.get_local_view()).pause();
+      (self._local_stream).stop();
+    }
+
+    self._local_stream = local_stream;
+
+    (self.get_local_view()).src = local_stream ? URL.createObjectURL(self._get_local_stream()) : '';
+
+    self._util_peer_stream_attach(
+      self.get_local_view(),
+      self._local_stream,
+      true
+    );
   };
 
   /**
    * @private
    */
-  self._set_id = function(id) {
-    self._id = id;
-  };
+  self._set_remote_stream = function(remote_stream) {
+    if(!remote_stream && self._remote_stream)
+      (self.get_remote_view()).pause();
 
-  /**
-   * @private
-   */
-  self._set_sent_id = function(sent_id) {
-    (self._get_sent_id())[sent_id] = 1;
-  };
+    self._remote_stream = remote_stream;
 
-  /**
-   * @private
-   */
-  self._set_received_id = function(received_id) {
-    (self._get_received_id())[received_id] = 1;
+    (self.get_remote_view()).src = remote_stream ? URL.createObjectURL(self._get_remote_stream()) : '';
+
+    self._util_peer_stream_attach(
+      self.get_remote_view(),
+      self._remote_stream,
+      false
+    );
   };
 
 
@@ -2698,11 +2698,9 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Parses a Jingle payload stanza
-   * @return parsed object
-   * @type object
+   * @private
    */
-  self.util_stanza_parse_content = function(stanza) {
+  self._util_stanza_parse_content = function(stanza) {
     var i,
         jingle, content, cur_content,
         content_creator, content_name, content_senders;
@@ -2730,12 +2728,12 @@ function JSJaCJingle(args) {
           // Nodes
           self._set_payloads_remote(
             content_name,
-            self.util_stanza_parse_payload(cur_content)
+            self._util_stanza_parse_payload(cur_content)
           );
 
           self._set_candidates_remote(
             content_name,
-            self.util_stanza_parse_candidate(cur_content)
+            self._util_stanza_parse_candidate(cur_content)
           );
         }
 
@@ -2747,11 +2745,9 @@ function JSJaCJingle(args) {
   }
 
   /**
-   * Parses a Jingle payload stanza
-   * @return parsed object
-   * @type object
+   * @private
    */
-  self.util_stanza_parse_payload = function(stanza_content) {
+  self._util_stanza_parse_payload = function(stanza_content) {
     var payload_obj = {
       'descriptions' : {},
       'transports'   : {}
@@ -2982,11 +2978,9 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Parses a Jingle candidate stanza
-   * @return parsed object
-   * @type object
+   * @private
    */
-  self.util_stanza_parse_candidate = function(stanza_content) {
+  self._util_stanza_parse_candidate = function(stanza_content) {
     var candidate_arr = [];
 
     // Common vars
@@ -3032,7 +3026,7 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates the current content local stanza
+   * @private
    */
   self._util_stanza_content_local = function(stanza, jingle) {
     var content_local = self._get_content_local();
@@ -3184,9 +3178,7 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates the content data
-   * @return content data value
-   * @type object
+   * @private
    */
   self._util_generate_content = function(creator, name, senders, payloads, transports) {
     // Generation process
@@ -3230,7 +3222,7 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates the initial local content data
+   * @private
    */
   self._util_initialize_content_local = function() {
     for(cur_name in self.get_name()) {
@@ -3249,7 +3241,7 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates the initial remote content data
+   * @private
    */
   self._util_initialize_content_remote = function() {
     for(cur_name in self.get_name()) {
@@ -3268,23 +3260,19 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates SDP data from payloads and candidates
-   * @return SDP data
-   * @type object
+   * @private
    */
-  self.util_sdp_generate = function(type, payloads, candidates) {
+  self._util_sdp_generate = function(type, payloads, candidates) {
     return {
-      candidates  : self.util_sdp_generate_candidates(candidates),
-      description : self.util_sdp_generate_description(type, payloads)
+      candidates  : self._util_sdp_generate_candidates(candidates),
+      description : self._util_sdp_generate_description(type, payloads)
     };
   };
 
   /**
-   * Generates SDP candidates from candidates
-   * @return SDP candidates
-   * @type object
+   * @private
    */
-  self.util_sdp_generate_candidates = function(candidates) {
+  self._util_sdp_generate_candidates = function(candidates) {
     var candidates_arr = [];
 
     // Parse candidates
@@ -3349,11 +3337,9 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates SDP payloads from payloads
-   * @return SDP payloads
-   * @type string
+   * @private
    */
-  self.util_sdp_generate_description = function(type, payloads) {
+  self._util_sdp_generate_description = function(type, payloads) {
     var payloads_obj = {};
     var payloads_str = '';
 
@@ -3374,13 +3360,13 @@ function JSJaCJingle(args) {
         cur_d_rtcp_mux;
 
     // Payloads headers
-    payloads_str += self.util_sdp_generate_protocol_version();
+    payloads_str += self._util_sdp_generate_protocol_version();
     payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += self.util_sdp_generate_origin();
+    payloads_str += self._util_sdp_generate_origin();
     payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += self.util_sdp_generate_session_name();
+    payloads_str += self._util_sdp_generate_session_name();
     payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += self.util_sdp_generate_timing();
+    payloads_str += self._util_sdp_generate_timing();
     payloads_str += WEBRTC_SDP_LINE_BREAK;
 
     // Add bundle line
@@ -3409,7 +3395,7 @@ function JSJaCJingle(args) {
       cur_d_rtcp_mux        = cur_description_obj['rtcp-mux'];
 
       // Current media
-      payloads_str += self.util_sdp_generate_description_media(cur_media, cur_d_crypto, cur_d_fingerprint, cur_d_payload);
+      payloads_str += self._util_sdp_generate_description_media(cur_media, cur_d_crypto, cur_d_fingerprint, cur_d_payload);
       payloads_str += WEBRTC_SDP_LINE_BREAK;
 
       payloads_str += 'c=IN IP4 0.0.0.0';
@@ -3570,20 +3556,16 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates SDP protocol version
-   * @return SDP protocol version
-   * @type string
+   * @private
    */
-  self.util_sdp_generate_protocol_version = function() {
+  self._util_sdp_generate_protocol_version = function() {
     return 'v=0';
   };
 
   /**
-   * Generates SDP origin
-   * @return SDP origin
-   * @type string
+   * @private
    */
-  self.util_sdp_generate_origin = function() {
+  self._util_sdp_generate_origin = function() {
     var sdp_origin;
 
     // Values
@@ -3609,29 +3591,23 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Generates SDP session name
-   * @return SDP session name
-   * @type string
+   * @private
    */
-  self.util_sdp_generate_session_name = function() {
+  self._util_sdp_generate_session_name = function() {
     return 's=-';
   };
 
   /**
-   * Generates SDP timing
-   * @return SDP timing
-   * @type string
+   * @private
    */
-  self.util_sdp_generate_timing = function() {
+  self._util_sdp_generate_timing = function() {
     return 't=0 0';
   };
 
   /**
-   * Generates SDP media line from payloads
-   * @return SDP media line
-   * @type string
+   * @private
    */
-  self.util_sdp_generate_description_media = function(media, crypto, fingerprint, payload) {
+  self._util_sdp_generate_description_media = function(media, crypto, fingerprint, payload) {
     var i;
     var type_ids = [];
     var sdp_media = 'm=' + media + ' 1 ';
@@ -3689,9 +3665,9 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Attaches a stream source
+   * @private
    */
-  self.util_peer_stream_attach = function(element, stream, mute) {
+  self._util_peer_stream_attach = function(element, stream, mute) {
     if(navigator.mozGetUserMedia)
       element.play();
     else
@@ -3701,11 +3677,9 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Parses an SDP payload message
-   * @return parsed object
-   * @type object
+   * @private
    */
-  self.util_sdp_parse_payload = function(sdp_payload) {
+  self._util_sdp_parse_payload = function(sdp_payload) {
     if(!sdp_payload || sdp_payload.indexOf('\n') == -1) return {};
 
     // Common vars
@@ -4012,11 +3986,9 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Parses an SDP candidate message
-   * @return parsed object
-   * @type object
+   * @private
    */
-  self.util_sdp_parse_candidate = function(sdp_candidate) {
+  self._util_sdp_parse_candidate = function(sdp_candidate) {
     if(!sdp_candidate) return {};
     
     var e         = 0;
@@ -4072,7 +4044,7 @@ function JSJaCJingle(args) {
           var candidate_data  = e.candidate.candidate;
 
           // Convert SDP raw data to an object
-          var candidate_obj   = self.util_sdp_parse_candidate(candidate_data);
+          var candidate_obj   = self._util_sdp_parse_candidate(candidate_data);
 
           self._set_candidates_local(candidate_id, candidate_obj);
         } else {
@@ -4112,7 +4084,7 @@ function JSJaCJingle(args) {
         // Then, wait for responder to send back its remote description
       } else {
         // Apply SDP data
-        sdp_remote = self.util_sdp_generate(
+        sdp_remote = self._util_sdp_generate(
           WEBRTC_SDP_TYPE_OFFER,
           self._get_payloads_remote(),
           self._get_candidates_remote()
@@ -4205,7 +4177,7 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 4);
 
       // Convert SDP raw data to an object
-      var payload_parsed = self.util_sdp_parse_payload(sdp_local.sdp);
+      var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
 
       for(c in payload_parsed)
         self._set_payloads_local(c, payload_parsed[c]);
