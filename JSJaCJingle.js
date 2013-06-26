@@ -66,7 +66,6 @@ var WEBRTC_CONFIGURATION = {
   peer_connection : {
     config        : {
       iceServers : [{
-        // TODO: configurable
         'url': 'stun:stun.jappix.com'
       }]
     },
@@ -83,8 +82,6 @@ var WEBRTC_CONFIGURATION = {
 
     video: {
       mandatory : {
-        // TODO: configurable
-        // TODO: (self._aspect_ratio, max = min + 1o(p) where p is the precision 10,1,0.1,0.01,0.001,...)
         'minAspectRatio' : 1.777,
         'maxAspectRatio' : 1.778
       },
@@ -394,6 +391,7 @@ var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
  * @param {DOM} args.local_view The path to the local stream view element.
  * @param {DOM} args.remote_view The path to the remote stream view element.
  * @param {string} args.to The full JID to start the Jingle session with.
+ * @param {object} args.stun A list of STUN servers to use (override the default one)
  * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
  */
 function JSJaCJingle(args) {
@@ -515,6 +513,15 @@ function JSJaCJingle(args) {
      * @private
      */
     self._remote_view = args.remote_view;
+
+  if(args && args.stun) {
+    /**
+     * @private
+     */
+    self._stun = args.stun;
+  } else {
+    self._stun = [];
+  }
 
   if(args && args.debug && args.debug.log) {
       /**
@@ -1554,7 +1561,8 @@ function JSJaCJingle(args) {
     // Stop WebRTC
     self._peer_stop();
 
-    // TODO-LATER: auto-destroy self object + this
+    // TODO: auto-destroy self object + this
+    //       AT LEAST LOCK FURTHER INIT
 
     self.get_debug().log('[JSJaCJingle] handle_session_initiate_error > Handled.', 4);
   };
@@ -1672,7 +1680,8 @@ function JSJaCJingle(args) {
     // Stop WebRTC
     self._peer_stop();
 
-    // TODO-LATER: auto-destroy self object + this
+    // TODO: auto-destroy self object + this
+    //       AT LEAST LOCK FURTHER INIT
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_error > Handled.', 4);
   };
@@ -2132,6 +2141,29 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Gets the STUN/ICE servers
+   * @return ICE configuration
+   * @type object
+   */
+  self.get_stun = function() {
+    if(self._stun && self._stun.length) {
+      var config = {
+        iceServers : []
+      };
+
+      for(i in self._stun) {
+        (config.iceServers).push({
+          'url': 'stun:' + self._stun[i]
+        });
+      }
+
+      return config;
+    }
+
+    return WEBRTC_CONFIGURATION.peer_connection.config;
+  };
+
+  /**
    * Gets the debug value
    * @return debug value
    * @type JSJaCDebugger
@@ -2256,6 +2288,44 @@ function JSJaCJingle(args) {
    */
   self._set_terminate_request = function(terminate_request) {
     self._session_terminate_request = terminate_request;
+  };
+
+  /**
+   * @private
+   */
+  self._set_local_stream = function(local_stream) {
+    if(!local_stream && self._local_stream) {
+      (self.get_local_view()).pause();
+      (self._local_stream).stop();
+    }
+
+    self._local_stream = local_stream;
+
+    (self.get_local_view()).src = local_stream ? URL.createObjectURL(self._get_local_stream()) : '';
+
+    self._util_peer_stream_attach(
+      self.get_local_view(),
+      self._local_stream,
+      true
+    );
+  };
+
+  /**
+   * @private
+   */
+  self._set_remote_stream = function(remote_stream) {
+    if(!remote_stream && self._remote_stream)
+      (self.get_remote_view()).pause();
+
+    self._remote_stream = remote_stream;
+
+    (self.get_remote_view()).src = remote_stream ? URL.createObjectURL(self._get_remote_stream()) : '';
+
+    self._util_peer_stream_attach(
+      self.get_remote_view(),
+      self._remote_stream,
+      false
+    );
   };
 
   /**
@@ -2414,46 +2484,15 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._set_stun = function(stun_server) {
+    (self._stun).push(stun_server);
+  };
+
+  /**
+   * @private
+   */
   self._set_debug = function(debug) {
     self._debug = debug;
-  };
-
-  /**
-   * @private
-   */
-  self._set_local_stream = function(local_stream) {
-    if(!local_stream && self._local_stream) {
-      (self.get_local_view()).pause();
-      (self._local_stream).stop();
-    }
-
-    self._local_stream = local_stream;
-
-    (self.get_local_view()).src = local_stream ? URL.createObjectURL(self._get_local_stream()) : '';
-
-    self._util_peer_stream_attach(
-      self.get_local_view(),
-      self._local_stream,
-      true
-    );
-  };
-
-  /**
-   * @private
-   */
-  self._set_remote_stream = function(remote_stream) {
-    if(!remote_stream && self._remote_stream)
-      (self.get_remote_view()).pause();
-
-    self._remote_stream = remote_stream;
-
-    (self.get_remote_view()).src = remote_stream ? URL.createObjectURL(self._get_remote_stream()) : '';
-
-    self._util_peer_stream_attach(
-      self.get_remote_view(),
-      self._remote_stream,
-      false
-    );
   };
 
 
@@ -4025,7 +4064,7 @@ function JSJaCJingle(args) {
       // Create the RTCPeerConnection object
       self._set_peer_connection(
         new WEBRTC_PEER_CONNECTION(
-          WEBRTC_CONFIGURATION.peer_connection.config,
+          self.get_stun(),
           WEBRTC_CONFIGURATION.peer_connection.constraints
         )
       );
