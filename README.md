@@ -47,7 +47,7 @@ We assume your XMPP Web client is using JSJaC and has an active connection, stor
  */
 ```
 
-**You first need to create the args object, storing global JSJaCJingle configuration:**
+**You first need to create the global ARGS object, storing JSJaCJingle configuration:**
 
 ```javascript
 // JSJaCJingle arguments
