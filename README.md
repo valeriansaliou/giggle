@@ -71,9 +71,14 @@ var ARGS = {
 		// Update your client UI
 		// Initialized!
 
-		// Request for Jingle session to be accepted
-		// You can also call this later, on UI confirm or so
-		self.accept();
+		// This is an incoming call
+        if(self.is_responder()) {
+	        // Request for Jingle session to be accepted
+	        if(confirm("Incoming call from " + self.util_stanza_from(stanza) + "\n\nAccept?"))
+	       		self.accept();
+	       	else
+	       		self.terminate(JSJAC_JINGLE_REASON_DECLINE);
+	    }
 
 		console.log('session_initiate_success');
 	},
@@ -206,15 +211,17 @@ con.registerHandler('onconnect', function() {
 });
 ```
 
-**When you want to make a call when user press a button:**
+**Initiate a new a call when the user press a button:**
 
 ```javascript
-// Create the JSJaCJingle object
-var jingle = new JSJaCJingle(args);
+$('button').click(function() {
+	// Create the JSJaCJingle object
+	var jingle = new JSJaCJingle(args);
 
-// Initialize the Jingle session
-// See: http://xmpp.org/extensions/xep-0166.html#protocol-initiate
-jingle.initiate();
+	// Initialize the Jingle session
+	// See: http://xmpp.org/extensions/xep-0166.html#protocol-initiate
+	jingle.initiate();
+});
 ```
 
 Now, refer to the custom handlers that we passed above!
