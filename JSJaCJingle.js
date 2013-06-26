@@ -3374,13 +3374,13 @@ function JSJaCJingle(args) {
         cur_d_rtcp_mux;
 
     // Payloads headers
-    payloads_str += 'v=0';
+    payloads_str += self.util_sdp_generate_protocol_version();
     payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += 'o=- 3145753218 2 IN IP4 127.0.0.1'; // TODO: no hardcoding!
+    payloads_str += self.util_sdp_generate_origin();
     payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += 's=-';
+    payloads_str += self.util_sdp_generate_session_name();
     payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += 't=0 0';
+    payloads_str += self.util_sdp_generate_timing();
     payloads_str += WEBRTC_SDP_LINE_BREAK;
 
     // Add bundle line
@@ -3564,7 +3564,66 @@ function JSJaCJingle(args) {
     payloads_obj.type = type;
     payloads_obj.sdp  = payloads_str;
 
+    console.log('SDP', payloads_obj);
+
     return payloads_obj;
+  };
+
+  /**
+   * Generates SDP protocol version
+   * @return SDP protocol version
+   * @type string
+   */
+  self.util_sdp_generate_protocol_version = function() {
+    return 'v=0';
+  };
+
+  /**
+   * Generates SDP origin
+   * @return SDP origin
+   * @type string
+   */
+  self.util_sdp_generate_origin = function() {
+    var sdp_origin;
+
+    // Values
+    var jid = new JSJaCJID(self.get_initiator());
+
+    var username        = jid.getNode()   ? jid.getNode()   : '-';
+    var session_id      = self.get_sid()  ? self.get_sid()  : '1';
+    var session_version = '1';
+    var nettype         = 'IN';
+    var addrtype        = 'IP4';
+    var unicast_address = jid.getDomain() ? jid.getDomain() : '127.0.0.1';
+
+    // Line content
+    sdp_origin = 'o=';
+    sdp_origin += username + ' ';
+    sdp_origin += session_id + ' ';
+    sdp_origin += session_version + ' ';
+    sdp_origin += nettype + ' ';
+    sdp_origin += addrtype + ' ';
+    sdp_origin += unicast_address;
+
+    return sdp_origin;
+  };
+
+  /**
+   * Generates SDP session name
+   * @return SDP session name
+   * @type string
+   */
+  self.util_sdp_generate_session_name = function() {
+    return 's=-';
+  };
+
+  /**
+   * Generates SDP timing
+   * @return SDP timing
+   * @type string
+   */
+  self.util_sdp_generate_timing = function() {
+    return 't=0 0';
   };
 
   /**
