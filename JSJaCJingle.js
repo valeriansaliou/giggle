@@ -703,8 +703,8 @@ function JSJaCJingle(args) {
    */
   self.terminate = function(reason) {
     // Slot unavailable?
-    if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED)) {
-      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource not accepted (status: ' + self.get_status() + ').', 1);
+    if(self.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
+      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource already terminated or inactive (status: ' + self.get_status() + ').', 1);
       return;
     }
 
@@ -3181,12 +3181,6 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_generate_content = function(creator, name, senders, payloads, transports) {
-    console.log('_util_generate_content > creator', creator);
-    console.log('_util_generate_content > name', name);
-    console.log('_util_generate_content > senders', senders);
-    console.log('_util_generate_content > payloads', payloads);
-    console.log('_util_generate_content > transports', transports);
-
     // Generation process
     var content_obj = {};
 

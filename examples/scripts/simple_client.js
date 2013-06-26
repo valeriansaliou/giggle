@@ -23,13 +23,17 @@ var ARGS = {
 
     // Custom handlers (optional)
     session_initiate_pending: function(self) {
+    	console.log('session_initiate_pending');
+
     	$('.call_notif').hide();
         $('#call_info').text('Initializing...').show();
 
-        console.log('session_initiate_pending');
+        $('#form_call').find('input, button').attr('disabled', true);
     },
 
     session_initiate_success: function(self, stanza) {
+    	console.log('session_initiate_success');
+
         $('.call_notif').hide();
         $('#call_success').text('Initialized.').show();
 
@@ -41,15 +45,15 @@ var ARGS = {
 	       	else
 	       		self.terminate(JSJAC_JINGLE_REASON_DECLINE);
 	    }
-	    
-        console.log('session_initiate_success');
     },
 
     session_initiate_error: function(self, stanza) {
+    	console.log('session_initiate_error');
+
         $('.call_notif').hide();
         $('#call_error').text('Could not initialize.').show();
 
-        console.log('session_initiate_error');
+        $('#form_call').find('input, button').removeAttr('disabled');
     },
 
     session_initiate_request: function(self, stanza) {
@@ -57,27 +61,29 @@ var ARGS = {
 	},
 
     session_accept_pending: function(self) {
+    	console.log('session_accept_pending');
+
         $('.call_notif').hide();
         $('#call_info').text('Waiting to be accepted...').show();
-
-        console.log('session_accept_pending');
     },
 
     session_accept_success: function(self, stanza) {
+    	console.log('session_accept_success');
+
         $('.call_notif').hide();
         $('#call_success').text('Accepted.').show();
 
         $('#form_live').find('button').removeAttr('disabled');
 		$('#fieldset_live').removeAttr('disabled');
-
-        console.log('session_accept_success');
     },
 
     session_accept_error: function(self, stanza) {
+    	console.log('session_accept_error');
+
         $('.call_notif').hide();
         $('#call_error').text('Could not be accepted.').show();
 
-        console.log('session_accept_error');
+        $('#form_call').find('input, button').removeAttr('disabled');
     },
 
     session_accept_request: function(self, stanza) {
@@ -101,24 +107,31 @@ var ARGS = {
 	},
 
     session_terminate_pending: function(self) {
+    	console.log('session_terminate_pending');
+
         $('.call_notif').hide();
         $('#call_info').text('Terminating...').show();
 
-        console.log('session_terminate_pending');
+        $('#form_live').find('button').attr('disabled', true);
     },
 
     session_terminate_success: function(self, stanza) {
+    	console.log('session_terminate_success');
+
         $('.call_notif').hide();
         $('#call_success').text('Terminated.').show();
 
-        console.log('session_terminate_success');
+		$('#fieldset_live').attr('disabled', true);
+		$('#form_call').find('input, button').removeAttr('disabled');
     },
 
     session_terminate_error: function(self, stanza) {
-        $('.call_notif').hide();
-        $('#call_error').text('Could not terminate.').show();
+    	console.log('session_terminate_error');
 
-        console.log('session_terminate_error');
+        $('.call_notif').hide();
+        $('#call_error').text('Could not terminate (forced).').show();
+
+       	$('#form_live').find('button').removeAttr('disabled');
     },
 
     session_terminate_request: function(self, stanza) {
@@ -216,6 +229,9 @@ $(document).ready(function() {
 							$('#login_error').text('Disconnected.').show();
 						else
 							$('#login_error').text('Invalid credentials.').show();
+
+						if(SC_CONNECTED)
+							JINGLE.terminate();
 
 						$('#form_login').find('input, button').removeAttr('disabled');
 						$('#form_login button').show();
