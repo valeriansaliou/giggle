@@ -3406,10 +3406,6 @@ function JSJaCJingle(args) {
       if(cur_d_ufrag)  payloads_str += 'a=ice-ufrag:' + cur_d_ufrag + WEBRTC_SDP_LINE_BREAK;
       if(cur_d_pwd)    payloads_str += 'a=ice-pwd:' + cur_d_pwd + WEBRTC_SDP_LINE_BREAK;
 
-      // TODO: really needed?!
-      // payloads_str += 'a=ice-options:google-ice';
-      // payloads_str += WEBRTC_SDP_LINE_BREAK;
-
       if(cur_d_fingerprint && cur_d_fingerprint['hash'] && cur_d_fingerprint['value']) {
         payloads_str += 'a=fingerprint:' + cur_d_fingerprint['hash'] + ' ' + cur_d_fingerprint['value'];
         payloads_str += WEBRTC_SDP_LINE_BREAK;
