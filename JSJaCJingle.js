@@ -4461,7 +4461,7 @@ function JSJaCJingle_route(stanza) {
     var stanza_id = stanza.getID();
 
     if(stanza_id) {
-      var r_id = new RegExp('^(' + JSJAC_JINGLE_STANZA_ID_PRE + ')_([^\s_]+)_([^\s]+)');
+      var r_id = new RegExp('(' + JSJAC_JINGLE_STANZA_ID_PRE + ')_([^\s_]+)_([^\s]+)');
       var m_id = r_id.exec(stanza_id);
 
       sid = m_id ? m_id[2] : null;
