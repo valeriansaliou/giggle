@@ -615,6 +615,11 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._reason = JSJAC_JINGLE_REASON_CANCEL;
+
+  /**
+   * @private
+   */
   self._handlers = {};
 
   /**
@@ -626,6 +631,11 @@ function JSJaCJingle(args) {
    * @private
    */
   self._id = 0;
+
+  /**
+   * @private
+   */
+  self._lock = false;
 
   /**
    * @private
@@ -644,6 +654,12 @@ function JSJaCJingle(args) {
    */
   self.initiate = function() {
     self.get_debug().log('[JSJaCJingle] initiate', 4);
+
+    // Locked?
+    if(self._get_lock()) {
+      self.get_debug().log('[JSJaCJingle] init > Cannot init, resource locked. Please open another session.', 0);
+      return;
+    }
 
     // Slot unavailable?
     if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
@@ -690,6 +706,12 @@ function JSJaCJingle(args) {
   self.accept = function() {
     self.get_debug().log('[JSJaCJingle] accept', 4);
 
+    // Locked?
+    if(self._get_lock()) {
+      self.get_debug().log('[JSJaCJingle] accept > Cannot accept, resource locked. Please open another session.', 0);
+      return;
+    }
+
     // Slot unavailable?
     if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
       self.get_debug().log('[JSJaCJingle] accept > Cannot accept, resource not initiated (status: ' + self.get_status() + ').', 0);
@@ -722,6 +744,12 @@ function JSJaCJingle(args) {
   self.terminate = function(reason) {
     self.get_debug().log('[JSJaCJingle] terminate', 4);
 
+    // Locked?
+    if(self._get_lock()) {
+      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource locked. Please open another session.', 0);
+      return;
+    }
+
     // Slot unavailable?
     if(self.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
       self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource already terminated or inactive (status: ' + self.get_status() + ').', 0);
@@ -743,6 +771,12 @@ function JSJaCJingle(args) {
    */
   self.send = function(type, args) {
     self.get_debug().log('[JSJaCJingle] send', 4);
+
+    // Locked?
+    if(self._get_lock()) {
+      self.get_debug().log('[JSJaCJingle] send > Cannot send, resource locked. Please open another session.', 0);
+      return;
+    }
 
     // Assert
     if(typeof args != 'object') args = {};
@@ -833,6 +867,12 @@ function JSJaCJingle(args) {
    */
   self.handle = function(stanza) {
     self.get_debug().log('[JSJaCJingle] handle', 4);
+
+    // Locked?
+    if(self._get_lock()) {
+      self.get_debug().log('[JSJaCJingle] handle > Cannot handle, resource locked. Please open another session.', 0);
+      return;
+    }
 
     var id = stanza.getID();
     if(id) self._set_received_id(id);
@@ -1123,6 +1163,10 @@ function JSJaCJingle(args) {
       return;
     }
 
+    // Store terminate reason
+    self._set_reason(args.reason);
+
+    // Build terminate stanza
     var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', {
                                                 'xmlns': NS_JINGLE,
                                                 'action': JSJAC_JINGLE_ACTION_SESSION_TERMINATE,
@@ -1388,8 +1432,8 @@ function JSJaCJingle(args) {
     // Request is valid?
     if(rd_sid && self.is_initiator() && self._util_stanza_parse_content(stanza)) {
       // Trigger accept success custom callback
+      self.handle_session_accept_success(stanza);
       (self._get_session_accept_success())(self, stanza);
-      // TODO: internal success callback, too?!
 
       // Generate and store content data
       self._util_initialize_content_remote();
@@ -1589,8 +1633,8 @@ function JSJaCJingle(args) {
     // Stop WebRTC
     self._peer_stop();
 
-    // TODO: auto-destroy self object + this
-    //       AT LEAST LOCK FURTHER INIT
+    // Lock session (cannot be used later)
+    self._set_lock(true);
   };
 
   /**
@@ -1712,8 +1756,8 @@ function JSJaCJingle(args) {
     // Stop WebRTC
     self._peer_stop();
 
-    // TODO: auto-destroy self object + this
-    //       AT LEAST LOCK FURTHER INIT
+    // Lock session (cannot be used later)
+    self._set_lock(true);
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_error > Forced session termination locally.', 0);
   };
@@ -1734,6 +1778,9 @@ function JSJaCJingle(args) {
     // Change session status
     self._set_status(JSJAC_JINGLE_STATUS_TERMINATING);
 
+    // Store termination reason
+    self._set_reason(self.util_stanza_terminate_reason(stanza));
+
     // Process terminate actions
     self.send('result', { id: stanza.getID() });
   
@@ -1741,7 +1788,7 @@ function JSJaCJingle(args) {
     self.handle_session_terminate_success(stanza);
     (self._get_session_terminate_success())(self, stanza);
 
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > (reason: ' + (self.util_stanza_terminate_reason(stanza) || 'undefined') + ')', 3);
+    self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > (reason: ' + self.get_reason() + ')', 3);
   };
 
   /**
@@ -2079,6 +2126,13 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._get_lock = function() {
+    return self._lock;
+  };
+
+  /**
+   * @private
+   */
   self._get_sent_id = function() {
     return self._sent_id;
   };
@@ -2106,6 +2160,15 @@ function JSJaCJingle(args) {
    */
   self.get_status = function() {
     return self._status;
+  };
+
+  /**
+   * Gets the reason value
+   * @return reason value
+   * @type string
+   */
+  self.get_reason = function() {
+    return self._reason;
   };
 
   /**
@@ -2473,6 +2536,13 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._set_lock = function(lock) {
+    self._lock = lock;
+  };
+
+  /**
+   * @private
+   */
   self._set_sid = function(sid) {
     self._sid = sid;
   };
@@ -2482,6 +2552,13 @@ function JSJaCJingle(args) {
    */
   self._set_status = function(status) {
     self._status = status;
+  };
+
+  /**
+   * @private
+   */
+  self._set_reason = function(reason) {
+    self._reason = reason || JSJAC_JINGLE_REASON_CANCEL;
   };
 
   /**
@@ -4172,8 +4249,6 @@ function JSJaCJingle(args) {
 
         // Detach remote stream from DOM view
         self._set_remote_stream(null);
-
-        // TODO: Terminate call?
       };
 
       // Add local stream
@@ -4217,7 +4292,7 @@ function JSJaCJingle(args) {
 
         for(i in sdp_remote.candidates) {
           cur_candidate_obj = (sdp_remote.candidates)[i];
-          
+
           self._get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
               sdpMLineIndex : cur_candidate_obj.label,
@@ -4274,11 +4349,13 @@ function JSJaCJingle(args) {
   self._peer_got_user_media_error = function(error) {
     self.get_debug().log('[JSJaCJingle] _peer_got_user_media_error', 4);
 
-    if(self.is_responder())
-      self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
+    // Not needed in case we are the responder (breaks termination)
+    if(self.is_initiator()) self.handle_session_initiate_error();
 
-    self.handle_session_initiate_error();
     (self._get_session_initiate_error())(self);
+
+    // Not needed in case we are the initiator (no packet sent, ever)
+    if(self.is_responder()) self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
 
     self.get_debug().log('[JSJaCJingle] _peer_got_user_media_error > Failed.', 1);
   };

@@ -122,7 +122,7 @@ var ARGS = {
     	console.log('session_terminate_success');
 
         $('.call_notif').hide();
-        $('#call_success').text('Terminated.').show();
+        $('#call_success').text('Terminated (' + self.get_reason() + ').').show();
 
 		$('#fieldset_live').attr('disabled', true);
 		$('#form_call').find('input, button').removeAttr('disabled');
