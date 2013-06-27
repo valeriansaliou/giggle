@@ -165,8 +165,7 @@ $(document).ready(function() {
 	// Submit first form
 	$('#form_login').submit(function() {
 		try {
-			if(SC_CONNECTED)
-				return false;
+			if(SC_CONNECTED) return false;
 
 			$('.login_notif').hide();
 
@@ -340,8 +339,7 @@ $(document).ready(function() {
 	// Submit second form
 	$('#form_call').submit(function() {
 		try {
-			if(!SC_CONNECTED)
-				return false;
+			if(!SC_CONNECTED) return false;
 
 			$('#roster_call').addClass('disabled');
 
@@ -378,10 +376,9 @@ $(document).ready(function() {
 	// Submit third form
 	$('#form_live').submit(function() {
 		try {
-			if(!SC_CONNECTED)
-				return false;
+			if(!SC_CONNECTED) return false;
 
-			JINGLE.terminate();
+			if(JINGLE != null) JINGLE.terminate();
 
 			$('.live_notif').hide();
 		} catch(e) {
@@ -394,8 +391,7 @@ $(document).ready(function() {
 	// Disconnect button pressed
 	$('#login_disconnect').click(function() {
 		try {
-			if(typeof(con) != 'undefined' && con)
-				con.disconnect();
+			if(typeof(con) != 'undefined' && con) con.disconnect();
 		} catch(e) {
 			alert('login_disconnect > ' + e);
 		} finally {
