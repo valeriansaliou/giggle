@@ -129,13 +129,6 @@ var ARGS = {
 		console.log('session_accept_request');
 	},
 
-	session_info_pending: function(self) {
-		// Update your client UI
-		// Waiting for info to be received...
-
-		console.log('session_info_pending');
-	},
-
 	session_info_success: function(self, stanza) {
 		// Update your client UI
 		// Info successfully sent!

@@ -389,7 +389,6 @@ var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
  * @param {function} args.session_accept_success The accept success custom handler.
  * @param {function} args.session_accept_error The accept error custom handler.
  * @param {function} args.session_accept_request The accept request custom handler.
- * @param {function} args.session_info_pending The info pending custom handler.
  * @param {function} args.session_info_success The info success custom handler.
  * @param {function} args.session_info_error The info error custom handler.
  * @param {function} args.session_info_request The info request custom handler.
@@ -456,12 +455,6 @@ function JSJaCJingle(args) {
      * @private
      */
     self._session_accept_request = args.session_accept_request;
-
-  if(args && args.session_info_pending)
-    /**
-     * @private
-     */
-    self._session_info_pending = args.session_info_pending;
 
   if(args && args.session_info_success)
     /**
@@ -747,6 +740,34 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Sends a Jingle session info.
+   */
+  self.info = function(name, args) {
+    self.get_debug().log('[JSJaCJingle] info', 4);
+
+    // Locked?
+    if(self._get_lock()) {
+      self.get_debug().log('[JSJaCJingle] info > Cannot accept, resource locked. Please open another session.', 0);
+      return;
+    }
+
+    // Slot unavailable?
+    if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
+      self.get_debug().log('[JSJaCJingle] info > Cannot send info, resource not accepting, nor accepted (status: ' + self.get_status() + ').', 0);
+      return;
+    }
+
+    // Assert
+    if(typeof args != 'object') args = {};
+
+    // Build final args parameter
+    args.action = JSJAC_JINGLE_ACTION_SESSION_INFO;
+    if(name) args.info = name;
+
+    self.send('set', args);
+  };
+
+  /**
    * Terminates the Jingle session.
    */
   self.terminate = function(reason) {
@@ -833,13 +854,12 @@ function JSJaCJingle(args) {
           self.send_session_accept(stanza, args); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_INFO:
-          self.send_session_info(stanza); break;
+          self.send_session_info(stanza, args); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_INITIATE:
           self.send_session_initiate(stanza, args); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_TERMINATE:
-          args.reason = args.reason || JSJAC_JINGLE_REASON_SUCCESS;
           self.send_session_terminate(stanza, args); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT:
@@ -1074,20 +1094,13 @@ function JSJaCJingle(args) {
         return;
     }
 
-    if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING) {
-      self.get_debug().log('[JSJaCJingle] send_session_accept > Resource not accepting (status: ' + self.get_status() + ').', 0);
-      return;
-    }
-
     // Build Jingle stanza
-    var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', {
-                                                'xmlns': NS_JINGLE,
-                                                'action': JSJAC_JINGLE_ACTION_SESSION_ACCEPT,
-                                                'responder': self.get_responder(),
-                                                'sid': self.get_sid()
-                                             }));
+    var jingle = self._util_stanza_generate_jingle(stanza, {
+      'action'    : JSJAC_JINGLE_ACTION_SESSION_ACCEPT,
+      'responder' : self.get_responder()
+    });
 
-    self._util_stanza_content_local(stanza, jingle, self.get_sid());
+    self._util_stanza_generate_content_local(stanza, jingle, self.get_sid());
 
     // Schedule success
     self.register_handler(args.id, function(stanza) {
@@ -1107,11 +1120,38 @@ function JSJaCJingle(args) {
   /**
    * Sends the Jingle session info
    */
-  self.send_session_info = function(stanza) {
+  self.send_session_info = function(stanza, args) {
     self.get_debug().log('[JSJaCJingle] send_session_info', 4);
 
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_session_info > Feature not implemented!', 0);
+    if(!args) {
+      self.get_debug().log('[JSJaCJingle] send_session_info > Argument not provided.', 1);
+      return;
+    }
+
+    // Filter info
+    args.info = args.info || JSJAC_JINGLE_SESSION_INFO_ACTIVE;
+
+    // Build Jingle stanza
+    var jingle = self._util_stanza_generate_jingle(stanza, {
+      'action'    : JSJAC_JINGLE_ACTION_SESSION_INFO,
+      'initiator' : self.get_initiator()
+    });
+
+    self._util_stanza_generate_session_info(stanza, jingle, args);
+
+    // Schedule success
+    self.register_handler(args.id, function(stanza) {
+      (self._get_session_info_success())(self, stanza);
+      self.handle_session_info_success(stanza);
+    });
+
+    // Schedule error timeout
+    self.util_stanza_timeout(args.id, {
+      external:   self._get_session_info_error(),
+      internal:   self.handle_session_info_error
+    });
+
+    self.get_debug().log('[JSJaCJingle] send_session_info > Sent (name: ' + args.info + ').', 2);
   };
 
   /**
@@ -1125,20 +1165,13 @@ function JSJaCJingle(args) {
       return;
     }
 
-    if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATING) {
-      self.get_debug().log('[JSJaCJingle] send_session_initiate > Resource not initiating (status: ' + self.get_status() + ').', 0);
-      return;
-    }
-
     // Build Jingle stanza
-    var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', {
-                                                'xmlns': NS_JINGLE,
-                                                'action': JSJAC_JINGLE_ACTION_SESSION_INITIATE,
-                                                'initiator': self.get_initiator(),
-                                                'sid': self.get_sid()
-                                             }));
+    var jingle = self._util_stanza_generate_jingle(stanza, {
+      'action'    : JSJAC_JINGLE_ACTION_SESSION_INITIATE,
+      'initiator' : self.get_initiator()
+    });
 
-    self._util_stanza_content_local(stanza, jingle, self.get_sid());
+    self._util_stanza_generate_content_local(stanza, jingle, self.get_sid());
 
     // Schedule success
     self.register_handler(args.id, function(stanza) {
@@ -1166,20 +1199,16 @@ function JSJaCJingle(args) {
       return;
     }
 
-    if(self.get_status() != JSJAC_JINGLE_STATUS_TERMINATING) {
-      self.get_debug().log('[JSJaCJingle] send_session_terminate > Resource not terminating (status: ' + self.get_status() + ').', 0);
-      return;
-    }
+    // Filter reason
+    args.reason = args.reason || JSJAC_JINGLE_REASON_SUCCESS;
 
     // Store terminate reason
     self._set_reason(args.reason);
 
     // Build terminate stanza
-    var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', {
-                                                'xmlns': NS_JINGLE,
-                                                'action': JSJAC_JINGLE_ACTION_SESSION_TERMINATE,
-                                                'sid': self.get_sid()
-                                             }));
+    var jingle = self._util_stanza_generate_jingle(stanza, {
+      'action': JSJAC_JINGLE_ACTION_SESSION_TERMINATE
+    });
 
     var jingle_reason = jingle.appendChild(stanza.buildNode('reason', {'xmlns': NS_JINGLE}));
     jingle_reason.appendChild(stanza.buildNode(args.reason, {'xmlns': NS_JINGLE}));
@@ -1196,7 +1225,7 @@ function JSJaCJingle(args) {
       internal:   self.handle_session_terminate_error
     });
 
-    self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + (args.reason || 'undefined') + ').', 2);
+    self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + args.reason + ').', 2);
   };
 
   /**
@@ -1509,7 +1538,7 @@ function JSJaCJingle(args) {
 
     // Security preconditions
     if(!self.util_stanza_safe(stanza)) {
-      self.get_debug().log('[JSJaCJingle] handle_session_terminate > Dropped unsafe stanza.', 0);
+      self.get_debug().log('[JSJaCJingle] handle_session_info > Dropped unsafe stanza.', 0);
 
       self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
       return;
@@ -1518,20 +1547,20 @@ function JSJaCJingle(args) {
     // Can now safely dispatch the stanza
     switch(stanza.getType()) {
       case 'result':
-        self.handle_session_info_success(stanza);
         (self._get_session_info_success())(self, stanza);
+        self.handle_session_info_success(stanza);
 
         break;
 
       case 'error':
-        self.handle_session_info_error(stanza);
         (self._get_session_info_error())(self, stanza);
+        self.handle_session_info_error(stanza);
 
         break;
 
       case 'set':
-        self.handle_session_info_request(stanza);
         (self._get_session_info_request())(self, stanza);
+        self.handle_session_info_request(stanza);
 
         break;
 
@@ -1574,23 +1603,23 @@ function JSJaCJingle(args) {
     }
 
     if(info_result) {
+      self.get_debug().log('[JSJaCJingle] handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
+
       // Process info actions
       self.send('result', { id: stanza.getID() });
 
       // Trigger info success custom callback
-      self.handle_session_info_success(stanza);
       (self._get_session_info_success())(self, stanza);
-
-      self.get_debug().log('[JSJaCJingle] handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
+      self.handle_session_info_success(stanza);
     } else {
+      self.get_debug().log('[JSJaCJingle] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ').', 1);
+
       // Send error reply
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
       // Trigger info error custom callback
-      self.handle_session_info_error(stanza);
       (self._get_session_info_error())(self, stanza);
-
-      self.get_debug().log('[JSJaCJingle] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ').', 1);
+      self.handle_session_info_error(stanza);
     }
   };
 
@@ -1941,16 +1970,6 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._get_session_info_pending = function() {
-    if(typeof self._session_info_pending == 'function')
-      return self._session_info_pending;
-
-    return function() {};
-  };
-
-  /**
-   * @private
-   */
   self._get_session_info_success = function() {
     if(typeof self._session_info_success == 'function')
       return self._session_info_success;
@@ -2227,6 +2246,15 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Gets the creator value (for this)
+   * @return creator value
+   * @type string
+   */
+  self.get_creator_this = function(name) {
+    return self.get_responder() == self.get_to() ? JSJAC_JINGLE_CREATOR_INITIATOR : JSJAC_JINGLE_CREATOR_RESPONDER;
+  };
+
+  /**
    * Gets the initiator value
    * @return initiator value
    * @type string
@@ -2354,13 +2382,6 @@ function JSJaCJingle(args) {
    */
   self._set_accept_request = function(accept_request) {
     self._session_accept_request = accept_request;
-  };
-
-  /**
-   * @private
-   */
-  self._set_info_pending = function(info_pending) {
-    self._session_info_pending = info_pending;
   };
 
   /**
@@ -3210,7 +3231,37 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._util_stanza_content_local = function(stanza, jingle) {
+  self._util_stanza_generate_jingle = function(stanza, attrs) {
+    var jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', { 'xmlns': NS_JINGLE }));
+
+    if(!attrs.sid) attrs.sid = self.get_sid();
+
+    for(cur_attr in attrs) self.util_stanza_set_attribute(jingle, cur_attr, attrs[cur_attr]);
+
+    return jingle;
+  };
+
+  /**
+   * @private
+   */
+  self._util_stanza_generate_session_info = function(stanza, jingle, args) {
+    var info = jingle.appendChild(stanza.buildNode(args.info, { 'xmlns': NS_JINGLE_APPS_RTP_INFO }));
+
+    // Info attributes
+    switch(args.info) {
+      case JSJAC_JINGLE_SESSION_INFO_MUTE:
+      case JSJAC_JINGLE_SESSION_INFO_UNMUTE:
+        self.util_stanza_set_attribute(info, 'creator', self.get_creator_this());
+        self.util_stanza_set_attribute(info, 'name',    args.name);
+
+        break;
+    }
+  };
+
+  /**
+   * @private
+   */
+  self._util_stanza_generate_content_local = function(stanza, jingle) {
     var content_local = self._get_content_local();
 
     for(cur_media in content_local) {

@@ -85,6 +85,12 @@ var ARGS = {
 
         $('#form_live').find('button').removeAttr('disabled');
 		$('#fieldset_live').removeAttr('disabled');
+
+		// We are the callee
+        if(self.is_responder()) {
+        	// Notify the other party that it's ringing there...
+        	self.info(JSJAC_JINGLE_SESSION_INFO_RINGING);
+        }
     },
 
     session_accept_error: function(self, stanza) {
@@ -99,10 +105,6 @@ var ARGS = {
 
     session_accept_request: function(self, stanza) {
 		console.log('session_accept_request');
-	},
-
-    session_info_pending: function(self) {
-		console.log('session_info_pending');
 	},
 
 	session_info_success: function(self, stanza) {
