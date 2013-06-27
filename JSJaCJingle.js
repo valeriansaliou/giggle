@@ -1083,14 +1083,14 @@ function JSJaCJingle(args) {
 
     // Schedule success
     self.register_handler(args.id, function(stanza) {
-      self.handle_session_accept_success(stanza);
       (self._get_session_accept_success())(self, stanza);
+      self.handle_session_accept_success(stanza);
     });
 
     // Schedule error timeout
     self.util_stanza_timeout(args.id, {
-      internal:   self.handle_session_accept_error,
-      external:   self._get_session_accept_error()
+      external:   self._get_session_accept_error(),
+      internal:   self.handle_session_accept_error
     });
 
     self.get_debug().log('[JSJaCJingle] send_session_accept > Sent.', 4);
@@ -1134,14 +1134,14 @@ function JSJaCJingle(args) {
 
     // Schedule success
     self.register_handler(args.id, function(stanza) {
-      self.handle_session_initiate_success(stanza);
       (self._get_session_initiate_success())(self, stanza);
+      self.handle_session_initiate_success(stanza);
     });
 
     // Schedule error timeout
     self.util_stanza_timeout(args.id, {
-      internal:   self.handle_session_initiate_error,
-      external:   self._get_session_initiate_error()
+      external:   self._get_session_initiate_error(),
+      internal:   self.handle_session_initiate_error
     });
 
     self.get_debug().log('[JSJaCJingle] send_session_initiate > Sent.', 2);
@@ -1178,14 +1178,14 @@ function JSJaCJingle(args) {
 
     // Schedule success
     self.register_handler(args.id, function(stanza) {
-      self.handle_session_terminate_success(stanza);
       (self._get_session_terminate_success())(self, stanza);
+      self.handle_session_terminate_success(stanza);
     });
 
     // Schedule error timeout
     self.util_stanza_timeout(args.id, {
-      internal:   self.handle_session_terminate_error,
-      external:   self._get_session_terminate_error()
+      external:   self._get_session_terminate_error(),
+      internal:   self.handle_session_terminate_error
     });
 
     self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + (args.reason || 'undefined') + ')', 2);
@@ -1364,14 +1364,14 @@ function JSJaCJingle(args) {
     // Can now safely dispatch the stanza
     switch(stanza.getType()) {
       case 'result':
-        self.handle_session_accept_success(stanza);
         (self._get_session_accept_success())(self, stanza);
+        self.handle_session_accept_success(stanza);
 
         break;
 
       case 'error':
-        self.handle_session_accept_error(stanza);
         (self._get_session_accept_error())(self, stanza);
+        self.handle_session_accept_error(stanza);
 
         break;
 
@@ -1432,12 +1432,12 @@ function JSJaCJingle(args) {
 
     // Request is valid?
     if(rd_sid && self.is_initiator() && self._util_stanza_parse_content(stanza)) {
-      // Trigger accept success custom callback
-      self.handle_session_accept_success(stanza);
-      (self._get_session_accept_success())(self, stanza);
-
       // Generate and store content data
       self._util_initialize_content_remote();
+
+      // Trigger accept success callback
+      (self._get_session_accept_success())(self, stanza);
+      self.handle_session_accept_success(stanza);
 
       var sdp_remote = self._util_sdp_generate(
         WEBRTC_SDP_TYPE_ANSWER,
@@ -1475,11 +1475,12 @@ function JSJaCJingle(args) {
       // Success reply
       self.send('result', { id: stanza.getID() });
     } else {
+      // Trigger accept error callback
+      (self._get_session_accept_error())(self, stanza);
+      self.handle_session_accept_error(stanza);
+
       // Send error reply
       self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
-
-      // Trigger success error custom callback
-      (self._get_session_accept_error())(self, stanza);
 
       self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Error.', 1);
     }
@@ -1588,19 +1589,18 @@ function JSJaCJingle(args) {
 
     switch(stanza.getType()) {
       case 'result':
-        self.handle_session_initiate_success(stanza);
         (self._get_session_initiate_success())(self, stanza);
+        self.handle_session_initiate_success(stanza);
 
         break;
 
       case 'error':
-        self.handle_session_initiate_error(stanza);
         (self._get_session_initiate_error())(self, stanza);
+        self.handle_session_initiate_error(stanza);
 
         break;
 
       case 'set':
-        // External handler must be set before internal one here...
         (self._get_session_initiate_request())(self, stanza);
         self.handle_session_initiate_request(stanza);
 
@@ -1673,17 +1673,18 @@ function JSJaCJingle(args) {
       // Generate and store content data
       self._util_initialize_content_remote();
 
-      self.send('result', { id: stanza.getID() });
-
       // Session initiate done
-      self.handle_session_initiate_success(stanza);
       (self._get_session_initiate_success())(self, stanza);
+      self.handle_session_initiate_success(stanza);
+
+      self.send('result', { id: stanza.getID() });
     } else {
+      // Session initiation not done
+      (self._get_session_initiate_error())(self, stanza);
+      self.handle_session_initiate_error(stanza);
+
       // Send error reply
       self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
-
-      // Trigger success error custom callback
-      (self._get_session_initiate_error())(self, stanza);
 
       self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Error.', 1);
     }
@@ -1709,19 +1710,18 @@ function JSJaCJingle(args) {
     // Can now safely dispatch the stanza
     switch(stanza.getType()) {
       case 'result':
-        self.handle_session_terminate_success(stanza);
         (self._get_session_terminate_success())(self, stanza);
+        self.handle_session_terminate_success(stanza);
 
         break;
 
       case 'error':
-        self.handle_session_terminate_error(stanza);
         (self._get_session_terminate_error())(self, stanza);
+        self.handle_session_terminate_error(stanza);
 
         break;
 
       case 'set':
-        // External handler must be set before internal one here...
         (self._get_session_terminate_request())(self, stanza);
         self.handle_session_terminate_request(stanza);
 
@@ -1784,12 +1784,12 @@ function JSJaCJingle(args) {
     // Store termination reason
     self._set_reason(self.util_stanza_terminate_reason(stanza));
 
+    // Trigger terminate success callbacks
+    (self._get_session_terminate_success())(self, stanza);
+    self.handle_session_terminate_success(stanza);
+
     // Process terminate actions
     self.send('result', { id: stanza.getID() });
-  
-    // Trigger terminate success callbacks
-    self.handle_session_terminate_success(stanza);
-    (self._get_session_terminate_success())(self, stanza);
 
     self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > (reason: ' + self.get_reason() + ')', 3);
   };
@@ -2860,8 +2860,8 @@ function JSJaCJingle(args) {
 
         self.unregister_handler(t_id);
 
-        (handlers.internal)();
         (handlers.external)(self);
+        (handlers.internal)();
       }
     }, (JSJAC_JINGLE_STANZA_TIMEOUT * 1000));
   };
@@ -4352,10 +4352,10 @@ function JSJaCJingle(args) {
   self._peer_got_user_media_error = function(error) {
     self.get_debug().log('[JSJaCJingle] _peer_got_user_media_error', 4);
 
+    (self._get_session_initiate_error())(self);
+
     // Not needed in case we are the responder (breaks termination)
     if(self.is_initiator()) self.handle_session_initiate_error();
-
-    (self._get_session_initiate_error())(self);
 
     // Not needed in case we are the initiator (no packet sent, ever)
     if(self.is_responder()) self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
