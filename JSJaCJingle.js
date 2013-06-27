@@ -1376,8 +1376,9 @@ function JSJaCJingle(args) {
         break;
 
       case 'set':
-        self.handle_session_accept_request(stanza);
+        // External handler must be set before internal one here...
         (self._get_session_accept_request())(self, stanza);
+        self.handle_session_accept_request(stanza);
 
         break;
 
@@ -1599,8 +1600,9 @@ function JSJaCJingle(args) {
         break;
 
       case 'set':
-        self.handle_session_initiate_request(stanza);
+        // External handler must be set before internal one here...
         (self._get_session_initiate_request())(self, stanza);
+        self.handle_session_initiate_request(stanza);
 
         break;
 
@@ -1719,8 +1721,9 @@ function JSJaCJingle(args) {
         break;
 
       case 'set':
-        self.handle_session_terminate_request(stanza);
+        // External handler must be set before internal one here...
         (self._get_session_terminate_request())(self, stanza);
+        self.handle_session_terminate_request(stanza);
 
         break;
 
