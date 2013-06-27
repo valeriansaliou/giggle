@@ -5,7 +5,7 @@
   
   @url https://github.com/valeriansaliou/jsjac-jingle
   @author Valérian Saliou
-  @license Mozilla Public License (MPL)
+  @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 var SC_CONNECTED = false;

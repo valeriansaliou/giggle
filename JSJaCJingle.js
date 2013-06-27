@@ -6,7 +6,7 @@
  * @url https://github.com/valeriansaliou/jsjac-jingle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou valerian@jappix.com
- * @license Mozilla Public License (MPL)
+ * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 
