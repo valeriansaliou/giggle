@@ -7,7 +7,7 @@ JSJaCJingle.js
 
 To be used with JSJaC from Stefan Strigler, available there: https://github.com/sstrigler/JSJaC
 
-Made with love by the happy folks at Jappix https://jappix.com/
+Made with love by the happy folks at Jappix https://jappix.com/ originally for the awesome guys at Uno.im https://uno.im/ and Virtustructure http://www.virtustructure.com/
 
 ## Online Demo
 
