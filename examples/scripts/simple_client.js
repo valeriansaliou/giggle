@@ -232,8 +232,7 @@ $(document).ready(function() {
 						else
 							$('#login_error').text('Invalid credentials.').show();
 
-						if(SC_CONNECTED)
-							JINGLE.terminate();
+						if(SC_CONNECTED && JINGLE != null) JINGLE.terminate();
 
 						$('#form_login').find('input, button').removeAttr('disabled');
 						$('#form_login button').show();
