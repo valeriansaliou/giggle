@@ -217,8 +217,8 @@ $('button').click(function() {
 });
 ```
 
-Now, refer to the custom handlers that we passed above!
+Now, refer to the custom handlers that we passed above.
+
 **We worked hard on that lib, now it's your turn to play hard with its features!**
 
-**If you have any enhancement idea or any bug to report,**
-Open tickets on: https://github.com/valeriansaliou/jsjac-jingle/issues
+**If you have any enhancement idea or any bug to report:** https://github.com/valeriansaliou/jsjac-jingle/issues
