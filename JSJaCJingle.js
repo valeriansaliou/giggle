@@ -883,7 +883,7 @@ function JSJaCJingle(args) {
     }
 
     var id = stanza.getID();
-    if(id) self._set_received_id(id);
+    if(id && stanza.getType() == 'result') self._set_received_id(id);
 
     // Submit to custom handler
     (self._get_handlers(id))(stanza);
@@ -2540,14 +2540,15 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_sent_id = function(sent_id) {
-    (self._get_sent_id())[sent_id] = 1;
+    self._sent_id[sent_id] = 1;
   };
 
   /**
    * @private
    */
   self._set_received_id = function(received_id) {
-    (self._get_received_id())[received_id] = 1;
+    console.log('RECEIVED', received_id);
+    self._received_id[received_id] = 1;
   };
 
   /**
@@ -2880,6 +2881,8 @@ function JSJaCJingle(args) {
 
         (handlers.external)(self);
         (handlers.internal)();
+      } else {
+        self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza successful.', 4);
       }
     }, (JSJAC_JINGLE_STANZA_TIMEOUT * 1000));
   };
@@ -4493,7 +4496,7 @@ function JSJaCJingle_route(stanza) {
     JSJAC_JINGLE_STORE_INITIATE(stanza);
   } else if(session_route != null) {
     session_route.handle(stanza);
-  } else if(stanza.getFrom()) {
+  } else if(stanza.getType() == 'set' && stanza.getFrom()) {
     (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
   }
 }
