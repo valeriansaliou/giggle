@@ -2126,13 +2126,6 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._get_id_last = function() {
-    return self._get_id_pre() + self._get_id();
-  };
-
-  /**
-   * @private
-   */
   self._get_id_new = function() {
     var trans_id = self._get_id() + 1;
     self._set_id(trans_id);
@@ -2547,7 +2540,6 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_received_id = function(received_id) {
-    console.log('RECEIVED', received_id);
     self._received_id[received_id] = 1;
   };
 
@@ -4482,7 +4474,7 @@ function JSJaCJingle_route(stanza) {
     var stanza_id = stanza.getID();
 
     if(stanza_id) {
-      var r_id = new RegExp('(' + JSJAC_JINGLE_STANZA_ID_PRE + ')_([^\s_]+)_([^\s]+).');
+      var r_id = new RegExp('(' + JSJAC_JINGLE_STANZA_ID_PRE + ')_([^\s_]+)_([^\s]+)');
       var m_id = r_id.exec(stanza_id);
 
       sid = m_id ? m_id[2] : null;
