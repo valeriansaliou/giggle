@@ -29,6 +29,7 @@ var ARGS = {
         $('#call_info').text('Initializing...').show();
 
         $('#form_call').find('input, button').attr('disabled', true);
+        $('#roster_call').addClass('disabled');
     },
 
     session_initiate_success: function(self, stanza) {
@@ -57,6 +58,7 @@ var ARGS = {
         $('#call_error').text('Could not initialize.').show();
 
         $('#form_call').find('input, button').removeAttr('disabled');
+        $('#roster_call').removeClass('disabled');
     },
 
     session_initiate_request: function(self, stanza) {
@@ -68,6 +70,11 @@ var ARGS = {
 
         $('.call_notif').hide();
         $('#call_info').text('Waiting to be accepted...').show();
+
+        if(self.is_responder()) {
+	    	$('#form_call').find('input, button').attr('disabled', true);
+	    	$('#roster_call').addClass('disabled');
+	    }
     },
 
     session_accept_success: function(self, stanza) {
@@ -87,6 +94,7 @@ var ARGS = {
         $('#call_error').text('Could not be accepted.').show();
 
         $('#form_call').find('input, button').removeAttr('disabled');
+        $('#roster_call').removeClass('disabled');
     },
 
     session_accept_request: function(self, stanza) {
@@ -126,6 +134,7 @@ var ARGS = {
 
 		$('#fieldset_live').attr('disabled', true);
 		$('#form_call').find('input, button').removeAttr('disabled');
+		$('#roster_call').removeClass('disabled');
     },
 
     session_terminate_error: function(self, stanza) {
@@ -134,7 +143,9 @@ var ARGS = {
         $('.call_notif').hide();
         $('#call_error').text('Could not terminate (forced).').show();
 
-       	$('#form_live').find('button').removeAttr('disabled');
+       	$('#fieldset_live').attr('disabled', true);
+		$('#form_call').find('input, button').removeAttr('disabled');
+		$('#roster_call').removeClass('disabled');
     },
 
     session_terminate_request: function(self, stanza) {
@@ -269,12 +280,13 @@ $(document).ready(function() {
 							if(jid_bare in SC_PRESENCE && jid_resource in SC_PRESENCE[jid_bare]) {
 								delete (SC_PRESENCE[jid_bare])[jid_resource];
 
-								if(!(SC_PRESENCE[jid_bare]).length)
-									delete SC_PRESENCE[jid_bare];
+								var size = 0;
+								for(i in SC_PRESENCE[jid_bare]) size++;
+
+								if(size == 0) delete SC_PRESENCE[jid_bare];
 							}
 						} else {
-							if(!(jid_bare in SC_PRESENCE))
-								SC_PRESENCE[jid_bare] = {};
+							if(!(jid_bare in SC_PRESENCE)) SC_PRESENCE[jid_bare] = {};
 
 							(SC_PRESENCE[jid_bare])[jid_resource] = 1;
 						}
@@ -292,7 +304,7 @@ $(document).ready(function() {
 						}
 
 						if(roster_call) {
-							$('#roster_call').append(roster_call).show();
+							$('#roster_call').html(roster_call).show();
 
 							$('#roster_call a').click(function() {
 								try {
@@ -300,6 +312,7 @@ $(document).ready(function() {
 										return false;
 
 									$('#form_call input[name="call_jid"]').val($(this).attr('data-jid'));
+									$('#form_call').submit();
 								} catch(e) {
 									alert('roster_call > ' + e);
 								} finally {

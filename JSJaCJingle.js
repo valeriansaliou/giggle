@@ -230,6 +230,10 @@ var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION               = { jingle: 'unknown-sessio
 var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO              = { jingle: 'unsupported-info',       xmpp: 'feature-not-implemented',    type: 'modify' };
 var JSJAC_JINGLE_ERROR_SECURITY_REQUIRED             = { jingle: 'security-required',      xmpp: 'not-acceptable',             type: 'cancel' };
 
+var XMPP_ERROR_UNEXPECTED_REQUEST                    = { xmpp: 'unexpected-request',       type: 'wait' };
+var XMPP_ERROR_CONFLICT                              = { xmpp: 'conflict',                 type: 'cancel' };
+var XMPP_ERROR_ITEM_NOT_FOUND                        = { xmpp: 'item-not-found',           type: 'cancel' };
+var XMPP_ERROR_NOT_ACCEPTABLE                        = { xmpp: 'not-acceptable',           type: 'modify' };
 var XMPP_ERROR_FEATURE_NOT_IMPLEMENTED               = { xmpp: 'feature-not-implemented',  type: 'cancel' };
 var XMPP_ERROR_SERVICE_UNAVAILABLE                   = { xmpp: 'service-unavailable',      type: 'cancel' };
 var XMPP_ERROR_REDIRECT                              = { xmpp: 'redirect',                 type: 'modify' };
@@ -314,6 +318,10 @@ JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.jingle]       = 1;
 JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_SECURITY_REQUIRED.jingle]      = 1;
 
 var XMPP_ERRORS                     = {};
+XMPP_ERRORS[XMPP_ERROR_UNEXPECTED_REQUEST.xmpp]                       = 1;
+XMPP_ERRORS[XMPP_ERROR_CONFLICT.xmpp]                                 = 1;
+XMPP_ERRORS[XMPP_ERROR_ITEM_NOT_FOUND.xmpp]                           = 1;
+XMPP_ERRORS[XMPP_ERROR_NOT_ACCEPTABLE.xmpp]                           = 1;
 XMPP_ERRORS[XMPP_ERROR_FEATURE_NOT_IMPLEMENTED.xmpp]                  = 1;
 XMPP_ERRORS[XMPP_ERROR_SERVICE_UNAVAILABLE.xmpp]                      = 1;
 XMPP_ERRORS[XMPP_ERROR_REDIRECT.xmpp]                                 = 1;
@@ -957,7 +965,7 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] register_handler > Registered handler for id: ' + id, 3);
       return true;
     } else {
-      self.get_debug().log('[JSJaCJingle] register_handler > Could not register handler (no ID)', 1);
+      self.get_debug().log('[JSJaCJingle] register_handler > Could not register handler (no ID).', 1);
       return false;
     }
   };
@@ -974,7 +982,7 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] unregister_handler > Unregistered handler for id: ' + id, 3);
       return true;
     } else {
-      self.get_debug().log('[JSJaCJingle] unregister_handler > Could not unregister handler id: ' + id + ' (not found)', 2);
+      self.get_debug().log('[JSJaCJingle] unregister_handler > Could not unregister handler id: ' + id + ' (not found).', 2);
       return false;
     }
   };
@@ -1188,7 +1196,7 @@ function JSJaCJingle(args) {
       internal:   self.handle_session_terminate_error
     });
 
-    self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + (args.reason || 'undefined') + ')', 2);
+    self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + (args.reason || 'undefined') + ').', 2);
   };
 
   /**
@@ -1244,21 +1252,27 @@ function JSJaCJingle(args) {
     }
 
     if('jingle' in error && !(error.jingle in JSJAC_JINGLE_ERRORS)) {
-      self.get_debug().log('[JSJaCJingle] send_error > Jingle condition unknown.', 1);
+      self.get_debug().log('[JSJaCJingle] send_error > Jingle condition unknown (' + error.jingle + ').', 1);
       return;
     }
 
     if('xmpp' in error && !(error.xmpp in XMPP_ERRORS)) {
-      self.get_debug().log('[JSJaCJingle] send_error > XMPP condition unknown.', 1);
+      self.get_debug().log('[JSJaCJingle] send_error > XMPP condition unknown (' + error.xmpp + ').', 1);
       return;
     }
 
-    stanza.setType('error');
+    var stanza_error = new JSJaCIQ();
 
-    var error_node = stanza.getNode().appendChild(stanza.buildNode('error', {'xmlns': NS_CLIENT, 'type': error.type}));
+    stanza_error.setType('error');
+    stanza_error.setID(stanza.getID());
+    stanza_error.setTo(self.get_to());
 
-    if('xmpp'   in error) error_node.appendChild(stanza.buildNode(error.xmpp,   { 'xmlns': NS_STANZAS       }));
-    if('jingle' in error) error_node.appendChild(stanza.buildNode(error.jingle, { 'xmlns': NS_JINGLE_ERRORS }));
+    var error_node = stanza_error.getNode().appendChild(stanza_error.buildNode('error', {'xmlns': NS_CLIENT, 'type': error.type}));
+
+    if('xmpp'   in error) error_node.appendChild(stanza_error.buildNode(error.xmpp,   { 'xmlns': NS_STANZAS       }));
+    if('jingle' in error) error_node.appendChild(stanza_error.buildNode(error.jingle, { 'xmlns': NS_JINGLE_ERRORS }));
+
+    JSJAC_JINGLE_STORE_CONNECTION.send(stanza_error);
 
     self.get_debug().log('[JSJaCJingle] send_error > Sent: ' + (error.jingle || error.xmpp), 2);
   };
@@ -1405,8 +1419,8 @@ function JSJaCJingle(args) {
   self.handle_session_accept_error = function(stanza) {
     self.get_debug().log('[JSJaCJingle] handle_session_accept_error', 4);
 
-    // Change session status
-    self._set_status(JSJAC_JINGLE_STATUS_INITIATED);
+    // Terminate the session (timeout)
+    self.terminate(JSJAC_JINGLE_REASON_TIMEOUT);
   };
 
   /**
@@ -1567,7 +1581,7 @@ function JSJaCJingle(args) {
       self.handle_session_info_success(stanza);
       (self._get_session_info_success())(self, stanza);
 
-      self.get_debug().log('[JSJaCJingle] handle_session_info_request > (name: ' + (info_name || 'undefined') + ')', 3);
+      self.get_debug().log('[JSJaCJingle] handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
     } else {
       // Send error reply
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
@@ -1576,7 +1590,7 @@ function JSJaCJingle(args) {
       self.handle_session_info_error(stanza);
       (self._get_session_info_error())(self, stanza);
 
-      self.get_debug().log('[JSJaCJingle] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ')', 1);
+      self.get_debug().log('[JSJaCJingle] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ').', 1);
     }
   };
 
@@ -1791,7 +1805,7 @@ function JSJaCJingle(args) {
     // Process terminate actions
     self.send('result', { id: stanza.getID() });
 
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > (reason: ' + self.get_reason() + ')', 3);
+    self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > (reason: ' + self.get_reason() + ').', 3);
   };
 
   /**
@@ -2853,7 +2867,11 @@ function JSJaCJingle(args) {
     var t_sid = self.get_sid();
     var t_status = self.get_status();
 
+    self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Registered (id: ' + t_id + ', status: ' + t_status + ').', 4);
+
     setTimeout(function() {
+      self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Cheking (id: ' + t_id + ', status: ' + t_status + '-' + self.get_status() + ').', 4);
+
       // State did not change?
       if(self.get_sid() == t_sid && self.get_status() == t_status && !(t_id in self._get_received_id())) {
         self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza timeout.', 2);
@@ -4233,7 +4251,7 @@ function JSJaCJingle(args) {
             self._peer_timeout(this.iceConnectionState); break;
         }
 
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > oniceconnectionstatechange > (state: ' + this.iceConnectionState + ')', 2);
+        self.get_debug().log('[JSJaCJingle] _peer_connection_create > oniceconnectionstatechange > (state: ' + this.iceConnectionState + ').', 2);
       };
 
       // Event: onaddstream
@@ -4461,7 +4479,7 @@ function JSJaCJingle_route(stanza) {
     var stanza_id = stanza.getID();
 
     if(stanza_id) {
-      var r_id = new RegExp('(' + JSJAC_JINGLE_STANZA_ID_PRE + ')_([^\s_]+)_([^\s]+)');
+      var r_id = new RegExp('(' + JSJAC_JINGLE_STANZA_ID_PRE + ')_([^\s_]+)_([^\s]+).');
       var m_id = r_id.exec(stanza_id);
 
       sid = m_id ? m_id[2] : null;
@@ -4471,10 +4489,13 @@ function JSJaCJingle_route(stanza) {
   // New session? Or registered one?
   var session_route = JSJaCJingle_read(sid);
 
-  if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route == null)
+  if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route == null) {
     JSJAC_JINGLE_STORE_INITIATE(stanza);
-  else if(session_route != null)
+  } else if(session_route != null) {
     session_route.handle(stanza);
+  } else if(stanza.getFrom()) {
+    (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+  }
 }
 
 /**
