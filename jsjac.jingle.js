@@ -404,9 +404,6 @@ var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
  * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
  */
 function JSJaCJingle(args) {
-  // WebRTC not supported?
-  if(!JSJAC_JINGLE_AVAILABLE) return;
-
   var self = this;
 
   if(args && args.session_initiate_pending)
@@ -659,13 +656,13 @@ function JSJaCJingle(args) {
 
     // Locked?
     if(self._get_lock()) {
-      self.get_debug().log('[JSJaCJingle] init > Cannot init, resource locked. Please open another session.', 0);
+      self.get_debug().log('[JSJaCJingle] initiate > Cannot initiate, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
 
     // Slot unavailable?
     if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
-      self.get_debug().log('[JSJaCJingle] init > Cannot init, resource not inactive (status: ' + self.get_status() + ').', 0);
+      self.get_debug().log('[JSJaCJingle] initiate > Cannot initiate, resource not inactive (status: ' + self.get_status() + ').', 0);
       return;
     }
 
@@ -692,7 +689,7 @@ function JSJaCJingle(args) {
     // Initialize WebRTC
     self._peer_get_user_media(function() {
       self._peer_connection_create(function() {
-        self.get_debug().log('[JSJaCJingle] init > Ready to begin Jingle negotiation.', 2);
+        self.get_debug().log('[JSJaCJingle] initiate > Ready to begin Jingle negotiation.', 2);
 
         // Build content (local)
         self._util_initialize_content_local();
@@ -710,7 +707,7 @@ function JSJaCJingle(args) {
 
     // Locked?
     if(self._get_lock()) {
-      self.get_debug().log('[JSJaCJingle] accept > Cannot accept, resource locked. Please open another session.', 0);
+      self.get_debug().log('[JSJaCJingle] accept > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
 
@@ -748,7 +745,7 @@ function JSJaCJingle(args) {
 
     // Locked?
     if(self._get_lock()) {
-      self.get_debug().log('[JSJaCJingle] info > Cannot accept, resource locked. Please open another session.', 0);
+      self.get_debug().log('[JSJaCJingle] info > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
 
@@ -776,7 +773,7 @@ function JSJaCJingle(args) {
 
     // Locked?
     if(self._get_lock()) {
-      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource locked. Please open another session.', 0);
+      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
 
@@ -804,7 +801,7 @@ function JSJaCJingle(args) {
 
     // Locked?
     if(self._get_lock()) {
-      self.get_debug().log('[JSJaCJingle] send > Cannot send, resource locked. Please open another session.', 0);
+      self.get_debug().log('[JSJaCJingle] send > Cannot send, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
 
@@ -899,7 +896,7 @@ function JSJaCJingle(args) {
 
     // Locked?
     if(self._get_lock()) {
-      self.get_debug().log('[JSJaCJingle] handle > Cannot handle, resource locked. Please open another session.', 0);
+      self.get_debug().log('[JSJaCJingle] handle > Cannot handle, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
 
@@ -2157,7 +2154,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._get_lock = function() {
-    return self._lock;
+    return self._lock && !JSJAC_JINGLE_AVAILABLE;
   };
 
   /**
@@ -4493,9 +4490,6 @@ function JSJaCJingle(args) {
  * Listens for Jingle events
  */
 function JSJaCJingle_listen(args) {
-  // WebRTC not supported?
-  if(!JSJAC_JINGLE_AVAILABLE) return;
-
   if(args && args.connection)
     JSJAC_JINGLE_STORE_CONNECTION = args.connection;
 
@@ -4510,9 +4504,6 @@ function JSJaCJingle_listen(args) {
  * Routes Jingle stanzas
  */
 function JSJaCJingle_route(stanza) {
-  // WebRTC not supported?
-  if(!JSJAC_JINGLE_AVAILABLE) return;
-
   var action = null;
   var sid    = null;
 
@@ -4533,15 +4524,21 @@ function JSJaCJingle_route(stanza) {
     }
   }
 
-  // New session? Or registered one?
-  var session_route = JSJaCJingle_read(sid);
+  // WebRTC not available ATM?
+  if(jingle && !JSJAC_JINGLE_AVAILABLE) {
+    (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
+  } else {
+    // New session? Or registered one?
+    var session_route = JSJaCJingle_read(sid);
 
-  if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route == null) {
-    JSJAC_JINGLE_STORE_INITIATE(stanza);
-  } else if(session_route != null) {
-    session_route.handle(stanza);
-  } else if(stanza.getType() == 'set' && stanza.getFrom()) {
-    (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+    if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route == null) {
+      JSJAC_JINGLE_STORE_INITIATE(stanza);
+    } else if(sid) {
+      if(session_route != null)
+        session_route.handle(stanza);
+      else if(stanza.getType() == 'set' && stanza.getFrom())
+        (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+    }
   }
 }
 
@@ -4549,9 +4546,6 @@ function JSJaCJingle_route(stanza) {
  * Adds a new Jingle session
  */
 function JSJaCJingle_add(sid, obj) {
-  // WebRTC not supported?
-  if(!JSJAC_JINGLE_AVAILABLE) return;
-
   JSJAC_JINGLE_STORE_SESSIONS[sid] = obj;
 }
 
@@ -4561,9 +4555,6 @@ function JSJaCJingle_add(sid, obj) {
  * @type object
  */
 function JSJaCJingle_read(sid) {
-  // WebRTC not supported?
-  if(!JSJAC_JINGLE_AVAILABLE) return {};
-
   return (sid in JSJAC_JINGLE_STORE_SESSIONS) ? JSJAC_JINGLE_STORE_SESSIONS[sid] : null;
 }
 
@@ -4571,10 +4562,6 @@ function JSJaCJingle_read(sid) {
  * Removes a new Jingle session
  */
 function JSJaCJingle_remove(sid) {
-  // WebRTC not supported?
-  if(!JSJAC_JINGLE_AVAILABLE)
-    return;
-
   delete JSJAC_JINGLE_STORE_SESSIONS[sid];
 }
 
@@ -4584,8 +4571,5 @@ function JSJaCJingle_remove(sid) {
  * @type array
  */
 function JSJaCJingle_disco() {
-  // WebRTC not supported?
-  if(!JSJAC_JINGLE_AVAILABLE) return [];
-
   return MAP_DISCO_JINGLE;
 }
