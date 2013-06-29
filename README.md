@@ -208,8 +208,13 @@ con.registerHandler('onconnect', function() {
 
 ```javascript
 $('button').click(function() {
+	// Session values
+	ARGS.to 		 = 'julien@jappix.com';
+	ARGS.local_view  = document.getElementById('video_local');
+	ARGS.remote_view = document.getElementById('video_remote');
+
 	// Create the JSJaCJingle object
-	var jingle = new JSJaCJingle(args);
+	var jingle = new JSJaCJingle(ARGS);
 
 	// Initialize the Jingle session
 	// See: http://xmpp.org/extensions/xep-0166.html#protocol-initiate
