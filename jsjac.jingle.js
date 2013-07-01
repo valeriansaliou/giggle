@@ -1087,6 +1087,11 @@ function JSJaCJingle(args) {
   self.send_session_accept = function(stanza, args) {
     self.get_debug().log('[JSJaCJingle] send_session_accept', 4);
 
+    if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING) {
+      self.get_debug().log('[JSJaCJingle] send_session_accept > Cannot send accept stanza, resource not accepting (status: ' + self.get_status() + ').', 0);
+      return;
+    }
+
     if(!args) {
         self.get_debug().log('[JSJaCJingle] send_session_accept > Argument not provided.', 1);
         return;
@@ -1158,6 +1163,11 @@ function JSJaCJingle(args) {
   self.send_session_initiate = function(stanza, args) {
     self.get_debug().log('[JSJaCJingle] send_session_initiate', 4);
 
+    if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATING) {
+      self.get_debug().log('[JSJaCJingle] send_session_initiate > Cannot send initiate stanza, resource not initiating (status: ' + self.get_status() + ').', 0);
+      return;
+    }
+
     if(!args) {
       self.get_debug().log('[JSJaCJingle] send_session_initiate > Argument not provided.', 1);
       return;
@@ -1191,6 +1201,11 @@ function JSJaCJingle(args) {
    */
   self.send_session_terminate = function(stanza, args) {
     self.get_debug().log('[JSJaCJingle] send_session_terminate', 4);
+
+    if(self.get_status() != JSJAC_JINGLE_STATUS_TERMINATING) {
+      self.get_debug().log('[JSJaCJingle] send_session_terminate > Cannot send terminate stanza, resource not terminating (status: ' + self.get_status() + ').', 0);
+      return;
+    }
 
     if(!args) {
       self.get_debug().log('[JSJaCJingle] send_session_terminate > Argument not provided.', 1);
