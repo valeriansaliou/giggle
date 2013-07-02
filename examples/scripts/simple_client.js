@@ -413,7 +413,7 @@ $(document).ready(function() {
 		try {
 			if(!SC_CONNECTED) return false;
 
-			if(JINGLE != null) JINGLE.mute();
+			if(JINGLE != null) JINGLE.mute(JSJAC_JINGLE_MEDIA_AUDIO);
 
 			$(this).hide();
 			$('#live_unmute').show();
@@ -429,7 +429,7 @@ $(document).ready(function() {
 		try {
 			if(!SC_CONNECTED) return false;
 
-			if(JINGLE != null) JINGLE.unmute();
+			if(JINGLE != null) JINGLE.unmute(JSJAC_JINGLE_MEDIA_AUDIO);
 
 			$(this).hide();
 			$('#live_mute').show();

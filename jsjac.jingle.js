@@ -589,7 +589,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._mute = false;
+  self._mute = {};
 
   /**
    * @private
@@ -980,7 +980,7 @@ function JSJaCJingle(args) {
   /**
    * Mutes a Jingle session (local)
    */
-  self.mute = function() {
+  self.mute = function(name) {
     self.get_debug().log('[JSJaCJingle] mute', 4);
 
     // Locked?
@@ -990,21 +990,21 @@ function JSJaCJingle(args) {
     }
 
     // Already muted?
-    if(self.get_mute()) {
+    if(self.get_mute(name)) {
       self.get_debug().log('[JSJaCJingle] mute > Resource already muted.', 0);
       return;
     }
 
     self._peer_sound(false);
-    self._set_mute(true);
+    self._set_mute(name, true);
 
-    self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_MUTE });
+    self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_MUTE, name: name });
   };
 
   /**
    * Unmutes a Jingle session (local)
    */
-  self.unmute = function() {
+  self.unmute = function(name) {
     self.get_debug().log('[JSJaCJingle] unmute', 4);
 
     // Locked?
@@ -1014,15 +1014,15 @@ function JSJaCJingle(args) {
     }
 
     // Already unmute?
-    if(!self.get_mute()) {
+    if(!self.get_mute(name)) {
       self.get_debug().log('[JSJaCJingle] unmute > Resource already unmuted.', 0);
       return;
     }
 
     self._peer_sound(true);
-    self._set_mute(false);
+    self._set_mute(name, false);
 
-    self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE });
+    self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE, name: name });
   };
 
   /**
@@ -2245,8 +2245,10 @@ function JSJaCJingle(args) {
    * @return mute value
    * @type boolean
    */
-  self.get_mute = function() {
-    return self._mute;
+  self.get_mute = function(name) {
+    if(!name) name = '*';
+
+    return (name in self._mute) ? self._mute[name] : false;
   };
 
   /**
@@ -2652,8 +2654,13 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._set_mute = function(mute) {
-    self._mute = mute;
+  self._set_mute = function(name, mute) {
+    if(!name || name == '*') {
+      self._mute = {};
+      name = '*';
+    }
+
+    self._mute[name] = mute;
   };
 
   /**
@@ -4549,7 +4556,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] _peer_sound', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_sound > Enable: ' + enable + ' (current: ' + self.get_mute() + ').', 2);
+      self.get_debug().log('[JSJaCJingle] _peer_sound > Enable: ' + enable + ' (current: ' + self.get_mute(JSJAC_JINGLE_MEDIA_AUDIO) + ').', 2);
 
       var audio_tracks = self._get_local_stream().getAudioTracks();
 
