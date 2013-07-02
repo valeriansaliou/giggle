@@ -978,7 +978,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] mute', 4);
 
     // Already muted?
-    if(self._get_mute()) {
+    if(self.get_mute()) {
       self.get_debug().log('[JSJaCJingle] mute > Resource already muted.', 0);
       return;
     }
@@ -996,7 +996,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] unmute', 4);
 
     // Already unmute?
-    if(!self._get_mute()) {
+    if(!self.get_mute()) {
       self.get_debug().log('[JSJaCJingle] unmute > Resource already unmuted.', 0);
       return;
     }
@@ -2211,7 +2211,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._get_mute = function() {
+  self.get_mute = function() {
     return self._mute;
   };
 
@@ -4527,7 +4527,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] _peer_sound', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_sound > Enable: ' + enable + ' (current: ' + self._get_mute() + ').', 2);
+      self.get_debug().log('[JSJaCJingle] _peer_sound > Enable: ' + enable + ' (current: ' + self.get_mute() + ').', 2);
 
       var audio_tracks = self._get_local_stream().getAudioTracks();
 
