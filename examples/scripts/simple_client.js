@@ -135,6 +135,9 @@ var ARGS = {
         $('#call_success').text('Terminated (' + self.get_reason() + ').').show();
 
 		$('#fieldset_live').attr('disabled', true);
+		$('#live_mute').show();
+		$('#live_unmute').hide();
+
 		$('#form_call').find('input, button').removeAttr('disabled');
 		$('#roster_call').removeClass('disabled');
     },
@@ -146,6 +149,9 @@ var ARGS = {
         $('#call_error').text('Could not terminate (forced).').show();
 
        	$('#fieldset_live').attr('disabled', true);
+		$('#live_mute').show();
+		$('#live_unmute').hide();
+		
 		$('#form_call').find('input, button').removeAttr('disabled');
 		$('#roster_call').removeClass('disabled');
     },
