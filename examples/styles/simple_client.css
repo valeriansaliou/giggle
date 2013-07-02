@@ -202,3 +202,7 @@ fieldset:disabled video {
 	opacity: 1;
 	cursor: pointer;
 }
+
+#live_unmute {
+	display: none;
+}

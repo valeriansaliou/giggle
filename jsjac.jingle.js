@@ -2,7 +2,7 @@
  * @fileoverview JSJaC Jingle library, implementation of XEP-0166.
  * Written originally for Uno.im service requirements
  *
- * @version v0.1
+ * @version v0.2 (dev)
  * @url https://github.com/valeriansaliou/jsjac-jingle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou valerian@jappix.com
@@ -634,6 +634,11 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._mute = false;
+
+  /**
+   * @private
+   */
   self._lock = false;
 
   /**
@@ -964,6 +969,42 @@ function JSJaCJingle(args) {
       case JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE:
         self.handle_transport_replace(stanza); break;
     }
+  };
+
+  /**
+   * Mutes a Jingle session (local)
+   */
+  self.mute = function() {
+    self.get_debug().log('[JSJaCJingle] mute', 4);
+
+    // Already muted?
+    if(self._get_mute()) {
+      self.get_debug().log('[JSJaCJingle] mute > Resource already muted.', 0);
+      return;
+    }
+
+    self._peer_sound(false);
+    self._set_mute(true);
+
+    self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_MUTE });
+  };
+
+  /**
+   * Unmutes a Jingle session (local)
+   */
+  self.unmute = function() {
+    self.get_debug().log('[JSJaCJingle] unmute', 4);
+
+    // Already unmute?
+    if(!self._get_mute()) {
+      self.get_debug().log('[JSJaCJingle] unmute > Resource already unmuted.', 0);
+      return;
+    }
+
+    self._peer_sound(true);
+    self._set_mute(false);
+
+    self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE });
   };
 
   /**
@@ -1612,6 +1653,8 @@ function JSJaCJingle(args) {
     switch(info_name) {
       case JSJAC_JINGLE_SESSION_INFO_ACTIVE:
       case JSJAC_JINGLE_SESSION_INFO_RINGING:
+      case JSJAC_JINGLE_SESSION_INFO_MUTE:
+      case JSJAC_JINGLE_SESSION_INFO_UNMUTE:
         info_result = true; break;
     }
 
@@ -2168,6 +2211,13 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._get_mute = function() {
+    return self._mute;
+  };
+
+  /**
+   * @private
+   */
   self._get_lock = function() {
     return self._lock && !JSJAC_JINGLE_AVAILABLE;
   };
@@ -2575,6 +2625,13 @@ function JSJaCJingle(args) {
    */
   self._set_received_id = function(received_id) {
     self._received_id[received_id] = 1;
+  };
+
+  /**
+   * @private
+   */
+  self._set_mute = function(mute) {
+    self._mute = mute;
   };
 
   /**
@@ -4460,6 +4517,24 @@ function JSJaCJingle(args) {
         self._set_payloads_local(c, payload_parsed[c]);
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > ' + e, 1);
+    }
+  };
+
+  /**
+   * @private
+   */
+  self._peer_sound = function(enable) {
+    self.get_debug().log('[JSJaCJingle] _peer_sound', 4);
+
+    try {
+      self.get_debug().log('[JSJaCJingle] _peer_sound > Enable: ' + enable + ' (current: ' + self._get_mute() + ').', 2);
+
+      var audio_tracks = self._get_local_stream().getAudioTracks();
+
+      for(var i = 0; i < audio_tracks.length; i++)
+        audio_tracks[i].enabled = enable;
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _peer_sound > ' + e, 1);
     }
   };
 

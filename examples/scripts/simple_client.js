@@ -402,6 +402,38 @@ $(document).ready(function() {
 		}
 	});
 
+	// Mute button pressed
+	$('#live_mute').click(function() {
+		try {
+			if(!SC_CONNECTED) return false;
+
+			if(JINGLE != null) JINGLE.mute();
+
+			$(this).hide();
+			$('#live_unmute').show();
+		} catch(e) {
+			alert('live_mute > ' + e);
+		} finally {
+			return false;
+		}
+	});
+
+	// Mute button pressed
+	$('#live_unmute').click(function() {
+		try {
+			if(!SC_CONNECTED) return false;
+
+			if(JINGLE != null) JINGLE.unmute();
+
+			$(this).hide();
+			$('#live_mute').show();
+		} catch(e) {
+			alert('live_mute > ' + e);
+		} finally {
+			return false;
+		}
+	});
+
 	// Disconnect button pressed
 	$('#login_disconnect').click(function() {
 		try {
