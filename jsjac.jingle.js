@@ -589,6 +589,16 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._mute = false;
+
+  /**
+   * @private
+   */
+  self._lock = false;
+
+  /**
+   * @private
+   */
   self._sid = '';
 
   /**
@@ -634,16 +644,6 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._mute = false;
-
-  /**
-   * @private
-   */
-  self._lock = false;
-
-  /**
-   * @private
-   */
   self._sent_id = {};
 
   /**
@@ -660,7 +660,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] initiate', 4);
 
     // Locked?
-    if(self._get_lock()) {
+    if(self.get_lock()) {
       self.get_debug().log('[JSJaCJingle] initiate > Cannot initiate, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
@@ -711,7 +711,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] accept', 4);
 
     // Locked?
-    if(self._get_lock()) {
+    if(self.get_lock()) {
       self.get_debug().log('[JSJaCJingle] accept > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
@@ -749,7 +749,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] info', 4);
 
     // Locked?
-    if(self._get_lock()) {
+    if(self.get_lock()) {
       self.get_debug().log('[JSJaCJingle] info > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
@@ -777,7 +777,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] terminate', 4);
 
     // Locked?
-    if(self._get_lock()) {
+    if(self.get_lock()) {
       self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
@@ -805,7 +805,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send', 4);
 
     // Locked?
-    if(self._get_lock()) {
+    if(self.get_lock()) {
       self.get_debug().log('[JSJaCJingle] send > Cannot send, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
@@ -900,7 +900,7 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] handle', 4);
 
     // Locked?
-    if(self._get_lock()) {
+    if(self.get_lock()) {
       self.get_debug().log('[JSJaCJingle] handle > Cannot handle, resource locked. Please open another session or check WebRTC support.', 0);
       return;
     }
@@ -909,8 +909,14 @@ function JSJaCJingle(args) {
     if(id && stanza.getType() == 'result') self._set_received_id(id);
 
     // Submit to custom handler
-    (self._get_handlers(id))(stanza);
-    self.unregister_handler(id);
+    if(typeof self._get_handlers(id) == 'function') {
+      self.get_debug().log('[JSJaCJingle] handle > Submitted to custom handler.', 2);
+
+      (self._get_handlers(id))(stanza);
+      self.unregister_handler(id);
+
+      return;
+    }
 
     var jingle = self.util_stanza_jingle(stanza);
 
@@ -977,6 +983,12 @@ function JSJaCJingle(args) {
   self.mute = function() {
     self.get_debug().log('[JSJaCJingle] mute', 4);
 
+    // Locked?
+    if(self.get_lock()) {
+      self.get_debug().log('[JSJaCJingle] mute > Cannot mute, resource locked. Please open another session or check WebRTC support.', 0);
+      return;
+    }
+
     // Already muted?
     if(self.get_mute()) {
       self.get_debug().log('[JSJaCJingle] mute > Resource already muted.', 0);
@@ -994,6 +1006,12 @@ function JSJaCJingle(args) {
    */
   self.unmute = function() {
     self.get_debug().log('[JSJaCJingle] unmute', 4);
+
+    // Locked?
+    if(self.get_lock()) {
+      self.get_debug().log('[JSJaCJingle] unmute > Cannot unmute, resource locked. Please open another session or check WebRTC support.', 0);
+      return;
+    }
 
     // Already unmute?
     if(!self.get_mute()) {
@@ -2174,7 +2192,7 @@ function JSJaCJingle(args) {
     if(id && typeof self._handlers[id] == 'function')
       return self._handlers[id];
 
-    return function(stanza) {};
+    return null;
   };
 
   /**
@@ -2211,20 +2229,6 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self.get_mute = function() {
-    return self._mute;
-  };
-
-  /**
-   * @private
-   */
-  self._get_lock = function() {
-    return self._lock && !JSJAC_JINGLE_AVAILABLE;
-  };
-
-  /**
-   * @private
-   */
   self._get_sent_id = function() {
     return self._sent_id;
   };
@@ -2234,6 +2238,24 @@ function JSJaCJingle(args) {
    */
   self._get_received_id = function() {
     return self._received_id;
+  };
+
+  /**
+   * Gets the mute state
+   * @return mute value
+   * @type boolean
+   */
+  self.get_mute = function() {
+    return self._mute;
+  };
+
+  /**
+   * Gets the lock value
+   * @return lock value
+   * @type boolean
+   */
+  self.get_lock = function() {
+    return self._lock && !JSJAC_JINGLE_AVAILABLE;
   };
 
   /**
@@ -4607,10 +4629,12 @@ function JSJaCJingle_route(stanza) {
     var stanza_id = stanza.getID();
 
     if(stanza_id) {
-      var r_id = new RegExp('(' + JSJAC_JINGLE_STANZA_ID_PRE + ')_([^\s_]+)_');
-      var m_id = r_id.exec(stanza_id);
+      var is_jingle = stanza_id.indexOf(JSJAC_JINGLE_STANZA_ID_PRE + '_') !== -1;
 
-      sid = (m_id != null) ? m_id[2] : null;
+      if(is_jingle) {
+        var stanza_id_split = stanza_id.split('_');
+        sid = stanza_id_split[1];
+      }
     }
   }
 
