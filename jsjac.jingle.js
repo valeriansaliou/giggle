@@ -50,8 +50,7 @@
 var WEBRTC_GET_MEDIA           = ( navigator.getUserMedia           ||
                                    navigator.webkitGetUserMedia     ||
                                    navigator.mozGetUserMedia        ||
-                                   navigator.msGetUserMedia         )
-                                  .bind(navigator);
+                                   navigator.msGetUserMedia         );
 
 var WEBRTC_PEER_CONNECTION     = ( window.RTCPeerConnection         ||
                                    window.webkitRTCPeerConnection   ||
@@ -2257,7 +2256,7 @@ function JSJaCJingle(args) {
    * @type boolean
    */
   self.get_lock = function() {
-    return self._lock && !JSJAC_JINGLE_AVAILABLE;
+    return self._lock || !JSJAC_JINGLE_AVAILABLE;
   };
 
   /**
@@ -4465,7 +4464,7 @@ function JSJaCJingle(args) {
         WEBRTC_CONFIGURATION.get_user_media,
         self._peer_got_user_media_success.bind(this, callback),
         self._peer_got_user_media_error.bind(this)
-      );
+      ).bind(navigator);
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_get_user_media > ' + e, 1);
     }
