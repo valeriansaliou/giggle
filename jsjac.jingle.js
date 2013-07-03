@@ -4460,7 +4460,7 @@ function JSJaCJingle(args) {
     try {
       self.get_debug().log('[JSJaCJingle] _peer_get_user_media > Getting user media...', 2);
 
-      WEBRTC_GET_MEDIA(
+      (WEBRTC_GET_MEDIA.bind(navigator))(
         WEBRTC_CONFIGURATION.get_user_media,
         self._peer_got_user_media_success.bind(this, callback),
         self._peer_got_user_media_error.bind(this)
@@ -4670,5 +4670,5 @@ function JSJaCJingle_remove(sid) {
  * @type array
  */
 function JSJaCJingle_disco() {
-  return MAP_DISCO_JINGLE;
+  return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];
 }
