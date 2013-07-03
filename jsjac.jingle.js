@@ -754,8 +754,8 @@ function JSJaCJingle(args) {
     }
 
     // Slot unavailable?
-    if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
-      self.get_debug().log('[JSJaCJingle] info > Cannot send info, resource not accepting, nor accepted (status: ' + self.get_status() + ').', 0);
+    if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
+      self.get_debug().log('[JSJaCJingle] info > Cannot send info, resource not accepted (status: ' + self.get_status() + ').', 0);
       return;
     }
 
@@ -782,8 +782,8 @@ function JSJaCJingle(args) {
     }
 
     // Slot unavailable?
-    if(self.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
-      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource already terminated or inactive (status: ' + self.get_status() + ').', 0);
+    if(self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
+      self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource already terminated (status: ' + self.get_status() + ').', 0);
       return;
     }
 
