@@ -186,7 +186,7 @@ var MAP_DISCO_JINGLE                                = [
 
 var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true : false;
 
-var JSJAC_JINGLE_PEER_TIMEOUT                        = 20;
+var JSJAC_JINGLE_PEER_TIMEOUT                        = 15;
 var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
 var JSJAC_JINGLE_STANZA_ID_PRE                       = 'jj';
 
@@ -512,13 +512,13 @@ function JSJaCJingle(args) {
     /**
      * @private
      */
-    self._local_view = args.local_view;
+    self._local_view = [args.local_view];
 
   if(args && args.remote_view)
     /**
      * @private
      */
-    self._remote_view = args.remote_view;
+    self._remote_view = [args.remote_view];
 
   if(args && args.stun) {
     /**
@@ -1109,6 +1109,73 @@ function JSJaCJingle(args) {
       return true;
     } else {
       self.get_debug().log('[JSJaCJingle] unregister_handler > Could not unregister handler id: ' + id + ' (not found).', 2);
+      return false;
+    }
+  };
+
+  /**
+   * Registers a view element
+   */
+  self.register_view = function(type, view) {
+    self.get_debug().log('[JSJaCJingle] register_view', 4);
+
+    // Get view functions
+    var fn = self._util_map_register_view(type);
+
+    if(fn.type == type) {
+      // Check view is not already registered
+      for(i in (fn.view.get)()) {
+        if((fn.view.get)()[i] == view) {
+          self.get_debug().log('[JSJaCJingle] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
+          return true;
+        }
+      }
+
+      // Proceeds registration
+      (fn.view.set)(view);
+
+      self._util_peer_stream_attach(
+        [view],
+        (fn.stream.get)(),
+        fn.mute
+      );
+
+      self.get_debug().log('[JSJaCJingle] register_view > Registered view of type: ' + type, 3);
+
+      return true;
+    } else {
+      self.get_debug().log('[JSJaCJingle] register_view > Could not register view of type: ' + type + ' (type unknown).', 1);
+      return false;
+    }
+  };
+
+  /**
+   * Unregisters a view element
+   */
+  self.unregister_view = function(type, view) {
+    self.get_debug().log('[JSJaCJingle] unregister_view', 4);
+
+    // Get view functions
+    var fn = self._util_map_unregister_view(type);
+
+    if(fn.type == type) {
+      // Check view is registered
+      for(i in (fn.view.get)()) {
+        if((fn.view.get)()[i] == view) {
+          // Proceeds un-registration
+          self._util_peer_stream_detach(
+            [view]
+          );
+
+          self.get_debug().log('[JSJaCJingle] unregister_view > Unregistered view of type: ' + type, 3);
+          return true;
+        }
+      }
+
+      self.get_debug().log('[JSJaCJingle] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
+      return true;
+    } else {
+      self.get_debug().log('[JSJaCJingle] unregister_view > Could not unregister view of type: ' + type + ' (type unknown).', 1);
       return false;
     }
   };
@@ -2435,7 +2502,7 @@ function JSJaCJingle(args) {
    * @type DOM
    */
   self.get_local_view = function() {
-    return self._local_view;
+    return (typeof self._local_view == 'object') ? self._local_view : [];
   };
 
   /**
@@ -2444,7 +2511,7 @@ function JSJaCJingle(args) {
    * @type DOM
    */
   self.get_remote_view = function() {
-    return self._remote_view;
+    return (typeof self._remote_view == 'object') ? self._remote_view : [];
   };
 
   /**
@@ -2595,51 +2662,71 @@ function JSJaCJingle(args) {
    */
   self._set_local_stream = function(local_stream) {
     if(!local_stream && self._local_stream) {
-      (self.get_local_view()).pause();
       (self._local_stream).stop();
+
+      self._util_peer_stream_detach(
+        self.get_local_view()
+      );
     }
 
     self._local_stream = local_stream;
 
-    (self.get_local_view()).src = local_stream ? URL.createObjectURL(self._get_local_stream()) : '';
-
-    self._util_peer_stream_attach(
-      self.get_local_view(),
-      self._local_stream,
-      true
-    );
+    if(local_stream) {
+      self._util_peer_stream_attach(
+        self.get_local_view(),
+        self._get_local_stream(),
+        true
+      );
+    } else {
+      self._util_peer_stream_detach(
+        self.get_local_view()
+      );
+    }
   };
 
   /**
    * @private
    */
   self._set_remote_stream = function(remote_stream) {
-    if(!remote_stream && self._remote_stream)
-      (self.get_remote_view()).pause();
+    if(!remote_stream && self._remote_stream) {
+      self._util_peer_stream_detach(
+        self.get_remote_view()
+      );
+    }
 
     self._remote_stream = remote_stream;
 
-    (self.get_remote_view()).src = remote_stream ? URL.createObjectURL(self._get_remote_stream()) : '';
-
-    self._util_peer_stream_attach(
-      self.get_remote_view(),
-      self._remote_stream,
-      false
-    );
+    if(remote_stream) {
+      self._util_peer_stream_attach(
+        self.get_remote_view(),
+        self._get_remote_stream(),
+        false
+      );
+    } else {
+      self._util_peer_stream_detach(
+        self.get_remote_view()
+      );
+    }
   };
 
   /**
    * @private
    */
   self._set_local_view = function(local_view) {
-    self._local_view = local_view;
+    if(typeof self._local_view != 'object')
+      self._local_view = [];
+
+    self._local_view.push(local_view);
   };
 
   /**
    * @private
    */
   self._set_remote_view = function(remote_view) {
-    self._remote_view = remote_view;
+    if(typeof self._remote_view != 'object')
+      self._remote_view = [];
+
+    self._remote_view.push(remote_view);
   };
 
   /**
@@ -4049,13 +4136,77 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._util_peer_stream_attach = function(element, stream, mute) {
-    if(navigator.mozGetUserMedia)
-      element.play();
-    else
-      element.autoplay = true;
+  self._util_map_register_view = function(type) {
+    var fn = {
+      type   : null,
+      mute   : false,
 
-    if(typeof mute == 'boolean') element.muted = mute;
+      view   : {
+        get : null,
+        set : null
+      },
+
+      stream : {
+        get : null,
+        set : null
+      }
+    };
+
+    switch(type) {
+      case 'local':
+        fn.type       = type;
+        fn.mute       = true;
+        fn.view.get   = self.get_local_view;
+        fn.view.set   = self._set_local_view;
+        fn.stream.get = self._get_local_stream;
+        fn.stream.set = self._set_local_stream;
+        break;
+
+      case 'remote':
+        fn.type       = type;
+        fn.view.get   = self.get_remote_view;
+        fn.view.set   = self._set_remote_view;
+        fn.stream.get = self._get_remote_stream;
+        fn.stream.set = self._set_remote_stream;
+        break;
+    }
+
+    return fn;
+  };
+
+  /**
+   * @private
+   */
+  self._util_map_unregister_view = function(type) {
+    return self._util_map_register_view(type);
+  };
+
+  /**
+   * @private
+   */
+  self._util_peer_stream_attach = function(element, stream, mute) {
+    var stream_src = stream ? URL.createObjectURL(stream) : '';
+
+    for(i in element) {
+      element[i].src = stream_src;
+
+      if(navigator.mozGetUserMedia)
+        element[i].play();
+      else
+        element[i].autoplay = true;
+
+      if(typeof mute == 'boolean') element[i].muted = mute;
+    }
+  };
+
+  /**
+   * @private
+   */
+  self._util_peer_stream_detach = function(element) {
+    for(i in element) {
+      element[i].pause();
+      element[i].src = '';
+    }
   };
 
   /**
