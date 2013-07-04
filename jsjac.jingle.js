@@ -1167,6 +1167,11 @@ function JSJaCJingle(args) {
             [view]
           );
 
+          self.util_array_remove_value(
+            (fn.view.get)(),
+            view
+          );
+
           self.get_debug().log('[JSJaCJingle] unregister_view > Unregistered view of type: ' + type, 3);
           return true;
         }
@@ -2944,6 +2949,21 @@ function JSJaCJingle(args) {
   /**
    * JSJSAC JINGLE UTILITIES
    */
+
+  /**
+   * Removes a given array value
+   * @return new array
+   * @type object
+   */
+  self.util_array_remove_value = function(array, value) {
+    for(var i = 0; i < array.length; i++) {
+      if(array[i] === value) {
+        array.splice(i, 1); i--;
+      }
+    }
+
+    return array;
+  };
 
   /**
    * Clones a given object
