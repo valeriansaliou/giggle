@@ -399,6 +399,7 @@ var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
  * @param {DOM} args.local_view The path to the local stream view element.
  * @param {DOM} args.remote_view The path to the remote stream view element.
  * @param {string} args.to The full JID to start the Jingle session with.
+ * @param {string} args.media The media type to be used in the Jingle session.
  * @param {object} args.stun A list of STUN servers to use (override the default one)
  * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
  */
@@ -760,7 +761,7 @@ function JSJaCJingle(args) {
     }
 
     // Slot unavailable?
-    if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
+    if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
       self.get_debug().log('[JSJaCJingle] info > Cannot send info, resource not accepted (status: ' + self.get_status() + ').', 0);
       return;
     }
@@ -1028,6 +1029,49 @@ function JSJaCJingle(args) {
     self._set_mute(name, false);
 
     self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE, name: name });
+  };
+
+  /**
+   * Toggles media type in a Jingle session
+   */
+  self.media = function(media) {
+    /* DEV: don't expect this to work as of now! */
+
+    self.get_debug().log('[JSJaCJingle] media', 4);
+
+    // Locked?
+    if(self.get_lock()) {
+      self.get_debug().log('[JSJaCJingle] media > Cannot change media, resource locked. Please open another session or check WebRTC support.', 0);
+      return;
+    }
+
+    // Toggle media?
+    if(!media)
+      media = (self.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
+
+    // Media unknown?
+    if(!(media in JSJAC_JINGLE_MEDIAS)) {
+      self.get_debug().log('[JSJaCJingle] media > No media provided or media unsupported (media: ' + media + ').', 0);
+      return;
+    }
+
+    // Already using provided media?
+    if(self.get_media() == media) {
+      self.get_debug().log('[JSJaCJingle] media > Resource already using this media (media: ' + media + ').', 0);
+      return;
+    }
+
+    // Store new media
+    self._set_media(media);
+
+    // Toggle video mode
+    if(media == JSJAC_JINGLE_MEDIA_VIDEO) {
+      // 'content-add' >> video
+      // TODO
+    } else {
+      // 'content-remove' >> video
+      // TODO
+    }
   };
 
   /**
@@ -2308,6 +2352,18 @@ function JSJaCJingle(args) {
    */
   self.get_media = function() {
     return (self._media && self._media in JSJAC_JINGLE_MEDIAS) ? self._media : JSJAC_JINGLE_MEDIA_VIDEO;
+  };
+
+  /**
+   * Gets a list of medias in use
+   * @return media list
+   * @type object
+   */
+  self.get_media_all = function() {
+    if(self.get_media() == JSJAC_JINGLE_MEDIA_AUDIO)
+      return [JSJAC_JINGLE_MEDIA_AUDIO];
+
+    return [JSJAC_JINGLE_MEDIA_AUDIO, JSJAC_JINGLE_MEDIA_VIDEO];
   };
 
   /**
