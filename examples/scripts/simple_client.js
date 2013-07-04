@@ -320,7 +320,7 @@ $(document).ready(function() {
 										return false;
 
 									$('#form_call input[name="call_jid"]').val($(this).attr('data-jid'));
-									$('#form_call').submit();
+									//$('#form_call').submit();
 								} catch(e) {
 									alert('roster_call > ' + e);
 								} finally {
@@ -357,6 +357,12 @@ $(document).ready(function() {
 	});
 
 	// Submit second form
+	var submit_target = null;
+
+	$('#form_call button[type="submit"]').click(function() {
+		submit_target = $(this).attr('name');
+	});
+
 	$('#form_call').submit(function() {
 		try {
 			if(!SC_CONNECTED) return false;
@@ -365,7 +371,7 @@ $(document).ready(function() {
 
 			$('.call_notif').hide();
 
-			var call_jid = $(this).find('input[name="call_jid"]').val();
+			var call_jid  = $(this).find('input[name="call_jid"]').val();
 
 			// Any JID defined?
 			if(call_jid) {
@@ -373,7 +379,8 @@ $(document).ready(function() {
 
 				try {
 					// Session values
-					ARGS.to = call_jid;
+					ARGS.to          = call_jid;
+					ARGS.media       = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
 					ARGS.local_view  = document.getElementById('video_local');
 					ARGS.remote_view = document.getElementById('video_remote');
 

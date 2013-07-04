@@ -501,6 +501,12 @@ function JSJaCJingle(args) {
      */
     self._to = args.to;
 
+  if(args && args.media)
+    /**
+     * @private
+     */
+    self._media = args.media;
+
   if(args && args.local_view)
     /**
      * @private
@@ -2296,6 +2302,15 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Gets the media value
+   * @return media value
+   * @type string
+   */
+  self.get_media = function() {
+    return (self._media && self._media in JSJAC_JINGLE_MEDIAS) ? self._media : JSJAC_JINGLE_MEDIA_VIDEO;
+  };
+
+  /**
    * Gets the name value
    * @return name value
    * @type string
@@ -2695,6 +2710,13 @@ function JSJaCJingle(args) {
    */
   self._set_to = function(to) {
     self._to = to;
+  };
+
+  /**
+   * @private
+   */
+  self._set_media = function(media) {
+    self._media = media;
   };
 
   /**
@@ -4464,7 +4486,7 @@ function JSJaCJingle(args) {
         WEBRTC_CONFIGURATION.get_user_media,
         self._peer_got_user_media_success.bind(this, callback),
         self._peer_got_user_media_error.bind(this)
-      ).bind(navigator);
+      );
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_get_user_media > ' + e, 1);
     }
