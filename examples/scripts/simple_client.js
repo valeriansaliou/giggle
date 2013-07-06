@@ -28,7 +28,7 @@ var ARGS = {
     	$('.call_notif').hide();
         $('#call_info').text('Initializing...').show();
 
-        $('#form_call').find('input, button').attr('disabled', true);
+        $('#form_call').find('input, button:not([data-lock])').attr('disabled', true);
         $('#roster_call').addClass('disabled');
     },
 
@@ -57,7 +57,7 @@ var ARGS = {
         $('.call_notif').hide();
         $('#call_error').text('Could not initialize.').show();
 
-        $('#form_call').find('input, button').removeAttr('disabled');
+        $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
         $('#roster_call').removeClass('disabled');
     },
 
@@ -72,7 +72,7 @@ var ARGS = {
         $('#call_info').text('Waiting to be accepted...').show();
 
         if(self.is_responder()) {
-	    	$('#form_call').find('input, button').attr('disabled', true);
+	    	$('#form_call').find('input, button:not([data-lock])').attr('disabled', true);
 	    	$('#roster_call').addClass('disabled');
 	    }
     },
@@ -99,7 +99,7 @@ var ARGS = {
         $('.call_notif').hide();
         $('#call_error').text('Could not be accepted.').show();
 
-        $('#form_call').find('input, button').removeAttr('disabled');
+        $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
         $('#roster_call').removeClass('disabled');
     },
 
@@ -138,7 +138,7 @@ var ARGS = {
 		$('#live_mute').show();
 		$('#live_unmute').hide();
 
-		$('#form_call').find('input, button').removeAttr('disabled');
+		$('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
 		$('#roster_call').removeClass('disabled');
     },
 
@@ -152,7 +152,7 @@ var ARGS = {
 		$('#live_mute').show();
 		$('#live_unmute').hide();
 		
-		$('#form_call').find('input, button').removeAttr('disabled');
+		$('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
 		$('#roster_call').removeClass('disabled');
     },
 
