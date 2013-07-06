@@ -320,7 +320,9 @@ $(document).ready(function() {
 										return false;
 
 									$('#form_call input[name="call_jid"]').val($(this).attr('data-jid'));
-									//$('#form_call').submit();
+
+									if($('#form_call').find('button:not([data-lock])').size() == 1)
+										$('#form_call').submit();
 								} catch(e) {
 									alert('roster_call > ' + e);
 								} finally {
