@@ -16,7 +16,6 @@
  * XEP-0166: http://xmpp.org/extensions/xep-0166.html
  * XEP-0167: http://xmpp.org/extensions/xep-0167.html
  * XEP-0176: http://xmpp.org/extensions/xep-0176.html
- * XEP-0181: http://xmpp.org/extensions/xep-0181.html
  * XEP-0262: http://xmpp.org/extensions/xep-0262.html
  * XEP-0293: http://xmpp.org/extensions/xep-0293.html
  * XEP-0294: http://xmpp.org/extensions/xep-0294.html
@@ -150,8 +149,6 @@ var NS_JINGLE_APPS_RTP_ZRTP                         = 'urn:xmpp:jingle:apps:rtp:
 var NS_JINGLE_APPS_STUB                             = 'urn:xmpp:jingle:apps:stub:0';
 var NS_JINGLE_APPS_DTLS                             = 'urn:xmpp:tmp:jingle:apps:dtls:0';
 
-var NS_JINGLE_DTMF                                  = 'urn:xmpp:jingle:dtmf:0';
-
 var NS_JINGLE_TRANSPORTS_ICEUDP                     = 'urn:xmpp:jingle:transports:ice-udp:1';
 var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transports:stub:0';
 
@@ -184,10 +181,7 @@ var MAP_DISCO_JINGLE                                = [
   NS_JINGLE_APPS_DTLS,
 
   /* http://xmpp.org/extensions/xep-0262.html */
-  NS_JINGLE_APPS_RTP_ZRTP,
-
-  /* http://xmpp.org/extensions/xep-0181.html */
-  NS_JINGLE_DTMF
+  NS_JINGLE_APPS_RTP_ZRTP
 ];
 
 
