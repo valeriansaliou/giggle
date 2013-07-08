@@ -2056,16 +2056,48 @@ function JSJaCJingle(args) {
   self.handle_transport_info = function(stanza) {
     self.get_debug().log('[JSJaCJingle] handle_transport_info', 4);
 
+    // Slot unavailable?
+    if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
+      self.get_debug().log('[JSJaCJingle] handle_transport_info > Cannot handle, resource not initiated, nor accepting, nor accepted (status: ' + self.get_status() + ').', 0);
+      return;
+    }
+
+    // Common vars
+    var i, cur_candidate_obj;
+
     // Parse the incoming transport
-    // TODO
+    var rd_sid = self.util_stanza_sid(stanza);
 
-    // Store the new ICE candidates
-    // TODO: concat
+    // Request is valid?
+    if(rd_sid && self._util_stanza_parse_content(stanza)) {
+      // Re-generate and store new content data
+      self._util_build_content_remote();
 
-    // Add the new ICE candidates
-    // TODO: use updateIce instead of addIce?
+      var sdp_candidates_remote = self._util_sdp_generate_candidates(candidates);
 
-    // TODO
+      // ICE candidates
+      // TODO: not tested yet, is the browser happy to add ICE candidates that were already added previously?
+      //       updateIce() method may be more appropriate? (cannot find any doc about that on the Internet)
+      for(i in sdp_candidates_remote) {
+        cur_candidate_obj = sdp_candidates_remote[i];
+
+        self._get_peer_connection().addIceCandidate(
+          new WEBRTC_ICE_CANDIDATE({
+            sdpMLineIndex : cur_candidate_obj.label,
+            sdpMid        : cur_candidate_obj.id,
+            candidate     : cur_candidate_obj.candidate
+          })
+        );
+      }
+
+      // Success reply
+      self.send('result', { id: stanza.getID() });
+    } else {
+      // Send error reply
+      self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
+
+      self.get_debug().log('[JSJaCJingle] handle_transport_info > Error.', 1);
+    }
   };
 
   /**
