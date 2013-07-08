@@ -581,12 +581,22 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._candidates_queue_local = {};
+
+  /**
+   * @private
+   */
   self._payloads_remote = {};
 
   /**
    * @private
    */
   self._candidates_remote = {};
+
+  /**
+   * @private
+   */
+  self._candidates_queue_remote = {};
 
   /**
    * @private
@@ -708,9 +718,6 @@ function JSJaCJingle(args) {
       self._peer_connection_create(function() {
         self.get_debug().log('[JSJaCJingle] initiate > Ready to begin Jingle negotiation.', 2);
 
-        // Build content (local)
-        self._util_build_content_local();
-
         self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
       })
     });
@@ -744,9 +751,6 @@ function JSJaCJingle(args) {
     self._peer_get_user_media(function() {
       self._peer_connection_create(function() {
         self.get_debug().log('[JSJaCJingle] accept > Ready to complete Jingle negotiation.', 2);
-
-        // Build content (local)
-        self._util_build_content_local();
 
         // Process accept actions
         self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_ACCEPT });
@@ -881,7 +885,7 @@ function JSJaCJingle(args) {
           self.send_transport_accept(stanza); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_INFO:
-          self.send_transport_info(stanza); break;
+          self.send_transport_info(stanza, args); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_REJECT:
           self.send_transport_reject(stanza); break;
@@ -1290,7 +1294,7 @@ function JSJaCJingle(args) {
       'responder' : self.get_responder()
     });
 
-    self._util_stanza_generate_content_local(stanza, jingle, self.get_sid());
+    self._util_stanza_generate_content_local(stanza, jingle);
 
     // Schedule success
     self.register_handler(args.id, function(stanza) {
@@ -1366,7 +1370,7 @@ function JSJaCJingle(args) {
       'initiator' : self.get_initiator()
     });
 
-    self._util_stanza_generate_content_local(stanza, jingle, self.get_sid());
+    self._util_stanza_generate_content_local(stanza, jingle);
 
     // Schedule success
     self.register_handler(args.id, function(stanza) {
@@ -1441,11 +1445,56 @@ function JSJaCJingle(args) {
   /**
    * Sends the Jingle transport info
    */
-  self.send_transport_info = function(stanza) {
+  self.send_transport_info = function(stanza, args) {
     self.get_debug().log('[JSJaCJingle] send_transport_info', 4);
 
-    // Not implemented for now
-    self.get_debug().log('[JSJaCJingle] send_transport_info > Feature not implemented!', 0);
+    if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
+      self.get_debug().log('[JSJaCJingle] send_transport_info > Cannot send transport info, resource not initiated, nor accepting, nor accepted (status: ' + self.get_status() + ').', 0);
+      return;
+    }
+
+    if(!args) {
+      self.get_debug().log('[JSJaCJingle] send_transport_info > Argument not provided.', 1);
+      return;
+    }
+
+    if(self.util_object_length(self._get_candidates_queue_local()) == 0) {
+      self.get_debug().log('[JSJaCJingle] send_transport_info > No local candidate in queue.', 1);
+      return;
+    }
+
+    // Build Jingle stanza
+    var jingle = self._util_stanza_generate_jingle(stanza, {
+      'action'    : JSJAC_JINGLE_ACTION_TRANSPORT_INFO,
+      'initiator' : self.get_initiator()
+    });
+
+    // Build queue content
+    var content_queue_local = {};
+
+    for(cur_name in self.get_name()) {
+      content_queue_local[cur_name] = self._util_generate_content(
+          self.get_creator(cur_name),
+          cur_name,
+          self.get_senders(cur_name),
+          self._get_payloads_local(cur_name),
+          self._get_candidates_queue_local(cur_name)
+      );
+    }
+
+    self._util_stanza_generate_content_local(stanza, jingle, content_queue_local);
+
+    // Schedule success
+    self.register_handler(args.id, function(stanza) {
+      self.handle_transport_info_success(stanza);
+    });
+
+    // Schedule error timeout
+    self.util_stanza_timeout(args.id, {
+      internal: self.handle_transport_info_error
+    });
+
+    self.get_debug().log('[JSJaCJingle] send_transport_info > Sent.', 2);
   };
 
   /**
@@ -1686,7 +1735,7 @@ function JSJaCJingle(args) {
       var sdp_remote = self._util_sdp_generate(
         WEBRTC_SDP_TYPE_ANSWER,
         self._get_payloads_remote(),
-        self._get_candidates_remote()
+        self._get_candidates_queue_remote()
       );
 
       // Remote description
@@ -1715,6 +1764,9 @@ function JSJaCJingle(args) {
           })
         );
       }
+
+      // Empty the unapplied candidates queue
+      self._set_candidates_queue_remote(null);
 
       // Success reply
       self.send('result', { id: stanza.getID() });
@@ -2078,7 +2130,9 @@ function JSJaCJingle(args) {
       // Re-generate and store new content data
       self._util_build_content_remote();
 
-      var sdp_candidates_remote = self._util_sdp_generate_candidates(candidates);
+      var sdp_candidates_remote = self._util_sdp_generate_candidates(
+        self._get_candidates_queue_remote()
+      );
 
       // ICE candidates
       // TODO: not tested yet, is the browser happy to add ICE candidates that were already added previously?
@@ -2095,6 +2149,9 @@ function JSJaCJingle(args) {
         );
       }
 
+      // Empty the unapplied candidates queue
+      self._set_candidates_queue_remote(null);
+
       // Success reply
       self.send('result', { id: stanza.getID() });
     } else {
@@ -2103,6 +2160,22 @@ function JSJaCJingle(args) {
 
       self.get_debug().log('[JSJaCJingle] handle_transport_info > Error.', 1);
     }
+  };
+
+  /**
+   * Handles the Jingle transport info success
+   * @param {JSJaCPacket} stanza Jingle handled stanza
+   */
+  self.handle_transport_info_success = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_transport_info_success', 4);
+  };
+
+  /**
+   * Handles the Jingle transport info error
+   * @param {JSJaCPacket} stanza Jingle handled stanza
+   */
+  self.handle_transport_info_error = function(stanza) {
+    self.get_debug().log('[JSJaCJingle] handle_transport_info_error', 4);
   };
 
   /**
@@ -2320,6 +2393,16 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._get_candidates_queue_local = function(name) {
+    if(name)
+      return (name in self._candidates_queue_local) ? self._candidates_queue_local[name] : {};
+
+    return self._candidates_queue_local;
+  };
+
+  /**
+   * @private
+   */
   self._get_payloads_remote = function(name) {
     if(name)
       return (name in self._payloads_remote) ? self._payloads_remote[name] : {};
@@ -2335,6 +2418,16 @@ function JSJaCJingle(args) {
       return (name in self._candidates_remote) ? self._candidates_remote[name] : [];
 
     return self._candidates_remote;
+  };
+
+  /**
+   * @private
+   */
+  self._get_candidates_queue_remote = function(name) {
+    if(name)
+      return (name in self._candidates_queue_remote) ? self._candidates_queue_remote[name] : {};
+
+    return self._candidates_queue_remote;
   };
 
   /**
@@ -2804,6 +2897,19 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._set_candidates_queue_local = function(name, candidate_data) {
+    if(name == null) {
+      self._candidates_queue_local = {};
+    } else {
+      if(!(name in self._candidates_queue_local))  self._candidates_queue_local[name] = [];
+
+      (self._candidates_queue_local[name]).push(candidate_data);
+    }
+  };
+
+  /**
+   * @private
+   */
   self._set_payloads_remote = function(name, payload_data) {
     self._payloads_remote[name] = payload_data;
   };
@@ -2830,6 +2936,16 @@ function JSJaCJingle(args) {
    */
   self._set_candidates_remote = function(name, candidate_data) {
     self._candidates_remote[name] = candidate_data;
+  };
+
+  /**
+   * @private
+   */
+  self._set_candidates_queue_remote = function(name, candidate_data) {
+    if(name == null)
+      self._candidates_queue_remote = {};
+    else
+      self._candidates_queue_remote[name] = (candidate_data);
   };
 
   /**
@@ -3054,6 +3170,21 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Returns whether an object is empty or not
+   * @return Empty value
+   * @type boolean
+   */
+  self.util_object_length = function(object) {
+    var l = 0;
+
+    for(key in object) {
+      if(object.hasOwnProperty(key)) l++;
+    }
+
+    return l;
+  }
+
+  /**
    * Clones a given object
    * @return Cloned object
    * @type object
@@ -3263,8 +3394,8 @@ function JSJaCJingle(args) {
 
         self.unregister_handler(t_id);
 
-        (handlers.external)(self);
-        (handlers.internal)();
+        if(handlers.external)  (handlers.external)(self);
+        if(handlers.internal)  (handlers.internal)();
       } else {
         self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza successful.', 4);
       }
@@ -3315,7 +3446,8 @@ function JSJaCJingle(args) {
   self._util_stanza_parse_content = function(stanza) {
     var i,
         jingle, content, cur_content,
-        content_creator, content_name, content_senders;
+        content_creator, content_name, content_senders,
+        cur_candidates;
 
     // Parse initiate stanza
     jingle = self.util_stanza_jingle(stanza);
@@ -3337,15 +3469,23 @@ function JSJaCJingle(args) {
           self._set_senders(content_name, content_senders);
           self._set_creator(content_name, content_creator);
 
-          // Nodes (non-destructive setters / cumulative)
+          // Payloads (non-destructive setters / cumulative)
           self._set_payloads_remote_add(
             content_name,
             self._util_stanza_parse_payload(cur_content)
           );
 
+          // Candidates (enqueue them for ICE processing, too)
+          cur_candidate = self._util_stanza_parse_candidate(cur_content);
+
           self._set_candidates_remote_add(
             content_name,
-            self._util_stanza_parse_candidate(cur_content)
+            cur_candidate
+          );
+
+          self._set_candidates_queue_remote(
+            content_name,
+            cur_candidate
           );
         }
 
@@ -3656,8 +3796,8 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._util_stanza_generate_content_local = function(stanza, jingle) {
-    var content_local = self._get_content_local();
+  self._util_stanza_generate_content_local = function(stanza, jingle, override_content) {
+    var content_local = override_content ? override_content : self._get_content_local();
 
     for(cur_media in content_local) {
       var cur_content = content_local[cur_media];
@@ -3668,114 +3808,116 @@ function JSJaCJingle(args) {
       self.util_stanza_set_attribute(content, 'name',    cur_content['name']);
       self.util_stanza_set_attribute(content, 'senders', cur_content['senders']);
 
-      // Build description
-      var cs_description  = cur_content['description'];
-      var cs_d_attrs      = cs_description['attrs'];
-      var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
-      var cs_d_payload    = cs_description['payload'];
-      var cs_d_encryption = cs_description['encryption'];
-      var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
-      var cs_d_rtcp_mux   = cs_description['rtcp-mux'];
+      // Build description (if action type allows that element)
+      if(self.util_stanza_get_attribute(jingle, 'action') != JSJAC_JINGLE_ACTION_TRANSPORT_INFO) {
+        var cs_description  = cur_content['description'];
+        var cs_d_attrs      = cs_description['attrs'];
+        var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
+        var cs_d_payload    = cs_description['payload'];
+        var cs_d_encryption = cs_description['encryption'];
+        var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
+        var cs_d_rtcp_mux   = cs_description['rtcp-mux'];
 
-      var description = self._util_stanza_build_node(
-                          stanza, content,
-                          [cs_d_attrs],
-                          'description',
-                          NS_JINGLE_APPS_RTP
-                        );
+        var description = self._util_stanza_build_node(
+                            stanza, content,
+                            [cs_d_attrs],
+                            'description',
+                            NS_JINGLE_APPS_RTP
+                          );
 
-      // RTCP-FB (common)
-      self._util_stanza_build_node(
-        stanza,
-        description,
-        cs_d_rtcp_fb,
-        'rtcp-fb',
-        NS_JINGLE_APPS_RTP_RTCP_FB
-      );
-
-      // Payload-type
-      if(cs_d_payload) {
-        var i, cs_d_p, payload_type;
-
-        for(i in cs_d_payload) {
-          cs_d_p = cs_d_payload[i];
-
-          payload_type = self._util_stanza_build_node(
-                           stanza,
-                           description,
-                           [cs_d_p['attrs']],
-                           'payload-type',
-                           NS_JINGLE_APPS_RTP
-                         );
-
-          // Parameter
-          self._util_stanza_build_node(
-            stanza,
-            payload_type,
-            cs_d_p['parameter'],
-            'parameter',
-            NS_JINGLE_APPS_RTP
-          );
-
-          // RTCP-FB (sub)
-          self._util_stanza_build_node(
-            stanza,
-            payload_type,
-            cs_d_p['rtcp-fb'],
-            'rtcp-fb',
-            NS_JINGLE_APPS_RTP_RTCP_FB
-          );
-
-          // RTCP-FB-TRR-INT
-          self._util_stanza_build_node(
-            stanza,
-            payload_type,
-            cs_d_p['rtcp-fb-trr-int'],
-            'rtcp-fb-trr-int',
-            NS_JINGLE_APPS_RTP_RTCP_FB
-          );
-        }
-
-        // Encryption
-        if(cs_d_encryption && 
-           (cs_d_encryption['crypto'] && cs_d_encryption['crypto'].length || 
-            cs_d_encryption['zrtp-hash'] && cs_d_encryption['zrtp-hash'].length)) {
-          var encryption = description.appendChild(stanza.buildNode('encryption', { 'xmlns': NS_JINGLE_APPS_RTP }));
-
-          self.util_stanza_set_attribute(encryption, 'required', (cs_d_encryption['attrs']['required'] || '0'));
-
-          // Crypto
-          self._util_stanza_build_node(
-            stanza,
-            encryption,
-            cs_d_encryption['crypto'],
-            'crypto',
-            NS_JINGLE_APPS_RTP
-          );
-
-          // ZRTP-HASH
-          self._util_stanza_build_node(
-            stanza,
-            encryption,
-            cs_d_encryption['zrtp-hash'],
-            'zrtp-hash',
-            NS_JINGLE_APPS_RTP_ZRTP,
-            'value'
-          );
-        }
-
-        // RTP-HDREXT
+        // RTCP-FB (common)
         self._util_stanza_build_node(
           stanza,
           description,
-          cs_d_rtp_hdrext,
-          'rtp-hdrext',
-          NS_JINGLE_APPS_RTP_RTP_HDREXT
+          cs_d_rtcp_fb,
+          'rtcp-fb',
+          NS_JINGLE_APPS_RTP_RTCP_FB
         );
 
-        // RTCP-MUX
-        if(cs_d_rtcp_mux)
-          description.appendChild(stanza.buildNode('rtcp-mux', { 'xmlns': NS_JINGLE_APPS_RTP }));
+        // Payload-type
+        if(cs_d_payload) {
+          var i, cs_d_p, payload_type;
+
+          for(i in cs_d_payload) {
+            cs_d_p = cs_d_payload[i];
+
+            payload_type = self._util_stanza_build_node(
+                             stanza,
+                             description,
+                             [cs_d_p['attrs']],
+                             'payload-type',
+                             NS_JINGLE_APPS_RTP
+                           );
+
+            // Parameter
+            self._util_stanza_build_node(
+              stanza,
+              payload_type,
+              cs_d_p['parameter'],
+              'parameter',
+              NS_JINGLE_APPS_RTP
+            );
+
+            // RTCP-FB (sub)
+            self._util_stanza_build_node(
+              stanza,
+              payload_type,
+              cs_d_p['rtcp-fb'],
+              'rtcp-fb',
+              NS_JINGLE_APPS_RTP_RTCP_FB
+            );
+
+            // RTCP-FB-TRR-INT
+            self._util_stanza_build_node(
+              stanza,
+              payload_type,
+              cs_d_p['rtcp-fb-trr-int'],
+              'rtcp-fb-trr-int',
+              NS_JINGLE_APPS_RTP_RTCP_FB
+            );
+          }
+
+          // Encryption
+          if(cs_d_encryption && 
+             (cs_d_encryption['crypto'] && cs_d_encryption['crypto'].length || 
+              cs_d_encryption['zrtp-hash'] && cs_d_encryption['zrtp-hash'].length)) {
+            var encryption = description.appendChild(stanza.buildNode('encryption', { 'xmlns': NS_JINGLE_APPS_RTP }));
+
+            self.util_stanza_set_attribute(encryption, 'required', (cs_d_encryption['attrs']['required'] || '0'));
+
+            // Crypto
+            self._util_stanza_build_node(
+              stanza,
+              encryption,
+              cs_d_encryption['crypto'],
+              'crypto',
+              NS_JINGLE_APPS_RTP
+            );
+
+            // ZRTP-HASH
+            self._util_stanza_build_node(
+              stanza,
+              encryption,
+              cs_d_encryption['zrtp-hash'],
+              'zrtp-hash',
+              NS_JINGLE_APPS_RTP_ZRTP,
+              'value'
+            );
+          }
+
+          // RTP-HDREXT
+          self._util_stanza_build_node(
+            stanza,
+            description,
+            cs_d_rtp_hdrext,
+            'rtp-hdrext',
+            NS_JINGLE_APPS_RTP_RTP_HDREXT
+          );
+
+          // RTCP-MUX
+          if(cs_d_rtcp_mux)
+            description.appendChild(stanza.buildNode('rtcp-mux', { 'xmlns': NS_JINGLE_APPS_RTP }));
+        }
       }
 
       // Build transport
@@ -4783,11 +4925,32 @@ function JSJaCJingle(args) {
           var candidate_obj   = self._util_sdp_parse_candidate(candidate_data);
 
           self._set_candidates_local(candidate_id, candidate_obj);
-        } else {
-          self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got candidates.', 2);
 
-          // Execute what's next
-          sdp_message_callback();
+          // Enqueue candidate
+          self._set_candidates_queue_local(candidate_id, candidate_obj);
+        } else {
+          // Build or re-build content (local)
+          self._util_build_content_local();
+
+          // In which action stanza should candidates be sent?
+          if((self.is_initiator() && self.get_status() == JSJAC_JINGLE_STATUS_INITIATING)  ||
+             (self.is_responder() && self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING)) {
+            self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got initial candidates.', 2);
+
+            // Execute what's next (initiate/accept session)
+            sdp_message_callback();
+          } else {
+            self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got more candidates (on the go).', 2);
+
+            // Send unsent candidates
+            var candidates_queue_local = self._get_candidates_queue_local();
+
+            if(self.util_object_length(candidates_queue_local) > 0)
+              self.send('set', { action: JSJAC_JINGLE_ACTION_TRANSPORT_INFO, candidates: candidates_queue_local });
+          }
+
+          // Empty the unsent candidates queue
+          self._set_candidates_queue_local(null);
         }
       };
 
@@ -4841,7 +5004,7 @@ function JSJaCJingle(args) {
         sdp_remote = self._util_sdp_generate(
           WEBRTC_SDP_TYPE_OFFER,
           self._get_payloads_remote(),
-          self._get_candidates_remote()
+          self._get_candidates_queue_remote()
         );
 
         // Remote description
@@ -4875,6 +5038,9 @@ function JSJaCJingle(args) {
             })
           );
         }
+
+        // Empty the unapplied candidates queue
+        self._set_candidates_queue_remote(null);
       }
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 1);
