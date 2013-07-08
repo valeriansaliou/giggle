@@ -581,7 +581,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._payloads_remote = [];
+  self._payloads_remote = {};
 
   /**
    * @private
@@ -2056,8 +2056,16 @@ function JSJaCJingle(args) {
   self.handle_transport_info = function(stanza) {
     self.get_debug().log('[JSJaCJingle] handle_transport_info', 4);
 
-    // Not implemented for now
-    self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+    // Parse the incoming transport
+    // TODO
+
+    // Store the new ICE candidates
+    // TODO: concat
+
+    // Add the new ICE candidates
+    // TODO: use updateIce instead of addIce?
+
+    // TODO
   };
 
   /**
@@ -2773,6 +2781,34 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._set_candidates_remote_add = function(name, candidate_data) {
+    if(!(name in self._candidates_remote))
+      self._set_candidates_remote(name, []);
+
+    self._set_candidates_remote(
+      name,
+      (self._candidates_remote[name]).concat(candidate_data)
+    );
+  };
+
+  /**
+   * @private
+   */
+  self._set_candidates_remote_remove = function(name, id) {
+    if(!name) return;
+
+    var c_remote = self._get_candidates_remote(name);
+
+    for(i in c_remote) {
+      if(c_remote[i]['id'] == id) {
+        util_array_remove_value(c_remote, c_remote[i]); return;
+      }
+    }
+  };
+
+  /**
+   * @private
+   */
   self._set_content_local = function(name, content_local) {
     self._content_local[name] = content_local;
   };
@@ -3246,22 +3282,23 @@ function JSJaCJingle(args) {
         for(i = 0; i < content.length; i++) {
           cur_content = content[i];
 
-          // Attrs
+          // Attrs (avoids senders & creators to be changed later in the flow)
           content_name    = self.util_stanza_get_attribute(cur_content, 'name');
-          content_senders = self.util_stanza_get_attribute(cur_content, 'senders');
-          content_creator = self.util_stanza_get_attribute(cur_content, 'creator');
+          content_senders = self.get_senders(content_name) || self.util_stanza_get_attribute(cur_content, 'senders');
+          content_creator = self.get_creator(content_name) || self.util_stanza_get_attribute(cur_content, 'creator');
 
           self._set_name(content_name);
           self._set_senders(content_name, content_senders);
           self._set_creator(content_name, content_creator);
 
           // Nodes
+          // TODO: non-destructive payloads setter
           self._set_payloads_remote(
             content_name,
             self._util_stanza_parse_payload(cur_content)
           );
 
-          self._set_candidates_remote(
+          self._set_candidates_remote_add(
             content_name,
             self._util_stanza_parse_candidate(cur_content)
           );
