@@ -2782,27 +2782,19 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_candidates_remote_add = function(name, candidate_data) {
-    if(!(name in self._candidates_remote))
-      self._set_candidates_remote(name, []);
-
-    self._set_candidates_remote(
-      name,
-      (self._candidates_remote[name]).concat(candidate_data)
-    );
-  };
-
-  /**
-   * @private
-   */
-  self._set_candidates_remote_remove = function(name, id) {
     if(!name) return;
 
-    var c_remote = self._get_candidates_remote(name);
+    if(!(name in self._candidates_remote))
+      self._candidates_remote[name] = [];
+ 
+    candidate_ids = [];
 
-    for(i in c_remote) {
-      if(c_remote[i]['id'] == id) {
-        util_array_remove_value(c_remote, c_remote[i]); return;
-      }
+    for(c in self._candidates_remote[name])
+      candidate_ids.push(self._candidates_remote[name][c]['id']);
+
+    for(i in candidate_data) {
+      if((candidate_data[i]['id']).indexOf(candidate_ids) !== -1)
+        (self._candidates_remote[name]).push(candidate_data[i]);
     }
   };
 
