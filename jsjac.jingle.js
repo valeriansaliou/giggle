@@ -2774,6 +2774,23 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._set_payloads_remote_add = function(name, payload_data) {
+    if(!(name in self._payloads_remote)) {
+      self._set_payloads_remote(name, payload_data);
+    } else {
+      var payloads_store = self._payloads_remote[name]['descriptions']['payload'];
+      var payloads_add   = payload_data['descriptions']['payload'];
+
+      for(key in payloads) {
+        if(!(key in payloads_store))
+          payloads_store[key] = payloads[key];
+      }
+    }
+  };
+
+  /**
+   * @private
+   */
   self._set_candidates_remote = function(name, candidate_data) {
     self._candidates_remote[name] = candidate_data;
   };
@@ -2785,16 +2802,16 @@ function JSJaCJingle(args) {
     if(!name) return;
 
     if(!(name in self._candidates_remote))
-      self._candidates_remote[name] = [];
+      self._set_candidates_remote(name, []);
  
-    candidate_ids = [];
+    var candidate_ids = [];
 
-    for(c in self._candidates_remote[name])
-      candidate_ids.push(self._candidates_remote[name][c]['id']);
+    for(c in self._get_candidates_remote(name))
+      candidate_ids.push(self._get_candidates_remote(name)[c]['id']);
 
     for(i in candidate_data) {
       if((candidate_data[i]['id']).indexOf(candidate_ids) !== -1)
-        (self._candidates_remote[name]).push(candidate_data[i]);
+        self._get_candidates_remote(name).push(candidate_data[i]);
     }
   };
 
@@ -3283,9 +3300,8 @@ function JSJaCJingle(args) {
           self._set_senders(content_name, content_senders);
           self._set_creator(content_name, content_creator);
 
-          // Nodes
-          // TODO: non-destructive payloads setter
-          self._set_payloads_remote(
+          // Nodes (non-destructive setters / cumulative)
+          self._set_payloads_remote_add(
             content_name,
             self._util_stanza_parse_payload(cur_content)
           );
