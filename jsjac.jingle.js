@@ -230,7 +230,7 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_INFO               = 'transport-info';
 var JSJAC_JINGLE_ACTION_TRANSPORT_REJECT             = 'transport-reject';
 var JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE            = 'transport-replace';
 
-var JSJAC_JINGLE_ERROR_OUT_OF_BORDER                 = { jingle: 'out-of-border',          xmpp: 'unexpected-request',         type: 'wait'   };
+var JSJAC_JINGLE_ERROR_OUT_OF_ORDER                  = { jingle: 'out-of-order',           xmpp: 'unexpected-request',         type: 'wait'   };
 var JSJAC_JINGLE_ERROR_TIE_BREAK                     = { jingle: 'tie-break',              xmpp: 'conflict',                   type: 'cancel' };
 var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION               = { jingle: 'unknown-session',        xmpp: 'item-not-found',             type: 'cancel' };
 var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO              = { jingle: 'unsupported-info',       xmpp: 'feature-not-implemented',    type: 'modify' };
@@ -317,7 +317,7 @@ JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REJECT]            = 1;
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE]           = 1;
 
 var JSJAC_JINGLE_ERRORS             = {};
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_OUT_OF_BORDER.jingle]          = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_OUT_OF_ORDER.jingle]           = 1;
 JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_TIE_BREAK.jingle]              = 1;
 JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNKNOWN_SESSION.jingle]        = 1;
 JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.jingle]       = 1;
@@ -1275,6 +1275,7 @@ function JSJaCJingle(args) {
 
     if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING) {
       self.get_debug().log('[JSJaCJingle] send_session_accept > Cannot send accept stanza, resource not accepting (status: ' + self.get_status() + ').', 0);
+      self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
       return;
     }
 
@@ -1661,6 +1662,7 @@ function JSJaCJingle(args) {
     // Slot unavailable?
     if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
       self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Cannot handle, resource already accepted (status: ' + self.get_status() + ').', 0);
+      self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
       return;
     }
 
@@ -1893,6 +1895,7 @@ function JSJaCJingle(args) {
     // Slot unavailable?
     if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
       self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Cannot handle, resource already initiated (status: ' + self.get_status() + ').', 0);
+      self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
       return;
     }
 
@@ -2019,6 +2022,7 @@ function JSJaCJingle(args) {
     // Slot unavailable?
     if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED)) {
       self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Cannot handle, resource not active (status: ' + self.get_status() + ').', 0);
+      self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
       return;
     }
 
@@ -2059,6 +2063,7 @@ function JSJaCJingle(args) {
     // Slot unavailable?
     if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
       self.get_debug().log('[JSJaCJingle] handle_transport_info > Cannot handle, resource not initiated, nor accepting, nor accepted (status: ' + self.get_status() + ').', 0);
+      self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
       return;
     }
 
