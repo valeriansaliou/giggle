@@ -709,7 +709,7 @@ function JSJaCJingle(args) {
         self.get_debug().log('[JSJaCJingle] initiate > Ready to begin Jingle negotiation.', 2);
 
         // Build content (local)
-        self._util_initialize_content_local();
+        self._util_build_content_local();
 
         self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
       })
@@ -746,7 +746,7 @@ function JSJaCJingle(args) {
         self.get_debug().log('[JSJaCJingle] accept > Ready to complete Jingle negotiation.', 2);
 
         // Build content (local)
-        self._util_initialize_content_local();
+        self._util_build_content_local();
 
         // Process accept actions
         self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_ACCEPT });
@@ -1675,7 +1675,7 @@ function JSJaCJingle(args) {
     // Request is valid?
     if(rd_sid && self.is_initiator() && self._util_stanza_parse_content(stanza)) {
       // Generate and store content data
-      self._util_initialize_content_remote();
+      self._util_build_content_remote();
 
       // Trigger accept success callback
       (self._get_session_accept_success())(self, stanza);
@@ -1915,7 +1915,7 @@ function JSJaCJingle(args) {
       JSJaCJingle_add(rd_sid, self);
 
       // Generate and store content data
-      self._util_initialize_content_remote();
+      self._util_build_content_remote();
 
       // Session initiate done
       (self._get_session_initiate_success())(self, stanza);
@@ -3820,7 +3820,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._util_initialize_content_local = function() {
+  self._util_build_content_local = function() {
     for(cur_name in self.get_name()) {
       self._set_content_local(
         cur_name,
@@ -3839,7 +3839,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._util_initialize_content_remote = function() {
+  self._util_build_content_remote = function() {
     for(cur_name in self.get_name()) {
       self._set_content_remote(
         cur_name,
