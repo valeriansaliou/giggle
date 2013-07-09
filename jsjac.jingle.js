@@ -1738,6 +1738,8 @@ function JSJaCJingle(args) {
         self._get_candidates_queue_remote()
       );
 
+      console.debug('DEBUG:DESCRIPTION:REMOTE > handle_session_accept_request', sdp_remote.description);
+
       // Remote description
       self._get_peer_connection().setRemoteDescription(
         (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -1755,6 +1757,8 @@ function JSJaCJingle(args) {
       // ICE candidates
       for(i in sdp_remote.candidates) {
         cur_candidate_obj = (sdp_remote.candidates)[i];
+
+        console.debug('DEBUG:CANDIDATE:REMOTE > handle_session_accept_request', cur_candidate_obj);
 
         self._get_peer_connection().addIceCandidate(
           new WEBRTC_ICE_CANDIDATE({
@@ -4915,6 +4919,8 @@ function JSJaCJingle(args) {
       // Event: onicecandidate
       self._get_peer_connection().onicecandidate = function(e) {
         if(e.candidate) {
+          console.debug('DEBUG:CANDIDATE:LOCAL > _peer_connection_create > onicecandidate', e.candidate);
+
           // Store received candidate
           var candidate_id    = e.candidate.sdpMid;
           var candidate_data  = e.candidate.candidate;
@@ -5005,6 +5011,8 @@ function JSJaCJingle(args) {
           self._get_candidates_queue_remote()
         );
 
+        console.debug('DEBUG:DESCRIPTION:REMOTE > _peer_connection_create', sdp_remote.description);
+
         // Remote description
         self._get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -5027,6 +5035,8 @@ function JSJaCJingle(args) {
 
         for(i in sdp_remote.candidates) {
           cur_candidate_obj = (sdp_remote.candidates)[i];
+
+          console.debug('DEBUG:CANDIDATE:REMOTE > _peer_connection_create', cur_candidate_obj);
 
           self._get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
@@ -5110,6 +5120,8 @@ function JSJaCJingle(args) {
       self._get_peer_connection().setLocalDescription(sdp_local);
 
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 2);
+
+      console.debug('DEBUG:DESCRIPTION:LOCAL > _peer_got_description', sdp_local);
 
       // Convert SDP raw data to an object
       var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
