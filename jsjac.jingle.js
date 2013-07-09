@@ -2142,6 +2142,8 @@ function JSJaCJingle(args) {
       for(i in sdp_candidates_remote) {
         cur_candidate_obj = sdp_candidates_remote[i];
 
+        console.debug('DEBUG:CANDIDATE:REMOTE > handle_transport_info', cur_candidate_obj);
+
         self._get_peer_connection().addIceCandidate(
           new WEBRTC_ICE_CANDIDATE({
             sdpMLineIndex : cur_candidate_obj.label,
