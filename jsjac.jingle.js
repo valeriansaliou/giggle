@@ -2135,8 +2135,6 @@ function JSJaCJingle(args) {
       );
 
       // ICE candidates
-      // TODO: not tested yet, is the browser happy to add ICE candidates that were already added previously?
-      //       updateIce() method may be more appropriate? (cannot find any doc about that on the Internet)
       for(i in sdp_candidates_remote) {
         cur_candidate_obj = sdp_candidates_remote[i];
 
@@ -2924,9 +2922,9 @@ function JSJaCJingle(args) {
       var payloads_store = self._payloads_remote[name]['descriptions']['payload'];
       var payloads_add   = payload_data['descriptions']['payload'];
 
-      for(key in payloads) {
+      for(key in payloads_add) {
         if(!(key in payloads_store))
-          payloads_store[key] = payloads[key];
+          payloads_store[key] = payloads_add[key];
       }
     }
   };
