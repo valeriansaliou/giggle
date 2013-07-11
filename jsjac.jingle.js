@@ -5065,10 +5065,20 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] _peer_connection_create', 4);
 
     try {
+      // Log STUN servers in use
+      var stun_servers = self.get_stun();
+
+      if(typeof stun_servers.iceServers == 'object') {
+        for(var i = 0; i < (stun_servers.iceServers).length; i++)
+          self.get_debug().log('[JSJaCJingle] _peer_connection_create > Using STUN server at: ' + stun_servers.iceServers[i]['url'] + ' (' + (i + 1) + ')', 2);
+      } else {
+        self.get_debug().log('[JSJaCJingle] _peer_connection_create > No STUN server configured. Internet IP may not be discoverable.', 0);
+      }
+
       // Create the RTCPeerConnection object
       self._set_peer_connection(
         new WEBRTC_PEER_CONNECTION(
-          self.get_stun(),
+          stun_servers,
           WEBRTC_CONFIGURATION.peer_connection.constraints
         )
       );
