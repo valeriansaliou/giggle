@@ -1751,8 +1751,6 @@ function JSJaCJingle(args) {
         self._get_candidates_queue_remote()
       );
 
-      console.debug('DEBUG:DESCRIPTION:REMOTE > handle_session_accept_request', sdp_remote.description);
-
       // Remote description
       self._get_peer_connection().setRemoteDescription(
         (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -1770,8 +1768,6 @@ function JSJaCJingle(args) {
       // ICE candidates
       for(i in sdp_remote.candidates) {
         cur_candidate_obj = (sdp_remote.candidates)[i];
-
-        console.debug('DEBUG:CANDIDATE:REMOTE > handle_session_accept_request', cur_candidate_obj);
 
         self._get_peer_connection().addIceCandidate(
           new WEBRTC_ICE_CANDIDATE({
@@ -2154,8 +2150,6 @@ function JSJaCJingle(args) {
       // ICE candidates
       for(i in sdp_candidates_remote) {
         cur_candidate_obj = sdp_candidates_remote[i];
-
-        console.debug('DEBUG:CANDIDATE:REMOTE > handle_transport_info', cur_candidate_obj);
 
         self._get_peer_connection().addIceCandidate(
           new WEBRTC_ICE_CANDIDATE({
@@ -4214,7 +4208,7 @@ function JSJaCJingle(args) {
         cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption,
         cur_d_rtcp_fb_obj,
         cur_d_payload, cur_d_payload_obj, cur_d_payload_obj_attrs, cur_d_payload_obj_id,
-        cur_d_payload_obj_parameter,
+        cur_d_payload_obj_parameter, cur_d_payload_obj_parameter_obj, cur_d_payload_obj_parameter_str,
         cur_d_payload_obj_rtcp_fb, cur_d_payload_obj_rtcp_fb_obj,
         cur_d_payload_obj_rtcp_fb_ttr_int, cur_d_payload_obj_rtcp_fb_ttr_int_obj,
         cur_d_crypto_obj, cur_d_zrtp_hash_obj,
@@ -4385,15 +4379,19 @@ function JSJaCJingle(args) {
         // 'parameter'
         if(cur_d_payload_obj_parameter.length) {
           payloads_str += 'a=fmtp:' + cur_d_payload_obj_id + ' ';
+          cur_d_payload_obj_parameter_str = '';
 
           for(o in cur_d_payload_obj_parameter) {
             cur_d_payload_obj_parameter_obj = cur_d_payload_obj_parameter[o];
 
-            payloads_str += cur_d_payload_obj_parameter_obj['name'];
-            payloads_str += '=';
-            payloads_str += cur_d_payload_obj_parameter_obj['value'];
+            if(cur_d_payload_obj_parameter_str)  cur_d_payload_obj_parameter_str += ';';
+
+            cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj['name'];
+            cur_d_payload_obj_parameter_str += '=';
+            cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj['value'];
           }
 
+          payloads_str += cur_d_payload_obj_parameter_str;
           payloads_str += WEBRTC_SDP_LINE_BREAK;
         }
 
@@ -4545,9 +4543,9 @@ function JSJaCJingle(args) {
         case 'hd':
           constraints.video = {
             mandatory : {
-              minWidth: 1280,
-              minHeight: 720,
-              minAspectRatio: 1.77
+              minWidth       : 1280,
+              minHeight      : 720,
+              minAspectRatio : 1.77
             }
           };
           break;
@@ -4556,9 +4554,9 @@ function JSJaCJingle(args) {
         case 'md':
           constraints.video = {
             mandatory : {
-              minWidth: 640,
-              minHeight: 360,
-              minAspectRatio: 1.77
+              minWidth       : 640,
+              minHeight      : 360,
+              minAspectRatio : 1.77
             }
           };
           break;
@@ -4567,9 +4565,9 @@ function JSJaCJingle(args) {
         case 'sd':
           constraints.video = {
             mandatory : {
-              minWidth: 320,
-              minHeight: 180,
-              minAspectRatio: 1.77
+              minWidth       : 320,
+              minHeight      : 180,
+              minAspectRatio : 1.77
             }
           };
           break;
@@ -4578,8 +4576,8 @@ function JSJaCJingle(args) {
         case '960':
           constraints.video = {
             mandatory : {
-              minWidth: 960,
-              minHeight: 720
+              minWidth  : 960,
+              minHeight : 720
             }
           };
           break;
@@ -4588,8 +4586,8 @@ function JSJaCJingle(args) {
         case 'vga':
           constraints.video = {
             mandatory : {
-              maxWidth: 640,
-              maxHeight: 480
+              maxWidth  : 640,
+              maxHeight : 480
             }
           };
           break;
@@ -4597,8 +4595,8 @@ function JSJaCJingle(args) {
         case '320':
           constraints.video = {
             mandatory : {
-              maxWidth: 320,
-              maxHeight: 240
+              maxWidth  : 320,
+              maxHeight : 240
             }
           };
           break;
@@ -5077,6 +5075,57 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._util_sdp_resolution_payload = function(payload) {
+    try {
+      if(!payload || typeof payload != 'object') return {};
+
+      var cur_payload, constraints_arr;
+      var constraints = self.util_generate_constraints();
+
+      // We were there for video resolution, no need to continue...
+      if(typeof constraints.video                     != 'object'  || 
+         typeof constraints.video.mandatory           != 'object'  || 
+         typeof constraints.video.mandatory.minWidth  != 'number'  || 
+         typeof constraints.video.mandatory.minHeight != 'number'  )
+        return payload;
+
+      // Constraints to be used
+      constraints_arr = [
+        {
+          'name'  : 'height',
+          'value' : constraints.video.mandatory.minHeight
+        },
+
+        {
+          'name'  : 'width',
+          'value' : constraints.video.mandatory.minWidth
+        }
+      ];
+
+      for(cur_media in payload) {
+        if(cur_media != JSJAC_JINGLE_MEDIA_VIDEO) continue;
+
+        cur_payload = payload[cur_media]['descriptions']['payload'];
+
+        for(i in cur_payload) {
+          if(typeof cur_payload[i]['parameter'] != 'object')  cur_payload[i]['parameter'] = [];
+
+          for(j in constraints_arr)
+            (cur_payload[i]['parameter']).push(constraints_arr[j]);
+        }
+      }
+
+      return payload;
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > ' + e, 1);
+
+      return payload;
+    }
+  }
+
+  /**
+   * @private
+   */
   self._util_sdp_parse_candidate = function(sdp_candidate) {
     if(!sdp_candidate) return {};
     
@@ -5140,8 +5189,6 @@ function JSJaCJingle(args) {
       // Event: onicecandidate
       self._get_peer_connection().onicecandidate = function(e) {
         if(e.candidate) {
-          console.debug('DEBUG:CANDIDATE:LOCAL > _peer_connection_create > onicecandidate', e.candidate);
-
           // Store received candidate
           var candidate_id    = e.candidate.sdpMid;
           var candidate_data  = e.candidate.candidate;
@@ -5232,8 +5279,6 @@ function JSJaCJingle(args) {
           self._get_candidates_queue_remote()
         );
 
-        console.debug('DEBUG:DESCRIPTION:REMOTE > _peer_connection_create', sdp_remote.description);
-
         // Remote description
         self._get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -5256,8 +5301,6 @@ function JSJaCJingle(args) {
 
         for(i in sdp_remote.candidates) {
           cur_candidate_obj = (sdp_remote.candidates)[i];
-
-          console.debug('DEBUG:CANDIDATE:REMOTE > _peer_connection_create', cur_candidate_obj);
 
           self._get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
@@ -5342,10 +5385,9 @@ function JSJaCJingle(args) {
 
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 2);
 
-      console.debug('DEBUG:DESCRIPTION:LOCAL > _peer_got_description', sdp_local);
-
       // Convert SDP raw data to an object
       var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
+      self._util_sdp_resolution_payload(payload_parsed);
 
       for(c in payload_parsed)
         self._set_payloads_local(c, payload_parsed[c]);
