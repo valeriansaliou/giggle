@@ -78,19 +78,6 @@ var WEBRTC_CONFIGURATION = {
     }
   },
 
-  get_user_media  : {
-    audio: true,
-
-    video: {
-      mandatory : {
-        'minAspectRatio' : 1.777,
-        'maxAspectRatio' : 1.778
-      },
-
-      optional  : []
-    }
-  },
-
   create_offer    : {
     mandatory: {
       'OfferToReceiveAudio' : true,
@@ -406,6 +393,9 @@ var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
  * @param {DOM} args.remote_view The path to the remote stream view element.
  * @param {string} args.to The full JID to start the Jingle session with.
  * @param {string} args.media The media type to be used in the Jingle session.
+ * @param {string} args.resolution The resolution to be used for video in the Jingle session.
+ * @param {string} args.bandwidth The bandwidth to be limited for video in the Jingle session.
+ * @param {string} args.fps The framerate to be used for video in the Jingle session.
  * @param {object} args.stun A list of STUN servers to use (override the default one)
  * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
  */
@@ -513,6 +503,24 @@ function JSJaCJingle(args) {
      * @private
      */
     self._media = args.media;
+
+  if(args && args.resolution)
+    /**
+     * @private
+     */
+    self._resolution = args.resolution;
+
+  if(args && args.bandwidth)
+    /**
+     * @private
+     */
+    self._bandwidth = args.bandwidth;
+
+  if(args && args.fps)
+    /**
+     * @private
+     */
+    self._fps = args.fps;
 
   if(args && args.local_view)
     /**
@@ -1078,9 +1086,13 @@ function JSJaCJingle(args) {
     if(media == JSJAC_JINGLE_MEDIA_VIDEO) {
       // 'content-add' >> video
       // TODO
+
+      // self.send('set', { action: JSJAC_JINGLE_ACTION_CONTENT_ADD });
     } else {
       // 'content-remove' >> video
       // TODO
+
+      // self.send('set', { action: JSJAC_JINGLE_ACTION_CONTENT_REMOVE });
     }
   };
 
@@ -2587,6 +2599,33 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Gets the resolution value
+   * @return resolution value
+   * @type string
+   */
+  self.get_resolution = function() {
+    return self._resolution ? (self._resolution).toString() : null;
+  };
+
+  /**
+   * Gets the bandwidth value
+   * @return bandwidth value
+   * @type string
+   */
+  self.get_bandwidth = function() {
+    return self._bandwidth ? (self._bandwidth).toString() : null;
+  };
+
+  /**
+   * Gets the fps value
+   * @return fps value
+   * @type string
+   */
+  self.get_fps = function() {
+    return self._fps ? (self._fps).toString() : null;
+  };
+
+  /**
    * Gets the name value
    * @return name value
    * @type string
@@ -3073,6 +3112,27 @@ function JSJaCJingle(args) {
    */
   self._set_media = function(media) {
     self._media = media;
+  };
+
+  /**
+   * @private
+   */
+  self._set_resolution = function(resolution) {
+    self._resolution = resolution;
+  };
+
+  /**
+   * @private
+   */
+  self._set_bandwidth = function(bandwidth) {
+    self._bandwidth = bandwidth;
+  };
+
+  /**
+   * @private
+   */
+  self._set_fps = function(fps) {
+    self._fps = fps;
   };
 
   /**
@@ -4429,6 +4489,101 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Generates the constraints object
+   * @return constraints object
+   * @type object
+   */
+  self.util_generate_constraints = function() {
+    var constraints = {
+      audio : false,
+      video : false
+    };
+
+    // Medias?
+    constraints.audio = true;
+    constraints.video = (self.get_media() == JSJAC_JINGLE_MEDIA_VIDEO);
+
+    // Video configuration
+    if(constraints.video == true) {
+      // Resolution?
+      switch(self.get_resolution()) {
+        // 16:9
+        case '720':
+        case 'hd':
+          constraints.video = {
+            mandatory : {
+              minWidth: 1280,
+              minHeight: 720,
+              minAspectRatio: 1.77
+            }
+          };
+          break;
+
+        case '360':
+        case 'md':
+          constraints.video = {
+            mandatory : {
+              minWidth: 640,
+              minHeight: 360,
+              minAspectRatio: 1.77
+            }
+          };
+          break;
+
+        case '180':
+        case 'sd':
+          constraints.video = {
+            mandatory : {
+              minWidth: 320,
+              minHeight: 180,
+              minAspectRatio: 1.77
+            }
+          };
+          break;
+
+        // 4:3
+        case '960':
+          constraints.video = {
+            mandatory : {
+              minWidth: 960,
+              minHeight: 720
+            }
+          };
+          break;
+
+        case '640':
+        case 'vga':
+          constraints.video = {
+            mandatory : {
+              maxWidth: 640,
+              maxHeight: 480
+            }
+          };
+          break;
+
+        case '320':
+          constraints.video = {
+            mandatory : {
+              maxWidth: 320,
+              maxHeight: 240
+            }
+          };
+          break;
+      }
+
+      // Bandwidth?
+      if(self.get_bandwidth())
+        constraints.video.optional = [{ bandwidth: self.get_bandwidth() }];
+
+      // FPS?
+      if(self.get_fps())
+        constraints.video.mandatory['minFrameRate'] = self.get_fps();
+    }
+
+    return constraints;
+  };
+
+  /**
    * Returns our negotiation status
    * @return Negotiation status
    * @type string
@@ -5067,7 +5222,7 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] _peer_get_user_media > Getting user media...', 2);
 
       (WEBRTC_GET_MEDIA.bind(navigator))(
-        WEBRTC_CONFIGURATION.get_user_media,
+        self.util_generate_constraints(),
         self._peer_got_user_media_success.bind(this, callback),
         self._peer_got_user_media_error.bind(this)
       );

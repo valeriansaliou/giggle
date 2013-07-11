@@ -19,6 +19,7 @@ var ARGS = {
     to: null,
     local_view: null,
     remote_view: null,
+    resolution: 'sd',
     debug: (new JSJaCConsoleLogger(4)),
 
     // Custom handlers (optional)
