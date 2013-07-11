@@ -114,6 +114,7 @@ var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   zrtp_hash       : /^a=zrtp-hash:(\S+) (\w+)/i,
   fingerprint     : /^a=fingerprint:(\S+) (\S+)/i,
   extmap          : /^a=extmap:([^\s\/]+)(\/([^\s\/]+))? (\S+)/i,
+  bandwidth       : /^b=(\w+):(\d+)/i,
   media           : /^m=(audio|video|application|data) /i
 };
 
@@ -3578,6 +3579,7 @@ function JSJaCJingle(args) {
       var ic_arr = {
         'attrs'      : {},
         'rtcp-fb'    : [],
+        'bandwidth'  : [],
         'payload'    : {},
         'rtp-hdrext' : [],
         'rtcp-mux'   : 0,
@@ -3624,15 +3626,6 @@ function JSJaCJingle(args) {
 
       payload_obj['descriptions']['attrs']['media'] = cd_media;
       payload_obj['descriptions']['attrs']['ssrc']  = cd_ssrc;
-
-      // Loop on common RTCP-FB
-      self._util_stanza_parse_node(
-        description,
-        'rtcp-fb',
-        NS_JINGLE_APPS_RTP_RTCP_FB,
-        payload_obj['descriptions']['rtcp-fb'],
-        [ { n: 'type', r: 1 }, { n: 'subtype', r: 0 } ]
-      );
 
       // Loop on multiple payloads
       var payload = self.util_stanza_get_element(description, 'payload-type', NS_JINGLE_APPS_RTP);
@@ -3716,6 +3709,25 @@ function JSJaCJingle(args) {
           { n: 'value', r: 1 }
         );
       }
+
+      // Loop on common RTCP-FB
+      self._util_stanza_parse_node(
+        description,
+        'rtcp-fb',
+        NS_JINGLE_APPS_RTP_RTCP_FB,
+        payload_obj['descriptions']['rtcp-fb'],
+        [ { n: 'type', r: 1 }, { n: 'subtype', r: 0 } ]
+      );
+
+      // Loop on bandwidth
+      self._util_stanza_parse_node(
+        description,
+        'bandwidth',
+        NS_JINGLE_APPS_RTP,
+        payload_obj['descriptions']['bandwidth'],
+        [ { n: 'type', r: 1 } ],
+        { n: 'value', r: 1 }
+      );
 
       // Parse the RTP-HDREXT element
       self._util_stanza_parse_node(
@@ -3877,6 +3889,7 @@ function JSJaCJingle(args) {
         var cs_description  = cur_content['description'];
         var cs_d_attrs      = cs_description['attrs'];
         var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
+        var cs_d_bandwidth  = cs_description['bandwidth'];
         var cs_d_payload    = cs_description['payload'];
         var cs_d_encryption = cs_description['encryption'];
         var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
@@ -3888,15 +3901,6 @@ function JSJaCJingle(args) {
                             'description',
                             NS_JINGLE_APPS_RTP
                           );
-
-        // RTCP-FB (common)
-        self._util_stanza_build_node(
-          stanza,
-          description,
-          cs_d_rtcp_fb,
-          'rtcp-fb',
-          NS_JINGLE_APPS_RTP_RTCP_FB
-        );
 
         // Payload-type
         if(cs_d_payload) {
@@ -3968,6 +3972,25 @@ function JSJaCJingle(args) {
               'value'
             );
           }
+
+          // RTCP-FB (common)
+          self._util_stanza_build_node(
+            stanza,
+            description,
+            cs_d_rtcp_fb,
+            'rtcp-fb',
+            NS_JINGLE_APPS_RTP_RTCP_FB
+          );
+
+          // Bandwidth
+          self._util_stanza_build_node(
+            stanza,
+            description,
+            cs_d_bandwidth,
+            'bandwidth',
+            NS_JINGLE_APPS_RTP,
+            'value'
+          );
 
           // RTP-HDREXT
           self._util_stanza_build_node(
@@ -4183,12 +4206,12 @@ function JSJaCJingle(args) {
     var payloads_str = '';
 
     // Common vars
-    var i, j, k, l, m, n, o, p,
+    var i, j, k, l, m, n, o, p, q,
         cur_media, cur_media_obj,
         cur_senders, cur_name,
         cur_transports_obj, cur_description_obj,
         cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
-        cur_d_attrs, cur_d_rtcp_fb, cur_d_encryption,
+        cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption,
         cur_d_rtcp_fb_obj,
         cur_d_payload, cur_d_payload_obj, cur_d_payload_obj_attrs, cur_d_payload_obj_id,
         cur_d_payload_obj_parameter,
@@ -4228,6 +4251,7 @@ function JSJaCJingle(args) {
       cur_description_obj   = cur_media_obj['descriptions'];
       cur_d_attrs           = cur_description_obj['attrs'];
       cur_d_rtcp_fb         = cur_description_obj['rtcp-fb'];
+      cur_d_bandwidth       = cur_description_obj['bandwidth'];
       cur_d_payload         = cur_description_obj['payload'];
       cur_d_encryption      = cur_description_obj['encryption'];
       cur_d_rtp_hdrext      = cur_description_obj['rtp-hdrext'];
@@ -4320,6 +4344,15 @@ function JSJaCJingle(args) {
         if(cur_d_rtcp_fb_obj['subtype'])
           payloads_str += ' ' + cur_d_rtcp_fb_obj['subtype'];
 
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+      }
+
+      // 'bandwidth' (common)
+      for(q in cur_d_bandwidth) {
+        cur_d_bandwidth_obj = cur_d_bandwidth[q];
+
+        payloads_str += 'b=' + cur_d_bandwidth_obj['type'];
+        payloads_str += ':'  + cur_d_bandwidth_obj['value'];
         payloads_str += WEBRTC_SDP_LINE_BREAK;
       }
 
@@ -4696,9 +4729,9 @@ function JSJaCJingle(args) {
         cur_fmtp, cur_fmtp_id, cur_fmtp_values, cur_fmtp_attrs, cur_fmtp_key, cur_fmtp_value,
         cur_rtpmap, cur_rtcp_fb, cur_rtcp_fb_trr_int,
         cur_crypto, cur_zrtp_hash, cur_fingerprint, cur_extmap,
-        cur_rtpmap_id, cur_rtcp_fb_id,
+        cur_rtpmap_id, cur_rtcp_fb_id, cur_bandwidth,
         m_rtpmap, m_fmtp, m_rtcp_fb, m_rtcp_fb_trr_int, m_crypto, m_zrtp_hash,
-        m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_media;
+        m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_bandwidth, m_media;
 
     // Common functions
     var init_content = function(name) {
@@ -4755,6 +4788,27 @@ function JSJaCJingle(args) {
         // Push it to parent array
         init_descriptions(cur_media, 'attrs', {});
         payload[cur_media]['descriptions']['attrs']['media'] = cur_media;
+
+        continue;
+      }
+
+      m_bandwidth = (R_WEBRTC_SDP_ICE_PAYLOAD.bandwidth).exec(cur_line);
+
+      // 'bandwidth' line?
+      if(m_bandwidth) {
+        // Populate current object
+        e = 0;
+        cur_bandwidth = {};
+
+        cur_bandwidth['type']  = m_bandwidth[1]  || e++;
+        cur_bandwidth['value'] = m_bandwidth[2]  || e++;
+
+        // Incomplete?
+        if(e != 0) continue;
+
+        // Push it to parent array
+        init_descriptions(cur_media, 'bandwidth', []);
+        payload[cur_media]['descriptions']['bandwidth'].push(cur_bandwidth);
 
         continue;
       }
