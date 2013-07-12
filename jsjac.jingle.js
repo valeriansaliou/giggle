@@ -630,6 +630,11 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._media_busy = false;
+
+  /**
+   * @private
+   */
   self._sid = '';
 
   /**
@@ -1092,22 +1097,48 @@ function JSJaCJingle(args) {
       return;
     }
 
+    // Switch locked for now? (another one is being processed)
+    if(self.get_media_busy()) {
+      self.get_debug().log('[JSJaCJingle] media > Resource already busy switching media (busy: ' + self.get_media() + ', media: ' + media + ').', 0);
+      return;
+    }
+
     self.get_debug().log('[JSJaCJingle] media > Changing media to: ' + media + '...', 2);
 
     // Store new media
     self._set_media(media);
+    self._set_media_busy(true);
 
-    // Toggle video mode
+    // Toggle video mode (add/remove)
     if(media == JSJAC_JINGLE_MEDIA_VIDEO) {
-      // 'content-add' >> video
-      // TODO
+      // TODO: the flow is something like that...
+      /*self._peer_get_user_media(function() {
+        self._peer_connection_create(function() {
+          self.get_debug().log('[JSJaCJingle] media > Ready to change media (to: ' + media + ').', 2);
 
-      // self.send('set', { action: JSJAC_JINGLE_ACTION_CONTENT_ADD });
+          // 'content-add' >> video
+          // TODO
+
+          // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
+
+          self.send('set', { action: JSJAC_JINGLE_ACTION_CONTENT_ADD, name: JSJAC_JINGLE_MEDIA_VIDEO });
+        })
+      });*/
     } else {
-      // 'content-remove' >> video
-      // TODO
+      // TODO: the flow is something like that...
+      /*self._peer_get_user_media(function() {
+        self._peer_connection_create(function() {
+          self.get_debug().log('[JSJaCJingle] media > Ready to change media (to: ' + media + ').', 2);
 
-      // self.send('set', { action: JSJAC_JINGLE_ACTION_CONTENT_REMOVE });
+          // 'content-remove' >> video
+          // TODO
+
+          // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
+          //          here, only stop the video stream, do not touch the audio stream
+
+          self.send('set', { action: JSJAC_JINGLE_ACTION_CONTENT_REMOVE, name: JSJAC_JINGLE_MEDIA_VIDEO });
+        })
+      });*/
     }
   };
 
@@ -2568,6 +2599,15 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Gets the media busy value
+   * @return media busy value
+   * @type boolean
+   */
+  self.get_media_busy = function() {
+    return self._media_busy;
+  };
+
+  /**
    * Gets the sid value
    * @return sid value
    * @type string
@@ -3103,6 +3143,15 @@ function JSJaCJingle(args) {
    */
   self._set_lock = function(lock) {
     self._lock = lock;
+  };
+
+  /**
+   * Gets the media busy value
+   * @return media busy value
+   * @type boolean
+   */
+  self._set_media_busy = function(busy) {
+    self._media_busy = busy;
   };
 
   /**
