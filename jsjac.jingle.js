@@ -1765,8 +1765,6 @@ function JSJaCJingle(args) {
         self._get_candidates_queue_remote()
       );
 
-      console.debug('SDP:REMOTE:PARSED', (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)).sdp);
-
       // Remote description
       self._get_peer_connection().setRemoteDescription(
         (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -5228,8 +5226,6 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] _util_sdp_parse_payload > ' + e, 1);
     }
 
-    console.debug('payload >> ', payload);
-
     return payload;
   };
 
@@ -5472,8 +5468,6 @@ function JSJaCJingle(args) {
           self._get_candidates_queue_remote()
         );
 
-        console.debug('SDP:REMOTE:PARSED', (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)).sdp);
-
         // Remote description
         self._get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -5576,13 +5570,9 @@ function JSJaCJingle(args) {
     try {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Got local description.', 2);
 
-      console.debug('SDP:LOCAL:RAW', sdp_local.sdp);
-
       // Convert SDP raw data to an object
       var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
       self._util_sdp_resolution_payload(payload_parsed);
-
-      console.debug('SDP:LOCAL:OBJ', payload_parsed);
 
       for(c in payload_parsed)
         self._set_payloads_local(c, payload_parsed[c]);
@@ -5592,8 +5582,6 @@ function JSJaCJingle(args) {
         sdp_local.type,
         self._get_payloads_local()
       );
-
-      console.debug('SDP:LOCAL:PARSED', (new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)).sdp);
 
       self._get_peer_connection().setLocalDescription(
         new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)
