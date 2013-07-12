@@ -5079,26 +5079,50 @@ function JSJaCJingle(args) {
     try {
       if(!payload || typeof payload != 'object') return {};
 
-      var cur_payload, constraints_arr;
-      var constraints = self.util_generate_constraints();
+      var cur_payload, res_arr, constraints;
+      var res_height = null;
+      var res_width  = null;
 
-      // We were there for video resolution, no need to continue...
-      if(typeof constraints.video                     != 'object'  || 
-         typeof constraints.video.mandatory           != 'object'  || 
-         typeof constraints.video.mandatory.minWidth  != 'number'  || 
-         typeof constraints.video.mandatory.minHeight != 'number'  )
-        return payload;
+      // Try local view? (more reliable)
+      for(i in self.get_local_view()) {
+        if(typeof self.get_local_view()[i].videoWidth  == 'number'  &&
+           typeof self.get_local_view()[i].videoHeight == 'number'  ) {
+          res_height = self.get_local_view()[i].videoHeight;
+          res_width  = self.get_local_view()[i].videoWidth;
+
+          if(res_height && res_width)  break;
+        }
+      }
+
+      // Try media constraints? (less reliable)
+      if(!res_height || !res_width) {
+        self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > Could not get local video resolution reliably, falling back on constraints.', 0);
+
+        constraints = self.util_generate_constraints();
+
+        // Still nothing?!
+        if(typeof constraints.video                     != 'object'  || 
+           typeof constraints.video.mandatory           != 'object'  || 
+           typeof constraints.video.mandatory.minWidth  != 'number'  || 
+           typeof constraints.video.mandatory.minHeight != 'number'  ) {
+          self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > Could not get local video resolution (not sending it).', 1);
+          return payload;
+        }
+
+        res_height = constraints.video.mandatory.minHeight;
+        res_width  = constraints.video.mandatory.minWidth;
+      }
 
       // Constraints to be used
-      constraints_arr = [
+      res_arr = [
         {
           'name'  : 'height',
-          'value' : constraints.video.mandatory.minHeight
+          'value' : res_height
         },
 
         {
           'name'  : 'width',
-          'value' : constraints.video.mandatory.minWidth
+          'value' : res_width
         }
       ];
 
@@ -5110,10 +5134,12 @@ function JSJaCJingle(args) {
         for(i in cur_payload) {
           if(typeof cur_payload[i]['parameter'] != 'object')  cur_payload[i]['parameter'] = [];
 
-          for(j in constraints_arr)
-            (cur_payload[i]['parameter']).push(constraints_arr[j]);
+          for(j in res_arr)
+            (cur_payload[i]['parameter']).push(res_arr[j]);
         }
       }
+
+      self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > Got local video resolution (' + res_width + 'x' + res_height + ').', 2);
 
       return payload;
     } catch(e) {
@@ -5173,7 +5199,7 @@ function JSJaCJingle(args) {
 
       if(typeof stun_servers.iceServers == 'object') {
         for(var i = 0; i < (stun_servers.iceServers).length; i++)
-          self.get_debug().log('[JSJaCJingle] _peer_connection_create > Using STUN server at: ' + stun_servers.iceServers[i]['url'] + ' (' + (i + 1) + ')', 2);
+          self.get_debug().log('[JSJaCJingle] _peer_connection_create > Using STUN server at: ' + stun_servers.iceServers[i]['url'] + ' (' + (i + 1) + ').', 2);
       } else {
         self.get_debug().log('[JSJaCJingle] _peer_connection_create > No STUN server configured. Internet IP may not be discoverable.', 0);
       }
