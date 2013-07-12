@@ -108,7 +108,7 @@ var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   ufrag           : /^a=ice-ufrag:(\S+)/i,
   ptime           : /^a=ptime:(\d+)/i,
   maxptime        : /^a=maxptime:(\d+)/i,
-  ssrc            : /^a=ssrc:(\d+)/i,
+  ssrc            : /^a=ssrc:(\d+) (\w+)(:(\w+))?( (\w+))?/i,
   rtcp_mux        : /^a=rtcp-mux/i,
   crypto          : /^a=crypto:(\d{1,9}) (\w+) (\S+)( (\S+))?/i,
   zrtp_hash       : /^a=zrtp-hash:(\S+) (\w+)/i,
@@ -702,6 +702,8 @@ function JSJaCJingle(args) {
       return;
     }
 
+    self.get_debug().log('[JSJaCJingle] initiate > New Jingle session with media: ' + self.get_media(), 2);
+
     // Trigger init pending custom callback
     (self._get_session_initiate_pending())(self);
 
@@ -713,10 +715,18 @@ function JSJaCJingle(args) {
     self._set_initiator(self.util_connection_jid());
     self._set_responder(self.get_to());
 
-    for(available_name in JSJAC_JINGLE_MEDIAS) {
-      self._set_name(available_name);
-      self._set_senders(available_name, JSJAC_JINGLE_SENDERS_BOTH.jingle);
-      self._set_creator(available_name, JSJAC_JINGLE_CREATOR_INITIATOR);
+    for(i in self.get_media_all()) {
+      self._set_name(self.get_media_all()[i]);
+
+      self._set_senders(
+        self.get_media_all()[i],
+        JSJAC_JINGLE_SENDERS_BOTH.jingle
+      );
+
+      self._set_creator(
+        self.get_media_all()[i],
+        JSJAC_JINGLE_CREATOR_INITIATOR
+      );
     }
 
     // Register session to common router
@@ -749,6 +759,8 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] accept > Cannot accept, resource not initiated (status: ' + self.get_status() + ').', 0);
       return;
     }
+
+    self.get_debug().log('[JSJaCJingle] accept > New Jingle session with media: ' + self.get_media(), 2);
 
     // Trigger accept pending custom callback
     (self._get_session_accept_pending())(self);
@@ -1079,6 +1091,8 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] media > Resource already using this media (media: ' + media + ').', 0);
       return;
     }
+
+    self.get_debug().log('[JSJaCJingle] media > Changing media to: ' + media + '...', 2);
 
     // Store new media
     self._set_media(media);
@@ -1751,6 +1765,8 @@ function JSJaCJingle(args) {
         self._get_candidates_queue_remote()
       );
 
+      console.debug('SDP:REMOTE:PARSED', (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)).sdp);
+
       // Remote description
       self._get_peer_connection().setRemoteDescription(
         (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -1761,7 +1777,7 @@ function JSJaCJingle(args) {
 
         function() {
           // Error (descriptions are incompatible)
-          self.terminate(JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS);
+          self.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
         }
       );
 
@@ -1985,6 +2001,23 @@ function JSJaCJingle(args) {
       // Generate and store content data
       self._util_build_content_remote();
 
+      // Video or audio-only session?
+      if(JSJAC_JINGLE_MEDIA_VIDEO in self._get_content_remote()) {
+        self._set_media(JSJAC_JINGLE_MEDIA_VIDEO);
+      } else if(JSJAC_JINGLE_MEDIA_AUDIO in self._get_content_remote()) {
+        self._set_media(JSJAC_JINGLE_MEDIA_AUDIO);
+      } else {
+        // Session initiation not done
+        (self._get_session_initiate_error())(self, stanza);
+        self.handle_session_initiate_error(stanza);
+
+        // Error (no media is supported)
+        self.terminate(JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS);
+
+        self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Error (unsupported media).', 1);
+        return;
+      }
+
       // Session initiate done
       (self._get_session_initiate_success())(self, stanza);
       self.handle_session_initiate_success(stanza);
@@ -1998,7 +2031,7 @@ function JSJaCJingle(args) {
       // Send error reply
       self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
 
-      self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Error.', 1);
+      self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Error (bad request).', 1);
     }
   };
 
@@ -3405,15 +3438,19 @@ function JSJaCJingle(args) {
    * @type string
    */
   self.util_stanza_terminate_reason = function(stanza) {
-    var jingle = self.util_stanza_jingle(stanza);
+    try {
+      var jingle = self.util_stanza_jingle(stanza);
 
-    if(jingle) {
-      var reason = self.util_stanza_get_element(jingle, 'reason', NS_JINGLE);
+      if(jingle) {
+        var reason = self.util_stanza_get_element(jingle, 'reason', NS_JINGLE);
 
-      if(reason.length) {
-        for(cur_reason in JSJAC_JINGLE_REASONS)
-          if(self.util_stanza_get_element(reason[0], cur_reason, NS_JINGLE).length) return cur_reason;
+        if(reason.length) {
+          for(cur_reason in JSJAC_JINGLE_REASONS)
+            if(self.util_stanza_get_element(reason[0], cur_reason, NS_JINGLE).length)  return cur_reason;
+        }
       }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] util_stanza_terminate_reason > ' + e, 1);
     }
 
     return null;
@@ -3425,11 +3462,15 @@ function JSJaCJingle(args) {
    * @type string
    */
   self.util_stanza_session_info = function(stanza) {
-    var jingle = self.util_stanza_jingle(stanza);
+    try {
+      var jingle = self.util_stanza_jingle(stanza);
 
-    if(jingle) {
-      for(cur_info in JSJAC_JINGLE_SESSION_INFOS)
-        if(self.util_stanza_get_element(jingle, cur_info, NS_JINGLE_APPS_RTP_INFO).length) return cur_info;
+      if(jingle) {
+        for(cur_info in JSJAC_JINGLE_SESSION_INFOS)
+          if(self.util_stanza_get_element(jingle, cur_info, NS_JINGLE_APPS_RTP_INFO).length)  return cur_info;
+      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] util_stanza_session_info > ' + e, 1);
     }
 
     return null;
@@ -3439,63 +3480,71 @@ function JSJaCJingle(args) {
    * Set a timeout limit to a stanza
    */
   self.util_stanza_timeout = function(t_id, handlers) {
-    var t_sid = self.get_sid();
-    var t_status = self.get_status();
+    try {
+      var t_sid = self.get_sid();
+      var t_status = self.get_status();
 
-    self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Registered (id: ' + t_id + ', status: ' + t_status + ').', 4);
+      self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Registered (id: ' + t_id + ', status: ' + t_status + ').', 4);
 
-    setTimeout(function() {
-      self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Cheking (id: ' + t_id + ', status: ' + t_status + '-' + self.get_status() + ').', 4);
+      setTimeout(function() {
+        self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Cheking (id: ' + t_id + ', status: ' + t_status + '-' + self.get_status() + ').', 4);
 
-      // State did not change?
-      if(self.get_sid() == t_sid && self.get_status() == t_status && !(t_id in self._get_received_id())) {
-        self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza timeout.', 2);
+        // State did not change?
+        if(self.get_sid() == t_sid && self.get_status() == t_status && !(t_id in self._get_received_id())) {
+          self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza timeout.', 2);
 
-        self.unregister_handler(t_id);
+          self.unregister_handler(t_id);
 
-        if(handlers.external)  (handlers.external)(self);
-        if(handlers.internal)  (handlers.internal)();
-      } else {
-        self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza successful.', 4);
-      }
-    }, (JSJAC_JINGLE_STANZA_TIMEOUT * 1000));
+          if(handlers.external)  (handlers.external)(self);
+          if(handlers.internal)  (handlers.internal)();
+        } else {
+          self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza successful.', 4);
+        }
+      }, (JSJAC_JINGLE_STANZA_TIMEOUT * 1000));
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] util_stanza_timeout > ' + e, 1);
+    }
   };
 
   /**
    * @private
    */
   self._util_stanza_parse_node = function(parent, name, ns, obj, attrs, value) {
-    var i, j,
-        e, child, child_arr;
-    var children = self.util_stanza_get_element(parent, name, ns);
+    try {
+      var i, j,
+          e, child, child_arr;
+      var children = self.util_stanza_get_element(parent, name, ns);
 
-    if(children.length) {
-      for(i = 0; i < children.length; i++) {
-        // Initialize
-        e = 0;
-        child = children[i];
-        child_arr = {};
+      if(children.length) {
+        for(i = 0; i < children.length; i++) {
+          // Initialize
+          e = 0;
+          child = children[i];
+          child_arr = {};
 
-        // Parse attributes
-        for(j in attrs) {
-          child_arr[attrs[j].n] = self.util_stanza_get_attribute(child, attrs[j].n);
+          // Parse attributes
+          for(j in attrs) {
+            child_arr[attrs[j].n] = self.util_stanza_get_attribute(child, attrs[j].n);
 
-          if(attrs[j].r && !child_arr[attrs[j].n]) {
-            e++; break;
+            if(attrs[j].r && !child_arr[attrs[j].n]) {
+              e++; break;
+            }
           }
+
+          // Parse value
+          if(value) {
+            child_arr[value.n] = self.util_stanza_get_value(child);
+            if(value.r && !child_arr[value.n])  e++;
+          }
+
+          if(e != 0) continue;
+
+          // Push current children
+          obj.push(child_arr);
         }
-
-        // Parse value
-        if(value) {
-          child_arr[value.n] = self.util_stanza_get_value(child);
-          if(value.r && !child_arr[value.n])  e++;
-        }
-
-        if(e != 0) continue;
-
-        // Push current children
-        obj.push(child_arr);
       }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_stanza_parse_node > ' + e, 1);
     }
   };
 
@@ -3503,53 +3552,57 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_stanza_parse_content = function(stanza) {
-    var i,
-        jingle, content, cur_content,
-        content_creator, content_name, content_senders,
-        cur_candidates;
+    try {
+      var i,
+          jingle, content, cur_content,
+          content_creator, content_name, content_senders,
+          cur_candidates;
 
-    // Parse initiate stanza
-    jingle = self.util_stanza_jingle(stanza);
+      // Parse initiate stanza
+      jingle = self.util_stanza_jingle(stanza);
 
-    if(jingle) {
-      // Childs
-      content = self.util_stanza_get_element(jingle, 'content', NS_JINGLE);
+      if(jingle) {
+        // Childs
+        content = self.util_stanza_get_element(jingle, 'content', NS_JINGLE);
 
-      if(content && content.length) {
-        for(i = 0; i < content.length; i++) {
-          cur_content = content[i];
+        if(content && content.length) {
+          for(i = 0; i < content.length; i++) {
+            cur_content = content[i];
 
-          // Attrs (avoids senders & creators to be changed later in the flow)
-          content_name    = self.util_stanza_get_attribute(cur_content, 'name');
-          content_senders = self.get_senders(content_name) || self.util_stanza_get_attribute(cur_content, 'senders');
-          content_creator = self.get_creator(content_name) || self.util_stanza_get_attribute(cur_content, 'creator');
+            // Attrs (avoids senders & creators to be changed later in the flow)
+            content_name    = self.util_stanza_get_attribute(cur_content, 'name');
+            content_senders = self.get_senders(content_name) || self.util_stanza_get_attribute(cur_content, 'senders');
+            content_creator = self.get_creator(content_name) || self.util_stanza_get_attribute(cur_content, 'creator');
 
-          self._set_name(content_name);
-          self._set_senders(content_name, content_senders);
-          self._set_creator(content_name, content_creator);
+            self._set_name(content_name);
+            self._set_senders(content_name, content_senders);
+            self._set_creator(content_name, content_creator);
 
-          // Payloads (non-destructive setters / cumulative)
-          self._set_payloads_remote_add(
-            content_name,
-            self._util_stanza_parse_payload(cur_content)
-          );
+            // Payloads (non-destructive setters / cumulative)
+            self._set_payloads_remote_add(
+              content_name,
+              self._util_stanza_parse_payload(cur_content)
+            );
 
-          // Candidates (enqueue them for ICE processing, too)
-          cur_candidate = self._util_stanza_parse_candidate(cur_content);
+            // Candidates (enqueue them for ICE processing, too)
+            cur_candidate = self._util_stanza_parse_candidate(cur_content);
 
-          self._set_candidates_remote_add(
-            content_name,
-            cur_candidate
-          );
+            self._set_candidates_remote_add(
+              content_name,
+              cur_candidate
+            );
 
-          self._set_candidates_queue_remote(
-            content_name,
-            cur_candidate
-          );
+            self._set_candidates_queue_remote(
+              content_name,
+              cur_candidate
+            );
+          }
+
+          return true;
         }
-
-        return true;
       }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_stanza_parse_content > ' + e, 1);
     }
 
     return false;
@@ -3564,196 +3617,200 @@ function JSJaCJingle(args) {
       'transports'   : {}
     };
 
-    // Common vars
-    var j, e,
-        cur_payload, cur_payload_arr, cur_payload_id;
+    try {
+      // Common vars
+      var j, e,
+          cur_payload, cur_payload_arr, cur_payload_id;
 
-    // Common functions
-    var init_content = function() {
-      var ic_arr = {
-        'attrs'      : {},
-        'rtcp-fb'    : [],
-        'bandwidth'  : [],
-        'payload'    : {},
-        'rtp-hdrext' : [],
-        'rtcp-mux'   : 0,
+      // Common functions
+      var init_content = function() {
+        var ic_arr = {
+          'attrs'      : {},
+          'rtcp-fb'    : [],
+          'bandwidth'  : [],
+          'payload'    : {},
+          'rtp-hdrext' : [],
+          'rtcp-mux'   : 0,
 
-        'encryption' : {
-          'attrs'     : {},
-          'crypto'    : [],
-          'zrtp-hash' : []
-        }
+          'encryption' : {
+            'attrs'     : {},
+            'crypto'    : [],
+            'zrtp-hash' : []
+          }
+        };
+
+        for(ic_key in ic_arr)
+          if(!(ic_key in payload_obj['descriptions']))  payload_obj['descriptions'][ic_key] = ic_arr[ic_key];
       };
 
-      for(ic_key in ic_arr)
-        if(!(ic_key in payload_obj['descriptions']))  payload_obj['descriptions'][ic_key] = ic_arr[ic_key];
-    };
+      var init_payload = function(id) {
+        var ip_arr = {
+          'attrs'           : {},
+          'parameter'       : [],
+          'rtcp-fb'         : [],
+          'rtcp-fb-trr-int' : []
+        };
 
-    var init_payload = function(id) {
-      var ip_arr = {
-        'attrs'           : {},
-        'parameter'       : [],
-        'rtcp-fb'         : [],
-        'rtcp-fb-trr-int' : []
-      };
+        if(!(id in payload_obj['descriptions']['payload']))  payload_obj['descriptions']['payload'][id] = {};
 
-      if(!(id in payload_obj['descriptions']['payload']))  payload_obj['descriptions']['payload'][id] = {};
-
-      for(ip_key in ip_arr)
-        if(!(ip_key in payload_obj['descriptions']['payload'][id]))  payload_obj['descriptions']['payload'][id][ip_key] = ip_arr[ip_key];
-    }
-
-    // Parse session description
-    var description = self.util_stanza_get_element(stanza_content, 'description', NS_JINGLE_APPS_RTP);
-
-    if(description.length) {
-      description = description[0];
-
-      var cd_media = self.util_stanza_get_attribute(description, 'media');
-      var cd_ssrc  = self.util_stanza_get_attribute(description, 'ssrc');
-
-      if(!cd_media)
-        self.get_debug().log('[JSJaCJingle] util_stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
-
-      // Initialize current description
-      init_content();
-
-      payload_obj['descriptions']['attrs']['media'] = cd_media;
-      payload_obj['descriptions']['attrs']['ssrc']  = cd_ssrc;
-
-      // Loop on multiple payloads
-      var payload = self.util_stanza_get_element(description, 'payload-type', NS_JINGLE_APPS_RTP);
-
-      if(payload.length) {
-        for(j = 0; j < payload.length; j++) {
-          e               = 0;
-          cur_payload     = payload[j];
-          cur_payload_arr = {};
-
-          cur_payload_arr['channels']  = self.util_stanza_get_attribute(cur_payload, 'channels');
-          cur_payload_arr['clockrate'] = self.util_stanza_get_attribute(cur_payload, 'clockrate');
-          cur_payload_arr['id']        = self.util_stanza_get_attribute(cur_payload, 'id') || e++;
-          cur_payload_arr['name']      = self.util_stanza_get_attribute(cur_payload, 'name');
-
-          payload_obj['descriptions']['attrs']['ptime']     = self.util_stanza_get_attribute(cur_payload, 'ptime');
-          payload_obj['descriptions']['attrs']['maxptime']  = self.util_stanza_get_attribute(cur_payload, 'maxptime');
-
-          if(e != 0) continue;
-
-          // Initialize current payload
-          cur_payload_id = cur_payload_arr['id'];
-          init_payload(cur_payload_id);
-
-          // Push current payload
-          payload_obj['descriptions']['payload'][cur_payload_id]['attrs'] = cur_payload_arr;
-
-          // Loop on multiple parameters
-          self._util_stanza_parse_node(
-            cur_payload,
-            'parameter',
-            NS_JINGLE_APPS_RTP,
-            payload_obj['descriptions']['payload'][cur_payload_id]['parameter'],
-            [ { n: 'name', r: 1 }, { n: 'value', r: 1 } ]
-          );
-
-          // Loop on multiple RTCP-FB
-          self._util_stanza_parse_node(
-            cur_payload,
-            'rtcp-fb',
-            NS_JINGLE_APPS_RTP_RTCP_FB,
-            payload_obj['descriptions']['payload'][cur_payload_id]['rtcp-fb'],
-            [ { n: 'type', r: 1 }, { n: 'subtype', r: 0 } ]
-          );
-
-          // Loop on multiple RTCP-FB-TRR-INT
-          self._util_stanza_parse_node(
-            cur_payload,
-            'rtcp-fb-trr-int',
-            NS_JINGLE_APPS_RTP_RTCP_FB,
-            payload_obj['descriptions']['payload'][cur_payload_id]['rtcp-fb-trr-int'],
-            [ { n: 'value', r: 1 } ]
-          );
-        }
+        for(ip_key in ip_arr)
+          if(!(ip_key in payload_obj['descriptions']['payload'][id]))  payload_obj['descriptions']['payload'][id][ip_key] = ip_arr[ip_key];
       }
 
-      // Parse the encryption element
-      var encryption = self.util_stanza_get_element(description, 'encryption', NS_JINGLE_APPS_RTP);
+      // Parse session description
+      var description = self.util_stanza_get_element(stanza_content, 'description', NS_JINGLE_APPS_RTP);
 
-      if(encryption.length) {
-        encryption = encryption[0];
+      if(description.length) {
+        description = description[0];
 
-        payload_obj['descriptions']['encryption']['attrs']['required'] = self.util_stanza_get_attribute(encryption, 'required') || '0';
+        var cd_media = self.util_stanza_get_attribute(description, 'media');
+        var cd_ssrc  = self.util_stanza_get_attribute(description, 'ssrc');
 
-        // Loop on multiple cryptos
+        if(!cd_media)
+          self.get_debug().log('[JSJaCJingle] util_stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
+
+        // Initialize current description
+        init_content();
+
+        payload_obj['descriptions']['attrs']['media'] = cd_media;
+        payload_obj['descriptions']['attrs']['ssrc']  = cd_ssrc;
+
+        // Loop on multiple payloads
+        var payload = self.util_stanza_get_element(description, 'payload-type', NS_JINGLE_APPS_RTP);
+
+        if(payload.length) {
+          for(j = 0; j < payload.length; j++) {
+            e               = 0;
+            cur_payload     = payload[j];
+            cur_payload_arr = {};
+
+            cur_payload_arr['channels']  = self.util_stanza_get_attribute(cur_payload, 'channels');
+            cur_payload_arr['clockrate'] = self.util_stanza_get_attribute(cur_payload, 'clockrate');
+            cur_payload_arr['id']        = self.util_stanza_get_attribute(cur_payload, 'id') || e++;
+            cur_payload_arr['name']      = self.util_stanza_get_attribute(cur_payload, 'name');
+
+            payload_obj['descriptions']['attrs']['ptime']     = self.util_stanza_get_attribute(cur_payload, 'ptime');
+            payload_obj['descriptions']['attrs']['maxptime']  = self.util_stanza_get_attribute(cur_payload, 'maxptime');
+
+            if(e != 0) continue;
+
+            // Initialize current payload
+            cur_payload_id = cur_payload_arr['id'];
+            init_payload(cur_payload_id);
+
+            // Push current payload
+            payload_obj['descriptions']['payload'][cur_payload_id]['attrs'] = cur_payload_arr;
+
+            // Loop on multiple parameters
+            self._util_stanza_parse_node(
+              cur_payload,
+              'parameter',
+              NS_JINGLE_APPS_RTP,
+              payload_obj['descriptions']['payload'][cur_payload_id]['parameter'],
+              [ { n: 'name', r: 1 }, { n: 'value', r: 1 } ]
+            );
+
+            // Loop on multiple RTCP-FB
+            self._util_stanza_parse_node(
+              cur_payload,
+              'rtcp-fb',
+              NS_JINGLE_APPS_RTP_RTCP_FB,
+              payload_obj['descriptions']['payload'][cur_payload_id]['rtcp-fb'],
+              [ { n: 'type', r: 1 }, { n: 'subtype', r: 0 } ]
+            );
+
+            // Loop on multiple RTCP-FB-TRR-INT
+            self._util_stanza_parse_node(
+              cur_payload,
+              'rtcp-fb-trr-int',
+              NS_JINGLE_APPS_RTP_RTCP_FB,
+              payload_obj['descriptions']['payload'][cur_payload_id]['rtcp-fb-trr-int'],
+              [ { n: 'value', r: 1 } ]
+            );
+          }
+        }
+
+        // Parse the encryption element
+        var encryption = self.util_stanza_get_element(description, 'encryption', NS_JINGLE_APPS_RTP);
+
+        if(encryption.length) {
+          encryption = encryption[0];
+
+          payload_obj['descriptions']['encryption']['attrs']['required'] = self.util_stanza_get_attribute(encryption, 'required') || '0';
+
+          // Loop on multiple cryptos
+          self._util_stanza_parse_node(
+            encryption,
+            'crypto',
+            NS_JINGLE_APPS_RTP,
+            payload_obj['descriptions']['encryption']['crypto'],
+            [ { n: 'crypto-suite', r: 1 }, { n: 'key-params', r: 1 }, { n: 'session-params', r: 0 }, { n: 'tag', r: 1 } ]
+          );
+
+          // Loop on multiple zrtp-hash
+          self._util_stanza_parse_node(
+            encryption,
+            'zrtp-hash',
+            NS_JINGLE_APPS_RTP_ZRTP,
+            payload_obj['descriptions']['encryption']['zrtp-hash'],
+            [ { n: 'version', r: 1 } ],
+            { n: 'value', r: 1 }
+          );
+        }
+
+        // Loop on common RTCP-FB
         self._util_stanza_parse_node(
-          encryption,
-          'crypto',
-          NS_JINGLE_APPS_RTP,
-          payload_obj['descriptions']['encryption']['crypto'],
-          [ { n: 'crypto-suite', r: 1 }, { n: 'key-params', r: 1 }, { n: 'session-params', r: 0 }, { n: 'tag', r: 1 } ]
+          description,
+          'rtcp-fb',
+          NS_JINGLE_APPS_RTP_RTCP_FB,
+          payload_obj['descriptions']['rtcp-fb'],
+          [ { n: 'type', r: 1 }, { n: 'subtype', r: 0 } ]
         );
 
-        // Loop on multiple zrtp-hash
+        // Loop on bandwidth
         self._util_stanza_parse_node(
-          encryption,
-          'zrtp-hash',
-          NS_JINGLE_APPS_RTP_ZRTP,
-          payload_obj['descriptions']['encryption']['zrtp-hash'],
-          [ { n: 'version', r: 1 } ],
+          description,
+          'bandwidth',
+          NS_JINGLE_APPS_RTP,
+          payload_obj['descriptions']['bandwidth'],
+          [ { n: 'type', r: 1 } ],
           { n: 'value', r: 1 }
         );
+
+        // Parse the RTP-HDREXT element
+        self._util_stanza_parse_node(
+          description,
+          'rtp-hdrext',
+          NS_JINGLE_APPS_RTP_RTP_HDREXT,
+          payload_obj['descriptions']['rtp-hdrext'],
+          [ { n: 'id', r: 1 }, { n: 'uri', r: 1 }, { n: 'senders', r: 0 } ]
+        );
+
+        // Parse the RTCP-MUX element
+        var rtcp_mux = self.util_stanza_get_element(description, 'rtcp-mux', NS_JINGLE_APPS_RTP);
+
+        if(rtcp_mux.length) {
+          payload_obj['descriptions']['rtcp-mux'] = 1;
+        }
       }
 
-      // Loop on common RTCP-FB
-      self._util_stanza_parse_node(
-        description,
-        'rtcp-fb',
-        NS_JINGLE_APPS_RTP_RTCP_FB,
-        payload_obj['descriptions']['rtcp-fb'],
-        [ { n: 'type', r: 1 }, { n: 'subtype', r: 0 } ]
-      );
+      // Parse transport (need to get 'ufrag' and 'pwd' there)
+      var transport = self.util_stanza_get_element(stanza_content, 'transport', NS_JINGLE_TRANSPORTS_ICEUDP);
 
-      // Loop on bandwidth
-      self._util_stanza_parse_node(
-        description,
-        'bandwidth',
-        NS_JINGLE_APPS_RTP,
-        payload_obj['descriptions']['bandwidth'],
-        [ { n: 'type', r: 1 } ],
-        { n: 'value', r: 1 }
-      );
+      if(transport.length) {
+        payload_obj['transports']['pwd']          = self.util_stanza_get_attribute(transport, 'pwd');
+        payload_obj['transports']['ufrag']        = self.util_stanza_get_attribute(transport, 'ufrag');
 
-      // Parse the RTP-HDREXT element
-      self._util_stanza_parse_node(
-        description,
-        'rtp-hdrext',
-        NS_JINGLE_APPS_RTP_RTP_HDREXT,
-        payload_obj['descriptions']['rtp-hdrext'],
-        [ { n: 'id', r: 1 }, { n: 'uri', r: 1 }, { n: 'senders', r: 0 } ]
-      );
+        var fingerprint = self.util_stanza_get_element(transport, 'fingerprint', NS_JINGLE_APPS_DTLS);
 
-      // Parse the RTCP-MUX element
-      var rtcp_mux = self.util_stanza_get_element(description, 'rtcp-mux', NS_JINGLE_APPS_RTP);
-
-      if(rtcp_mux.length) {
-        payload_obj['descriptions']['rtcp-mux'] = 1;
+        if(fingerprint.length) {
+          payload_obj['transports']['fingerprint']          = {};
+          payload_obj['transports']['fingerprint']['hash']  = self.util_stanza_get_attribute(fingerprint, 'hash');
+          payload_obj['transports']['fingerprint']['value'] = self.util_stanza_get_value(fingerprint);
+        }
       }
-    }
-
-    // Parse transport (need to get 'ufrag' and 'pwd' there)
-    var transport = self.util_stanza_get_element(stanza_content, 'transport', NS_JINGLE_TRANSPORTS_ICEUDP);
-
-    if(transport.length) {
-      payload_obj['transports']['pwd']          = self.util_stanza_get_attribute(transport, 'pwd');
-      payload_obj['transports']['ufrag']        = self.util_stanza_get_attribute(transport, 'ufrag');
-
-      var fingerprint = self.util_stanza_get_element(transport, 'fingerprint', NS_JINGLE_APPS_DTLS);
-
-      if(fingerprint.length) {
-        payload_obj['transports']['fingerprint']          = {};
-        payload_obj['transports']['fingerprint']['hash']  = self.util_stanza_get_attribute(fingerprint, 'hash');
-        payload_obj['transports']['fingerprint']['value'] = self.util_stanza_get_value(fingerprint);
-      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_stanza_parse_payload > ' + e, 1);
     }
 
     return payload_obj;
@@ -3765,36 +3822,40 @@ function JSJaCJingle(args) {
   self._util_stanza_parse_candidate = function(stanza_content) {
     var candidate_arr = [];
 
-    // Common vars
-    var e, i,
-        transport, candidate,
-        cur_candidate, cur_candidate_obj;
+    try {
+      // Common vars
+      var e, i,
+          transport, candidate,
+          cur_candidate, cur_candidate_obj;
 
-    // Parse transport candidates
-    transport = self.util_stanza_get_element(stanza_content, 'transport', NS_JINGLE_TRANSPORTS_ICEUDP);
-    
-    if(transport.length) {
-      self._util_stanza_parse_node(
-        transport,
-        'candidate',
-        NS_JINGLE_TRANSPORTS_ICEUDP,
-        candidate_arr,
+      // Parse transport candidates
+      transport = self.util_stanza_get_element(stanza_content, 'transport', NS_JINGLE_TRANSPORTS_ICEUDP);
+      
+      if(transport.length) {
+        self._util_stanza_parse_node(
+          transport,
+          'candidate',
+          NS_JINGLE_TRANSPORTS_ICEUDP,
+          candidate_arr,
 
-        [
-          { n: 'component',  r: 1 },
-          { n: 'foundation', r: 1 },
-          { n: 'generation', r: 1 },
-          { n: 'id',         r: 1 },
-          { n: 'ip',         r: 1 },
-          { n: 'network',    r: 1 },
-          { n: 'port',       r: 1 },
-          { n: 'priority',   r: 1 },
-          { n: 'protocol',   r: 1 },
-          { n: 'rel-addr',   r: 0 },
-          { n: 'rel-port',   r: 0 },
-          { n: 'type',       r: 1 }
-        ]
-      );
+          [
+            { n: 'component',  r: 1 },
+            { n: 'foundation', r: 1 },
+            { n: 'generation', r: 1 },
+            { n: 'id',         r: 1 },
+            { n: 'ip',         r: 1 },
+            { n: 'network',    r: 1 },
+            { n: 'port',       r: 1 },
+            { n: 'priority',   r: 1 },
+            { n: 'protocol',   r: 1 },
+            { n: 'rel-addr',   r: 0 },
+            { n: 'rel-port',   r: 0 },
+            { n: 'type',       r: 1 }
+          ]
+        );
+      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_stanza_parse_candidate > ' + e, 1);
     }
 
     return candidate_arr;
@@ -3867,169 +3928,173 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_stanza_generate_content_local = function(stanza, jingle, override_content) {
-    var content_local = override_content ? override_content : self._get_content_local();
+    try {
+      var content_local = override_content ? override_content : self._get_content_local();
 
-    for(cur_media in content_local) {
-      var cur_content = content_local[cur_media];
+      for(cur_media in content_local) {
+        var cur_content = content_local[cur_media];
 
-      var content = jingle.appendChild(stanza.buildNode('content', { 'xmlns': NS_JINGLE }));
+        var content = jingle.appendChild(stanza.buildNode('content', { 'xmlns': NS_JINGLE }));
 
-      self.util_stanza_set_attribute(content, 'creator', cur_content['creator']);
-      self.util_stanza_set_attribute(content, 'name',    cur_content['name']);
-      self.util_stanza_set_attribute(content, 'senders', cur_content['senders']);
+        self.util_stanza_set_attribute(content, 'creator', cur_content['creator']);
+        self.util_stanza_set_attribute(content, 'name',    cur_content['name']);
+        self.util_stanza_set_attribute(content, 'senders', cur_content['senders']);
 
-      // Build description (if action type allows that element)
-      if(self.util_stanza_get_attribute(jingle, 'action') != JSJAC_JINGLE_ACTION_TRANSPORT_INFO) {
-        var cs_description  = cur_content['description'];
-        var cs_d_attrs      = cs_description['attrs'];
-        var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
-        var cs_d_bandwidth  = cs_description['bandwidth'];
-        var cs_d_payload    = cs_description['payload'];
-        var cs_d_encryption = cs_description['encryption'];
-        var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
-        var cs_d_rtcp_mux   = cs_description['rtcp-mux'];
+        // Build description (if action type allows that element)
+        if(self.util_stanza_get_attribute(jingle, 'action') != JSJAC_JINGLE_ACTION_TRANSPORT_INFO) {
+          var cs_description  = cur_content['description'];
+          var cs_d_attrs      = cs_description['attrs'];
+          var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
+          var cs_d_bandwidth  = cs_description['bandwidth'];
+          var cs_d_payload    = cs_description['payload'];
+          var cs_d_encryption = cs_description['encryption'];
+          var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
+          var cs_d_rtcp_mux   = cs_description['rtcp-mux'];
 
-        var description = self._util_stanza_build_node(
-                            stanza, content,
-                            [cs_d_attrs],
-                            'description',
-                            NS_JINGLE_APPS_RTP
-                          );
+          var description = self._util_stanza_build_node(
+                              stanza, content,
+                              [cs_d_attrs],
+                              'description',
+                              NS_JINGLE_APPS_RTP
+                            );
 
-        // Payload-type
-        if(cs_d_payload) {
-          var i, cs_d_p, payload_type;
+          // Payload-type
+          if(cs_d_payload) {
+            var i, cs_d_p, payload_type;
 
-          for(i in cs_d_payload) {
-            cs_d_p = cs_d_payload[i];
+            for(i in cs_d_payload) {
+              cs_d_p = cs_d_payload[i];
 
-            payload_type = self._util_stanza_build_node(
-                             stanza,
-                             description,
-                             [cs_d_p['attrs']],
-                             'payload-type',
-                             NS_JINGLE_APPS_RTP
-                           );
+              payload_type = self._util_stanza_build_node(
+                               stanza,
+                               description,
+                               [cs_d_p['attrs']],
+                               'payload-type',
+                               NS_JINGLE_APPS_RTP
+                             );
 
-            // Parameter
+              // Parameter
+              self._util_stanza_build_node(
+                stanza,
+                payload_type,
+                cs_d_p['parameter'],
+                'parameter',
+                NS_JINGLE_APPS_RTP
+              );
+
+              // RTCP-FB (sub)
+              self._util_stanza_build_node(
+                stanza,
+                payload_type,
+                cs_d_p['rtcp-fb'],
+                'rtcp-fb',
+                NS_JINGLE_APPS_RTP_RTCP_FB
+              );
+
+              // RTCP-FB-TRR-INT
+              self._util_stanza_build_node(
+                stanza,
+                payload_type,
+                cs_d_p['rtcp-fb-trr-int'],
+                'rtcp-fb-trr-int',
+                NS_JINGLE_APPS_RTP_RTCP_FB
+              );
+            }
+
+            // Encryption
+            if(cs_d_encryption && 
+               (cs_d_encryption['crypto'] && cs_d_encryption['crypto'].length || 
+                cs_d_encryption['zrtp-hash'] && cs_d_encryption['zrtp-hash'].length)) {
+              var encryption = description.appendChild(stanza.buildNode('encryption', { 'xmlns': NS_JINGLE_APPS_RTP }));
+
+              self.util_stanza_set_attribute(encryption, 'required', (cs_d_encryption['attrs']['required'] || '0'));
+
+              // Crypto
+              self._util_stanza_build_node(
+                stanza,
+                encryption,
+                cs_d_encryption['crypto'],
+                'crypto',
+                NS_JINGLE_APPS_RTP
+              );
+
+              // ZRTP-HASH
+              self._util_stanza_build_node(
+                stanza,
+                encryption,
+                cs_d_encryption['zrtp-hash'],
+                'zrtp-hash',
+                NS_JINGLE_APPS_RTP_ZRTP,
+                'value'
+              );
+            }
+
+            // RTCP-FB (common)
             self._util_stanza_build_node(
               stanza,
-              payload_type,
-              cs_d_p['parameter'],
-              'parameter',
-              NS_JINGLE_APPS_RTP
-            );
-
-            // RTCP-FB (sub)
-            self._util_stanza_build_node(
-              stanza,
-              payload_type,
-              cs_d_p['rtcp-fb'],
+              description,
+              cs_d_rtcp_fb,
               'rtcp-fb',
               NS_JINGLE_APPS_RTP_RTCP_FB
             );
 
-            // RTCP-FB-TRR-INT
+            // Bandwidth
             self._util_stanza_build_node(
               stanza,
-              payload_type,
-              cs_d_p['rtcp-fb-trr-int'],
-              'rtcp-fb-trr-int',
-              NS_JINGLE_APPS_RTP_RTCP_FB
-            );
-          }
-
-          // Encryption
-          if(cs_d_encryption && 
-             (cs_d_encryption['crypto'] && cs_d_encryption['crypto'].length || 
-              cs_d_encryption['zrtp-hash'] && cs_d_encryption['zrtp-hash'].length)) {
-            var encryption = description.appendChild(stanza.buildNode('encryption', { 'xmlns': NS_JINGLE_APPS_RTP }));
-
-            self.util_stanza_set_attribute(encryption, 'required', (cs_d_encryption['attrs']['required'] || '0'));
-
-            // Crypto
-            self._util_stanza_build_node(
-              stanza,
-              encryption,
-              cs_d_encryption['crypto'],
-              'crypto',
-              NS_JINGLE_APPS_RTP
-            );
-
-            // ZRTP-HASH
-            self._util_stanza_build_node(
-              stanza,
-              encryption,
-              cs_d_encryption['zrtp-hash'],
-              'zrtp-hash',
-              NS_JINGLE_APPS_RTP_ZRTP,
+              description,
+              cs_d_bandwidth,
+              'bandwidth',
+              NS_JINGLE_APPS_RTP,
               'value'
             );
+
+            // RTP-HDREXT
+            self._util_stanza_build_node(
+              stanza,
+              description,
+              cs_d_rtp_hdrext,
+              'rtp-hdrext',
+              NS_JINGLE_APPS_RTP_RTP_HDREXT
+            );
+
+            // RTCP-MUX
+            if(cs_d_rtcp_mux)
+              description.appendChild(stanza.buildNode('rtcp-mux', { 'xmlns': NS_JINGLE_APPS_RTP }));
           }
-
-          // RTCP-FB (common)
-          self._util_stanza_build_node(
-            stanza,
-            description,
-            cs_d_rtcp_fb,
-            'rtcp-fb',
-            NS_JINGLE_APPS_RTP_RTCP_FB
-          );
-
-          // Bandwidth
-          self._util_stanza_build_node(
-            stanza,
-            description,
-            cs_d_bandwidth,
-            'bandwidth',
-            NS_JINGLE_APPS_RTP,
-            'value'
-          );
-
-          // RTP-HDREXT
-          self._util_stanza_build_node(
-            stanza,
-            description,
-            cs_d_rtp_hdrext,
-            'rtp-hdrext',
-            NS_JINGLE_APPS_RTP_RTP_HDREXT
-          );
-
-          // RTCP-MUX
-          if(cs_d_rtcp_mux)
-            description.appendChild(stanza.buildNode('rtcp-mux', { 'xmlns': NS_JINGLE_APPS_RTP }));
         }
+
+        // Build transport
+        var cs_transport = cur_content['transport'];
+
+        var transport = self._util_stanza_build_node(
+                          stanza,
+                          content,
+                          [cs_transport['attrs']],
+                          'transport',
+                          NS_JINGLE_TRANSPORTS_ICEUDP
+                        );
+
+        // Fingerprint
+        self._util_stanza_build_node(
+          stanza,
+          transport,
+          [cs_transport['fingerprint']],
+          'fingerprint',
+          NS_JINGLE_APPS_DTLS,
+          'value'
+        );
+
+        // Candidates
+        self._util_stanza_build_node(
+          stanza,
+          transport,
+          cs_transport['candidate'],
+          'candidate',
+          NS_JINGLE_TRANSPORTS_ICEUDP
+        );
       }
-
-      // Build transport
-      var cs_transport = cur_content['transport'];
-
-      var transport = self._util_stanza_build_node(
-                        stanza,
-                        content,
-                        [cs_transport['attrs']],
-                        'transport',
-                        NS_JINGLE_TRANSPORTS_ICEUDP
-                      );
-
-      // Fingerprint
-      self._util_stanza_build_node(
-        stanza,
-        transport,
-        [cs_transport['fingerprint']],
-        'fingerprint',
-        NS_JINGLE_APPS_DTLS,
-        'value'
-      );
-
-      // Candidates
-      self._util_stanza_build_node(
-        stanza,
-        transport,
-        cs_transport['candidate'],
-        'candidate',
-        NS_JINGLE_TRANSPORTS_ICEUDP
-      );
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_stanza_generate_content_local > ' + e, 1);
     }
   };
 
@@ -4037,44 +4102,50 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_generate_content = function(creator, name, senders, payloads, transports) {
-    // Generation process
-    var content_obj = {};
+    try {
+      // Generation process
+      var content_obj = {};
 
-    content_obj['creator']     = creator;
-    content_obj['name']        = name;
-    content_obj['senders']     = senders;
-    content_obj['description'] = {};
-    content_obj['transport']   = {};
+      content_obj['creator']     = creator;
+      content_obj['name']        = name;
+      content_obj['senders']     = senders;
+      content_obj['description'] = {};
+      content_obj['transport']   = {};
 
-    // Generate description
-    var description_cpy      = self.util_object_clone(payloads['descriptions']);
-    var description_ptime    = description_cpy['attrs']['ptime'];
-    var description_maxptime = description_cpy['attrs']['maxptime'];
+      // Generate description
+      var description_cpy      = self.util_object_clone(payloads['descriptions']);
+      var description_ptime    = description_cpy['attrs']['ptime'];
+      var description_maxptime = description_cpy['attrs']['maxptime'];
 
-    if(description_ptime)     delete description_cpy['attrs']['ptime'];
-    if(description_maxptime)  delete description_cpy['attrs']['maxptime'];
+      if(description_ptime)     delete description_cpy['attrs']['ptime'];
+      if(description_maxptime)  delete description_cpy['attrs']['maxptime'];
 
-    for(i in description_cpy['payload']) {
-      if(!('attrs' in description_cpy['payload'][i]))
-        description_cpy['payload'][i]['attrs']           = {};
+      for(i in description_cpy['payload']) {
+        if(!('attrs' in description_cpy['payload'][i]))
+          description_cpy['payload'][i]['attrs']           = {};
 
-      description_cpy['payload'][i]['attrs']['ptime']    = description_ptime;
-      description_cpy['payload'][i]['attrs']['maxptime'] = description_maxptime;
+        description_cpy['payload'][i]['attrs']['ptime']    = description_ptime;
+        description_cpy['payload'][i]['attrs']['maxptime'] = description_maxptime;
+      }
+
+      content_obj['description'] = description_cpy;
+
+      // Generate transport
+      content_obj['transport']['candidate']      = transports;
+      content_obj['transport']['attrs']          = {};
+      content_obj['transport']['attrs']['pwd']   = payloads['transports']['pwd'];
+      content_obj['transport']['attrs']['ufrag'] = payloads['transports']['ufrag'];
+
+      if(payloads['transports']['fingerprint'])
+        content_obj['transport']['fingerprint']  = payloads['transports']['fingerprint'];
+
+      // Storage process
+      return content_obj;
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_generate_content > ' + e, 1);
     }
 
-    content_obj['description'] = description_cpy;
-
-    // Generate transport
-    content_obj['transport']['candidate']      = transports;
-    content_obj['transport']['attrs']          = {};
-    content_obj['transport']['attrs']['pwd']   = payloads['transports']['pwd'];
-    content_obj['transport']['attrs']['ufrag'] = payloads['transports']['ufrag'];
-
-    if(payloads['transports']['fingerprint'])
-      content_obj['transport']['fingerprint']  = payloads['transports']['fingerprint'];
-
-    // Storage process
-    return content_obj;
+    return null;
   };
 
   /**
@@ -4131,62 +4202,66 @@ function JSJaCJingle(args) {
   self._util_sdp_generate_candidates = function(candidates) {
     var candidates_arr = [];
 
-    // Parse candidates
-    var i,
-        cur_media, cur_c_media, cur_candidate, cur_label, cur_candidate_str;
+    try {
+      // Parse candidates
+      var i,
+          cur_media, cur_c_media, cur_candidate, cur_label, cur_candidate_str;
 
-    for(cur_media in candidates) {
-      cur_c_media = candidates[cur_media];
+      for(cur_media in candidates) {
+        cur_c_media = candidates[cur_media];
 
-      for(i in cur_c_media) {
-        cur_candidate = cur_c_media[i];
+        for(i in cur_c_media) {
+          cur_candidate = cur_c_media[i];
 
-        cur_label         = JSJAC_JINGLE_MEDIAS[cur_media]['label'];
-        cur_candidate_str = '';
+          cur_label         = JSJAC_JINGLE_MEDIAS[cur_media]['label'];
+          cur_candidate_str = '';
 
-        cur_candidate_str += 'a=candidate:';
-        cur_candidate_str += cur_candidate['foundation'];
-        cur_candidate_str += ' ';
-        cur_candidate_str += cur_candidate['component'];
-        cur_candidate_str += ' ';
-        cur_candidate_str += cur_candidate['protocol'];
-        cur_candidate_str += ' ';
-        cur_candidate_str += cur_candidate['priority'];
-        cur_candidate_str += ' ';
-        cur_candidate_str += cur_candidate['ip'];
-        cur_candidate_str += ' ';
-        cur_candidate_str += cur_candidate['port'];
-        cur_candidate_str += ' ';
-        cur_candidate_str += 'typ';
-        cur_candidate_str += ' ';
-        cur_candidate_str += cur_candidate['type'];
-
-        if(cur_candidate['rel-addr'] && cur_candidate['rel-port']) {
+          cur_candidate_str += 'a=candidate:';
+          cur_candidate_str += cur_candidate['foundation'];
           cur_candidate_str += ' ';
-          cur_candidate_str += 'raddr';
+          cur_candidate_str += cur_candidate['component'];
           cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate['rel-addr'];
+          cur_candidate_str += cur_candidate['protocol'];
           cur_candidate_str += ' ';
-          cur_candidate_str += 'rport';
+          cur_candidate_str += cur_candidate['priority'];
           cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate['rel-port'];
+          cur_candidate_str += cur_candidate['ip'];
+          cur_candidate_str += ' ';
+          cur_candidate_str += cur_candidate['port'];
+          cur_candidate_str += ' ';
+          cur_candidate_str += 'typ';
+          cur_candidate_str += ' ';
+          cur_candidate_str += cur_candidate['type'];
+
+          if(cur_candidate['rel-addr'] && cur_candidate['rel-port']) {
+            cur_candidate_str += ' ';
+            cur_candidate_str += 'raddr';
+            cur_candidate_str += ' ';
+            cur_candidate_str += cur_candidate['rel-addr'];
+            cur_candidate_str += ' ';
+            cur_candidate_str += 'rport';
+            cur_candidate_str += ' ';
+            cur_candidate_str += cur_candidate['rel-port'];
+          }
+
+          if(cur_candidate['generation']) {
+            cur_candidate_str += ' ';
+            cur_candidate_str += 'generation';
+            cur_candidate_str += ' ';
+            cur_candidate_str += cur_candidate['generation'];
+          }
+
+          cur_candidate_str   += WEBRTC_SDP_LINE_BREAK;
+
+          candidates_arr.push({
+            label     : cur_label,
+            id        : cur_media,
+            candidate : cur_candidate_str
+          });
         }
-
-        if(cur_candidate['generation']) {
-          cur_candidate_str += ' ';
-          cur_candidate_str += 'generation';
-          cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate['generation'];
-        }
-
-        cur_candidate_str   += WEBRTC_SDP_LINE_BREAK;
-
-        candidates_arr.push({
-          label     : cur_label,
-          id        : cur_media,
-          candidate : cur_candidate_str
-        });
       }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_sdp_generate_candidates > ' + e, 1);
     }
 
     return candidates_arr;
@@ -4197,235 +4272,265 @@ function JSJaCJingle(args) {
    */
   self._util_sdp_generate_description = function(type, payloads) {
     var payloads_obj = {};
-    var payloads_str = '';
 
-    // Common vars
-    var i, j, k, l, m, n, o, p, q,
-        cur_media, cur_media_obj,
-        cur_senders, cur_name,
-        cur_transports_obj, cur_description_obj,
-        cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
-        cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption,
-        cur_d_rtcp_fb_obj,
-        cur_d_payload, cur_d_payload_obj, cur_d_payload_obj_attrs, cur_d_payload_obj_id,
-        cur_d_payload_obj_parameter, cur_d_payload_obj_parameter_obj, cur_d_payload_obj_parameter_str,
-        cur_d_payload_obj_rtcp_fb, cur_d_payload_obj_rtcp_fb_obj,
-        cur_d_payload_obj_rtcp_fb_ttr_int, cur_d_payload_obj_rtcp_fb_ttr_int_obj,
-        cur_d_crypto_obj, cur_d_zrtp_hash_obj,
-        cur_d_rtp_hdrext, cur_d_rtp_hdrext_obj,
-        cur_d_rtcp_mux;
+    try {
+      var payloads_str = '';
 
-    // Payloads headers
-    payloads_str += self._util_sdp_generate_protocol_version();
-    payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += self._util_sdp_generate_origin();
-    payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += self._util_sdp_generate_session_name();
-    payloads_str += WEBRTC_SDP_LINE_BREAK;
-    payloads_str += self._util_sdp_generate_timing();
-    payloads_str += WEBRTC_SDP_LINE_BREAK;
+      // Common vars
+      var i, j, k, l, m, n, o, p, q, r, s,
+          cur_media, cur_media_obj,
+          cur_senders, cur_name,
+          cur_transports_obj, cur_description_obj,
+          cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
+          cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption, cur_d_ssrc,
+          cur_d_ssrc_obj, cur_d_rtcp_fb_obj,
+          cur_d_payload, cur_d_payload_obj, cur_d_payload_obj_attrs, cur_d_payload_obj_id,
+          cur_d_payload_obj_parameter, cur_d_payload_obj_parameter_obj, cur_d_payload_obj_parameter_str,
+          cur_d_payload_obj_rtcp_fb, cur_d_payload_obj_rtcp_fb_obj,
+          cur_d_payload_obj_rtcp_fb_ttr_int, cur_d_payload_obj_rtcp_fb_ttr_int_obj,
+          cur_d_crypto_obj, cur_d_zrtp_hash_obj,
+          cur_d_rtp_hdrext, cur_d_rtp_hdrext_obj,
+          cur_d_rtcp_mux;
 
-    // Add bundle line
-    payloads_str += 'a=group:BUNDLE ' + Object.keys(payloads).join(' ');
-    payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-    // Add media groups
-    for(cur_media in payloads) {
-      cur_media_obj         = payloads[cur_media];
-      cur_senders           = self.get_senders(cur_media);
-      cur_name              = self.get_name(cur_media) ? cur_media : null;
-
-      // Transports
-      cur_transports_obj    = cur_media_obj['transports'];
-      cur_d_pwd             = cur_transports_obj['pwd'];
-      cur_d_ufrag           = cur_transports_obj['ufrag'];
-      cur_d_fingerprint     = cur_transports_obj['fingerprint'];
-
-      // Descriptions
-      cur_description_obj   = cur_media_obj['descriptions'];
-      cur_d_attrs           = cur_description_obj['attrs'];
-      cur_d_rtcp_fb         = cur_description_obj['rtcp-fb'];
-      cur_d_bandwidth       = cur_description_obj['bandwidth'];
-      cur_d_payload         = cur_description_obj['payload'];
-      cur_d_encryption      = cur_description_obj['encryption'];
-      cur_d_rtp_hdrext      = cur_description_obj['rtp-hdrext'];
-      cur_d_rtcp_mux        = cur_description_obj['rtcp-mux'];
-
-      // Current media
-      payloads_str += self._util_sdp_generate_description_media(cur_media, cur_d_encryption, cur_d_fingerprint, cur_d_payload);
+      // Payloads headers
+      payloads_str += self._util_sdp_generate_protocol_version();
+      payloads_str += WEBRTC_SDP_LINE_BREAK;
+      payloads_str += self._util_sdp_generate_origin();
+      payloads_str += WEBRTC_SDP_LINE_BREAK;
+      payloads_str += self._util_sdp_generate_session_name();
+      payloads_str += WEBRTC_SDP_LINE_BREAK;
+      payloads_str += self._util_sdp_generate_timing();
       payloads_str += WEBRTC_SDP_LINE_BREAK;
 
-      payloads_str += 'c=IN IP4 0.0.0.0';
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
-      payloads_str += 'a=rtcp:1 IN IP4 0.0.0.0';
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-      if(cur_d_ufrag)  payloads_str += 'a=ice-ufrag:' + cur_d_ufrag + WEBRTC_SDP_LINE_BREAK;
-      if(cur_d_pwd)    payloads_str += 'a=ice-pwd:' + cur_d_pwd + WEBRTC_SDP_LINE_BREAK;
-
-      if(cur_d_fingerprint && cur_d_fingerprint['hash'] && cur_d_fingerprint['value']) {
-        payloads_str += 'a=fingerprint:' + cur_d_fingerprint['hash'] + ' ' + cur_d_fingerprint['value'];
+      // Add bundle line
+      if(Object.keys(payloads).length > 1) {
+        payloads_str += 'a=group:BUNDLE ' + Object.keys(payloads).join(' ');
         payloads_str += WEBRTC_SDP_LINE_BREAK;
       }
 
-      // RTP-HDREXT
-      if(cur_d_rtp_hdrext && cur_d_rtp_hdrext.length) {
-        for(i in cur_d_rtp_hdrext) {
-          cur_d_rtp_hdrext_obj = cur_d_rtp_hdrext[i];
+      // Add media groups
+      for(cur_media in payloads) {
+        cur_media_obj         = payloads[cur_media];
+        cur_senders           = self.get_senders(cur_media);
+        cur_name              = self.get_name(cur_media) ? cur_media : null;
 
-          payloads_str += 'a=extmap:' + cur_d_rtp_hdrext_obj['id'];
+        // Transports
+        cur_transports_obj    = cur_media_obj['transports'];
+        cur_d_pwd             = cur_transports_obj['pwd'];
+        cur_d_ufrag           = cur_transports_obj['ufrag'];
+        cur_d_fingerprint     = cur_transports_obj['fingerprint'];
 
-          if(cur_d_rtp_hdrext_obj['senders'])
-            payloads_str += '/' + cur_d_rtp_hdrext_obj['senders'];
+        // Descriptions
+        cur_description_obj   = cur_media_obj['descriptions'];
+        cur_d_attrs           = cur_description_obj['attrs'];
+        cur_d_rtcp_fb         = cur_description_obj['rtcp-fb'];
+        cur_d_bandwidth       = cur_description_obj['bandwidth'];
+        cur_d_payload         = cur_description_obj['payload'];
+        cur_d_encryption      = cur_description_obj['encryption'];
+        cur_d_ssrc            = cur_description_obj['ssrc'];
+        cur_d_rtp_hdrext      = cur_description_obj['rtp-hdrext'];
+        cur_d_rtcp_mux        = cur_description_obj['rtcp-mux'];
 
-          payloads_str += ' ' + cur_d_rtp_hdrext_obj['uri'];
+        // Current media
+        payloads_str += self._util_sdp_generate_description_media(cur_media, cur_d_encryption, cur_d_fingerprint, cur_d_payload);
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+        payloads_str += 'c=IN IP4 0.0.0.0';
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+        payloads_str += 'a=rtcp:1 IN IP4 0.0.0.0';
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+        if(cur_d_ufrag)  payloads_str += 'a=ice-ufrag:' + cur_d_ufrag + WEBRTC_SDP_LINE_BREAK;
+        if(cur_d_pwd)    payloads_str += 'a=ice-pwd:' + cur_d_pwd + WEBRTC_SDP_LINE_BREAK;
+
+        if(cur_d_fingerprint && cur_d_fingerprint['hash'] && cur_d_fingerprint['value']) {
+          payloads_str += 'a=fingerprint:' + cur_d_fingerprint['hash'] + ' ' + cur_d_fingerprint['value'];
           payloads_str += WEBRTC_SDP_LINE_BREAK;
         }
-      }
 
-      // Senders
-      if(cur_senders) {
-        payloads_str += 'a=' + JSJAC_JINGLE_SENDERS[cur_senders];
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      }
+        // RTP-HDREXT
+        if(cur_d_rtp_hdrext && cur_d_rtp_hdrext.length) {
+          for(i in cur_d_rtp_hdrext) {
+            cur_d_rtp_hdrext_obj = cur_d_rtp_hdrext[i];
 
-      // Name
-      if(cur_name) {
-        payloads_str += 'a=mid:' + cur_name;
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      }
+            payloads_str += 'a=extmap:' + cur_d_rtp_hdrext_obj['id'];
 
-      // RTCP-MUX
-      // WARNING: no spec!
-      // See: http://code.google.com/p/libjingle/issues/detail?id=309
-      //      http://mail.jabber.org/pipermail/jingle/2011-December/001761.html
-      if(cur_d_rtcp_mux) {
-        payloads_str += 'a=rtcp-mux';
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      }
+            if(cur_d_rtp_hdrext_obj['senders'])
+              payloads_str += '/' + cur_d_rtp_hdrext_obj['senders'];
 
-      // 'crypto'
-      for(j in cur_d_encryption['crypto']) {
-        cur_d_crypto_obj = cur_d_encryption['crypto'][j];
-
-        payloads_str += 'a=crypto:'                       + 
-                        cur_d_crypto_obj['tag']           + ' ' + 
-                        cur_d_crypto_obj['crypto-suite']  + ' ' + 
-                        cur_d_crypto_obj['key-params']    + 
-                        (cur_d_crypto_obj['session-params'] ? (' ' + cur_d_crypto_obj['session-params']) : '');
-
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      }
-
-      // 'zrtp-hash'
-      for(p in cur_d_encryption['zrtp-hash']) {
-        cur_d_zrtp_hash_obj = cur_d_encryption['zrtp-hash'][p];
-
-        payloads_str += 'a=zrtp-hash:'                  + 
-                        cur_d_zrtp_hash_obj['version']  + ' ' + 
-                        cur_d_zrtp_hash_obj['value'];
-
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      }
-
-      // 'rtcp-fb' (common)
-      for(n in cur_d_rtcp_fb) {
-        cur_d_rtcp_fb_obj = cur_d_rtcp_fb[n];
-
-        payloads_str += 'a=rtcp-fb:*';
-        payloads_str += ' ' + cur_d_rtcp_fb_obj['type'];
-
-        if(cur_d_rtcp_fb_obj['subtype'])
-          payloads_str += ' ' + cur_d_rtcp_fb_obj['subtype'];
-
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      }
-
-      // 'bandwidth' (common)
-      for(q in cur_d_bandwidth) {
-        cur_d_bandwidth_obj = cur_d_bandwidth[q];
-
-        payloads_str += 'b=' + cur_d_bandwidth_obj['type'];
-        payloads_str += ':'  + cur_d_bandwidth_obj['value'];
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      }
-
-      // 'payload-type'
-      for(k in cur_d_payload) {
-        cur_d_payload_obj                 = cur_d_payload[k];
-        cur_d_payload_obj_attrs           = cur_d_payload_obj['attrs'];
-        cur_d_payload_obj_parameter       = cur_d_payload_obj['parameter'];
-        cur_d_payload_obj_rtcp_fb         = cur_d_payload_obj['rtcp-fb'];
-        cur_d_payload_obj_rtcp_fb_ttr_int = cur_d_payload_obj['rtcp-fb-trr-int'];
-
-        cur_d_payload_obj_id              = cur_d_payload_obj_attrs['id'];
-
-        payloads_str += 'a=rtpmap:' + cur_d_payload_obj_id;
-
-        // 'rtpmap'
-        if(cur_d_payload_obj_attrs['name']) {
-          payloads_str += ' ' + cur_d_payload_obj_attrs['name'];
-
-          if(cur_d_payload_obj_attrs['clockrate']) {
-            payloads_str += '/' + cur_d_payload_obj_attrs['clockrate'];
-
-            if(cur_d_payload_obj_attrs['channels'])
-              payloads_str += '/' + cur_d_payload_obj_attrs['channels'];
+            payloads_str += ' ' + cur_d_rtp_hdrext_obj['uri'];
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
           }
         }
 
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
+        // Senders
+        if(cur_senders) {
+          payloads_str += 'a=' + JSJAC_JINGLE_SENDERS[cur_senders];
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
 
-        // 'parameter'
-        if(cur_d_payload_obj_parameter.length) {
-          payloads_str += 'a=fmtp:' + cur_d_payload_obj_id + ' ';
-          cur_d_payload_obj_parameter_str = '';
+        // Name
+        if(cur_name) {
+          payloads_str += 'a=mid:' + cur_name;
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
 
-          for(o in cur_d_payload_obj_parameter) {
-            cur_d_payload_obj_parameter_obj = cur_d_payload_obj_parameter[o];
+        // RTCP-MUX
+        // WARNING: no spec!
+        // See: http://code.google.com/p/libjingle/issues/detail?id=309
+        //      http://mail.jabber.org/pipermail/jingle/2011-December/001761.html
+        if(cur_d_rtcp_mux) {
+          payloads_str += 'a=rtcp-mux';
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
 
-            if(cur_d_payload_obj_parameter_str)  cur_d_payload_obj_parameter_str += ';';
+        // 'encryption'
+        if(cur_d_encryption) {
+          // 'crypto'
+          for(j in cur_d_encryption['crypto']) {
+            cur_d_crypto_obj = cur_d_encryption['crypto'][j];
 
-            cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj['name'];
-            cur_d_payload_obj_parameter_str += '=';
-            cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj['value'];
+            payloads_str += 'a=crypto:'                       + 
+                            cur_d_crypto_obj['tag']           + ' ' + 
+                            cur_d_crypto_obj['crypto-suite']  + ' ' + 
+                            cur_d_crypto_obj['key-params']    + 
+                            (cur_d_crypto_obj['session-params'] ? (' ' + cur_d_crypto_obj['session-params']) : '');
+
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
           }
 
-          payloads_str += cur_d_payload_obj_parameter_str;
+          // 'zrtp-hash'
+          for(p in cur_d_encryption['zrtp-hash']) {
+            cur_d_zrtp_hash_obj = cur_d_encryption['zrtp-hash'][p];
+
+            payloads_str += 'a=zrtp-hash:'                  + 
+                            cur_d_zrtp_hash_obj['version']  + ' ' + 
+                            cur_d_zrtp_hash_obj['value'];
+
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+        }
+
+        // 'rtcp-fb' (common)
+        for(n in cur_d_rtcp_fb) {
+          cur_d_rtcp_fb_obj = cur_d_rtcp_fb[n];
+
+          payloads_str += 'a=rtcp-fb:*';
+          payloads_str += ' ' + cur_d_rtcp_fb_obj['type'];
+
+          if(cur_d_rtcp_fb_obj['subtype'])
+            payloads_str += ' ' + cur_d_rtcp_fb_obj['subtype'];
+
           payloads_str += WEBRTC_SDP_LINE_BREAK;
         }
 
-        // 'rtcp-fb' (sub)
-        for(l in cur_d_payload_obj_rtcp_fb) {
-          cur_d_payload_obj_rtcp_fb_obj = cur_d_payload_obj_rtcp_fb[l];
+        // 'bandwidth' (common)
+        for(q in cur_d_bandwidth) {
+          cur_d_bandwidth_obj = cur_d_bandwidth[q];
 
-          payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
-          payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj['type'];
-
-          if(cur_d_payload_obj_rtcp_fb_obj['subtype'])
-            payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj['subtype'];
-
+          payloads_str += 'b=' + cur_d_bandwidth_obj['type'];
+          payloads_str += ':'  + cur_d_bandwidth_obj['value'];
           payloads_str += WEBRTC_SDP_LINE_BREAK;
         }
 
-        // 'rtcp-fb-ttr-int'
-        for(m in cur_d_payload_obj_rtcp_fb_ttr_int) {
-          cur_d_payload_obj_rtcp_fb_ttr_int_obj = cur_d_payload_obj_rtcp_fb_ttr_int[m];
+        // 'payload-type'
+        for(k in cur_d_payload) {
+          cur_d_payload_obj                 = cur_d_payload[k];
+          cur_d_payload_obj_attrs           = cur_d_payload_obj['attrs'];
+          cur_d_payload_obj_parameter       = cur_d_payload_obj['parameter'];
+          cur_d_payload_obj_rtcp_fb         = cur_d_payload_obj['rtcp-fb'];
+          cur_d_payload_obj_rtcp_fb_ttr_int = cur_d_payload_obj['rtcp-fb-trr-int'];
 
-          payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
-          payloads_str += ' ' + 'trr-int';
-          payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_ttr_int_obj['value'];
+          cur_d_payload_obj_id              = cur_d_payload_obj_attrs['id'];
+
+          payloads_str += 'a=rtpmap:' + cur_d_payload_obj_id;
+
+          // 'rtpmap'
+          if(cur_d_payload_obj_attrs['name']) {
+            payloads_str += ' ' + cur_d_payload_obj_attrs['name'];
+
+            if(cur_d_payload_obj_attrs['clockrate']) {
+              payloads_str += '/' + cur_d_payload_obj_attrs['clockrate'];
+
+              if(cur_d_payload_obj_attrs['channels'])
+                payloads_str += '/' + cur_d_payload_obj_attrs['channels'];
+            }
+          }
+
           payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+          // 'parameter'
+          if(cur_d_payload_obj_parameter.length) {
+            payloads_str += 'a=fmtp:' + cur_d_payload_obj_id + ' ';
+            cur_d_payload_obj_parameter_str = '';
+
+            for(o in cur_d_payload_obj_parameter) {
+              cur_d_payload_obj_parameter_obj = cur_d_payload_obj_parameter[o];
+
+              if(cur_d_payload_obj_parameter_str)  cur_d_payload_obj_parameter_str += ';';
+
+              cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj['name'];
+              cur_d_payload_obj_parameter_str += '=';
+              cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj['value'];
+            }
+
+            payloads_str += cur_d_payload_obj_parameter_str;
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+
+          // 'rtcp-fb' (sub)
+          for(l in cur_d_payload_obj_rtcp_fb) {
+            cur_d_payload_obj_rtcp_fb_obj = cur_d_payload_obj_rtcp_fb[l];
+
+            payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
+            payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj['type'];
+
+            if(cur_d_payload_obj_rtcp_fb_obj['subtype'])
+              payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj['subtype'];
+
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+
+          // 'rtcp-fb-ttr-int'
+          for(m in cur_d_payload_obj_rtcp_fb_ttr_int) {
+            cur_d_payload_obj_rtcp_fb_ttr_int_obj = cur_d_payload_obj_rtcp_fb_ttr_int[m];
+
+            payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
+            payloads_str += ' ' + 'trr-int';
+            payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_ttr_int_obj['value'];
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+        }
+
+        if(cur_d_attrs['ptime'])     payloads_str += 'a=ptime:'    + cur_d_attrs['ptime'] + WEBRTC_SDP_LINE_BREAK;
+        if(cur_d_attrs['maxptime'])  payloads_str += 'a=maxptime:' + cur_d_attrs['maxptime'] + WEBRTC_SDP_LINE_BREAK;
+
+        // 'ssrc' (not used in Jingle ATM)
+        for(r in cur_d_ssrc) {
+          for(s in cur_d_ssrc[r]) {
+            cur_d_ssrc_obj = cur_d_ssrc[r][s];
+
+            payloads_str += 'a=ssrc';
+            payloads_str += ':' + cur_d_ssrc_obj['id'];
+            payloads_str += ' ' + cur_d_ssrc_obj['attribute'];
+
+            if(cur_d_ssrc_obj['value'])
+              payloads_str += ':' + cur_d_ssrc_obj['value'];
+
+            if(cur_d_ssrc_obj['data'])
+              payloads_str += ' ' + cur_d_ssrc_obj['data'];
+
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
         }
       }
 
-      if(cur_d_attrs['ptime'])     payloads_str += 'a=ptime:'    + cur_d_attrs['ptime'] + WEBRTC_SDP_LINE_BREAK;
-      if(cur_d_attrs['maxptime'])  payloads_str += 'a=maxptime:' + cur_d_attrs['maxptime'] + WEBRTC_SDP_LINE_BREAK;
+      // Push to object
+      payloads_obj.type = type;
+      payloads_obj.sdp  = payloads_str;
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_sdp_generate_description > ' + e, 1);
     }
-
-    // Push to object
-    payloads_obj.type = type;
-    payloads_obj.sdp  = payloads_str;
 
     return payloads_obj;
   };
@@ -4494,7 +4599,7 @@ function JSJaCJingle(args) {
       sdp_media += 'RTP/AVPF';
 
     // Payload type IDs
-    for(i in payload) type_ids.push(payload[i]['attrs']['id']);
+    for(i in payload)  type_ids.push(payload[i]['attrs']['id']);
 
     sdp_media += ' ' + type_ids.join(' ');
 
@@ -4530,85 +4635,89 @@ function JSJaCJingle(args) {
       video : false
     };
 
-    // Medias?
-    constraints.audio = true;
-    constraints.video = (self.get_media() == JSJAC_JINGLE_MEDIA_VIDEO);
+    try {
+      // Medias?
+      constraints.audio = true;
+      constraints.video = (self.get_media() == JSJAC_JINGLE_MEDIA_VIDEO);
 
-    // Video configuration
-    if(constraints.video == true) {
-      // Resolution?
-      switch(self.get_resolution()) {
-        // 16:9
-        case '720':
-        case 'hd':
-          constraints.video = {
-            mandatory : {
-              minWidth       : 1280,
-              minHeight      : 720,
-              minAspectRatio : 1.77
-            }
-          };
-          break;
+      // Video configuration
+      if(constraints.video == true) {
+        // Resolution?
+        switch(self.get_resolution()) {
+          // 16:9
+          case '720':
+          case 'hd':
+            constraints.video = {
+              mandatory : {
+                minWidth       : 1280,
+                minHeight      : 720,
+                minAspectRatio : 1.77
+              }
+            };
+            break;
 
-        case '360':
-        case 'md':
-          constraints.video = {
-            mandatory : {
-              minWidth       : 640,
-              minHeight      : 360,
-              minAspectRatio : 1.77
-            }
-          };
-          break;
+          case '360':
+          case 'md':
+            constraints.video = {
+              mandatory : {
+                minWidth       : 640,
+                minHeight      : 360,
+                minAspectRatio : 1.77
+              }
+            };
+            break;
 
-        case '180':
-        case 'sd':
-          constraints.video = {
-            mandatory : {
-              minWidth       : 320,
-              minHeight      : 180,
-              minAspectRatio : 1.77
-            }
-          };
-          break;
+          case '180':
+          case 'sd':
+            constraints.video = {
+              mandatory : {
+                minWidth       : 320,
+                minHeight      : 180,
+                minAspectRatio : 1.77
+              }
+            };
+            break;
 
-        // 4:3
-        case '960':
-          constraints.video = {
-            mandatory : {
-              minWidth  : 960,
-              minHeight : 720
-            }
-          };
-          break;
+          // 4:3
+          case '960':
+            constraints.video = {
+              mandatory : {
+                minWidth  : 960,
+                minHeight : 720
+              }
+            };
+            break;
 
-        case '640':
-        case 'vga':
-          constraints.video = {
-            mandatory : {
-              maxWidth  : 640,
-              maxHeight : 480
-            }
-          };
-          break;
+          case '640':
+          case 'vga':
+            constraints.video = {
+              mandatory : {
+                maxWidth  : 640,
+                maxHeight : 480
+              }
+            };
+            break;
 
-        case '320':
-          constraints.video = {
-            mandatory : {
-              maxWidth  : 320,
-              maxHeight : 240
-            }
-          };
-          break;
+          case '320':
+            constraints.video = {
+              mandatory : {
+                maxWidth  : 320,
+                maxHeight : 240
+              }
+            };
+            break;
+        }
+
+        // Bandwidth?
+        if(self.get_bandwidth())
+          constraints.video.optional = [{ bandwidth: self.get_bandwidth() }];
+
+        // FPS?
+        if(self.get_fps())
+          constraints.video.mandatory['minFrameRate'] = self.get_fps();
       }
-
-      // Bandwidth?
-      if(self.get_bandwidth())
-        constraints.video.optional = [{ bandwidth: self.get_bandwidth() }];
-
-      // FPS?
-      if(self.get_fps())
-        constraints.video.mandatory['minFrameRate'] = self.get_fps();
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] util_generate_constraints > ' + e, 1);
     }
 
     return constraints;
@@ -4686,17 +4795,21 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_peer_stream_attach = function(element, stream, mute) {
-    var stream_src = stream ? URL.createObjectURL(stream) : '';
+    try {
+      var stream_src = stream ? URL.createObjectURL(stream) : '';
 
-    for(i in element) {
-      element[i].src = stream_src;
+      for(i in element) {
+        element[i].src = stream_src;
 
-      if(navigator.mozGetUserMedia)
-        element[i].play();
-      else
-        element[i].autoplay = true;
+        if(navigator.mozGetUserMedia)
+          element[i].play();
+        else
+          element[i].autoplay = true;
 
-      if(typeof mute == 'boolean') element[i].muted = mute;
+        if(typeof mute == 'boolean') element[i].muted = mute;
+      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_peer_stream_attach > ' + e, 1);
     }
   };
 
@@ -4704,9 +4817,13 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_peer_stream_detach = function(element) {
-    for(i in element) {
-      element[i].pause();
-      element[i].src = '';
+    try {
+      for(i in element) {
+        element[i].pause();
+        element[i].src = '';
+      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_peer_stream_detach > ' + e, 1);
     }
   };
 
@@ -4719,355 +4836,399 @@ function JSJaCJingle(args) {
     // Common vars
     var payload   = {};
 
-    var lines     = sdp_payload.split('\n');
-    var cur_media = null;
+    try {
+      var lines     = sdp_payload.split('\n');
+      var cur_media = null;
 
-    var e, i, j,
-        cur_line,
-        cur_fmtp, cur_fmtp_id, cur_fmtp_values, cur_fmtp_attrs, cur_fmtp_key, cur_fmtp_value,
-        cur_rtpmap, cur_rtcp_fb, cur_rtcp_fb_trr_int,
-        cur_crypto, cur_zrtp_hash, cur_fingerprint, cur_extmap,
-        cur_rtpmap_id, cur_rtcp_fb_id, cur_bandwidth,
-        m_rtpmap, m_fmtp, m_rtcp_fb, m_rtcp_fb_trr_int, m_crypto, m_zrtp_hash,
-        m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_bandwidth, m_media;
+      var e, i, j,
+          cur_line,
+          cur_fmtp, cur_fmtp_id, cur_fmtp_values, cur_fmtp_attrs, cur_fmtp_key, cur_fmtp_value,
+          cur_rtpmap, cur_rtcp_fb, cur_rtcp_fb_trr_int,
+          cur_crypto, cur_zrtp_hash, cur_fingerprint, cur_ssrc, cur_extmap,
+          cur_rtpmap_id, cur_rtcp_fb_id, cur_bandwidth,
+          m_rtpmap, m_fmtp, m_rtcp_fb, m_rtcp_fb_trr_int, m_crypto, m_zrtp_hash,
+          m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_bandwidth, m_media;
 
-    // Common functions
-    var init_content = function(name) {
-      if(!(name in payload))  payload[name] = {};
-    };
+      // Common functions
+      var init_content = function(name) {
+        if(!(name in payload))  payload[name] = {};
+      };
 
-    var init_descriptions = function(name, sub, sub_default) {
-      init_content(name);
+      var init_descriptions = function(name, sub, sub_default) {
+        init_content(name);
 
-      if(!('descriptions' in payload[name]))        payload[name]['descriptions']      = {};
-      if(!(sub  in payload[name]['descriptions']))  payload[name]['descriptions'][sub] = sub_default;
-    };
+        if(!('descriptions' in payload[name]))        payload[name]['descriptions']      = {};
+        if(!(sub  in payload[name]['descriptions']))  payload[name]['descriptions'][sub] = sub_default;
+      };
 
-    var init_transports = function(name, sub, sub_default) {
-      init_content(name);
+      var init_transports = function(name, sub, sub_default) {
+        init_content(name);
 
-      if(!('transports' in payload[name]))        payload[name]['transports']      = {};
-      if(!(sub  in payload[name]['transports']))  payload[name]['transports'][sub] = sub_default;
-    };
+        if(!('transports' in payload[name]))        payload[name]['transports']      = {};
+        if(!(sub  in payload[name]['transports']))  payload[name]['transports'][sub] = sub_default;
+      };
 
-    var init_payload = function(name, id) {
-      init_descriptions(name, 'payload', {});
+      var init_ssrc = function(name, id) {
+        init_descriptions(name, 'ssrc', {});
 
-      if(!(id in payload[name]['descriptions']['payload'])) {
-        payload[name]['descriptions']['payload'][id] = {
-          'attrs'           : {},
-          'parameter'       : [],
-          'rtcp-fb'         : [],
-          'rtcp-fb-trr-int' : []
-        };
-      }
-    };
+        if(!(id in payload[name]['descriptions']['ssrc']))
+          payload[name]['descriptions']['ssrc'][id] = [];
+      };
 
-    var init_encryption = function(name) {
-      init_descriptions(name, 'encryption', {
-        'attrs'     : {
-          'required' : '1'
-        },
+      var init_payload = function(name, id) {
+        init_descriptions(name, 'payload', {});
 
-        'crypto'    : [],
-        'zrtp-hash' : []
-      });
-    };
+        if(!(id in payload[name]['descriptions']['payload'])) {
+          payload[name]['descriptions']['payload'][id] = {
+            'attrs'           : {},
+            'parameter'       : [],
+            'rtcp-fb'         : [],
+            'rtcp-fb-trr-int' : []
+          };
+        }
+      };
 
-    for(i in lines) {
-      var cur_line = lines[i];
+      var init_encryption = function(name) {
+        init_descriptions(name, 'encryption', {
+          'attrs'     : {
+            'required' : '1'
+          },
 
-      m_media = (R_WEBRTC_SDP_ICE_PAYLOAD.media).exec(cur_line);
+          'crypto'    : [],
+          'zrtp-hash' : []
+        });
+      };
 
-      // 'audio/video' line?
-      if(m_media) {
-        cur_media = m_media[1];
+      for(i in lines) {
+        var cur_line = lines[i];
 
-        // Push it to parent array
-        init_descriptions(cur_media, 'attrs', {});
-        payload[cur_media]['descriptions']['attrs']['media'] = cur_media;
+        m_media = (R_WEBRTC_SDP_ICE_PAYLOAD.media).exec(cur_line);
 
-        continue;
-      }
+        // 'audio/video' line?
+        if(m_media) {
+          cur_media = m_media[1];
 
-      m_bandwidth = (R_WEBRTC_SDP_ICE_PAYLOAD.bandwidth).exec(cur_line);
+          // Push it to parent array
+          init_descriptions(cur_media, 'attrs', {});
+          payload[cur_media]['descriptions']['attrs']['media'] = cur_media;
 
-      // 'bandwidth' line?
-      if(m_bandwidth) {
-        // Populate current object
-        e = 0;
-        cur_bandwidth = {};
+          continue;
+        }
 
-        cur_bandwidth['type']  = m_bandwidth[1]  || e++;
-        cur_bandwidth['value'] = m_bandwidth[2]  || e++;
+        m_bandwidth = (R_WEBRTC_SDP_ICE_PAYLOAD.bandwidth).exec(cur_line);
 
-        // Incomplete?
-        if(e != 0) continue;
+        // 'bandwidth' line?
+        if(m_bandwidth) {
+          // Populate current object
+          e = 0;
+          cur_bandwidth = {};
 
-        // Push it to parent array
-        init_descriptions(cur_media, 'bandwidth', []);
-        payload[cur_media]['descriptions']['bandwidth'].push(cur_bandwidth);
+          cur_bandwidth['type']  = m_bandwidth[1]  || e++;
+          cur_bandwidth['value'] = m_bandwidth[2]  || e++;
 
-        continue;
-      }
+          // Incomplete?
+          if(e != 0) continue;
 
-      m_rtpmap = (R_WEBRTC_SDP_ICE_PAYLOAD.rtpmap).exec(cur_line);
+          // Push it to parent array
+          init_descriptions(cur_media, 'bandwidth', []);
+          payload[cur_media]['descriptions']['bandwidth'].push(cur_bandwidth);
 
-      // 'rtpmap' line?
-      if(m_rtpmap) {
-        // Populate current object
-        e = 0;
-        cur_rtpmap = {};
+          continue;
+        }
 
-        cur_rtpmap['channels']  = m_rtpmap[6];
-        cur_rtpmap['clockrate'] = m_rtpmap[4];
-        cur_rtpmap['id']        = m_rtpmap[1] || e++;
-        cur_rtpmap['name']      = m_rtpmap[3];
+        m_rtpmap = (R_WEBRTC_SDP_ICE_PAYLOAD.rtpmap).exec(cur_line);
 
-        // Incomplete?
-        if(e != 0) continue;
+        // 'rtpmap' line?
+        if(m_rtpmap) {
+          // Populate current object
+          e = 0;
+          cur_rtpmap = {};
 
-        cur_rtpmap_id = cur_rtpmap['id'];
+          cur_rtpmap['channels']  = m_rtpmap[6];
+          cur_rtpmap['clockrate'] = m_rtpmap[4];
+          cur_rtpmap['id']        = m_rtpmap[1] || e++;
+          cur_rtpmap['name']      = m_rtpmap[3];
 
-        // Push it to parent array
-        init_payload(cur_media, cur_rtpmap_id);
-        payload[cur_media]['descriptions']['payload'][cur_rtpmap_id]['attrs'] = cur_rtpmap;
+          // Incomplete?
+          if(e != 0) continue;
 
-        continue;
-      }
+          cur_rtpmap_id = cur_rtpmap['id'];
 
-      m_fmtp = (R_WEBRTC_SDP_ICE_PAYLOAD.fmtp).exec(cur_line);
+          // Push it to parent array
+          init_payload(cur_media, cur_rtpmap_id);
+          payload[cur_media]['descriptions']['payload'][cur_rtpmap_id]['attrs'] = cur_rtpmap;
 
-      // 'fmtp' line?
-      if(m_fmtp) {
-        cur_fmtp_id = m_fmtp[1];
+          continue;
+        }
 
-        if(cur_fmtp_id) {
-          cur_fmtp_values = m_fmtp[2] ? (m_fmtp[2]).split(';') : [];
+        m_fmtp = (R_WEBRTC_SDP_ICE_PAYLOAD.fmtp).exec(cur_line);
 
-          for(j in cur_fmtp_values) {
-            // Parse current attribute
-            cur_fmtp_attrs = cur_fmtp_values[j].split('=');
-            cur_fmtp_key   = cur_fmtp_attrs[0];
-            cur_fmtp_value = cur_fmtp_attrs[1];
+        // 'fmtp' line?
+        if(m_fmtp) {
+          cur_fmtp_id = m_fmtp[1];
 
-            while(cur_fmtp_key.length && !cur_fmtp_key[0])
-              cur_fmtp_key = cur_fmtp_key.substring(1);
+          if(cur_fmtp_id) {
+            cur_fmtp_values = m_fmtp[2] ? (m_fmtp[2]).split(';') : [];
 
-            // Populate current object
-            e = 0;
-            cur_fmtp = {};
+            for(j in cur_fmtp_values) {
+              // Parse current attribute
+              cur_fmtp_attrs = cur_fmtp_values[j].split('=');
+              cur_fmtp_key   = cur_fmtp_attrs[0];
+              cur_fmtp_value = cur_fmtp_attrs[1];
 
-            cur_fmtp['name']  = cur_fmtp_key    || e++;
-            cur_fmtp['value'] = cur_fmtp_value  || e++;
+              while(cur_fmtp_key.length && !cur_fmtp_key[0])
+                cur_fmtp_key = cur_fmtp_key.substring(1);
 
-            // Incomplete?
-            if(e != 0) continue;
+              // Populate current object
+              e = 0;
+              cur_fmtp = {};
 
-            // Push it to parent array
-            init_payload(cur_media, cur_fmtp_id);
-            payload[cur_media]['descriptions']['payload'][cur_fmtp_id]['parameter'].push(cur_fmtp);
+              cur_fmtp['name']  = cur_fmtp_key    || e++;
+              cur_fmtp['value'] = cur_fmtp_value  || e++;
+
+              // Incomplete?
+              if(e != 0) continue;
+
+              // Push it to parent array
+              init_payload(cur_media, cur_fmtp_id);
+              payload[cur_media]['descriptions']['payload'][cur_fmtp_id]['parameter'].push(cur_fmtp);
+            }
           }
+
+          continue;
         }
 
-        continue;
-      }
+        m_rtcp_fb = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_fb).exec(cur_line);
 
-      m_rtcp_fb = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_fb).exec(cur_line);
+        // 'rtcp-fb' line?
+        if(m_rtcp_fb) {
+          // Populate current object
+          e = 0;
+          cur_rtcp_fb = {};
 
-      // 'rtcp-fb' line?
-      if(m_rtcp_fb) {
-        // Populate current object
-        e = 0;
-        cur_rtcp_fb = {};
+          cur_rtcp_fb['id']      = m_rtcp_fb[1] || e++;
+          cur_rtcp_fb['type']    = m_rtcp_fb[2];
+          cur_rtcp_fb['subtype'] = m_rtcp_fb[4];
 
-        cur_rtcp_fb['id']      = m_rtcp_fb[1] || e++;
-        cur_rtcp_fb['type']    = m_rtcp_fb[2];
-        cur_rtcp_fb['subtype'] = m_rtcp_fb[4];
+          // Incomplete?
+          if(e != 0) continue;
 
-        // Incomplete?
-        if(e != 0) continue;
+          cur_rtcp_fb_id = cur_rtcp_fb['id'];
 
-        cur_rtcp_fb_id = cur_rtcp_fb['id'];
+          // Push it to parent array
+          if(cur_rtcp_fb_id == '*') {
+            init_descriptions(cur_media, 'rtcp-fb', []);
+            (payload[cur_media]['descriptions']['rtcp-fb']).push(cur_rtcp_fb);
+          } else {
+            init_payload(cur_media, cur_rtcp_fb_id);
+            (payload[cur_media]['descriptions']['payload'][cur_rtcp_fb_id]['rtcp-fb']).push(cur_rtcp_fb);
+          }
 
-        // Push it to parent array
-        if(cur_rtcp_fb_id == '*') {
-          init_descriptions(cur_media, 'rtcp-fb', []);
-          (payload[cur_media]['descriptions']['rtcp-fb']).push(cur_rtcp_fb);
-        } else {
-          init_payload(cur_media, cur_rtcp_fb_id);
-          (payload[cur_media]['descriptions']['payload'][cur_rtcp_fb_id]['rtcp-fb']).push(cur_rtcp_fb);
+          continue;
         }
 
-        continue;
+        m_rtcp_fb_trr_int = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_fb_trr_int).exec(cur_line);
+
+        // 'rtcp-fb-trr-int' line?
+        if(m_rtcp_fb_trr_int) {
+          // Populate current object
+          e = 0;
+          cur_rtcp_fb_trr_int = {};
+
+          cur_rtcp_fb_trr_int['id']      = m_rtcp_fb_trr_int[1] || e++;
+          cur_rtcp_fb_trr_int['value']   = m_rtcp_fb_trr_int[2] || e++;
+
+          // Incomplete?
+          if(e != 0) continue;
+
+          cur_rtcp_fb_trr_int_id = cur_rtcp_fb_trr_int['id'];
+
+          // Push it to parent array
+          init_payload(cur_media, cur_rtcp_fb_trr_int_id);
+          (payload[cur_media]['descriptions']['payload'][cur_rtcp_fb_trr_int_id]['rtcp-fb-trr-int']).push(cur_rtcp_fb_trr_int);
+
+          continue;
+        }
+
+        m_crypto = (R_WEBRTC_SDP_ICE_PAYLOAD.crypto).exec(cur_line);
+
+        // 'crypto' line?
+        if(m_crypto) {
+          // Populate current object
+          e = 0;
+          cur_crypto = {};
+
+          cur_crypto['crypto-suite']   = m_crypto[2]  || e++;
+          cur_crypto['key-params']     = m_crypto[3]  || e++;
+          cur_crypto['session-params'] = m_crypto[5];
+          cur_crypto['tag']            = m_crypto[1]  || e++;
+
+          // Incomplete?
+          if(e != 0) continue;
+
+          // Push it to parent array
+          init_encryption(cur_media);
+          (payload[cur_media]['descriptions']['encryption']['crypto']).push(cur_crypto);
+
+          continue;
+        }
+
+        m_zrtp_hash = (R_WEBRTC_SDP_ICE_PAYLOAD.zrtp_hash).exec(cur_line);
+
+        // 'zrtp-hash' line?
+        if(m_zrtp_hash) {
+          // Populate current object
+          e = 0;
+          cur_zrtp_hash = {};
+
+          cur_zrtp_hash['version'] = m_zrtp_hash[1]  || e++;
+          cur_zrtp_hash['value']   = m_zrtp_hash[2]  || e++;
+
+          // Incomplete?
+          if(e != 0) continue;
+
+          // Push it to parent array
+          init_encryption(cur_media);
+          (payload[cur_media]['descriptions']['encryption']['zrtp-hash']).push(cur_zrtp_hash);
+
+          continue;
+        }
+
+        m_ptime = (R_WEBRTC_SDP_ICE_PAYLOAD.ptime).exec(cur_line);
+
+        // 'ptime' line?
+        if(m_ptime) {
+          // Push it to parent array
+          init_descriptions(cur_media, 'attrs', {});
+          payload[cur_media]['descriptions']['attrs']['ptime'] = m_ptime[1];
+
+          continue;
+        }
+
+        m_maxptime = (R_WEBRTC_SDP_ICE_PAYLOAD.maxptime).exec(cur_line);
+
+        // 'maxptime' line?
+        if(m_maxptime) {
+          // Push it to parent array
+          init_descriptions(cur_media, 'attrs', {});
+          payload[cur_media]['descriptions']['attrs']['maxptime'] = m_maxptime[1];
+
+          continue;
+        }
+
+        m_ssrc = (R_WEBRTC_SDP_ICE_PAYLOAD.ssrc).exec(cur_line);
+
+        // 'ssrc' line?
+        if(m_ssrc) {
+          // Populate current object
+          e = 0;
+          cur_ssrc = {};
+
+          cur_ssrc['id']        = m_ssrc[1]  || e++;
+          cur_ssrc['attribute'] = m_ssrc[2]  || e++;
+          cur_ssrc['value']     = m_ssrc[4];
+          cur_ssrc['data']      = m_ssrc[6];
+
+          // Incomplete?
+          if(e != 0) continue;
+
+          // Push it to parent array (not used in Jingle ATM)
+          init_ssrc(cur_media, cur_ssrc['id']);
+          (payload[cur_media]['descriptions']['ssrc'][cur_ssrc['id']]).push(cur_ssrc);
+
+          // Push it to parent array (common attr required for Jingle)
+          init_descriptions(cur_media, 'attrs', {});
+          payload[cur_media]['descriptions']['attrs']['ssrc'] = m_ssrc[1];
+
+          continue;
+        }
+
+        m_rtcp_mux = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_mux).exec(cur_line);
+
+        // 'rtcp-mux' line?
+        if(m_rtcp_mux) {
+          // Push it to parent array
+          init_descriptions(cur_media, 'rtcp-mux', 1);
+
+          continue;
+        }
+
+        m_rtcp_mux = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_mux).exec(cur_line);
+
+        // 'rtcp-mux' line?
+        if(m_rtcp_mux) {
+          // Push it to parent array
+          init_descriptions(cur_media, 'rtcp-mux', 1);
+
+          continue;
+        }
+
+        m_extmap = (R_WEBRTC_SDP_ICE_PAYLOAD.extmap).exec(cur_line);
+
+        // 'extmap' line?
+        if(m_extmap) {
+          // Populate current object
+          e = 0;
+          cur_extmap = {};
+
+          cur_extmap['id']      = m_extmap[1]  || e++;
+          cur_extmap['uri']     = m_extmap[4]  || e++;
+          cur_extmap['senders'] = m_extmap[3];
+
+          // Incomplete?
+          if(e != 0) continue;
+
+          // Push it to parent array
+          init_descriptions(cur_media, 'rtp-hdrext', []);
+          (payload[cur_media]['descriptions']['rtp-hdrext']).push(cur_extmap);
+
+          continue;
+        }
+
+        m_fingerprint = (R_WEBRTC_SDP_ICE_PAYLOAD.fingerprint).exec(cur_line);
+
+        // 'fingerprint' line?
+        if(m_fingerprint) {
+          // Populate current object
+          e = 0;
+          cur_fingerprint = {};
+
+          cur_fingerprint['hash']  = m_fingerprint[1]  || e++;
+          cur_fingerprint['value'] = m_fingerprint[2]  || e++;
+
+          // Incomplete?
+          if(e != 0) continue;
+
+          // Push it to parent array
+          init_transports(cur_media, 'fingerprint', cur_fingerprint);
+
+          continue;
+        }
+
+        m_pwd = (R_WEBRTC_SDP_ICE_PAYLOAD.pwd).exec(cur_line);
+
+        // 'pwd' line?
+        if(m_pwd) {
+          init_transports(cur_media, 'pwd', m_pwd[1]); continue;
+        }
+
+        m_ufrag = (R_WEBRTC_SDP_ICE_PAYLOAD.ufrag).exec(cur_line);
+
+        // 'ufrag' line?
+        if(m_ufrag) {
+          init_transports(cur_media, 'ufrag', m_ufrag[1]); continue;
+        }
       }
 
-      m_rtcp_fb_trr_int = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_fb_trr_int).exec(cur_line);
-
-      // 'rtcp-fb-trr-int' line?
-      if(m_rtcp_fb_trr_int) {
-        // Populate current object
-        e = 0;
-        cur_rtcp_fb_trr_int = {};
-
-        cur_rtcp_fb_trr_int['id']      = m_rtcp_fb_trr_int[1] || e++;
-        cur_rtcp_fb_trr_int['value']   = m_rtcp_fb_trr_int[2] || e++;
-
-        // Incomplete?
-        if(e != 0) continue;
-
-        cur_rtcp_fb_trr_int_id = cur_rtcp_fb_trr_int['id'];
-
-        // Push it to parent array
-        init_payload(cur_media, cur_rtcp_fb_trr_int_id);
-        (payload[cur_media]['descriptions']['payload'][cur_rtcp_fb_trr_int_id]['rtcp-fb-trr-int']).push(cur_rtcp_fb_trr_int);
-
-        continue;
+      // Remove undesired medias
+      for(media in payload) {
+        if(self.get_media_all().indexOf(media) === -1)  delete payload[media];
       }
-
-      m_crypto = (R_WEBRTC_SDP_ICE_PAYLOAD.crypto).exec(cur_line);
-
-      // 'crypto' line?
-      if(m_crypto) {
-        // Populate current object
-        e = 0;
-        cur_crypto = {};
-
-        cur_crypto['crypto-suite']   = m_crypto[2]  || e++;
-        cur_crypto['key-params']     = m_crypto[3]  || e++;
-        cur_crypto['session-params'] = m_crypto[5];
-        cur_crypto['tag']            = m_crypto[1]  || e++;
-
-        // Incomplete?
-        if(e != 0) continue;
-
-        // Push it to parent array
-        init_encryption(cur_media);
-        (payload[cur_media]['descriptions']['encryption']['crypto']).push(cur_crypto);
-
-        continue;
-      }
-
-      m_zrtp_hash = (R_WEBRTC_SDP_ICE_PAYLOAD.zrtp_hash).exec(cur_line);
-
-      // 'zrtp-hash' line?
-      if(m_zrtp_hash) {
-        // Populate current object
-        e = 0;
-        cur_zrtp_hash = {};
-
-        cur_zrtp_hash['version'] = m_zrtp_hash[1]  || e++;
-        cur_zrtp_hash['value']   = m_zrtp_hash[2]  || e++;
-
-        // Incomplete?
-        if(e != 0) continue;
-
-        // Push it to parent array
-        init_encryption(cur_media);
-        (payload[cur_media]['descriptions']['encryption']['zrtp-hash']).push(cur_zrtp_hash);
-
-        continue;
-      }
-
-      m_ptime = (R_WEBRTC_SDP_ICE_PAYLOAD.ptime).exec(cur_line);
-
-      // 'ptime' line?
-      if(m_ptime) {
-        // Push it to parent array
-        init_descriptions(cur_media, 'attrs', {});
-        payload[cur_media]['descriptions']['attrs']['ptime'] = m_ptime[1];
-
-        continue;
-      }
-
-      m_maxptime = (R_WEBRTC_SDP_ICE_PAYLOAD.maxptime).exec(cur_line);
-
-      // 'maxptime' line?
-      if(m_maxptime) {
-        // Push it to parent array
-        init_descriptions(cur_media, 'attrs', {});
-        payload[cur_media]['descriptions']['attrs']['maxptime'] = m_maxptime[1];
-
-        continue;
-      }
-
-      m_ssrc = (R_WEBRTC_SDP_ICE_PAYLOAD.ssrc).exec(cur_line);
-
-      // 'ssrc' line?
-      if(m_ssrc) {
-        // Push it to parent array
-        init_descriptions(cur_media, 'attrs', {});
-        payload[cur_media]['descriptions']['attrs']['ssrc'] = m_ssrc[1];
-
-        continue;
-      }
-
-      m_rtcp_mux = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_mux).exec(cur_line);
-
-      // 'rtcp-mux' line?
-      if(m_rtcp_mux) {
-        // Push it to parent array
-        init_descriptions(cur_media, 'rtcp-mux', 1);
-
-        continue;
-      }
-
-      m_extmap = (R_WEBRTC_SDP_ICE_PAYLOAD.extmap).exec(cur_line);
-
-      // 'extmap' line?
-      if(m_extmap) {
-        // Populate current object
-        e = 0;
-        cur_extmap = {};
-
-        cur_extmap['id']      = m_extmap[1]  || e++;
-        cur_extmap['uri']     = m_extmap[4]  || e++;
-        cur_extmap['senders'] = m_extmap[3];
-
-        // Incomplete?
-        if(e != 0) continue;
-
-        // Push it to parent array
-        init_descriptions(cur_media, 'rtp-hdrext', []);
-        (payload[cur_media]['descriptions']['rtp-hdrext']).push(cur_extmap);
-
-        continue;
-      }
-
-      m_fingerprint = (R_WEBRTC_SDP_ICE_PAYLOAD.fingerprint).exec(cur_line);
-
-      // 'fingerprint' line?
-      if(m_fingerprint) {
-        // Populate current object
-        e = 0;
-        cur_fingerprint = {};
-
-        cur_fingerprint['hash']  = m_fingerprint[1]  || e++;
-        cur_fingerprint['value'] = m_fingerprint[2]  || e++;
-
-        // Incomplete?
-        if(e != 0) continue;
-
-        // Push it to parent array
-        init_transports(cur_media, 'fingerprint', cur_fingerprint);
-
-        continue;
-      }
-
-      m_pwd = (R_WEBRTC_SDP_ICE_PAYLOAD.pwd).exec(cur_line);
-
-      // 'pwd' line?
-      if(m_pwd) {
-        init_transports(cur_media, 'pwd', m_pwd[1]); continue;
-      }
-
-      m_ufrag = (R_WEBRTC_SDP_ICE_PAYLOAD.ufrag).exec(cur_line);
-
-      // 'ufrag' line?
-      if(m_ufrag) {
-        init_transports(cur_media, 'ufrag', m_ufrag[1]); continue;
-      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_sdp_parse_payload > ' + e, 1);
     }
+
+    console.debug('payload >> ', payload);
 
     return payload;
   };
@@ -5078,6 +5239,9 @@ function JSJaCJingle(args) {
   self._util_sdp_resolution_payload = function(payload) {
     try {
       if(!payload || typeof payload != 'object') return {};
+
+      // No video?
+      if(self.get_media_all().indexOf(JSJAC_JINGLE_MEDIA_VIDEO) === -1) return payload;
 
       var cur_payload, res_arr, constraints;
       var res_height = null;
@@ -5140,43 +5304,46 @@ function JSJaCJingle(args) {
       }
 
       self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > Got local video resolution (' + res_width + 'x' + res_height + ').', 2);
-
-      return payload;
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > ' + e, 1);
-
-      return payload;
     }
+
+    return payload;
   }
 
   /**
    * @private
    */
   self._util_sdp_parse_candidate = function(sdp_candidate) {
-    if(!sdp_candidate) return {};
-    
-    var e         = 0;
     var candidate = {};
-    var matches   = R_WEBRTC_SDP_ICE_CANDIDATE.exec(sdp_candidate);
 
-    // Matches!
-    if(matches) {
-      candidate['component']  = matches[2]  || e++;
-      candidate['foundation'] = matches[1]  || e++;
-      candidate['generation'] = matches[16] || e++;
-      candidate['id']         = self.util_generate_id();
-      candidate['ip']         = matches[5]  || e++;
-      candidate['network']    = JSJAC_JINGLE_NETWORK;
-      candidate['port']       = matches[6]  || e++;
-      candidate['priority']   = matches[4]  || e++;
-      candidate['protocol']   = matches[3]  || e++;
-      candidate['rel-addr']   = matches[11];
-      candidate['rel-port']   = matches[13];
-      candidate['type']       = matches[8]  || e++;
+    try {
+      if(!sdp_candidate) return candidate;
+
+      var e         = 0;
+      var matches   = R_WEBRTC_SDP_ICE_CANDIDATE.exec(sdp_candidate);
+
+      // Matches!
+      if(matches) {
+        candidate['component']  = matches[2]  || e++;
+        candidate['foundation'] = matches[1]  || e++;
+        candidate['generation'] = matches[16] || e++;
+        candidate['id']         = self.util_generate_id();
+        candidate['ip']         = matches[5]  || e++;
+        candidate['network']    = JSJAC_JINGLE_NETWORK;
+        candidate['port']       = matches[6]  || e++;
+        candidate['priority']   = matches[4]  || e++;
+        candidate['protocol']   = matches[3]  || e++;
+        candidate['rel-addr']   = matches[11];
+        candidate['rel-port']   = matches[13];
+        candidate['type']       = matches[8]  || e++;
+      }
+
+      // Incomplete?
+      if(e != 0) return {};
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_sdp_parse_candidate > ' + e, 1);
     }
-
-    // Incomplete?
-    if(e != 0) return {};
 
     return candidate;
   };
@@ -5305,6 +5472,8 @@ function JSJaCJingle(args) {
           self._get_candidates_queue_remote()
         );
 
+        console.debug('SDP:REMOTE:PARSED', (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)).sdp);
+
         // Remote description
         self._get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -5315,7 +5484,7 @@ function JSJaCJingle(args) {
 
           function() {
             // Error (descriptions are incompatible)
-            self.terminate(JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS);
+            self.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
           }
         );
 
@@ -5395,7 +5564,7 @@ function JSJaCJingle(args) {
     // Not needed in case we are the initiator (no packet sent, ever)
     if(self.is_responder()) self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
 
-    self.get_debug().log('[JSJaCJingle] _peer_got_user_media_error > Failed.', 1);
+    self.get_debug().log('[JSJaCJingle] _peer_got_user_media_error > Failed (' + (error['PERMISSION_DENIED'] ? 'permission denied' : 'unknown' ) + ').', 1);
   };
 
   /**
@@ -5407,16 +5576,30 @@ function JSJaCJingle(args) {
     try {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Got local description.', 2);
 
-      self._get_peer_connection().setLocalDescription(sdp_local);
-
-      self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 2);
+      console.debug('SDP:LOCAL:RAW', sdp_local.sdp);
 
       // Convert SDP raw data to an object
       var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
       self._util_sdp_resolution_payload(payload_parsed);
 
+      console.debug('SDP:LOCAL:OBJ', payload_parsed);
+
       for(c in payload_parsed)
         self._set_payloads_local(c, payload_parsed[c]);
+
+      // Filter our local description (remove unused medias)
+      var sdp_local_desc = self._util_sdp_generate_description(
+        sdp_local.type,
+        self._get_payloads_local()
+      );
+
+      console.debug('SDP:LOCAL:PARSED', (new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)).sdp);
+
+      self._get_peer_connection().setLocalDescription(
+        new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)
+      );
+
+      self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 2);
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > ' + e, 1);
     }
