@@ -5096,7 +5096,7 @@ function JSJaCJingle(args) {
 
       // Try media constraints? (less reliable)
       if(!res_height || !res_width) {
-        self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > Could not get local video resolution reliably, falling back on constraints.', 0);
+        self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > Could not get local video resolution, falling back on constraints (local video may not be ready).', 0);
 
         constraints = self.util_generate_constraints();
 
