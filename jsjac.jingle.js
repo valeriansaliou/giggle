@@ -5155,7 +5155,9 @@ function JSJaCJingle(args) {
           if(document.location.protocol != 'https:')
             self.get_debug().log('[JSJaCJingle] util_generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
 
-          constraints.video.mandatory['chromeMediaSource'] = self.get_video_source();
+          constraints.video.mandatory = {
+            'chromeMediaSource': self.get_video_source();
+          };
         }
       }
     } catch(e) {
