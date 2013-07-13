@@ -6069,7 +6069,25 @@ function JSJaCJingle(args) {
 
       self._set_local_stream(stream);
 
-      if(callback) callback();
+      if(callback && typeof callback == 'function') {
+        if(self.get_local_view().length) {
+          self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
+
+          self.get_local_view()[0].addEventListener(
+            'loadeddata',
+
+            function() {
+              self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Local video loaded.', 2);
+
+              callback();
+            },
+
+            false
+          );
+        } else {
+          callback();
+        }
+      }
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > ' + e, 1);
     }
