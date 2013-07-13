@@ -5151,12 +5151,15 @@ function JSJaCJingle(args) {
           constraints.video.mandatory['minFrameRate'] = self.get_fps();
 
         // Custom video source? (screenshare)
-        if(self.get_video_source() != JSJAC_JINGLE_VIDEO_SOURCE_CAMERA) {
+        if(self.get_media()        == JSJAC_JINGLE_MEDIA_VIDEO           && 
+           self.get_video_source() != JSJAC_JINGLE_VIDEO_SOURCE_CAMERA ) {
           if(document.location.protocol != 'https:')
             self.get_debug().log('[JSJaCJingle] util_generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
 
-          constraints.audio                                = false;
-          constraints.video.mandatory['chromeMediaSource'] = self.get_video_source();
+          constraints.audio           = false;
+          constraints.video.mandatory = {
+            'chromeMediaSource': self.get_video_source()
+          };
         }
       }
     } catch(e) {
