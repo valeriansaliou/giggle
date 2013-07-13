@@ -6070,7 +6070,7 @@ function JSJaCJingle(args) {
       self._set_local_stream(stream);
 
       if(callback && typeof callback == 'function') {
-        if(self.get_local_view().length) {
+        if((self.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) && self.get_local_view().length) {
           self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
 
           self.get_local_view()[0].addEventListener(
@@ -6079,6 +6079,7 @@ function JSJaCJingle(args) {
             function() {
               self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Local video loaded.', 2);
 
+              this.removeEventListener('loadeddata', callback, false);
               callback();
             },
 
