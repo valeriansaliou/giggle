@@ -4576,13 +4576,17 @@ function JSJaCJingle(args) {
    */
   self._util_build_content_local = function() {
     try {
+      console.debug('_util_build_content_local > get_name', self.get_name());
+      console.debug('_get_payloads_local', self._get_payloads_local());
+      console.debug('_get_candidates_local', self._get_candidates_local());
+
       for(cur_name in self.get_name()) {
         self._set_content_local(
-          (cur_name == 'video' ? 'screen' : cur_name),
+          cur_name,
 
           self._util_generate_content(
             JSJAC_JINGLE_SENDERS_INITIATOR.jingle,
-            (cur_name == 'video' ? 'screen' : cur_name),
+            cur_name,
             self.get_senders(cur_name),
             self._get_payloads_local(cur_name),
             self._get_candidates_local(cur_name)
@@ -4599,6 +4603,8 @@ function JSJaCJingle(args) {
    */
   self._util_build_content_remote = function() {
     try {
+      console.debug('_util_build_content_remote > get_name', self.get_name());
+
       for(cur_name in self.get_name()) {
         self._set_content_remote(
           cur_name,
@@ -4654,6 +4660,27 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
+  self._util_media_generate = function(name) {
+    var media = null;
+
+    try {
+      for(cur_media in JSJAC_JINGLE_MEDIAS) {
+        if(name == self._util_name_generate(cur_media)) {
+          media = cur_media; break;
+        }
+      }
+
+      if(!media) media = name;
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_media_generate > ' + e, 1);
+    }
+
+    return media;
+  };
+
+  /**
+   * @private
+   */
   self._util_sdp_generate = function(type, payloads, candidates) {
     try {
       return {
@@ -4671,18 +4698,21 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_sdp_generate_candidates = function(candidates) {
+    console.debug('_util_sdp_generate_candidates > candidates', candidates);
+
     var candidates_arr = [];
 
     try {
       // Parse candidates
       var i,
-          cur_media, cur_c_media, cur_candidate, cur_label, cur_candidate_str;
+          cur_media, cur_name, cur_c_name, cur_candidate, cur_label, cur_candidate_str;
 
-      for(cur_media in candidates) {
-        cur_c_media = candidates[cur_media];
+      for(cur_name in candidates) {
+        cur_c_name = candidates[cur_name];
+        cur_media   = self._util_media_generate(cur_name);
 
-        for(i in cur_c_media) {
-          cur_candidate = cur_c_media[i];
+        for(i in cur_c_name) {
+          cur_candidate = cur_c_name[i];
 
           cur_label         = JSJAC_JINGLE_MEDIAS[cur_media]['label'];
           cur_candidate_str = '';
@@ -4735,6 +4765,8 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] _util_sdp_generate_candidates > ' + e, 1);
     }
 
+    console.debug('_util_sdp_generate_candidates > candidates_arr', candidates_arr);
+
     return candidates_arr;
   };
 
@@ -4742,6 +4774,8 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_sdp_generate_description = function(type, payloads) {
+    console.debug('_util_sdp_generate_description > payloads', payloads);
+
     var payloads_obj = {};
 
     try {
@@ -4749,8 +4783,8 @@ function JSJaCJingle(args) {
 
       // Common vars
       var i, j, k, l, m, n, o, p, q, r, s,
-          cur_media, cur_media_obj,
-          cur_senders, cur_name,
+          cur_name, cur_name_obj,
+          cur_media, cur_senders,
           cur_transports_obj, cur_description_obj,
           cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
           cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption, cur_d_ssrc,
@@ -4774,27 +4808,25 @@ function JSJaCJingle(args) {
       payloads_str += WEBRTC_SDP_LINE_BREAK;
 
       // Add bundle line
-      if(Object.keys(payloads).length > 1) {
+      if(Object.keys(payloads).length) {
         payloads_str += 'a=group:BUNDLE ' + Object.keys(payloads).join(' ');
         payloads_str += WEBRTC_SDP_LINE_BREAK;
       }
 
       // Add media groups
-      for(cur_media in payloads) {
-        cur_media_obj         = payloads[cur_media];
-        cur_senders           = self.get_senders(cur_media);
-        cur_name              = self.get_name(
-                                  self._util_name_generate(cur_media)
-                                ) ? cur_media : null;
+      for(cur_name in payloads) {
+        cur_name_obj          = payloads[cur_name];
+        cur_senders           = self.get_senders(cur_name);
+        cur_media             = self.get_name(cur_name) ? self._util_media_generate(cur_name) : null;
 
         // Transports
-        cur_transports_obj    = cur_media_obj['transports'];
+        cur_transports_obj    = cur_name_obj['transports'];
         cur_d_pwd             = cur_transports_obj['pwd'];
         cur_d_ufrag           = cur_transports_obj['ufrag'];
         cur_d_fingerprint     = cur_transports_obj['fingerprint'];
 
         // Descriptions
-        cur_description_obj   = cur_media_obj['descriptions'];
+        cur_description_obj   = cur_name_obj['descriptions'];
         cur_d_attrs           = cur_description_obj['attrs'];
         cur_d_rtcp_fb         = cur_description_obj['rtcp-fb'];
         cur_d_bandwidth       = cur_description_obj['bandwidth'];
@@ -5004,6 +5036,8 @@ function JSJaCJingle(args) {
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_sdp_generate_description > ' + e, 1);
     }
+
+    console.debug('_util_sdp_generate_description > payloads_obj', payloads_obj);
 
     return payloads_obj;
   };
@@ -5333,6 +5367,8 @@ function JSJaCJingle(args) {
   self._util_sdp_parse_payload = function(sdp_payload) {
     var payload = {};
 
+    console.debug('sdp_payload', sdp_payload);
+
     try {
       if(!sdp_payload || sdp_payload.indexOf('\n') == -1)  return payload;
 
@@ -5348,7 +5384,8 @@ function JSJaCJingle(args) {
           cur_crypto, cur_zrtp_hash, cur_fingerprint, cur_ssrc, cur_extmap,
           cur_rtpmap_id, cur_rtcp_fb_id, cur_bandwidth,
           m_rtpmap, m_fmtp, m_rtcp_fb, m_rtcp_fb_trr_int, m_crypto, m_zrtp_hash,
-          m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_bandwidth, m_media;
+          m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_bandwidth, m_media,
+          cur_check_name;
 
       // Common functions
       var init_content = function(name) {
@@ -5409,6 +5446,8 @@ function JSJaCJingle(args) {
         if(m_media) {
           cur_media = m_media[1];
           cur_name  = self._util_name_generate(cur_media);
+
+          console.debug('cur_name', cur_name);
 
           // Push it to parent array
           init_descriptions(cur_name, 'attrs', {});
@@ -5722,9 +5761,13 @@ function JSJaCJingle(args) {
         }
       }
 
+      console.debug('self.get_name()', self.get_name());
+
       // Remove undesired medias
-      for(media in payload) {
-        if(self.get_media_all().indexOf(media) === -1)  delete payload[media];
+      for(cur_check_name in payload) {
+        console.debug('cur_check_name', cur_check_name);
+
+        if(!self.get_name()[cur_check_name])  delete payload[cur_check_name];
       }
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_sdp_parse_payload > ' + e, 1);
@@ -6093,6 +6136,8 @@ function JSJaCJingle(args) {
       // Convert SDP raw data to an object
       var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
       self._util_sdp_resolution_payload(payload_parsed);
+
+      console.debug('_peer_got_description > payload_parsed', payload_parsed);
 
       for(cur_media in payload_parsed) {
         self._set_payloads_local(
