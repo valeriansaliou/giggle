@@ -737,15 +737,25 @@ function JSJaCJingle(args) {
       self._set_responder(self.get_to());
 
       for(i in self.get_media_all()) {
-        self._set_name(self.get_media_all()[i]);
+        self._set_name(
+          self._util_name_generate(
+            self.get_media_all()[i]
+          )
+        );
 
         self._set_senders(
-          self.get_media_all()[i],
+          self._util_name_generate(
+            self.get_media_all()[i]
+          ),
+
           JSJAC_JINGLE_SENDERS_BOTH.jingle
         );
 
         self._set_creator(
-          self.get_media_all()[i],
+          self._util_name_generate(
+            self.get_media_all()[i]
+          ),
+
           JSJAC_JINGLE_CREATOR_INITIATOR
         );
       }
@@ -4516,6 +4526,10 @@ function JSJaCJingle(args) {
   self._util_generate_content = function(creator, name, senders, payloads, transports) {
     var content_obj = {};
 
+    console.debug('name', name);
+    console.debug('payloads', payloads);
+    console.debug('transports', transports);
+
     try {
       // Generation process
       content_obj['creator']     = creator;
@@ -4601,6 +4615,40 @@ function JSJaCJingle(args) {
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_build_content_remote > ' + e, 1);
     }
+  };
+
+  /**
+   * @private
+   */
+  self._util_name_generate = function(media) {
+    var name = null;
+
+    try {
+      var cur_name;
+
+      var content_all = [
+        self._get_content_local(),
+        self._get_content_remote()
+      ];
+
+      for(i in content_all) {
+        for(cur_name in content_all[i]) {
+          try {
+            if(content_all[i][cur_name]['description']['attrs']['media'] == media) {
+              name = cur_name; break;
+            }
+          } catch(e) {}
+        }
+
+        if(name) break;
+      }
+
+      if(!name) name = media;
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_name_generate > ' + e, 1);
+    }
+
+    return name;
   };
 
   /**
@@ -4735,7 +4783,9 @@ function JSJaCJingle(args) {
       for(cur_media in payloads) {
         cur_media_obj         = payloads[cur_media];
         cur_senders           = self.get_senders(cur_media);
-        cur_name              = self.get_name(cur_media) ? cur_media : null;
+        cur_name              = self.get_name(
+                                  self._util_name_generate(cur_media)
+                                ) ? cur_media : null;
 
         // Transports
         cur_transports_obj    = cur_media_obj['transports'];
@@ -5151,7 +5201,7 @@ function JSJaCJingle(args) {
           constraints.video.mandatory['minFrameRate'] = self.get_fps();
 
         // Custom video source? (screenshare)
-        if(self.get_media()        == JSJAC_JINGLE_MEDIA_VIDEO           && 
+        if(self.get_media()        == JSJAC_JINGLE_MEDIA_VIDEO         && 
            self.get_video_source() != JSJAC_JINGLE_VIDEO_SOURCE_CAMERA ) {
           if(document.location.protocol != 'https:')
             self.get_debug().log('[JSJaCJingle] util_generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
@@ -5837,10 +5887,22 @@ function JSJaCJingle(args) {
           // Convert SDP raw data to an object
           var candidate_obj   = self._util_sdp_parse_candidate(candidate_data);
 
-          self._set_candidates_local(candidate_id, candidate_obj);
+          self._set_candidates_local(
+            self._util_name_generate(
+              candidate_id
+            ),
+
+            candidate_obj
+          );
 
           // Enqueue candidate
-          self._set_candidates_queue_local(candidate_id, candidate_obj);
+          self._set_candidates_queue_local(
+            self._util_name_generate(
+              candidate_id
+            ),
+
+            candidate_obj
+          );
         } else {
           // Build or re-build content (local)
           self._util_build_content_local();
@@ -6030,8 +6092,15 @@ function JSJaCJingle(args) {
       var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
       self._util_sdp_resolution_payload(payload_parsed);
 
-      for(c in payload_parsed)
-        self._set_payloads_local(c, payload_parsed[c]);
+      for(cur_media in payload_parsed) {
+        self._set_payloads_local(
+          self._util_name_generate(
+            cur_media
+          ),
+
+          payload_parsed[cur_media]
+        );
+      }
 
       // Filter our local description (remove unused medias)
       var sdp_local_desc = self._util_sdp_generate_description(
