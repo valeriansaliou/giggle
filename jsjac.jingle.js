@@ -262,6 +262,10 @@ var JSJAC_JINGLE_SESSION_INFO_UNMUTE                 = 'unmute';
 var JSJAC_JINGLE_MEDIA_AUDIO                         = 'audio';
 var JSJAC_JINGLE_MEDIA_VIDEO                         = 'video';
 
+var JSJAC_JINGLE_VIDEO_SOURCE_CAMERA                 = 'camera';
+var JSJAC_JINGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
+var JSJAC_JINGLE_VIDEO_SOURCE_TAB                    = 'tab';
+
 
 
 /**
@@ -352,6 +356,11 @@ JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]          = 1;
 var JSJAC_JINGLE_MEDIAS             = {};
 JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                         = { label: '0' };
 JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = { label: '1' };
+
+var JSJAC_JINGLE_VIDEO_SOURCES      = {};
+JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_CAMERA]          = 1;
+JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_SCREEN]          = 1;
+JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_TAB]             = 1;
 
 
 
@@ -504,6 +513,12 @@ function JSJaCJingle(args) {
      * @private
      */
     self._media = args.media;
+
+  if(args && args.video_source)
+    /**
+     * @private
+     */
+    self._video_source = args.video_source;
 
   if(args && args.resolution)
     /**
@@ -2922,6 +2937,15 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Gets the video source value
+   * @return video source value
+   * @type string
+   */
+  self.get_video_source = function() {
+    return (self._video_source && self._video_source in JSJAC_JINGLE_VIDEO_SOURCES) ? self._video_source : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
+  };
+
+  /**
    * Gets the resolution value
    * @return resolution value
    * @type string
@@ -3468,6 +3492,13 @@ function JSJaCJingle(args) {
    */
   self._set_media = function(media) {
     self._media = media;
+  };
+
+  /**
+   * @private
+   */
+  self._set_video_source = function() {
+    self._video_source = video_source;
   };
 
   /**
@@ -5118,6 +5149,14 @@ function JSJaCJingle(args) {
         // FPS?
         if(self.get_fps())
           constraints.video.mandatory['minFrameRate'] = self.get_fps();
+
+        // Custom video source? (screenshare)
+        if(self.get_video_source() != JSJAC_JINGLE_VIDEO_SOURCE_CAMERA) {
+          if(document.location.protocol != 'https:')
+            self.get_debug().log('[JSJaCJingle] util_generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
+
+          constraints.video.mandatory['chromeMediaSource'] = self.get_video_source();
+        }
       }
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] util_generate_constraints > ' + e, 1);

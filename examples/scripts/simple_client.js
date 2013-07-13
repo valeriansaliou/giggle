@@ -382,10 +382,11 @@ $(document).ready(function() {
 
 				try {
 					// Session values
-					ARGS.to          = call_jid;
-					ARGS.media       = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
-					ARGS.local_view  = document.getElementById('video_local');
-					ARGS.remote_view = document.getElementById('video_remote');
+					ARGS.to           = call_jid;
+					ARGS.media        = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
+					ARGS.video_source = (submit_target == 'call_screen') ? JSJAC_JINGLE_VIDEO_SOURCE_SCREEN : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
+					ARGS.local_view   = document.getElementById('video_local');
+					ARGS.remote_view  = document.getElementById('video_remote');
 
 					// Let's go!
 					JINGLE = new JSJaCJingle(ARGS);
