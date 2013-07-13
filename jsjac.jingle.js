@@ -4582,11 +4582,11 @@ function JSJaCJingle(args) {
 
       for(cur_name in self.get_name()) {
         self._set_content_local(
-          cur_name,
+          (cur_name == 'video' ? 'screen' : cur_name),
 
           self._util_generate_content(
             JSJAC_JINGLE_SENDERS_INITIATOR.jingle,
-            cur_name,
+            (cur_name == 'video' ? 'screen' : cur_name),
             self.get_senders(cur_name),
             self._get_payloads_local(cur_name),
             self._get_candidates_local(cur_name)
