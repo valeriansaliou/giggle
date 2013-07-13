@@ -725,6 +725,9 @@ function JSJaCJingle(args) {
 
       self.get_debug().log('[JSJaCJingle] initiate > New Jingle session with media: ' + self.get_media(), 2);
 
+      // Common vars
+      var cur_name;
+
       // Trigger init pending custom callback
       (self._get_session_initiate_pending())(self);
 
@@ -737,25 +740,19 @@ function JSJaCJingle(args) {
       self._set_responder(self.get_to());
 
       for(i in self.get_media_all()) {
-        self._set_name(
-          self._util_name_generate(
-            self.get_media_all()[i]
-          )
+        cur_name = self._util_name_generate(
+          self.get_media_all()[i]
         );
 
-        self._set_senders(
-          self._util_name_generate(
-            self.get_media_all()[i]
-          ),
+        self._set_name(cur_name);
 
+        self._set_senders(
+          cur_name,
           JSJAC_JINGLE_SENDERS_BOTH.jingle
         );
 
         self._set_creator(
-          self._util_name_generate(
-            self.get_media_all()[i]
-          ),
-
+          cur_name,
           JSJAC_JINGLE_CREATOR_INITIATOR
         );
       }
@@ -4526,10 +4523,6 @@ function JSJaCJingle(args) {
   self._util_generate_content = function(creator, name, senders, payloads, transports) {
     var content_obj = {};
 
-    console.debug('name', name);
-    console.debug('payloads', payloads);
-    console.debug('transports', transports);
-
     try {
       // Generation process
       content_obj['creator']     = creator;
@@ -4576,10 +4569,6 @@ function JSJaCJingle(args) {
    */
   self._util_build_content_local = function() {
     try {
-      console.debug('_util_build_content_local > get_name', self.get_name());
-      console.debug('_get_payloads_local', self._get_payloads_local());
-      console.debug('_get_candidates_local', self._get_candidates_local());
-
       for(cur_name in self.get_name()) {
         self._set_content_local(
           cur_name,
@@ -4603,8 +4592,6 @@ function JSJaCJingle(args) {
    */
   self._util_build_content_remote = function() {
     try {
-      console.debug('_util_build_content_remote > get_name', self.get_name());
-
       for(cur_name in self.get_name()) {
         self._set_content_remote(
           cur_name,
@@ -4698,8 +4685,6 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_sdp_generate_candidates = function(candidates) {
-    console.debug('_util_sdp_generate_candidates > candidates', candidates);
-
     var candidates_arr = [];
 
     try {
@@ -4765,8 +4750,6 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] _util_sdp_generate_candidates > ' + e, 1);
     }
 
-    console.debug('_util_sdp_generate_candidates > candidates_arr', candidates_arr);
-
     return candidates_arr;
   };
 
@@ -4774,8 +4757,6 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_sdp_generate_description = function(type, payloads) {
-    console.debug('_util_sdp_generate_description > payloads', payloads);
-
     var payloads_obj = {};
 
     try {
@@ -4818,6 +4799,9 @@ function JSJaCJingle(args) {
         cur_name_obj          = payloads[cur_name];
         cur_senders           = self.get_senders(cur_name);
         cur_media             = self.get_name(cur_name) ? self._util_media_generate(cur_name) : null;
+
+        // No media?
+        if(!cur_media) continue;
 
         // Transports
         cur_transports_obj    = cur_name_obj['transports'];
@@ -5036,8 +5020,6 @@ function JSJaCJingle(args) {
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_sdp_generate_description > ' + e, 1);
     }
-
-    console.debug('_util_sdp_generate_description > payloads_obj', payloads_obj);
 
     return payloads_obj;
   };
@@ -5367,8 +5349,6 @@ function JSJaCJingle(args) {
   self._util_sdp_parse_payload = function(sdp_payload) {
     var payload = {};
 
-    console.debug('sdp_payload', sdp_payload);
-
     try {
       if(!sdp_payload || sdp_payload.indexOf('\n') == -1)  return payload;
 
@@ -5446,8 +5426,6 @@ function JSJaCJingle(args) {
         if(m_media) {
           cur_media = m_media[1];
           cur_name  = self._util_name_generate(cur_media);
-
-          console.debug('cur_name', cur_name);
 
           // Push it to parent array
           init_descriptions(cur_name, 'attrs', {});
@@ -5761,12 +5739,8 @@ function JSJaCJingle(args) {
         }
       }
 
-      console.debug('self.get_name()', self.get_name());
-
       // Remove undesired medias
       for(cur_check_name in payload) {
-        console.debug('cur_check_name', cur_check_name);
-
         if(!self.get_name()[cur_check_name])  delete payload[cur_check_name];
       }
     } catch(e) {
@@ -6137,15 +6111,10 @@ function JSJaCJingle(args) {
       var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
       self._util_sdp_resolution_payload(payload_parsed);
 
-      console.debug('_peer_got_description > payload_parsed', payload_parsed);
-
-      for(cur_media in payload_parsed) {
+      for(cur_name in payload_parsed) {
         self._set_payloads_local(
-          self._util_name_generate(
-            cur_media
-          ),
-
-          payload_parsed[cur_media]
+          cur_name,
+          payload_parsed[cur_name]
         );
       }
 
