@@ -1328,6 +1328,9 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_content_accept', 4);
 
     try {
+      // TODO: remove from remote 'content-add' queue
+      // TODO: reprocess content_local/content_remote
+
       // Not implemented for now
       self.get_debug().log('[JSJaCJingle] send_content_accept > Feature not implemented!', 0);
     } catch(e) {
@@ -1342,6 +1345,8 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_content_add', 4);
 
     try {
+      // TODO: push to local 'content-add' queue
+
       // Not implemented for now
       self.get_debug().log('[JSJaCJingle] send_content_add > Feature not implemented!', 0);
     } catch(e) {
@@ -1356,6 +1361,8 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_content_modify', 4);
 
     try {
+      // TODO: push to local 'content-modify' queue
+
       // Not implemented for now
       self.get_debug().log('[JSJaCJingle] send_content_modify > Feature not implemented!', 0);
     } catch(e) {
@@ -1370,6 +1377,8 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_content_reject', 4);
 
     try {
+      // TODO: remove from remote 'content-add' queue
+
       // Not implemented for now
       self.get_debug().log('[JSJaCJingle] send_content_reject > Feature not implemented!', 0);
     } catch(e) {
@@ -1384,6 +1393,8 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] send_content_remove', 4);
 
     try {
+      // TODO: add to local 'content-remove' queue
+
       // Not implemented for now
       self.get_debug().log('[JSJaCJingle] send_content_remove > Feature not implemented!', 0);
     } catch(e) {
@@ -1753,6 +1764,10 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] handle_content_accept', 4);
 
     try {
+      // TODO: start to flow accepted stream
+      // TODO: remove accepted content from local 'content-add' queue
+      // TODO: reprocess content_local/content_remote
+
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
@@ -1768,6 +1783,11 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] handle_content_add', 4);
 
     try {
+      // TODO: request the user to start this content (need a custom handler)
+      //       on accept: send content-accept
+      // TODO: push to remote 'content-add' queue
+      // TODO: reprocess content_local/content_remote
+
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
@@ -1783,6 +1803,12 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] handle_content_modify', 4);
 
     try {
+      // TODO: change 'senders' value (direction of the stream)
+      //       if(send:from_me): notify the user that media is requested
+      //       if(unacceptable): terminate the session
+      //       if(accepted):     change local/remote SDP
+      // TODO: reprocess content_local/content_remote
+
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
@@ -1798,6 +1824,8 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] handle_content_reject', 4);
 
     try {
+      // TODO: remove rejected content from local 'content-add' queue
+
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
@@ -1813,6 +1841,9 @@ function JSJaCJingle(args) {
     self.get_debug().log('[JSJaCJingle] handle_content_remove', 4);
 
     try {
+      // TODO: stop flowing removed stream
+      // TODO: reprocess content_local/content_remote
+
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
