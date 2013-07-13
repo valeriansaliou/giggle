@@ -264,7 +264,6 @@ var JSJAC_JINGLE_MEDIA_VIDEO                         = 'video';
 
 var JSJAC_JINGLE_VIDEO_SOURCE_CAMERA                 = 'camera';
 var JSJAC_JINGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
-var JSJAC_JINGLE_VIDEO_SOURCE_TAB                    = 'tab';
 
 
 
@@ -360,7 +359,6 @@ JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = { label:
 var JSJAC_JINGLE_VIDEO_SOURCES      = {};
 JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_CAMERA]          = 1;
 JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_SCREEN]          = 1;
-JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_TAB]             = 1;
 
 
 
