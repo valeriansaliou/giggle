@@ -6073,18 +6073,14 @@ function JSJaCJingle(args) {
         if((self.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) && self.get_local_view().length) {
           self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
 
-          self.get_local_view()[0].addEventListener(
-            'loadeddata',
+          var fn_loaded = function() {
+            self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Local video loaded.', 2);
 
-            function() {
-              self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Local video loaded.', 2);
+            this.removeEventListener('loadeddata', fn_loaded, false);
+            callback();
+          };
 
-              this.removeEventListener('loadeddata', callback, false);
-              callback();
-            },
-
-            false
-          );
+          self.get_local_view()[0].addEventListener('loadeddata', fn_loaded, false);
         } else {
           callback();
         }
