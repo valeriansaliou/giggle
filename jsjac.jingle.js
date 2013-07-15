@@ -16,6 +16,7 @@
  * XEP-0166: http://xmpp.org/extensions/xep-0166.html
  * XEP-0167: http://xmpp.org/extensions/xep-0167.html
  * XEP-0176: http://xmpp.org/extensions/xep-0176.html
+ * XEP-0215: http://xmpp.org/extensions/xep-0215.html
  * XEP-0262: http://xmpp.org/extensions/xep-0262.html
  * XEP-0293: http://xmpp.org/extensions/xep-0293.html
  * XEP-0294: http://xmpp.org/extensions/xep-0294.html
@@ -142,6 +143,8 @@ var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transport
 
 var NS_JINGLE_SECURITY_STUB                         = 'urn:xmpp:jingle:security:stub:0';
 
+var NS_EXTDISCO                                     = 'urn:xmpp:extdisco:1';
+
 var NS_IETF_RFC_3264                                = 'urn:ietf:rfc:3264';
 
 var R_NS_JINGLE_APP                                 = /^urn:xmpp:jingle:app:(\w+)(:(\w+))?(:(\d+))?$/;
@@ -169,7 +172,10 @@ var MAP_DISCO_JINGLE                                = [
   NS_JINGLE_APPS_DTLS,
 
   /* http://xmpp.org/extensions/xep-0262.html */
-  NS_JINGLE_APPS_RTP_ZRTP
+  NS_JINGLE_APPS_RTP_ZRTP,
+
+  /* http://xmpp.org/extensions/xep-0215.html */
+  NS_EXTDISCO
 ];
 
 
@@ -370,6 +376,16 @@ var JSJAC_JINGLE_STORE_CONNECTION = null;
 var JSJAC_JINGLE_STORE_SESSIONS   = {};
 var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
 
+var JSJAC_JINGLE_STORE_EXTDISCO   = {
+  'stun' : {},
+  'turn' : {}
+};
+
+var JSJAC_JINGLE_STORE_DEFER      = {
+  'deferred' : true,
+  'fn'       : []
+}
+
 
 
 /**
@@ -405,6 +421,7 @@ var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
  * @param {string} args.bandwidth The bandwidth to be limited for video in the Jingle session.
  * @param {string} args.fps The framerate to be used for video in the Jingle session.
  * @param {object} args.stun A list of STUN servers to use (override the default one)
+ * @param {object} args.turn A list of TURN servers to use
  * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
  */
 function JSJaCJingle(args) {
@@ -554,7 +571,16 @@ function JSJaCJingle(args) {
      */
     self._stun = args.stun;
   } else {
-    self._stun = [];
+    self._stun = {};
+  }
+
+  if(args && args.turn) {
+    /**
+     * @private
+     */
+    self._turn = args.turn;
+  } else {
+    self._turn = {};
   }
 
   if(args && args.debug && args.debug.log) {
@@ -715,6 +741,12 @@ function JSJaCJingle(args) {
         return;
       }
 
+      // Defer?
+      if(JSJaCJingle_defer(function() { self.initiate(); })) {
+        self.get_debug().log('[JSJaCJingle] initiate > Deferred (waiting for the library components to be initiated).', 0);
+        return;
+      }
+
       // Slot unavailable?
       if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
         self.get_debug().log('[JSJaCJingle] initiate > Cannot initiate, resource not inactive (status: ' + self.get_status() + ').', 0);
@@ -784,6 +816,12 @@ function JSJaCJingle(args) {
         return;
       }
 
+      // Defer?
+      if(JSJaCJingle_defer(function() { self.accept(); })) {
+        self.get_debug().log('[JSJaCJingle] accept > Deferred (waiting for the library components to be initiated).', 0);
+        return;
+      }
+
       // Slot unavailable?
       if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
         self.get_debug().log('[JSJaCJingle] accept > Cannot accept, resource not initiated (status: ' + self.get_status() + ').', 0);
@@ -825,6 +863,12 @@ function JSJaCJingle(args) {
         return;
       }
 
+      // Defer?
+      if(JSJaCJingle_defer(function() { self.info(name, args); })) {
+        self.get_debug().log('[JSJaCJingle] info > Deferred (waiting for the library components to be initiated).', 0);
+        return;
+      }
+
       // Slot unavailable?
       if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
         self.get_debug().log('[JSJaCJingle] info > Cannot send info, resource not accepted (status: ' + self.get_status() + ').', 0);
@@ -857,6 +901,12 @@ function JSJaCJingle(args) {
         return;
       }
 
+      // Defer?
+      if(JSJaCJingle_defer(function() { self.terminate(reason); })) {
+        self.get_debug().log('[JSJaCJingle] terminate > Deferred (waiting for the library components to be initiated).', 0);
+        return;
+      }
+
       // Slot unavailable?
       if(self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
         self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource already terminated (status: ' + self.get_status() + ').', 0);
@@ -886,6 +936,12 @@ function JSJaCJingle(args) {
       // Locked?
       if(self.get_lock()) {
         self.get_debug().log('[JSJaCJingle] send > Cannot send, resource locked. Please open another session or check WebRTC support.', 0);
+        return;
+      }
+
+      // Defer?
+      if(JSJaCJingle_defer(function() { self.send(type, args); })) {
+        self.get_debug().log('[JSJaCJingle] send > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
@@ -990,6 +1046,12 @@ function JSJaCJingle(args) {
         return;
       }
 
+      // Defer?
+      if(JSJaCJingle_defer(function() { self.handle(stanza); })) {
+        self.get_debug().log('[JSJaCJingle] handle > Deferred (waiting for the library components to be initiated).', 0);
+        return;
+      }
+
       var id = stanza.getID();
       if(id && stanza.getType() == 'result') self._set_received_id(id);
 
@@ -1078,6 +1140,12 @@ function JSJaCJingle(args) {
         return;
       }
 
+      // Defer?
+      if(JSJaCJingle_defer(function() { self.mute(name); })) {
+        self.get_debug().log('[JSJaCJingle] mute > Deferred (waiting for the library components to be initiated).', 0);
+        return;
+      }
+
       // Already muted?
       if(self.get_mute(name)) {
         self.get_debug().log('[JSJaCJingle] mute > Resource already muted.', 0);
@@ -1103,6 +1171,12 @@ function JSJaCJingle(args) {
       // Locked?
       if(self.get_lock()) {
         self.get_debug().log('[JSJaCJingle] unmute > Cannot unmute, resource locked. Please open another session or check WebRTC support.', 0);
+        return;
+      }
+
+      // Defer?
+      if(JSJaCJingle_defer(function() { self.unmute(name); })) {
+        self.get_debug().log('[JSJaCJingle] unmute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
@@ -1133,6 +1207,12 @@ function JSJaCJingle(args) {
       // Locked?
       if(self.get_lock()) {
         self.get_debug().log('[JSJaCJingle] media > Cannot change media, resource locked. Please open another session or check WebRTC support.', 0);
+        return;
+      }
+
+      // Defer?
+      if(JSJaCJingle_defer(function() { self.media(media); })) {
+        self.get_debug().log('[JSJaCJingle] media > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
@@ -3059,30 +3139,21 @@ function JSJaCJingle(args) {
   };
 
   /**
-   * Gets the STUN/ICE servers
-   * @return ICE configuration
+   * Gets the STUN servers
+   * @return STUN servers
    * @type object
    */
   self.get_stun = function() {
-    try {
-      if(self._stun && self._stun.length) {
-        var config = {
-          iceServers : []
-        };
+    return (typeof self._stun == 'object') ? self._stun : {};
+  };
 
-        for(i in self._stun) {
-          (config.iceServers).push({
-            'url': 'stun:' + self._stun[i]
-          });
-        }
-
-        return config;
-      }
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle] get_stun > ' + e, 1);
-    }
-
-    return WEBRTC_CONFIGURATION.peer_connection.config;
+  /**
+   * Gets the TURN servers
+   * @return TURN servers
+   * @type object
+   */
+  self.get_turn = function() {
+    return (typeof self._turn == 'object') ? self._turn : {};
   };
 
   /**
@@ -3569,8 +3640,15 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._set_stun = function(stun_server) {
-    (self._stun).push(stun_server);
+  self._set_stun = function(stun_host, stun_data) {
+    self._stun[stun_server] = stun_data;
+  };
+
+  /**
+   * @private
+   */
+  self._set_turn = function(turn_host, turn_data) {
+    self._turn[turn_server] = turn_data;
   };
 
   /**
@@ -3649,6 +3727,27 @@ function JSJaCJingle(args) {
   }
 
   /**
+   * Collects given objects
+   * @return Empty value
+   * @type object
+   */
+  self.util_object_collect = function() {
+    var i, p;
+
+    var collect_obj = {};
+    var len = arguments.length;
+
+    for(i = 0; i < len; i++) {
+      for(p in arguments[i]) {
+        if(arguments[i].hasOwnProperty(p))
+          collect_obj[p] = arguments[i][p];
+      }
+    }
+
+    return collect_obj;
+  }
+
+  /**
    * Clones a given object
    * @return Cloned object
    * @type object
@@ -3692,6 +3791,101 @@ function JSJaCJingle(args) {
     }
 
     self.get_debug().log('[JSJaCJingle] util_object_clone > Cannot clone this object.', 1);
+  };
+
+  /**
+   * Gets the ICE config
+   * @return ICE config
+   * @type object
+   */
+  self._util_config_ice = function() {
+    try {
+      // Collect data (user + server)
+      var stun_config = self.util_object_collect(
+        self.get_stun(),
+        JSJAC_JINGLE_STORE_EXTDISCO['stun']
+      );
+
+      var turn_config = self.util_object_collect(
+        self.get_turn(),
+        JSJAC_JINGLE_STORE_EXTDISCO['turn']
+      );
+
+      // Can proceed?
+      if(stun_config && self.util_object_length(stun_config)  || 
+         turn_config && self.util_object_length(turn_config)  ) {
+        var config = {
+          iceServers : []
+        };
+
+        // STUN servers
+        var cur_stun_host, cur_stun_obj, cur_stun_config;
+
+        for(cur_stun_host in stun_config) {
+          if(cur_stun_host) {
+            cur_stun_obj = stun_config[cur_stun_host];
+
+            cur_stun_config = {};
+            cur_stun_config['url'] = 'stun:' + cur_stun_host;
+
+            if(cur_stun_obj.port)
+              cur_stun_config['url'] += ':' + cur_stun_obj.port;
+
+            if(cur_stun_obj.transport)
+              cur_stun_config['url'] += '?transport=' + cur_stun_obj.transport;
+
+            (config.iceServers).push(cur_stun_config);
+          }
+        }
+
+        // TURN servers
+        var cur_turn_host, cur_turn_obj, cur_turn_config;
+
+        for(cur_turn_host in turn_config) {
+          if(cur_turn_host) {
+            cur_turn_obj = turn_config[cur_turn_host];
+
+            cur_turn_config = {};
+            cur_turn_config['url'] = 'turn:' + cur_turn_host;
+
+            if(cur_turn_obj.port)
+              cur_turn_config['url'] += ':' + cur_turn_obj.port;
+
+            if(cur_turn_obj.transport)
+              cur_turn_config['url'] += '?transport=' + cur_turn_obj.transport;
+
+            if(cur_turn_obj.username)
+              cur_turn_config['username'] = cur_turn_obj.username;
+
+            if(cur_turn_obj.password)
+              cur_turn_config['password'] = cur_turn_obj.password;
+
+            (config.iceServers).push(cur_turn_config);
+          }
+        }
+
+        // Check we have at least a STUN server (if user can traverse NAT)
+        var has_stun = false;
+
+        for(i in config.iceServers) {
+          if((config.iceServers[i]['url']).match(/^stun:/i)) {
+            has_stun = true; break;
+          }
+        }
+
+        if(!has_stun) {
+          (config.iceServers).push({
+            'url': (WEBRTC_CONFIGURATION.peer_connection.config.iceServers)[0]['url']
+          });
+        }
+
+        return config;
+      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_config_ice > ' + e, 1);
+    }
+
+    return WEBRTC_CONFIGURATION.peer_connection.config;
   };
 
   /**
@@ -5877,19 +6071,19 @@ function JSJaCJingle(args) {
 
     try {
       // Log STUN servers in use
-      var stun_servers = self.get_stun();
+      var ice_config = self._util_config_ice();
 
-      if(typeof stun_servers.iceServers == 'object') {
-        for(var i = 0; i < (stun_servers.iceServers).length; i++)
-          self.get_debug().log('[JSJaCJingle] _peer_connection_create > Using STUN server at: ' + stun_servers.iceServers[i]['url'] + ' (' + (i + 1) + ').', 2);
+      if(typeof ice_config.iceServers == 'object') {
+        for(var i = 0; i < (ice_config.iceServers).length; i++)
+          self.get_debug().log('[JSJaCJingle] _peer_connection_create > Using ICE server at: ' + ice_config.iceServers[i]['url'] + ' (' + (i + 1) + ').', 2);
       } else {
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > No STUN server configured. Internet IP may not be discoverable.', 0);
+        self.get_debug().log('[JSJaCJingle] _peer_connection_create > No ICE server configured. Network may not work properly.', 0);
       }
 
       // Create the RTCPeerConnection object
       self._set_peer_connection(
         new WEBRTC_PEER_CONNECTION(
-          stun_servers,
+          ice_config,
           WEBRTC_CONFIGURATION.peer_connection.constraints
         )
       );
@@ -6217,6 +6411,9 @@ function JSJaCJingle_listen(args) {
   if(args && args.initiate)
     JSJAC_JINGLE_STORE_INITIATE = args.initiate;
 
+  if(!args || args.extdisco != false)
+    JSJaCJingle_extdisco();
+
   // Incoming IQs handler
   JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', JSJaCJingle_route);
 }
@@ -6289,6 +6486,27 @@ function JSJaCJingle_remove(sid) {
 }
 
 /**
+ * Defer given task/execute deferred tasks
+ */
+function JSJaCJingle_defer(arg) {
+  if(typeof arg == 'function') {
+    // Deferring?
+    if(JSJAC_JINGLE_STORE_DEFER['deferred'])
+      (JSJAC_JINGLE_STORE_DEFER['fn']).push(arg);
+
+    return JSJAC_JINGLE_STORE_DEFER['deferred'];
+  } else if(!arg || typeof arg == 'boolean') {
+    JSJAC_JINGLE_STORE_DEFER['deferred'] = (arg == true);
+
+    if(!arg) {
+      // Execute deferred tasks
+      while(JSJAC_JINGLE_STORE_DEFER['fn'].length)
+        ((JSJAC_JINGLE_STORE_DEFER['fn']).shift())();
+    }
+  }
+}
+
+/**
  * Maps the Jingle disco features
  * @return Feature namespaces
  * @type array
@@ -6296,3 +6514,62 @@ function JSJaCJingle_remove(sid) {
 function JSJaCJingle_disco() {
   return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];
 }
+
+/**
+ * Query the server for external services
+ */
+function JSJaCJingle_extdisco() {
+  // Pending state (defer other requests)
+  JSJaCJingle_defer(true);
+
+  // Build request
+  var request = new JSJaCIQ();
+
+  request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
+  request.setType('get');
+
+  request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_EXTDISCO }));
+
+  con.send(request, function(response) {
+    // Parse response
+    if(response.getType() == 'result') {
+      var i,
+          service_arr, cur_service,
+          cur_host, cur_password, cur_port, cur_transport, cur_type, cur_username;
+
+      var services = response.getChild('services', NS_EXTDISCO);
+
+      if(services) {
+        service_arr = services.getElementsByTagNameNS(NS_EXTDISCO, 'service');
+
+        for(i = 0; i < service_arr.length; i++) {
+          cur_service = service_arr[i];
+
+          cur_host      = cur_service.getAttribute('host')       || null;
+          cur_port      = cur_service.getAttribute('port')       || null;
+          cur_transport = cur_service.getAttribute('transport')  || null;
+          cur_type      = cur_service.getAttribute('type')       || null;
+
+          cur_username  = cur_service.getAttribute('username')   || null;
+          cur_password  = cur_service.getAttribute('password')   || null;
+
+          if(!cur_host || !cur_port || !cur_type || !(cur_type in JSJAC_JINGLE_STORE_EXTDISCO))  continue;
+
+          JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host] = {
+            'port'      : cur_port,
+            'transport' : cur_transport,
+            'type'      : cur_type
+          };
+
+          if(cur_type == 'turn') {
+            JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host]['username'] = cur_username;
+            JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host]['password'] = cur_password;
+          }
+        }
+      }
+    }
+
+    // Execute deferred requests
+    JSJaCJingle_defer(false);
+  });
+};
