@@ -49,20 +49,20 @@
  * JINGLE WEBRTC
  */
 
-var WEBRTC_GET_MEDIA           = ( navigator.getUserMedia           ||
-                                   navigator.webkitGetUserMedia     ||
+var WEBRTC_GET_MEDIA           = ( navigator.webkitGetUserMedia     ||
                                    navigator.mozGetUserMedia        ||
-                                   navigator.msGetUserMedia         );
+                                   navigator.msGetUserMedia         ||
+                                   navigator.getUserMedia           );
 
-var WEBRTC_PEER_CONNECTION     = ( window.RTCPeerConnection         ||
-                                   window.webkitRTCPeerConnection   ||
-                                   window.mozRTCPeerConnection      );
+var WEBRTC_PEER_CONNECTION     = ( window.webkitRTCPeerConnection   ||
+                                   window.mozRTCPeerConnection      ||
+                                   window.RTCPeerConnection         );
 
-var WEBRTC_SESSION_DESCRIPTION = ( window.RTCSessionDescription     ||
-                                   window.mozRTCSessionDescription  );
+var WEBRTC_SESSION_DESCRIPTION = ( window.mozRTCSessionDescription  ||
+                                   window.RTCSessionDescription     );
 
-var WEBRTC_ICE_CANDIDATE       = ( window.RTCIceCandidate           ||
-                                   window.mozRTCIceCandidate        );
+var WEBRTC_ICE_CANDIDATE       = ( window.mozRTCIceCandidate        ||
+                                   window.RTCIceCandidate           );
 
 var WEBRTC_CONFIGURATION = {
   peer_connection : {
@@ -191,6 +191,13 @@ var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
 var JSJAC_JINGLE_STANZA_ID_PRE                       = 'jj';
 
 var JSJAC_JINGLE_NETWORK                             = '0';
+var JSJAC_JINGLE_GENERATION                          = '0';
+
+var JSJAC_JINGLE_BROWSER_FIREFOX                     = 'Firefox';
+var JSJAC_JINGLE_BROWSER_CHROME                      = 'Chrome';
+var JSJAC_JINGLE_BROWSER_SAFARI                      = 'Safari';
+var JSJAC_JINGLE_BROWSER_OPERA                       = 'Opera';
+var JSJAC_JINGLE_BROWSER_IE                          = 'IE';
 
 var JSJAC_JINGLE_SENDERS_BOTH                        = { jingle: 'both',      sdp: 'sendrecv' };
 var JSJAC_JINGLE_SENDERS_INITIATOR                   = { jingle: 'initiator', sdp: 'sendonly' };
@@ -276,6 +283,13 @@ var JSJAC_JINGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
 /**
  * JSJSAC JINGLE CONSTANTS MAPPING
  */
+
+var JSJAC_JINGLE_BROWSERS                           = {};
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_FIREFOX] = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_CHROME]  = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_SAFARI]  = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_OPERA]   = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_IE]      = 1;
 
 var JSJAC_JINGLE_SENDERS            = {};
 JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_BOTH.jingle]                = JSJAC_JINGLE_SENDERS_BOTH.sdp;
@@ -2095,7 +2109,7 @@ function JSJaCJingle(args) {
           self._get_payloads_remote(),
           self._get_candidates_queue_remote()
         );
-
+        
         // Remote description
         self._get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -3796,6 +3810,42 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Gets the browser info
+   * @return browser info
+   * @type object
+   */
+  self._util_browser = function() {
+    var browser_info = {
+      'name'    : 'Generic'
+    }
+
+    try {
+      var user_agent, detect_arr, cur_browser;
+
+      detect_arr = {
+        'firefox' : JSJAC_JINGLE_BROWSER_FIREFOX,
+        'chrome'  : JSJAC_JINGLE_BROWSER_CHROME,
+        'safari'  : JSJAC_JINGLE_BROWSER_SAFARI,
+        'opera'   : JSJAC_JINGLE_BROWSER_OPERA,
+        'msie'    : JSJAC_JINGLE_BROWSER_IE
+      };
+
+      user_agent = navigator.userAgent.toLowerCase();
+
+      for(cur_browser in detect_arr) {
+        if(user_agent.indexOf(cur_browser) > -1) {
+          browser_info['name'] = detect_arr[cur_browser];
+          break;
+        }
+      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_browser > ' + e, 1);
+    }
+
+    return browser_info;
+  };
+
+  /**
    * Gets the ICE config
    * @return ICE config
    * @type object
@@ -3833,7 +3883,7 @@ function JSJaCJingle(args) {
             if(cur_stun_obj.port)
               cur_stun_config['url'] += ':' + cur_stun_obj.port;
 
-            if(cur_stun_obj.transport)
+            if(cur_stun_obj.transport && self._util_browser()['name'] != JSJAC_JINGLE_BROWSER_FIREFOX)
               cur_stun_config['url'] += '?transport=' + cur_stun_obj.transport;
 
             (config.iceServers).push(cur_stun_config);
@@ -4746,10 +4796,10 @@ function JSJaCJingle(args) {
       // Generate transport
       content_obj['transport']['candidate']      = transports;
       content_obj['transport']['attrs']          = {};
-      content_obj['transport']['attrs']['pwd']   = payloads['transports']['pwd'];
-      content_obj['transport']['attrs']['ufrag'] = payloads['transports']['ufrag'];
+      content_obj['transport']['attrs']['pwd']   = payloads['transports'] ? payloads['transports']['pwd']   : null;
+      content_obj['transport']['attrs']['ufrag'] = payloads['transports'] ? payloads['transports']['ufrag'] : null;
 
-      if(payloads['transports']['fingerprint'])
+      if(payloads['transports'] && payloads['transports']['fingerprint'])
         content_obj['transport']['fingerprint']  = payloads['transports']['fingerprint'];
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_generate_content > ' + e, 1);
@@ -4982,12 +5032,6 @@ function JSJaCJingle(args) {
       payloads_str += self._util_sdp_generate_timing();
       payloads_str += WEBRTC_SDP_LINE_BREAK;
 
-      // Add bundle line
-      if(Object.keys(payloads).length) {
-        payloads_str += 'a=group:BUNDLE ' + Object.keys(payloads).join(' ');
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      }
-
       // Add media groups
       for(cur_name in payloads) {
         cur_name_obj          = payloads[cur_name];
@@ -4998,7 +5042,7 @@ function JSJaCJingle(args) {
         if(!cur_media) continue;
 
         // Transports
-        cur_transports_obj    = cur_name_obj['transports'];
+        cur_transports_obj    = cur_name_obj['transports'] || {};
         cur_d_pwd             = cur_transports_obj['pwd'];
         cur_d_ufrag           = cur_transports_obj['ufrag'];
         cur_d_fingerprint     = cur_transports_obj['fingerprint'];
@@ -5053,8 +5097,8 @@ function JSJaCJingle(args) {
         }
 
         // Name
-        if(cur_name) {
-          payloads_str += 'a=mid:' + cur_name;
+        if(cur_media && JSJAC_JINGLE_MEDIAS[cur_media]) {
+          payloads_str += 'a=mid:' + (JSJAC_JINGLE_MEDIAS[cur_media]).label;
           payloads_str += WEBRTC_SDP_LINE_BREAK;
         }
 
@@ -5236,7 +5280,7 @@ function JSJaCJingle(args) {
       var jid = new JSJaCJID(self.get_initiator());
 
       var username        = jid.getNode()   ? jid.getNode()   : '-';
-      var session_id      = self.get_sid()  ? self.get_sid()  : '1';
+      var session_id      = '1';
       var session_version = '1';
       var nettype         = 'IN';
       var addrtype        = 'IP4';
@@ -5261,7 +5305,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._util_sdp_generate_session_name = function() {
-    return 's=-';
+    return 's=' + (self.get_sid() || '-');
   };
 
   /**
@@ -5551,6 +5595,12 @@ function JSJaCJingle(args) {
       var cur_name  = null;
       var cur_media = null;
 
+      var common_transports = {
+        'fingerprint' : {},
+        'pwd'         : null,
+        'ufrag'       : null
+      };
+
       var e, i, j,
           cur_line,
           cur_fmtp, cur_fmtp_id, cur_fmtp_values, cur_fmtp_attrs, cur_fmtp_key, cur_fmtp_value,
@@ -5558,8 +5608,8 @@ function JSJaCJingle(args) {
           cur_crypto, cur_zrtp_hash, cur_fingerprint, cur_ssrc, cur_extmap,
           cur_rtpmap_id, cur_rtcp_fb_id, cur_bandwidth,
           m_rtpmap, m_fmtp, m_rtcp_fb, m_rtcp_fb_trr_int, m_crypto, m_zrtp_hash,
-          m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_bandwidth, m_media,
-          cur_check_name;
+          m_fingerprint, m_pwd, m_ufrag, m_ptime, m_maxptime, m_bandwidth, m_media, m_candidate,
+          cur_check_name, cur_transport_sub;
 
       // Common functions
       var init_content = function(name) {
@@ -5915,6 +5965,9 @@ function JSJaCJingle(args) {
           // Push it to parent array
           init_transports(cur_name, 'fingerprint', cur_fingerprint);
 
+          if(self.util_object_length(common_transports['fingerprint']) == 0)
+            common_transports['fingerprint'] = cur_fingerprint;
+
           continue;
         }
 
@@ -5922,20 +5975,54 @@ function JSJaCJingle(args) {
 
         // 'pwd' line?
         if(m_pwd) {
-          init_transports(cur_name, 'pwd', m_pwd[1]); continue;
+          init_transports(cur_name, 'pwd', m_pwd[1]);
+
+          if(!common_transports['pwd'])
+            common_transports['pwd'] = m_pwd[1];
+
+          continue;
         }
 
         m_ufrag = (R_WEBRTC_SDP_ICE_PAYLOAD.ufrag).exec(cur_line);
 
         // 'ufrag' line?
         if(m_ufrag) {
-          init_transports(cur_name, 'ufrag', m_ufrag[1]); continue;
+          init_transports(cur_name, 'ufrag', m_ufrag[1]);
+
+          if(!common_transports['ufrag'])
+            common_transports['ufrag'] = m_ufrag[1];
+
+          continue;
+        }
+
+        // 'candidate' line? (shouldn't be there)
+        m_candidate = R_WEBRTC_SDP_ICE_CANDIDATE.exec(cur_line);
+
+        if(m_candidate) {
+          self._util_sdp_parse_candidate_store({
+            sdpMid    : cur_media,
+            candidate : cur_line
+          });
+
+          continue;
         }
       }
 
-      // Remove undesired medias
+      // Filter medias
       for(cur_check_name in payload) {
-        if(!self.get_name()[cur_check_name])  delete payload[cur_check_name];
+        // Undesired media?
+        if(!self.get_name()[cur_check_name]) {
+          delete payload[cur_check_name]; continue;
+        }
+
+        // Validate transports
+        if(typeof payload[cur_check_name]['transports'] != 'object')
+          payload[cur_check_name]['transports'] = {};
+
+        for(cur_transport_sub in common_transports) {
+          if(!payload[cur_check_name]['transports'][cur_transport_sub])
+            payload[cur_check_name]['transports'][cur_transport_sub] = common_transports[cur_transport_sub];
+        }
       }
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_sdp_parse_payload > ' + e, 1);
@@ -6029,7 +6116,7 @@ function JSJaCJingle(args) {
     var candidate = {};
 
     try {
-      if(!sdp_candidate) return candidate;
+      if(!sdp_candidate)  return candidate;
 
       var e         = 0;
       var matches   = R_WEBRTC_SDP_ICE_CANDIDATE.exec(sdp_candidate);
@@ -6038,7 +6125,7 @@ function JSJaCJingle(args) {
       if(matches) {
         candidate['component']  = matches[2]  || e++;
         candidate['foundation'] = matches[1]  || e++;
-        candidate['generation'] = matches[16] || e++;
+        candidate['generation'] = matches[16] || JSJAC_JINGLE_GENERATION;
         candidate['id']         = self.util_generate_id();
         candidate['ip']         = matches[5]  || e++;
         candidate['network']    = JSJAC_JINGLE_NETWORK;
@@ -6058,6 +6145,35 @@ function JSJaCJingle(args) {
 
     return candidate;
   };
+
+  /**
+   * @private
+   */
+  self._util_sdp_parse_candidate_store = function(sdp_candidate) {
+    // Store received candidate
+    var candidate_id    = sdp_candidate.sdpMid;
+    var candidate_data  = sdp_candidate.candidate;
+
+    // Convert SDP raw data to an object
+    var candidate_obj   = self._util_sdp_parse_candidate(candidate_data);
+
+    self._set_candidates_local(
+      self._util_name_generate(
+        candidate_id
+      ),
+
+      candidate_obj
+    );
+
+    // Enqueue candidate
+    self._set_candidates_queue_local(
+      self._util_name_generate(
+        candidate_id
+      ),
+
+      candidate_obj
+    );
+  }
 
 
 
@@ -6093,29 +6209,7 @@ function JSJaCJingle(args) {
       // Event: onicecandidate
       self._get_peer_connection().onicecandidate = function(e) {
         if(e.candidate) {
-          // Store received candidate
-          var candidate_id    = e.candidate.sdpMid;
-          var candidate_data  = e.candidate.candidate;
-
-          // Convert SDP raw data to an object
-          var candidate_obj   = self._util_sdp_parse_candidate(candidate_data);
-
-          self._set_candidates_local(
-            self._util_name_generate(
-              candidate_id
-            ),
-
-            candidate_obj
-          );
-
-          // Enqueue candidate
-          self._set_candidates_queue_local(
-            self._util_name_generate(
-              candidate_id
-            ),
-
-            candidate_obj
-          );
+          self._util_sdp_parse_candidate_store(e.candidate);
         } else {
           // Build or re-build content (local)
           self._util_build_content_local();
