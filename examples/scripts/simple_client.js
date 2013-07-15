@@ -226,7 +226,8 @@ $(document).ready(function() {
 						// Initialize JSJaCJingle router
 						JSJaCJingle_listen({
 							connection: con,
-
+							debug: (new JSJaCConsoleLogger(4)),
+							
 							initiate: function(stanza) {
 								// Session values
 								ARGS.to 		 = stanza.getFrom() || null;

@@ -376,6 +376,10 @@ var JSJAC_JINGLE_STORE_CONNECTION = null;
 var JSJAC_JINGLE_STORE_SESSIONS   = {};
 var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
 
+var JSJAC_JINGLE_STORE_DEBUG      = {
+  log : function() {}
+};
+
 var JSJAC_JINGLE_STORE_EXTDISCO   = {
   'stun' : {},
   'turn' : {}
@@ -591,9 +595,7 @@ function JSJaCJingle(args) {
        */
     self._debug = args.debug;
   } else {
-      self._debug = {
-        log   : function() {}
-      };
+    self._debug = JSJAC_JINGLE_STORE_DEBUG;
   }
 
   /**
@@ -6405,60 +6407,82 @@ function JSJaCJingle(args) {
  * Listens for Jingle events
  */
 function JSJaCJingle_listen(args) {
-  if(args && args.connection)
-    JSJAC_JINGLE_STORE_CONNECTION = args.connection;
+  try {
+    if(args && args.connection)
+      JSJAC_JINGLE_STORE_CONNECTION = args.connection;
 
-  if(args && args.initiate)
-    JSJAC_JINGLE_STORE_INITIATE = args.initiate;
+    if(args && args.initiate)
+      JSJAC_JINGLE_STORE_INITIATE = args.initiate;
 
-  if(!args || args.extdisco != false)
-    JSJaCJingle_extdisco();
+    if(args && args.debug)
+      JSJAC_JINGLE_STORE_DEBUG = args.debug;
 
-  // Incoming IQs handler
-  JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', JSJaCJingle_route);
+    // Incoming IQs handler
+    JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', JSJaCJingle_route);
+
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:listen > Listening.', 2);
+
+    if(!args || args.extdisco != false)
+      JSJaCJingle_extdisco();
+  } catch(e) {
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:listen > ' + e, 1);
+  }
 }
 
 /**
  * Routes Jingle stanzas
  */
 function JSJaCJingle_route(stanza) {
-  var action = null;
-  var sid    = null;
+  try {
+    var action = null;
+    var sid    = null;
 
-  // Route the incoming stanza
-  var jingle = stanza.getChild('jingle', NS_JINGLE);
+    // Route the incoming stanza
+    var jingle = stanza.getChild('jingle', NS_JINGLE);
 
-  if(jingle) {
-    sid = jingle.getAttribute('sid');
-    action = jingle.getAttribute('action');
-  } else {
-    var stanza_id = stanza.getID();
+    if(jingle) {
+      sid = jingle.getAttribute('sid');
+      action = jingle.getAttribute('action');
+    } else {
+      var stanza_id = stanza.getID();
 
-    if(stanza_id) {
-      var is_jingle = stanza_id.indexOf(JSJAC_JINGLE_STANZA_ID_PRE + '_') !== -1;
+      if(stanza_id) {
+        var is_jingle = stanza_id.indexOf(JSJAC_JINGLE_STANZA_ID_PRE + '_') !== -1;
 
-      if(is_jingle) {
-        var stanza_id_split = stanza_id.split('_');
-        sid = stanza_id_split[1];
+        if(is_jingle) {
+          var stanza_id_split = stanza_id.split('_');
+          sid = stanza_id_split[1];
+        }
       }
     }
-  }
 
-  // WebRTC not available ATM?
-  if(jingle && !JSJAC_JINGLE_AVAILABLE) {
-    (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
-  } else {
-    // New session? Or registered one?
-    var session_route = JSJaCJingle_read(sid);
+    // WebRTC not available ATM?
+    if(jingle && !JSJAC_JINGLE_AVAILABLE) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:route > Dropped Jingle packet (WebRTC not available).', 0);
 
-    if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route == null) {
-      JSJAC_JINGLE_STORE_INITIATE(stanza);
-    } else if(sid) {
-      if(session_route != null)
-        session_route.handle(stanza);
-      else if(stanza.getType() == 'set' && stanza.getFrom())
-        (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+      (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
+    } else {
+      // New session? Or registered one?
+      var session_route = JSJaCJingle_read(sid);
+
+      if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route == null) {
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:route > New Jingle session (sid: ' + sid + ').', 2);
+
+        JSJAC_JINGLE_STORE_INITIATE(stanza);
+      } else if(sid) {
+        if(session_route != null) {
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:route > Routed to Jingle session (sid: ' + sid + ').', 2);
+
+          session_route.handle(stanza);
+        } else if(stanza.getType() == 'set' && stanza.getFrom()) {
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:route > Unknown Jingle session (sid: ' + sid + ').', 0);
+
+          (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+        }
+      }
     }
+  } catch(e) {
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:route > ' + e, 1);
   }
 }
 
@@ -6489,20 +6513,24 @@ function JSJaCJingle_remove(sid) {
  * Defer given task/execute deferred tasks
  */
 function JSJaCJingle_defer(arg) {
-  if(typeof arg == 'function') {
-    // Deferring?
-    if(JSJAC_JINGLE_STORE_DEFER['deferred'])
-      (JSJAC_JINGLE_STORE_DEFER['fn']).push(arg);
+  try {
+    if(typeof arg == 'function') {
+      // Deferring?
+      if(JSJAC_JINGLE_STORE_DEFER['deferred'])
+        (JSJAC_JINGLE_STORE_DEFER['fn']).push(arg);
 
-    return JSJAC_JINGLE_STORE_DEFER['deferred'];
-  } else if(!arg || typeof arg == 'boolean') {
-    JSJAC_JINGLE_STORE_DEFER['deferred'] = (arg == true);
+      return JSJAC_JINGLE_STORE_DEFER['deferred'];
+    } else if(!arg || typeof arg == 'boolean') {
+      JSJAC_JINGLE_STORE_DEFER['deferred'] = (arg == true);
 
-    if(!arg) {
-      // Execute deferred tasks
-      while(JSJAC_JINGLE_STORE_DEFER['fn'].length)
-        ((JSJAC_JINGLE_STORE_DEFER['fn']).shift())();
+      if(!arg) {
+        // Execute deferred tasks
+        while(JSJAC_JINGLE_STORE_DEFER['fn'].length)
+          ((JSJAC_JINGLE_STORE_DEFER['fn']).shift())();
+      }
     }
+  } catch(e) {
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:defer > ' + e, 1);
   }
 }
 
@@ -6519,57 +6547,81 @@ function JSJaCJingle_disco() {
  * Query the server for external services
  */
 function JSJaCJingle_extdisco() {
-  // Pending state (defer other requests)
-  JSJaCJingle_defer(true);
+  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:extdisco > Discovering available services...', 2);
 
-  // Build request
-  var request = new JSJaCIQ();
+  try {
+    // Pending state (defer other requests)
+    JSJaCJingle_defer(true);
 
-  request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
-  request.setType('get');
+    // Build request
+    var request = new JSJaCIQ();
 
-  request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_EXTDISCO }));
+    request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
+    request.setType('get');
 
-  JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
-    // Parse response
-    if(response.getType() == 'result') {
-      var i,
-          service_arr, cur_service,
-          cur_host, cur_password, cur_port, cur_transport, cur_type, cur_username;
+    request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_EXTDISCO }));
 
-      var services = response.getChild('services', NS_EXTDISCO);
+    JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
+      try {
+        // Parse response
+        if(response.getType() == 'result') {
+          var i,
+              service_arr, cur_service,
+              cur_host, cur_password, cur_port, cur_transport, cur_type, cur_username;
 
-      if(services) {
-        service_arr = services.getElementsByTagNameNS(NS_EXTDISCO, 'service');
+          var services = response.getChild('services', NS_EXTDISCO);
 
-        for(i = 0; i < service_arr.length; i++) {
-          cur_service = service_arr[i];
+          if(services) {
+            service_arr = services.getElementsByTagNameNS(NS_EXTDISCO, 'service');
 
-          cur_host      = cur_service.getAttribute('host')       || null;
-          cur_port      = cur_service.getAttribute('port')       || null;
-          cur_transport = cur_service.getAttribute('transport')  || null;
-          cur_type      = cur_service.getAttribute('type')       || null;
+            for(i = 0; i < service_arr.length; i++) {
+              cur_service = service_arr[i];
 
-          cur_username  = cur_service.getAttribute('username')   || null;
-          cur_password  = cur_service.getAttribute('password')   || null;
+              cur_host      = cur_service.getAttribute('host')       || null;
+              cur_port      = cur_service.getAttribute('port')       || null;
+              cur_transport = cur_service.getAttribute('transport')  || null;
+              cur_type      = cur_service.getAttribute('type')       || null;
 
-          if(!cur_host || !cur_port || !cur_type || !(cur_type in JSJAC_JINGLE_STORE_EXTDISCO))  continue;
+              cur_username  = cur_service.getAttribute('username')   || null;
+              cur_password  = cur_service.getAttribute('password')   || null;
 
-          JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host] = {
-            'port'      : cur_port,
-            'transport' : cur_transport,
-            'type'      : cur_type
-          };
+              if(!cur_host || !cur_port || !cur_type)  continue;
 
-          if(cur_type == 'turn') {
-            JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host]['username'] = cur_username;
-            JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host]['password'] = cur_password;
+              if(!(cur_type in JSJAC_JINGLE_STORE_EXTDISCO)) {
+                JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:extdisco > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ').', 4);
+                continue;
+              }
+
+              JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host] = {
+                'port'      : cur_port,
+                'transport' : cur_transport,
+                'type'      : cur_type
+              };
+
+              if(cur_type == 'turn') {
+                JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host]['username'] = cur_username;
+                JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host]['password'] = cur_password;
+              }
+
+              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:extdisco > handle > Service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ').', 4);
+            }
           }
-        }
-      }
-    }
 
-    // Execute deferred requests
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:extdisco > handle > Discovered available services.', 2);
+        } else {
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:extdisco > handle > Could not discover services (server might not support XEP-0215).', 0);
+        }
+      } catch(e) {
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:extdisco > handle > ' + e, 1);
+      }
+
+      // Execute deferred requests
+      JSJaCJingle_defer(false);
+
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:extdisco > Ready.', 2);
+    });
+  } catch(e) {
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:extdisco > ' + e, 1);
     JSJaCJingle_defer(false);
-  });
+  }
 };
