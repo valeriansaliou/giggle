@@ -2109,7 +2109,7 @@ function JSJaCJingle(args) {
           self._get_payloads_remote(),
           self._get_candidates_queue_remote()
         );
-        
+
         // Remote description
         self._get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -4895,13 +4895,21 @@ function JSJaCJingle(args) {
     var media = null;
 
     try {
-      for(cur_media in JSJAC_JINGLE_MEDIAS) {
-        if(name == self._util_name_generate(cur_media)) {
-          media = cur_media; break;
+      if(typeof name == 'number') {
+        for(cur_media in JSJAC_JINGLE_MEDIAS) {
+          if(name == parseInt(JSJAC_JINGLE_MEDIAS[cur_media].label)) {
+            media = cur_media; break;
+          }
+        }
+      } else {
+        for(cur_media in JSJAC_JINGLE_MEDIAS) {
+          if(name == self._util_name_generate(cur_media)) {
+            media = cur_media; break;
+          }
         }
       }
 
-      if(!media) media = name;
+      if(!media)  media = name;
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_media_generate > ' + e, 1);
     }
@@ -4934,7 +4942,7 @@ function JSJaCJingle(args) {
     try {
       // Parse candidates
       var i,
-          cur_media, cur_name, cur_c_name, cur_candidate, cur_label, cur_candidate_str;
+          cur_media, cur_name, cur_c_name, cur_candidate, cur_label, cur_id, cur_candidate_str;
 
       for(cur_name in candidates) {
         cur_c_name = candidates[cur_name];
@@ -4944,6 +4952,7 @@ function JSJaCJingle(args) {
           cur_candidate = cur_c_name[i];
 
           cur_label         = JSJAC_JINGLE_MEDIAS[cur_media]['label'];
+          cur_id            = cur_label;
           cur_candidate_str = '';
 
           cur_candidate_str += 'a=candidate:';
@@ -4985,7 +4994,7 @@ function JSJaCJingle(args) {
 
           candidates_arr.push({
             label     : cur_label,
-            id        : cur_media,
+            id        : cur_id,
             candidate : cur_candidate_str
           });
         }
@@ -6000,7 +6009,7 @@ function JSJaCJingle(args) {
 
         if(m_candidate) {
           self._util_sdp_parse_candidate_store({
-            sdpMid    : cur_media,
+            media     : cur_media,
             candidate : cur_line
           });
 
@@ -6151,7 +6160,7 @@ function JSJaCJingle(args) {
    */
   self._util_sdp_parse_candidate_store = function(sdp_candidate) {
     // Store received candidate
-    var candidate_id    = sdp_candidate.sdpMid;
+    var candidate_media = sdp_candidate.media;
     var candidate_data  = sdp_candidate.candidate;
 
     // Convert SDP raw data to an object
@@ -6159,7 +6168,7 @@ function JSJaCJingle(args) {
 
     self._set_candidates_local(
       self._util_name_generate(
-        candidate_id
+        candidate_media
       ),
 
       candidate_obj
@@ -6168,7 +6177,7 @@ function JSJaCJingle(args) {
     // Enqueue candidate
     self._set_candidates_queue_local(
       self._util_name_generate(
-        candidate_id
+        candidate_media
       ),
 
       candidate_obj
@@ -6209,7 +6218,10 @@ function JSJaCJingle(args) {
       // Event: onicecandidate
       self._get_peer_connection().onicecandidate = function(e) {
         if(e.candidate) {
-          self._util_sdp_parse_candidate_store(e.candidate);
+          self._util_sdp_parse_candidate_store({
+            media     : (isNaN(e.candidate.sdpMid) ? e.candidate.sdpMid : self._util_media_generate(parseInt(e.candidate.sdpMid))),
+            candidate : e.candidate.candidate
+          });
         } else {
           // Build or re-build content (local)
           self._util_build_content_local();
