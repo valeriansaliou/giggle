@@ -6530,7 +6530,7 @@ function JSJaCJingle_extdisco() {
 
   request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_EXTDISCO }));
 
-  con.send(request, function(response) {
+  JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
     // Parse response
     if(response.getType() == 'result') {
       var i,
