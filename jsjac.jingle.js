@@ -382,7 +382,7 @@ var JSJAC_JINGLE_STORE_EXTDISCO   = {
 };
 
 var JSJAC_JINGLE_STORE_DEFER      = {
-  'deferred' : true,
+  'deferred' : false,
   'fn'       : []
 }
 
