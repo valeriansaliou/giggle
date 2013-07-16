@@ -15,12 +15,13 @@ var JINGLE = null;
 
 var ARGS = {
     // Configuration (required)
-    connection: null,
-    to: null,
-    local_view: null,
-    remote_view: null,
-    resolution: 'md',
-    debug: (new JSJaCConsoleLogger(4)),
+    connection  : null,
+    to          : null,
+    local_view  : null,
+    remote_view : null,
+    resolution  : 'md',
+    sdp_trace   : (url_param('sdp') == '1'),
+    debug       : (new JSJaCConsoleLogger(4)),
 
     // Custom handlers (optional)
     session_initiate_pending: function(self) {
@@ -44,10 +45,12 @@ var ARGS = {
         	// Hard-fix: avoids the JSJaC packets group timer (that will delay success reply)
         	setTimeout(function() {
 		        // Request for Jingle session to be accepted
-		        if(confirm("Incoming call from " + self.util_stanza_from(stanza) + "\n\nAccept?"))
+		        if(confirm("Incoming call from " + self.util_stanza_from(stanza) + "\n\nAccept?")) {
+		        	$('#form_call input[name="call_jid"]').val(self.get_to());
 		       		self.accept();
-		       	else
+		        } else {
 		       		self.terminate(JSJAC_JINGLE_REASON_DECLINE);
+		        }
 		    }, 1000);
 	    }
     },

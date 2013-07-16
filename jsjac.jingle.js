@@ -186,7 +186,8 @@ var MAP_DISCO_JINGLE                                = [
 
 var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true : false;
 
-var JSJAC_JINGLE_PEER_TIMEOUT                        = 15;
+var JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT                = 15;
+var JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT             = 5;
 var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
 var JSJAC_JINGLE_STANZA_ID_PRE                       = 'jj';
 
@@ -440,6 +441,7 @@ var JSJAC_JINGLE_STORE_DEFER      = {
  * @param {string} args.fps The framerate to be used for video in the Jingle session.
  * @param {object} args.stun A list of STUN servers to use (override the default one)
  * @param {object} args.turn A list of TURN servers to use
+ * @param {object} args.sdp_trace Log SDP trace in console (requires a debug interface)
  * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
  */
 function JSJaCJingle(args) {
@@ -600,6 +602,12 @@ function JSJaCJingle(args) {
   } else {
     self._turn = {};
   }
+
+  if(args && args.sdp_trace)
+    /**
+     * @private
+     */
+    self._sdp_trace = args.sdp_trace;
 
   if(args && args.debug && args.debug.log) {
       /**
@@ -2110,7 +2118,7 @@ function JSJaCJingle(args) {
           self._get_candidates_queue_remote()
         );
 
-        console.debug('sdp_remote', sdp_remote.description.sdp);
+        if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
 
         // Remote description
         self._get_peer_connection().setRemoteDescription(
@@ -3175,6 +3183,15 @@ function JSJaCJingle(args) {
   };
 
   /**
+   * Gets the SDP trace value
+   * @return SDP trace value
+   * @type JSJaCsdp_traceger
+   */
+  self.get_sdp_trace = function() {
+    return (self._sdp_trace == true);
+  };
+
+  /**
    * Gets the debug value
    * @return debug value
    * @type JSJaCDebugger
@@ -3667,6 +3684,13 @@ function JSJaCJingle(args) {
    */
   self._set_turn = function(turn_host, turn_data) {
     self._turn[turn_server] = turn_data;
+  };
+
+  /**
+   * @private
+   */
+  self._set_sdp_trace = function(sdp_trace) {
+    self._sdp_trace = sdp_trace;
   };
 
   /**
@@ -6267,7 +6291,11 @@ function JSJaCJingle(args) {
         // Connection errors?
         switch(this.iceConnectionState) {
           case 'disconnected':
-            self.terminate(JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR); break;
+            self._peer_timeout(this.iceConnectionState, {
+              timer  : JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT,
+              reason : JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR
+            });
+            break;
 
           case 'checking':
             self._peer_timeout(this.iceConnectionState); break;
@@ -6313,7 +6341,7 @@ function JSJaCJingle(args) {
           self._get_candidates_queue_remote()
         );
 
-        console.debug('sdp_remote', sdp_remote.description.sdp);
+        if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
 
         // Remote description
         self._get_peer_connection().setRemoteDescription(
@@ -6436,6 +6464,8 @@ function JSJaCJingle(args) {
     try {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Got local description.', 2);
 
+      if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (local:raw)' + '\n\n' + sdp_local.sdp, 4);
+
       // Convert SDP raw data to an object
       var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
       self._util_sdp_resolution_payload(payload_parsed);
@@ -6457,12 +6487,10 @@ function JSJaCJingle(args) {
         )
       );
 
-      console.debug('sdp_local', sdp_local.sdp);
+      if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
 
       self._get_peer_connection().setLocalDescription(
-        sdp_local
-        //new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)
-        // TODO: restore old one!
+        new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)
       );
 
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 2);
@@ -6492,19 +6520,22 @@ function JSJaCJingle(args) {
   /**
    * Set a timeout limit to peer connection
    */
-  self._peer_timeout = function(state) {
+  self._peer_timeout = function(state, args) {
     try {
+      // Assert
+      if(typeof args != 'object') args = {};
+
       var t_sid = self.get_sid();
    
-      setTimeout(function(){
+      setTimeout(function() {
         // State did not change?
         if(self.get_sid() == t_sid && self._get_peer_connection().iceConnectionState == state) {
           self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Peer timeout.', 2);
 
           // Error (transports are incompatible)
-          self.terminate(JSJAC_JINGLE_REASON_FAILED_TRANSPORT);
+          self.terminate(args.reason || JSJAC_JINGLE_REASON_FAILED_TRANSPORT);
         }
-      }, (JSJAC_JINGLE_PEER_TIMEOUT * 1000));
+      }, ((args.timer || JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT) * 1000));
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_timeout > ' + e, 1);
     }
