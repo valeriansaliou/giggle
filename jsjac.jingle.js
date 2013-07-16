@@ -2110,6 +2110,8 @@ function JSJaCJingle(args) {
           self._get_candidates_queue_remote()
         );
 
+        console.debug('sdp_remote', sdp_remote.description.sdp);
+
         // Remote description
         self._get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -4922,10 +4924,12 @@ function JSJaCJingle(args) {
    */
   self._util_sdp_generate = function(type, payloads, candidates) {
     try {
-      return {
-        candidates  : self._util_sdp_generate_candidates(candidates),
-        description : self._util_sdp_generate_description(type, payloads)
-      };
+      var sdp_obj = {};
+
+      sdp_obj.candidates  = self._util_sdp_generate_candidates(candidates);
+      sdp_obj.description = self._util_sdp_generate_description(type, payloads, sdp_obj.candidates);
+
+      return sdp_obj;
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_sdp_generate > ' + e, 1);
     }
@@ -5009,14 +5013,14 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._util_sdp_generate_description = function(type, payloads) {
+  self._util_sdp_generate_description = function(type, payloads, sdp_candidates) {
     var payloads_obj = {};
 
     try {
       var payloads_str = '';
 
       // Common vars
-      var i, j, k, l, m, n, o, p, q, r, s,
+      var i, c, j, k, l, m, n, o, p, q, r, s,
           cur_name, cur_name_obj,
           cur_media, cur_senders,
           cur_transports_obj, cur_description_obj,
@@ -5257,6 +5261,14 @@ function JSJaCJingle(args) {
               payloads_str += ' ' + cur_d_ssrc_obj['data'];
 
             payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+        }
+
+        // Candidates (some browsers require them there, too)
+        if(typeof sdp_candidates == 'object') {
+          for(c in sdp_candidates) {
+            if((sdp_candidates[c]).label == JSJAC_JINGLE_MEDIAS[cur_media]['label'])
+              payloads_str += (sdp_candidates[c]).candidate;
           }
         }
       }
@@ -6301,6 +6313,8 @@ function JSJaCJingle(args) {
           self._get_candidates_queue_remote()
         );
 
+        console.debug('sdp_remote', sdp_remote.description.sdp);
+
         // Remote description
         self._get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
@@ -6436,11 +6450,19 @@ function JSJaCJingle(args) {
       // Filter our local description (remove unused medias)
       var sdp_local_desc = self._util_sdp_generate_description(
         sdp_local.type,
-        self._get_payloads_local()
+        self._get_payloads_local(),
+
+        self._util_sdp_generate_candidates(
+          self._get_candidates_local()
+        )
       );
 
+      console.debug('sdp_local', sdp_local.sdp);
+
       self._get_peer_connection().setLocalDescription(
-        new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)
+        sdp_local
+        //new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)
+        // TODO: restore old one!
       );
 
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 2);
