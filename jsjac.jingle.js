@@ -5505,6 +5505,14 @@ function JSJaCJingle(args) {
           if(document.location.protocol != 'https:')
             self.get_debug().log('[JSJaCJingle] util_generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
 
+          // Unsupported browser? (for that feature)
+          if(self._util_browser()['name'] != JSJAC_JINGLE_BROWSER_CHROME) {
+            self.get_debug().log('[JSJaCJingle] util_generate_constraints > Video source not supported by ' + self._util_browser()['name'] + ' (source: ' + self.get_video_source() + ').', 1);
+            
+            self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
+            return;
+          }
+
           constraints.audio           = false;
           constraints.video.mandatory = {
             'chromeMediaSource': self.get_video_source()
