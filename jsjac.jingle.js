@@ -2528,8 +2528,8 @@ function JSJaCJingle(args) {
 
     try {
       // Slot unavailable?
-      if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED)) {
-        self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Cannot handle, resource not active (status: ' + self.get_status() + ').', 0);
+      if(self.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
+        self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > Cannot handle, resource not active (status: ' + self.get_status() + ').', 0);
         self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
