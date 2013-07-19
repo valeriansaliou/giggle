@@ -279,10 +279,10 @@ var JSJAC_JINGLE_MEDIA_VIDEO                         = 'video';
 var JSJAC_JINGLE_VIDEO_SOURCE_CAMERA                 = 'camera';
 var JSJAC_JINGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
 
-var JSJAC_JINGLE_STANZA_TYPE_ALL                          = 'all';
-var JSJAC_JINGLE_STANZA_TYPE_RESULT                       = 'result';
-var JSJAC_JINGLE_STANZA_TYPE_SET                          = 'set';
-var JSJAC_JINGLE_STANZA_TYPE_GET                          = 'get';
+var JSJAC_JINGLE_STANZA_TYPE_ALL                     = 'all';
+var JSJAC_JINGLE_STANZA_TYPE_RESULT                  = 'result';
+var JSJAC_JINGLE_STANZA_TYPE_SET                     = 'set';
+var JSJAC_JINGLE_STANZA_TYPE_GET                     = 'get';
 
 
 
