@@ -2145,7 +2145,9 @@ function JSJaCJingle(args) {
             // Success (descriptions are compatible)
           },
 
-          function() {
+          function(e) {
+            if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+
             // Error (descriptions are incompatible)
             self.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
           }
@@ -6387,7 +6389,9 @@ function JSJaCJingle(args) {
             // Success (descriptions are compatible)
           },
 
-          function() {
+          function(e) {
+            if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+
             // Error (descriptions are incompatible)
             self.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
           }
@@ -6526,7 +6530,17 @@ function JSJaCJingle(args) {
       if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
 
       self._get_peer_connection().setLocalDescription(
-        new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)
+        (new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)),
+
+        function() {
+          // Success (descriptions are compatible)
+        },
+
+        function(e) {
+          if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (local:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+
+          // Error (descriptions are incompatible)
+        }
       );
 
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 2);
