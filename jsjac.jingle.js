@@ -279,6 +279,11 @@ var JSJAC_JINGLE_MEDIA_VIDEO                         = 'video';
 var JSJAC_JINGLE_VIDEO_SOURCE_CAMERA                 = 'camera';
 var JSJAC_JINGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
 
+var JSJAC_JINGLE_STANZA_TYPE_ALL                          = 'all';
+var JSJAC_JINGLE_STANZA_TYPE_RESULT                       = 'result';
+var JSJAC_JINGLE_STANZA_TYPE_SET                          = 'set';
+var JSJAC_JINGLE_STANZA_TYPE_GET                          = 'get';
+
 
 
 /**
@@ -380,6 +385,12 @@ JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = { label:
 var JSJAC_JINGLE_VIDEO_SOURCES      = {};
 JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_CAMERA]          = 1;
 JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_SCREEN]          = 1;
+
+var JSJAC_JINGLE_STANZAS            = {};
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_ALL]                    = 1;
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_RESULT]                 = 1;
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_SET]                    = 1;
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_GET]                    = 1;
 
 
 
@@ -819,7 +830,7 @@ function JSJaCJingle(args) {
         self._peer_connection_create(function() {
           self.get_debug().log('[JSJaCJingle] initiate > Ready to begin Jingle negotiation.', 2);
 
-          self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
+          self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
         })
       });
     } catch(e) {
@@ -866,7 +877,7 @@ function JSJaCJingle(args) {
           self.get_debug().log('[JSJaCJingle] accept > Ready to complete Jingle negotiation.', 2);
 
           // Process accept actions
-          self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_ACCEPT });
+          self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_ACCEPT });
         })
       });
     } catch(e) {
@@ -894,8 +905,8 @@ function JSJaCJingle(args) {
       }
 
       // Slot unavailable?
-      if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
-        self.get_debug().log('[JSJaCJingle] info > Cannot send info, resource not accepted (status: ' + self.get_status() + ').', 0);
+      if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED)) {
+        self.get_debug().log('[JSJaCJingle] info > Cannot send info, resource not active (status: ' + self.get_status() + ').', 0);
         return;
       }
 
@@ -906,7 +917,7 @@ function JSJaCJingle(args) {
       args.action = JSJAC_JINGLE_ACTION_SESSION_INFO;
       if(name) args.info = name;
 
-      self.send('set', args);
+      self.send(JSJAC_JINGLE_STANZA_TYPE_SET, args);
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] info > ' + e, 1);
     }
@@ -944,7 +955,7 @@ function JSJaCJingle(args) {
       (self._get_session_terminate_pending())(self);
 
       // Process terminate actions
-      self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_TERMINATE, reason: reason });
+      self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_TERMINATE, reason: reason });
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] terminate > ' + e, 1);
     }
@@ -981,7 +992,7 @@ function JSJaCJingle(args) {
       if(!args.id) args.id = self._get_id_new();
       stanza.setID(args.id);
 
-      if(type == 'set') {
+      if(type == JSJAC_JINGLE_STANZA_TYPE_SET) {
         if(!(args.action && args.action in JSJAC_JINGLE_ACTIONS)) {
           self.get_debug().log('[JSJaCJingle] send > Stanza action unknown: ' + (args.action || 'undefined'), 1);
           return;
@@ -1041,7 +1052,7 @@ function JSJaCJingle(args) {
 
             return false;
         }
-      } else if(type != 'result') {
+      } else if(type != JSJAC_JINGLE_STANZA_TYPE_RESULT) {
         self.get_debug().log('[JSJaCJingle] send > Stanza type must either be set or result.', 1);
 
         return false;
@@ -1076,15 +1087,17 @@ function JSJaCJingle(args) {
         return;
       }
 
-      var id = stanza.getID();
-      if(id && stanza.getType() == 'result') self._set_received_id(id);
+      var id   = stanza.getID();
+      var type = stanza.getType();
+
+      if(id && type == JSJAC_JINGLE_STANZA_TYPE_RESULT)  self._set_received_id(id);
 
       // Submit to custom handler
-      if(typeof self._get_handlers(id) == 'function') {
+      if(typeof self._get_handlers(type, id) == 'function') {
         self.get_debug().log('[JSJaCJingle] handle > Submitted to custom handler.', 2);
 
-        (self._get_handlers(id))(stanza);
-        self.unregister_handler(id);
+        (self._get_handlers(type, id))(stanza);
+        self.unregister_handler(type, id);
 
         return;
       }
@@ -1179,7 +1192,7 @@ function JSJaCJingle(args) {
       self._peer_sound(false);
       self._set_mute(name, true);
 
-      self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_MUTE, name: name });
+      self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_MUTE, name: name });
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] mute > ' + e, 1);
     }
@@ -1213,7 +1226,7 @@ function JSJaCJingle(args) {
       self._peer_sound(true);
       self._set_mute(name, false);
 
-      self.send('set', { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE, name: name });
+      self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE, name: name });
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] unmute > ' + e, 1);
     }
@@ -1280,7 +1293,7 @@ function JSJaCJingle(args) {
 
             // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
 
-            self.send('set', { action: JSJAC_JINGLE_ACTION_CONTENT_ADD, name: JSJAC_JINGLE_MEDIA_VIDEO });
+            self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_CONTENT_ADD, name: JSJAC_JINGLE_MEDIA_VIDEO });
           })
         });*/
       } else {
@@ -1295,7 +1308,7 @@ function JSJaCJingle(args) {
             // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
             //          here, only stop the video stream, do not touch the audio stream
 
-            self.send('set', { action: JSJAC_JINGLE_ACTION_CONTENT_REMOVE, name: JSJAC_JINGLE_MEDIA_VIDEO });
+            self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_CONTENT_REMOVE, name: JSJAC_JINGLE_MEDIA_VIDEO });
           })
         });*/
       }
@@ -1307,19 +1320,21 @@ function JSJaCJingle(args) {
   /**
    * Registers a given handler on a given Jingle stanza
    */
-  self.register_handler = function(id, fn) {
+  self.register_handler = function(type, id, fn) {
     self.get_debug().log('[JSJaCJingle] register_handler', 4);
 
     try {
+      type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
+
       if(typeof fn != 'function') {
         self.get_debug().log('[JSJaCJingle] register_handler > fn parameter not passed or not a function!', 1);
         return false;
       }
 
       if(id) {
-        self._set_handlers(id, fn);
+        self._set_handlers(type, id, fn);
 
-        self.get_debug().log('[JSJaCJingle] register_handler > Registered handler for id: ' + id, 3);
+        self.get_debug().log('[JSJaCJingle] register_handler > Registered handler for id: ' + id + ' and type: ' + type, 3);
         return true;
       } else {
         self.get_debug().log('[JSJaCJingle] register_handler > Could not register handler (no ID).', 1);
@@ -1335,17 +1350,19 @@ function JSJaCJingle(args) {
   /**
    * Unregisters the given handler on a given Jingle stanza
    */
-  self.unregister_handler = function(id) {
+  self.unregister_handler = function(type, id) {
     self.get_debug().log('[JSJaCJingle] unregister_handler', 4);
 
     try {
-      if(id in self._handlers) {
-        delete self._handlers[id];
+      type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
 
-        self.get_debug().log('[JSJaCJingle] unregister_handler > Unregistered handler for id: ' + id, 3);
+      if(type in self._handlers && id in self._handlers[type]) {
+        delete self._handlers[type][id];
+
+        self.get_debug().log('[JSJaCJingle] unregister_handler > Unregistered handler for id: ' + id + ' and type: ' + type, 3);
         return true;
       } else {
-        self.get_debug().log('[JSJaCJingle] unregister_handler > Could not unregister handler id: ' + id + ' (not found).', 2);
+        self.get_debug().log('[JSJaCJingle] unregister_handler > Could not unregister handler with id: ' + id + ' and type: ' + type + ' (not found).', 2);
         return false;
       }
     } catch(e) {
@@ -1581,13 +1598,13 @@ function JSJaCJingle(args) {
       self._util_stanza_generate_content_local(stanza, jingle);
 
       // Schedule success
-      self.register_handler(args.id, function(stanza) {
+      self.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
         (self._get_session_accept_success())(self, stanza);
         self.handle_session_accept_success(stanza);
       });
 
       // Schedule error timeout
-      self.util_stanza_timeout(args.id, {
+      self.util_stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
         external:   self._get_session_accept_error(),
         internal:   self.handle_session_accept_error
       });
@@ -1622,13 +1639,13 @@ function JSJaCJingle(args) {
       self._util_stanza_generate_session_info(stanza, jingle, args);
 
       // Schedule success
-      self.register_handler(args.id, function(stanza) {
+      self.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
         (self._get_session_info_success())(self, stanza);
         self.handle_session_info_success(stanza);
       });
 
       // Schedule error timeout
-      self.util_stanza_timeout(args.id, {
+      self.util_stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
         external:   self._get_session_info_error(),
         internal:   self.handle_session_info_error
       });
@@ -1665,13 +1682,13 @@ function JSJaCJingle(args) {
       self._util_stanza_generate_content_local(stanza, jingle);
 
       // Schedule success
-      self.register_handler(args.id, function(stanza) {
+      self.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
         (self._get_session_initiate_success())(self, stanza);
         self.handle_session_initiate_success(stanza);
       });
 
       // Schedule error timeout
-      self.util_stanza_timeout(args.id, {
+      self.util_stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
         external:   self._get_session_initiate_error(),
         internal:   self.handle_session_initiate_error
       });
@@ -1714,13 +1731,13 @@ function JSJaCJingle(args) {
       jingle_reason.appendChild(stanza.buildNode(args.reason, {'xmlns': NS_JINGLE}));
 
       // Schedule success
-      self.register_handler(args.id, function(stanza) {
+      self.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
         (self._get_session_terminate_success())(self, stanza);
         self.handle_session_terminate_success(stanza);
       });
 
       // Schedule error timeout
-      self.util_stanza_timeout(args.id, {
+      self.util_stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
         external:   self._get_session_terminate_error(),
         internal:   self.handle_session_terminate_error
       });
@@ -1789,12 +1806,12 @@ function JSJaCJingle(args) {
       self._util_stanza_generate_content_local(stanza, jingle, content_queue_local);
 
       // Schedule success
-      self.register_handler(args.id, function(stanza) {
+      self.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
         self.handle_transport_info_success(stanza);
       });
 
       // Schedule error timeout
-      self.util_stanza_timeout(args.id, {
+      self.util_stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
         internal: self.handle_transport_info_error
       });
 
@@ -2023,7 +2040,7 @@ function JSJaCJingle(args) {
 
       // Can now safely dispatch the stanza
       switch(stanza.getType()) {
-        case 'result':
+        case JSJAC_JINGLE_STANZA_TYPE_RESULT:
           (self._get_session_accept_success())(self, stanza);
           self.handle_session_accept_success(stanza);
 
@@ -2035,7 +2052,7 @@ function JSJaCJingle(args) {
 
           break;
 
-        case 'set':
+        case JSJAC_JINGLE_STANZA_TYPE_SET:
           // External handler must be set before internal one here...
           (self._get_session_accept_request())(self, stanza);
           self.handle_session_accept_request(stanza);
@@ -2151,7 +2168,7 @@ function JSJaCJingle(args) {
         self._set_candidates_queue_remote(null);
 
         // Success reply
-        self.send('result', { id: stanza.getID() });
+        self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
       } else {
         // Trigger accept error callback
         (self._get_session_accept_error())(self, stanza);
@@ -2185,7 +2202,7 @@ function JSJaCJingle(args) {
 
       // Can now safely dispatch the stanza
       switch(stanza.getType()) {
-        case 'result':
+        case JSJAC_JINGLE_STANZA_TYPE_RESULT:
           (self._get_session_info_success())(self, stanza);
           self.handle_session_info_success(stanza);
 
@@ -2197,7 +2214,7 @@ function JSJaCJingle(args) {
 
           break;
 
-        case 'set':
+        case JSJAC_JINGLE_STANZA_TYPE_SET:
           (self._get_session_info_request())(self, stanza);
           self.handle_session_info_request(stanza);
 
@@ -2251,7 +2268,7 @@ function JSJaCJingle(args) {
         self.get_debug().log('[JSJaCJingle] handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
 
         // Process info actions
-        self.send('result', { id: stanza.getID() });
+        self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
 
         // Trigger info success custom callback
         (self._get_session_info_success())(self, stanza);
@@ -2280,7 +2297,7 @@ function JSJaCJingle(args) {
 
     try {
       switch(stanza.getType()) {
-        case 'result':
+        case JSJAC_JINGLE_STANZA_TYPE_RESULT:
           (self._get_session_initiate_success())(self, stanza);
           self.handle_session_initiate_success(stanza);
 
@@ -2292,7 +2309,7 @@ function JSJaCJingle(args) {
 
           break;
 
-        case 'set':
+        case JSJAC_JINGLE_STANZA_TYPE_SET:
           (self._get_session_initiate_request())(self, stanza);
           self.handle_session_initiate_request(stanza);
 
@@ -2399,7 +2416,7 @@ function JSJaCJingle(args) {
         (self._get_session_initiate_success())(self, stanza);
         self.handle_session_initiate_success(stanza);
 
-        self.send('result', { id: stanza.getID() });
+        self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
       } else {
         // Session initiation not done
         (self._get_session_initiate_error())(self, stanza);
@@ -2435,7 +2452,7 @@ function JSJaCJingle(args) {
 
       // Can now safely dispatch the stanza
       switch(stanza.getType()) {
-        case 'result':
+        case JSJAC_JINGLE_STANZA_TYPE_RESULT:
           (self._get_session_terminate_success())(self, stanza);
           self.handle_session_terminate_success(stanza);
 
@@ -2447,7 +2464,7 @@ function JSJaCJingle(args) {
 
           break;
 
-        case 'set':
+        case JSJAC_JINGLE_STANZA_TYPE_SET:
           (self._get_session_terminate_request())(self, stanza);
           self.handle_session_terminate_request(stanza);
 
@@ -2528,7 +2545,7 @@ function JSJaCJingle(args) {
       self.handle_session_terminate_success(stanza);
 
       // Process terminate actions
-      self.send('result', { id: stanza.getID() });
+      self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
 
       self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > (reason: ' + self.get_reason() + ').', 3);
     } catch(e) {
@@ -2598,7 +2615,7 @@ function JSJaCJingle(args) {
         self._set_candidates_queue_remote(null);
 
         // Success reply
-        self.send('result', { id: stanza.getID() });
+        self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
       } else {
         // Send error reply
         self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
@@ -2909,9 +2926,11 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._get_handlers = function(id) {
-    if(id && typeof self._handlers[id] == 'function')
-      return self._handlers[id];
+  self._get_handlers = function(type, id) {
+    type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
+
+    if(id && type in self._handlers && typeof self._handlers[type][id] == 'function')
+      return self._handlers[type][id];
 
     return null;
   };
@@ -3510,8 +3529,10 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._set_handlers = function(id, handler) {
-    self._handlers[id] = handler;
+  self._set_handlers = function(type, id, handler) {
+    if(!(type in self._handlers))  self._handlers[type] = {};
+
+    self._handlers[type][id] = handler;
   };
 
   /**
@@ -4100,7 +4121,7 @@ function JSJaCJingle(args) {
    */
   self.util_stanza_safe = function(stanza) {
     try {
-      return !((stanza.getType() == 'set' && self.util_stanza_sid(stanza) != self.get_sid()) || self.util_stanza_from(stanza) != self.get_to());
+      return !((stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && self.util_stanza_sid(stanza) != self.get_sid()) || self.util_stanza_from(stanza) != self.get_to());
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] util_stanza_safe > ' + e, 1);
     }
@@ -4159,8 +4180,10 @@ function JSJaCJingle(args) {
   /**
    * Set a timeout limit to a stanza
    */
-  self.util_stanza_timeout = function(t_id, handlers) {
+  self.util_stanza_timeout = function(t_type, t_id, handlers) {
     try {
+      t_type = t_type || JSJAC_JINGLE_STANZA_TYPE_ALL;
+
       var t_sid = self.get_sid();
       var t_status = self.get_status();
 
@@ -4173,7 +4196,7 @@ function JSJaCJingle(args) {
         if(self.get_sid() == t_sid && self.get_status() == t_status && !(t_id in self._get_received_id())) {
           self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza timeout.', 2);
 
-          self.unregister_handler(t_id);
+          self.unregister_handler(t_type, t_id);
 
           if(handlers.external)  (handlers.external)(self);
           if(handlers.internal)  (handlers.internal)();
@@ -6284,7 +6307,7 @@ function JSJaCJingle(args) {
             var candidates_queue_local = self._get_candidates_queue_local();
 
             if(self.util_object_length(candidates_queue_local) > 0)
-              self.send('set', { action: JSJAC_JINGLE_ACTION_TRANSPORT_INFO, candidates: candidates_queue_local });
+              self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_TRANSPORT_INFO, candidates: candidates_queue_local });
           }
 
           // Empty the unsent candidates queue
@@ -6641,7 +6664,7 @@ function JSJaCJingle_route(stanza) {
           JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:route > Routed to Jingle session (sid: ' + sid + ').', 2);
 
           session_route.handle(stanza);
-        } else if(stanza.getType() == 'set' && stanza.getFrom()) {
+        } else if(stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && stanza.getFrom()) {
           JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:route > Unknown Jingle session (sid: ' + sid + ').', 0);
 
           (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
@@ -6724,14 +6747,14 @@ function JSJaCJingle_extdisco() {
     var request = new JSJaCIQ();
 
     request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
-    request.setType('get');
+    request.setType(JSJAC_JINGLE_STANZA_TYPE_GET);
 
     request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_EXTDISCO }));
 
     JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
       try {
         // Parse response
-        if(response.getType() == 'result') {
+        if(response.getType() == JSJAC_JINGLE_STANZA_TYPE_RESULT) {
           var i,
               service_arr, cur_service,
               cur_host, cur_password, cur_port, cur_transport, cur_type, cur_username;
