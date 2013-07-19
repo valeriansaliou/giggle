@@ -2929,8 +2929,13 @@ function JSJaCJingle(args) {
   self._get_handlers = function(type, id) {
     type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
 
-    if(id && type in self._handlers && typeof self._handlers[type][id] == 'function')
-      return self._handlers[type][id];
+    if(id) {
+      if(type != JSJAC_JINGLE_STANZA_TYPE_ALL && type in self._handlers && typeof self._handlers[type][id] == 'function')
+        return self._handlers[type][id];
+
+      if(JSJAC_JINGLE_STANZA_TYPE_ALL in self._handlers && typeof self._handlers[JSJAC_JINGLE_STANZA_TYPE_ALL][id] == 'function')
+        return self._handlers[type][id];
+    }
 
     return null;
   };
