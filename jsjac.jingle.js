@@ -1289,7 +1289,7 @@ function JSJaCJingle(args) {
             self.get_debug().log('[JSJaCJingle] media > Ready to change media (to: ' + media + ').', 2);
 
             // 'content-add' >> video
-            // TODO
+            // TODO: restart video stream configuration
 
             // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
 
@@ -1303,7 +1303,7 @@ function JSJaCJingle(args) {
             self.get_debug().log('[JSJaCJingle] media > Ready to change media (to: ' + media + ').', 2);
 
             // 'content-remove' >> video
-            // TODO
+            // TODO: remove video stream configuration
 
             // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
             //          here, only stop the video stream, do not touch the audio stream
