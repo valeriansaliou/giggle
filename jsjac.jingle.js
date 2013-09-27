@@ -2159,8 +2159,7 @@ function JSJaCJingle(args) {
 
           self._get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
-              sdpMLineIndex : cur_candidate_obj.label,
-              sdpMid        : cur_candidate_obj.id,
+              sdpMLineIndex : cur_candidate_obj.id,
               candidate     : cur_candidate_obj.candidate
             })
           );
@@ -2606,8 +2605,7 @@ function JSJaCJingle(args) {
 
           self._get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
-              sdpMLineIndex : cur_candidate_obj.label,
-              sdpMid        : cur_candidate_obj.id,
+              sdpMLineIndex : cur_candidate_obj.id,
               candidate     : cur_candidate_obj.candidate
             })
           );
@@ -6293,7 +6291,7 @@ function JSJaCJingle(args) {
       self._get_peer_connection().onicecandidate = function(e) {
         if(e.candidate) {
           self._util_sdp_parse_candidate_store({
-            media     : (isNaN(e.candidate.sdpMid) ? e.candidate.sdpMid : self._util_media_generate(parseInt(e.candidate.sdpMid))),
+            media     : e.candidate.sdpMLineIndex,
             candidate : e.candidate.candidate
           });
         } else {
@@ -6408,8 +6406,7 @@ function JSJaCJingle(args) {
 
           self._get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
-              sdpMLineIndex : cur_candidate_obj.label,
-              sdpMid        : cur_candidate_obj.id,
+              sdpMLineIndex : cur_candidate_obj.id,
               candidate     : cur_candidate_obj.candidate
             })
           );
