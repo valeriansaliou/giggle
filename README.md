@@ -7,13 +7,13 @@ JSJaCJingle.js
 
 To be used with JSJaC from Stefan Strigler, available there: https://github.com/sstrigler/JSJaC
 
-Made with love by the happy folks at **Jappix** https://jappix.com/ originally for the awesome guys at **Uno IM** https://uno.im/ and **Virtustructure** http://www.virtustructure.com/
+Made with love by the happy folks at **Jappix** https://jappix.com/ and **FrenchTouch Web Agency** http://frenchtouch.pro/, originally for the awesome guys at **Uno IM** https://uno.im/ and **Virtustructure** http://www.virtustructure.com/
 
 ## Online Demo
 
 You can try JSJaCJingle.js there: https://demo.frenchtouch.pro/valerian.saliou/jsjac-jingle/examples/simple_client.html
 
-Open it on 2 separate tabs or 2 different computers, and login with 2 different XMPP accounts. Then, paste the full JID of the other connected account in the call field.
+Open it on 2 separate tabs or 2 different computers, and login with 2 different XMPP accounts (Jappix.com accounts only for this online demo). Then, paste the full JID of the other connected account in the call field.
 
 The call should then be initiated, and after a while the video will come.
 
