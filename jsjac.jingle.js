@@ -6291,7 +6291,7 @@ function JSJaCJingle(args) {
       self._get_peer_connection().onicecandidate = function(e) {
         if(e.candidate) {
           self._util_sdp_parse_candidate_store({
-            media     : e.candidate.sdpMLineIndex,
+            media     : (isNaN(e.candidate.sdpMid) ? e.candidate.sdpMid : self._util_media_generate(parseInt(e.candidate.sdpMid))),
             candidate : e.candidate.candidate
           });
         } else {
