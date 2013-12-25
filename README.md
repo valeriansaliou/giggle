@@ -1,11 +1,14 @@
 JSJaCJingle.js
 ==============
 
-## What Is JSJaCJingle.js?
-
 **JSJaC Jingle library**, implementation of [XEP-0166 (Jingle)](http://xmpp.org/extensions/xep-0166.html). _XMPP videochat in your Web browser!_
 
 To be used with JSJaC from Stefan Strigler, available there: https://github.com/sstrigler/JSJaC
+
+[![build status](https://ci.frenchtouch.pro/projects/8/status.png?ref=master)](https://ci.frenchtouch.pro/projects/8?ref=master)
+
+
+## Who's Behind It?
 
 Made with love by the happy folks at **Jappix** https://jappix.com/ and **FrenchTouch Web Agency** http://frenchtouch.pro/, originally for the awesome guys at **Uno IM** https://uno.im/ and **Virtustructure** http://www.virtustructure.com/
 
