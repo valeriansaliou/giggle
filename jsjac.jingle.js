@@ -109,11 +109,12 @@ var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   ufrag           : /^a=ice-ufrag:(\S+)/i,
   ptime           : /^a=ptime:(\d+)/i,
   maxptime        : /^a=maxptime:(\d+)/i,
-  ssrc            : /^a=ssrc:(\d+) (\w+)(:(\w+))?( (\w+))?/i,
+  ssrc            : /^a=ssrc:(\d+) (\w+)(:(\S+))?( (\w+))?/i,
   rtcp_mux        : /^a=rtcp-mux/i,
   crypto          : /^a=crypto:(\d{1,9}) (\w+) (\S+)( (\S+))?/i,
   zrtp_hash       : /^a=zrtp-hash:(\S+) (\w+)/i,
   fingerprint     : /^a=fingerprint:(\S+) (\S+)/i,
+  setup           : /^a=setup:(\S+)/i,
   extmap          : /^a=extmap:([^\s\/]+)(\/([^\s\/]+))? (\S+)/i,
   bandwidth       : /^b=(\w+):(\d+)/i,
   media           : /^m=(audio|video|application|data) /i
@@ -5135,9 +5136,17 @@ function JSJaCJingle(args) {
         if(cur_d_ufrag)  payloads_str += 'a=ice-ufrag:' + cur_d_ufrag + WEBRTC_SDP_LINE_BREAK;
         if(cur_d_pwd)    payloads_str += 'a=ice-pwd:' + cur_d_pwd + WEBRTC_SDP_LINE_BREAK;
 
-        if(cur_d_fingerprint && cur_d_fingerprint['hash'] && cur_d_fingerprint['value']) {
-          payloads_str += 'a=fingerprint:' + cur_d_fingerprint['hash'] + ' ' + cur_d_fingerprint['value'];
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        // Fingerprint
+        if(cur_d_fingerprint) {
+          if(cur_d_fingerprint['hash'] && cur_d_fingerprint['value']) {
+            payloads_str += 'a=fingerprint:' + cur_d_fingerprint['hash'] + ' ' + cur_d_fingerprint['value'];
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+
+          if(cur_d_fingerprint['setup']) {
+            payloads_str += 'a=setup:' + cur_d_fingerprint['setup'];
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
         }
 
         // RTP-HDREXT
@@ -6035,7 +6044,7 @@ function JSJaCJingle(args) {
         if(m_fingerprint) {
           // Populate current object
           e = 0;
-          cur_fingerprint = {};
+          cur_fingerprint = common_transports['fingerprint'] || {};
 
           cur_fingerprint['hash']  = m_fingerprint[1]  || e++;
           cur_fingerprint['value'] = m_fingerprint[2]  || e++;
@@ -6045,9 +6054,25 @@ function JSJaCJingle(args) {
 
           // Push it to parent array
           init_transports(cur_name, 'fingerprint', cur_fingerprint);
+          common_transports['fingerprint'] = cur_fingerprint;
 
-          if(self.util_object_length(common_transports['fingerprint']) == 0)
+          continue;
+        }
+
+        m_setup = (R_WEBRTC_SDP_ICE_PAYLOAD.setup).exec(cur_line);
+
+        // 'setup' line?
+        if(m_setup) {
+          // Populate current object
+          cur_fingerprint = common_transports['fingerprint'] || {};
+          cur_fingerprint['setup'] = m_setup[1];
+
+          // Push it to parent array
+          if(cur_fingerprint['setup']) {
+            // Map it to fingerprint as XML-wise it is related
+            init_transports(cur_name, 'fingerprint', cur_fingerprint);
             common_transports['fingerprint'] = cur_fingerprint;
+          }
 
           continue;
         }
