@@ -13,14 +13,7 @@
 /**
  * Implements:
  *
- * XEP-0166: http://xmpp.org/extensions/xep-0166.html
- * XEP-0167: http://xmpp.org/extensions/xep-0167.html
- * XEP-0176: http://xmpp.org/extensions/xep-0176.html
- * XEP-0215: http://xmpp.org/extensions/xep-0215.html
- * XEP-0262: http://xmpp.org/extensions/xep-0262.html
- * XEP-0293: http://xmpp.org/extensions/xep-0293.html
- * XEP-0294: http://xmpp.org/extensions/xep-0294.html
- * XEP-0320: http://xmpp.org/extensions/xep-0320.html
+ * See the PROTOCOL.md file for a list of supported protocol extensions
  *
  *
  * Workflow:
