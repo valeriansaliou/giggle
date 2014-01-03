@@ -6030,16 +6030,6 @@ function JSJaCJingle(args) {
           continue;
         }
 
-        m_rtcp_mux = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_mux).exec(cur_line);
-
-        // 'rtcp-mux' line?
-        if(m_rtcp_mux) {
-          // Push it to parent array
-          init_descriptions(cur_name, 'rtcp-mux', 1);
-
-          continue;
-        }
-
         m_extmap = (R_WEBRTC_SDP_ICE_PAYLOAD.extmap).exec(cur_line);
 
         // 'extmap' line?
