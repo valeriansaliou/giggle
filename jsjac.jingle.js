@@ -6968,7 +6968,7 @@ function JSJaCJingle_fallback(fallback_url) {
                   if(cur_type == 'turn') {
                     JSJAC_JINGLE_STORE_FALLBACK[cur_type][cur_host].username = cur_username;
                     JSJAC_JINGLE_STORE_FALLBACK[cur_type][cur_host].password = cur_password;
-                  };
+                  }
 
                   JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:fallback > handle > Fallback service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
                 } else {
@@ -6992,7 +6992,7 @@ function JSJaCJingle_fallback(fallback_url) {
         // Execute deferred requests
         JSJaCJingle_defer(false);
       }
-    }
+    };
 
     xhr.send();
   } catch(e) {
