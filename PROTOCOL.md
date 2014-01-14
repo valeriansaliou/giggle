@@ -17,6 +17,8 @@ Here are listed the XMPP Protocol Extensions that JSJaCJingle.js supports, as we
  * XEP-0294: Jingle RTP Header Extensions Negotiation *v0.1*
  * XEP-0299: Codecs for Jingle Video *v0.1*
  * XEP-0320: Use of DTLS-SRTP in Jingle Sessions *v0.2*
+ * XEP-0338: Jingle Grouping Framework *v0.1*
+ * XEP-0339: Source-Specific Media Attributes in Jingle *v0.1*
 
 
 # Others
