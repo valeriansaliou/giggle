@@ -96,6 +96,7 @@ var R_WEBRTC_SDP_ICE_CANDIDATE = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\
 var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   rtpmap          : /^a=rtpmap:(\d+) (([^\s\/]+)\/(\d+)(\/([^\s\/]+))?)?/i,
   fmtp            : /^a=fmtp:(\d+) (.+)/i,
+  group           : /^a=group:(\S+) (\S+)/,
   rtcp_fb         : /^a=rtcp-fb:(\S+) (\S+)( (\S+))?/i,
   rtcp_fb_trr_int : /^a=rtcp-fb:(\d+) trr-int (\d+)/i,
   pwd             : /^a=ice-pwd:(\S+)/i,
@@ -129,8 +130,10 @@ var NS_JINGLE_APPS_RTP_VIDEO                        = 'urn:xmpp:jingle:apps:rtp:
 var NS_JINGLE_APPS_RTP_RTP_HDREXT                   = 'urn:xmpp:jingle:apps:rtp:rtp-hdrext:0';
 var NS_JINGLE_APPS_RTP_RTCP_FB                      = 'urn:xmpp:jingle:apps:rtp:rtcp-fb:0';
 var NS_JINGLE_APPS_RTP_ZRTP                         = 'urn:xmpp:jingle:apps:rtp:zrtp:1';
+var NS_JINGLE_APPS_RTP_SSMA                         = 'urn:xmpp:jingle:apps:rtp:ssma:0';
 var NS_JINGLE_APPS_STUB                             = 'urn:xmpp:jingle:apps:stub:0';
 var NS_JINGLE_APPS_DTLS                             = 'urn:xmpp:tmp:jingle:apps:dtls:0';
+var NS_JINGLE_APPS_GROUPING                         = 'urn:xmpp:jingle:apps:grouping:0';
 
 var NS_JINGLE_TRANSPORTS_ICEUDP                     = 'urn:xmpp:jingle:transports:ice-udp:1';
 var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transports:stub:0';
@@ -140,6 +143,8 @@ var NS_JINGLE_SECURITY_STUB                         = 'urn:xmpp:jingle:security:
 var NS_EXTDISCO                                     = 'urn:xmpp:extdisco:1';
 
 var NS_IETF_RFC_3264                                = 'urn:ietf:rfc:3264';
+var NS_IETF_RFC_5576                                = 'urn:ietf:rfc:5576';
+var NS_IETF_RFC_5888                                = 'urn:ietf:rfc:5888';
 
 var R_NS_JINGLE_APP                                 = /^urn:xmpp:jingle:app:(\w+)(:(\w+))?(:(\d+))?$/;
 var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transport:(\w+)$/;
@@ -155,6 +160,12 @@ var MAP_DISCO_JINGLE                                = [
   /* http://xmpp.org/extensions/xep-0176.html#support */
   NS_JINGLE_TRANSPORTS_ICEUDP,
   NS_IETF_RFC_3264,
+
+  /* http://xmpp.org/extensions/xep-0339.html#disco */
+  NS_IETF_RFC_5576,
+
+  /* http://xmpp.org/extensions/xep-0338.html#disco */
+  NS_IETF_RFC_5888,
 
   /* http://xmpp.org/extensions/xep-0293.html#determining-support */
   NS_JINGLE_APPS_RTP_RTCP_FB,
