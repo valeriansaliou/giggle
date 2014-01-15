@@ -96,7 +96,7 @@ var R_WEBRTC_SDP_ICE_CANDIDATE = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\
 var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   rtpmap          : /^a=rtpmap:(\d+) (([^\s\/]+)\/(\d+)(\/([^\s\/]+))?)?/i,
   fmtp            : /^a=fmtp:(\d+) (.+)/i,
-  group           : /^a=group:(\S+) (\S+)/,
+  group           : /^a=group:(\S+) (.+)/,
   rtcp_fb         : /^a=rtcp-fb:(\S+) (\S+)( (\S+))?/i,
   rtcp_fb_trr_int : /^a=rtcp-fb:(\d+) trr-int (\d+)/i,
   pwd             : /^a=ice-pwd:(\S+)/i,
@@ -672,7 +672,7 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._group_local = [];
+  self._group_local = {};
 
   /**
    * @private
@@ -3487,7 +3487,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_group_local = function(semantics, group_data) {
-    self._group_local[name] = group_data;
+    self._group_local[semantics] = group_data;
   };
 
   /**
@@ -3549,7 +3549,7 @@ function JSJaCJingle(args) {
    * @private
    */
   self._set_group_remote = function(semantics, group_data) {
-    self._group_remote[name] = group_data;
+    self._group_remote[semantics] = group_data;
   };
 
   /**
@@ -4434,7 +4434,7 @@ function JSJaCJingle(args) {
             content = self.util_stanza_get_element(cur_group, 'content', NS_JINGLE_APPS_GROUPING);
 
             for(j = 0; j < content.length; j++) {
-              cur_content = content[i];
+              cur_content = content[j];
 
               // Content attrs
               group_content_names.push(
@@ -6353,13 +6353,13 @@ function JSJaCJingle(args) {
         cur_line = lines[i];
 
         // 'group' line?
-        m_group = R_WEBRTC_SDP_ICE_PAYLOAD.exec(cur_line);
+        m_group = (R_WEBRTC_SDP_ICE_PAYLOAD.group).exec(cur_line);
 
         if(m_group) {
           if(m_group[1] && m_group[2]) {
             init_group(m_group[1]);
 
-            group[m_group[1]].push(m_group[2]);
+            group[m_group[1]] = (m_group[2].indexOf(' ') === -1 ? [m_group[2]] : m_group[2].split(' '));
           }
 
           continue;
