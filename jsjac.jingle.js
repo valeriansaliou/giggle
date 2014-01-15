@@ -6628,7 +6628,7 @@ function JSJaCJingle(args) {
 
       if(self.is_initiator()) {
         // Local description
-        self._get_peer_connection().createOffer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_offer);
+        self._get_peer_connection().createOffer(self._peer_got_description, self._peer_fail_description, WEBRTC_CONFIGURATION.create_offer);
 
         // Then, wait for responder to send back its remote description
       } else {
@@ -6659,7 +6659,7 @@ function JSJaCJingle(args) {
         );
 
         // Local description
-        self._get_peer_connection().createAnswer(self._peer_got_description, null, WEBRTC_CONFIGURATION.create_answer);
+        self._get_peer_connection().createAnswer(self._peer_got_description, self._peer_fail_description, WEBRTC_CONFIGURATION.create_answer);
 
         // ICE candidates
         var c;
@@ -6819,6 +6819,19 @@ function JSJaCJingle(args) {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 2);
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _peer_got_description > ' + e, 1);
+    }
+  };
+
+  /**
+   * @private
+   */
+  self._peer_fail_description = function() {
+    self.get_debug().log('[JSJaCJingle] _peer_fail_description', 4);
+
+    try {
+      self.get_debug().log('[JSJaCJingle] _peer_fail_description > Could not get local description!', 1);
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _peer_fail_description > ' + e, 1);
     }
   };
 
