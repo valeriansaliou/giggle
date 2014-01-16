@@ -2631,7 +2631,8 @@ function JSJaCJingle(args) {
       // Request is valid?
       if(rd_sid && self._util_stanza_parse_content(stanza)) {
         // Handle additional data (optional)
-        self._util_stanza_parse_group(stanza);
+        // Still unsure if it is relevant to parse groups there... (are they allowed in such stanza?)
+        //self._util_stanza_parse_group(stanza);
 
         // Re-generate and store new content data
         self._util_build_content_remote();

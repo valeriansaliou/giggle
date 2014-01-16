@@ -28,6 +28,12 @@ We wanted to avoid such possible security exploits: _imagine a friend of you wan
 
 JSJaCJingle.js simply **DOES NOT** fire the custom event handlers that you may have defined, so that you don't have to check yourself that each incoming packet is safe, thus to ensure your client implementation of Jingle is rock-solid (safe: session is authorized **AND** stanza sender is authorized **AND** the Jingle session flow is respected). It's all mind-free for you guys!
 
+## Commercial Support
+
+If you don't manage to setup JSJaCJingle.js or you need us to implement more features in the library as open-source or proprietary code patch, we handle do that for you!
+
+We are running a commercial support service for Jappix, that you can also use for JSJaCJingle.js support requests. Please send us a quote on [Jappix Pro](https://jappix.pro/), as a feature development service.
+
 ## How To Use?
 
 We assume your XMPP Web client is using JSJaC and has an active connection, stored in the _con_ object.
