@@ -30,9 +30,11 @@ JSJaCJingle.js simply **DOES NOT** fire the custom event handlers that you may h
 
 ## Commercial Support
 
-If you don't manage to setup JSJaCJingle.js or you need us to implement more features in the library as open-source or proprietary code patch, we handle do that for you!
+If you don't manage to setup JSJaCJingle.js or you need us to implement more features in the library as an open-source or a proprietary code patch, **we can handle that** for you!
 
-We are running a commercial support service for Jappix, that you can also use for JSJaCJingle.js support requests. Please send us a quote on [Jappix Pro](https://jappix.pro/), as a feature development service.
+We are running a **commercial support service** for Jappix, that you can also use for JSJaCJingle.js support requests. Please **[send us a quote on Jappix Pro](https://jappix.pro/)**, as a feature development service.
+
+*We provide a quality service where customer satisfaction is our goal.*
 
 ## How To Use?
 
