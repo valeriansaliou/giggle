@@ -103,14 +103,14 @@ var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   ufrag           : /^a=ice-ufrag:(\S+)/i,
   ptime           : /^a=ptime:(\d+)/i,
   maxptime        : /^a=maxptime:(\d+)/i,
-  ssrc            : /^a=ssrc:(\d+) (\S+)(:(\S+))?( (\S+))?/i,
+  ssrc            : /^a=ssrc:(\d+) (\w+)(:(\S+))?( (\S+))?/i,
   rtcp_mux        : /^a=rtcp-mux/i,
   crypto          : /^a=crypto:(\d{1,9}) (\S+) (\S+)( (\S+))?/i,
   zrtp_hash       : /^a=zrtp-hash:(\S+) (\S+)/i,
   fingerprint     : /^a=fingerprint:(\S+) (\S+)/i,
   setup           : /^a=setup:(\S+)/i,
   extmap          : /^a=extmap:([^\s\/]+)(\/([^\s\/]+))? (\S+)/i,
-  bandwidth       : /^b=(\S+):(\d+)/i,
+  bandwidth       : /^b=(\w+):(\d+)/i,
   media           : /^m=(audio|video|application|data) /i
 };
 
