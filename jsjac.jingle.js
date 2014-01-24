@@ -4963,8 +4963,6 @@ function JSJaCJingle(args) {
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_stanza_generate_content_local > ' + e, 1);
     }
-
-    alert('JINGLE >> ' + stanza.xml())
   };
 
   /**
