@@ -190,6 +190,7 @@ $(document).ready(function() {
             $('.login_notif').hide();
 
             var login_bosh = $(this).find('input[name="login_bosh"]').val();
+            var login_websocket = $(this).find('input[name="login_websocket"]').val();
             var login_jid = $(this).find('input[name="login_jid"]').val();
             var login_pwd = $(this).find('input[name="login_pwd"]').val();
 
@@ -201,10 +202,15 @@ $(document).ready(function() {
                 var jid_obj = new JSJaCJID(login_jid);
 
                 // Configure connection
-                oArgs = new Object();
-                oArgs.httpbase = login_bosh;
-
-                con = new JSJaCHttpBindingConnection(oArgs);
+                if(login_websocket && typeof window.WebSocket !== undefined) {
+                    con = new JSJaCWebSocketConnection({
+                        httpbase: login_websocket
+                    });
+                } else {
+                    con = new JSJaCHttpBindingConnection({
+                        httpbase: login_bosh
+                    });
+                }
 
                 // Configure handlers
                 con.registerHandler('onconnect', function() {
@@ -464,14 +470,16 @@ $(document).ready(function() {
     });
 
     // Check for URL parameters
-    var param_bosh = url_param('bosh');
-    var param_jid  = url_param('jid');
-    var param_pwd  = url_param('pwd');
-    var param_go   = url_param('go');
+    var param_bosh       = url_param('bosh');
+    var param_websocket  = url_param('websocket');
+    var param_jid        = url_param('jid');
+    var param_pwd        = url_param('pwd');
+    var param_go         = url_param('go');
 
-    if(param_bosh)  $('#form_login input[name="login_bosh"]').val(param_bosh);
-    if(param_jid)   $('#form_login input[name="login_jid"]').val(param_jid);
-    if(param_pwd)   $('#form_login input[name="login_pwd"]').val(param_pwd);
+    if(param_bosh)       $('#form_login input[name="login_bosh"]').val(param_bosh);
+    if(param_websocket)  $('#form_login input[name="login_websocket"]').val(param_websocket);
+    if(param_jid)        $('#form_login input[name="login_jid"]').val(param_jid);
+    if(param_pwd)        $('#form_login input[name="login_pwd"]').val(param_pwd);
 
     if(param_go == '1')  $('#form_login').submit();
 });
