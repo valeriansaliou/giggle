@@ -202,7 +202,7 @@ $(document).ready(function() {
                 var jid_obj = new JSJaCJID(login_jid);
 
                 // Configure connection
-                if(login_websocket && typeof window.WebSocket !== undefined) {
+                if(login_websocket && typeof window.WebSocket != 'undefined') {
                     con = new JSJaCWebSocketConnection({
                         httpbase: login_websocket
                     });
