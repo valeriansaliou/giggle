@@ -10,7 +10,7 @@ To be used with JSJaC from Stefan Strigler, available there: https://github.com/
 
 ## Who's Behind It?
 
-Made with love by the happy folks at **Jappix** https://jappix.com/ and **FrenchTouch Web Agency** http://frenchtouch.pro/, originally for the awesome guys at **Uno IM** https://uno.im/ and **Virtustructure** http://www.virtustructure.com/
+Made with love by the happy folks at **Jappix** https://jappix.com/ and **FrenchTouch Web Agency** https://frenchtouch.pro/, originally for the awesome guys at **Uno IM** https://uno.im/ and **Virtustructure** http://www.virtustructure.com/
 
 ## Online Demo
 
