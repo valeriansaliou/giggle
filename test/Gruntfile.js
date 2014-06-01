@@ -3,7 +3,7 @@
  * Test tasks (uses GruntJS)
  *
  * Copyright 2013, FrenchTouch Web Agency
- * Author: Valérian Saliou <valerian@valeriansaliou.name>
+ * Author: Valérian Saliou https://valeriansaliou.name/
  */
 
 
