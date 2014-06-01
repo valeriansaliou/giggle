@@ -1,7 +1,7 @@
 /* 
   JSJaCJingle.js Simple Client
 
-  @fileoverview Scripts for the Simple client
+  @fileoverview Scripts for the Multiparty Jingle (Muji) client
   
   @url https://github.com/valeriansaliou/jsjac-jingle
   @author Valérian Saliou https://valeriansaliou.name/
