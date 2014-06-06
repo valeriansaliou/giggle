@@ -5259,13 +5259,14 @@ function JSJaCJingle(args) {
 
     try {
       var payloads_str = '';
+      var is_common_credentials = (self.util_object_length(payloads) > 1) ? false : true;
 
       // Common vars
       var i, c, j, k, l, m, n, o, p, q, r, s, t,
-          cur_name, cur_name_obj,
+          cur_name, cur_name_first, cur_name_obj,
           cur_media, cur_senders,
           cur_group_semantics, cur_group_names, cur_group_name,
-          cur_transports_obj, cur_description_obj,
+          cur_transports_obj, cur_transports_obj_first, cur_description_obj,
           cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
           cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption, cur_d_ssrc,
           cur_d_ssrc_obj, cur_d_rtcp_fb_obj,
@@ -5301,6 +5302,21 @@ function JSJaCJingle(args) {
         payloads_str += WEBRTC_SDP_LINE_BREAK;
       }
 
+      // Common credentials?
+      if(is_common_credentials === true) {
+        for(cur_name_first in payloads) {
+          cur_transports_obj_first = payloads[cur_name_first].transports || {};
+
+          payloads_str += self._util_sdp_generate_credentials(
+            cur_transports_obj_first.ufrag,
+            cur_transports_obj_first.pwd,
+            cur_transports_obj_first.fingerprint
+          );
+
+          break;
+        }
+      }
+
       // Add media groups
       for(cur_name in payloads) {
         cur_name_obj          = payloads[cur_name];
@@ -5328,7 +5344,12 @@ function JSJaCJingle(args) {
         cur_d_rtcp_mux        = cur_description_obj['rtcp-mux'];
 
         // Current media
-        payloads_str += self._util_sdp_generate_description_media(cur_media, cur_d_encryption, cur_d_fingerprint, cur_d_payload);
+        payloads_str += self._util_sdp_generate_description_media(
+          cur_media,
+          cur_d_encryption,
+          cur_d_fingerprint,
+          cur_d_payload
+        );
         payloads_str += WEBRTC_SDP_LINE_BREAK;
 
         payloads_str += 'c=IN IP4 0.0.0.0';
@@ -5336,20 +5357,19 @@ function JSJaCJingle(args) {
         payloads_str += 'a=rtcp:1 IN IP4 0.0.0.0';
         payloads_str += WEBRTC_SDP_LINE_BREAK;
 
-        if(cur_d_ufrag)  payloads_str += 'a=ice-ufrag:' + cur_d_ufrag + WEBRTC_SDP_LINE_BREAK;
-        if(cur_d_pwd)    payloads_str += 'a=ice-pwd:' + cur_d_pwd + WEBRTC_SDP_LINE_BREAK;
+        // Specific credentials?
+        if(is_common_credentials === false) {
+          payloads_str += self._util_sdp_generate_credentials(
+            cur_d_ufrag,
+            cur_d_pwd,
+            cur_d_fingerprint
+          );
+        }
 
         // Fingerprint
-        if(cur_d_fingerprint) {
-          if(cur_d_fingerprint.hash && cur_d_fingerprint.value) {
-            payloads_str += 'a=fingerprint:' + cur_d_fingerprint.hash + ' ' + cur_d_fingerprint.value;
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-
-          if(cur_d_fingerprint.setup) {
-            payloads_str += 'a=setup:' + cur_d_fingerprint.setup;
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
+        if(cur_d_fingerprint && cur_d_fingerprint.setup) {
+          payloads_str += 'a=setup:' + cur_d_fingerprint.setup;
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
         }
 
         // RTP-HDREXT
@@ -5601,6 +5621,27 @@ function JSJaCJingle(args) {
    */
   self._util_sdp_generate_timing = function() {
     return 't=0 0';
+  };
+
+  /**
+   * @private
+   */
+  self._util_sdp_generate_credentials = function(ufrag, pwd, fingerprint) {
+    var sdp = '';
+
+    // ICE credentials
+    if(ufrag)  sdp += 'a=ice-ufrag:' + ufrag + WEBRTC_SDP_LINE_BREAK;
+    if(pwd)    sdp += 'a=ice-pwd:' + pwd + WEBRTC_SDP_LINE_BREAK;
+
+    // Fingerprint
+    if(fingerprint) {
+      if(fingerprint.hash && fingerprint.value) {
+        sdp += 'a=fingerprint:' + fingerprint.hash + ' ' + fingerprint.value;
+        sdp += WEBRTC_SDP_LINE_BREAK;
+      }
+    }
+
+    return sdp;
   };
 
   /**
