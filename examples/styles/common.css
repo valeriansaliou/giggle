@@ -59,7 +59,14 @@ hr {
     border: 0;
     border-top: 1px solid #EEE;
     border-bottom: 1px solid white;
+}
+
+hr.top {
     margin-bottom: 46px;
+}
+
+hr.bottom {
+    margin-top: 50px;
 }
 
 fieldset {
@@ -194,7 +201,7 @@ fieldset:disabled video {
     color: #969696;
     text-align: center;
     font-size: 11px;
-    margin: 75px 0 24px 0;
+    margin: 24px 0;
 }
 
 #copyright a {

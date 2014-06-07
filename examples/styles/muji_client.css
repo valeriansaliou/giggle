@@ -8,15 +8,15 @@
   @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
-#fieldset_live .room_container {
+#room_container {
     margin-left: 21px;
 }
 
-#fieldset_live .room_container h6 {
-    margin-bottom: 44px;
+#room_container h6 {
+    margin-bottom: 48px;
 }
 
-#fieldset_live .room_container .video_remote {
+#room_container .video_remote {
     margin: 0 3px 6px 3px;
     float: left;
 }
@@ -87,4 +87,13 @@
 
 #live_unmute {
     display: none;
+}
+
+fieldset:disabled #room_container,
+fieldset:disabled #chat_container {
+    opacity: 0.4;
+}
+
+fieldset:disabled video {
+    opacity: 0.5 !important;
 }
