@@ -115,6 +115,21 @@ var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   media           : /^m=(audio|video|application|data) /i
 };
 
+var R_NETWORK_PROTOCOLS        = {
+  stun: /^stun:/i
+}
+
+var R_NETWORK_IP               = {
+  all: {
+    v4: /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/,
+    v6: /^((?=.*::)(?!.*::.+::)(::)?([\dA-F]{1,4}:(:|\b)|){5}|([\dA-F]{1,4}:){6})((([\dA-F]{1,4}((?!\3)::|:\b|$))|(?!\2\3)){2}|(((2[0-4]|1\d|[1-9])?\d|25[0-5])\.?\b){4})$/i
+  },
+
+  lan: {
+    v4: /(^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)/,
+    v6: /((::1)|(^fe80::))(.+)?/i
+  }
+}
 
 
 /**
@@ -295,18 +310,34 @@ var JSJAC_JINGLE_STANZA_TYPE_RESULT                  = 'result';
 var JSJAC_JINGLE_STANZA_TYPE_SET                     = 'set';
 var JSJAC_JINGLE_STANZA_TYPE_GET                     = 'get';
 
+var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST             = 'host';
+var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX            = 'srflx';
+
+var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_LOCAL           = 'IN';
+var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE          = 'IN';
+var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_V4           = 'IP4';
+var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_V6           = 'IP6';
+
+var JSJAC_JINGLE_SDP_CANDIDATE_IP_V4                 = '0.0.0.0';
+var JSJAC_JINGLE_SDP_CANDIDATE_IP_V6                 = '::';
+
+var JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT            = JSJAC_JINGLE_SDP_CANDIDATE_IP_V4;
+var JSJAC_JINGLE_SDP_CANDIDATE_PORT_DEFAULT          = '1';
+var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT         = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE;
+var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT      = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_V4;
+
 
 
 /**
  * JSJSAC JINGLE CONSTANTS MAPPING
  */
 
-var JSJAC_JINGLE_BROWSERS                           = {};
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_FIREFOX] = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_CHROME]  = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_SAFARI]  = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_OPERA]   = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_IE]      = 1;
+var JSJAC_JINGLE_BROWSERS                                             = {};
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_FIREFOX]                   = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_CHROME]                    = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_SAFARI]                    = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_OPERA]                     = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_IE]                        = 1;
 
 var JSJAC_JINGLE_SENDERS            = {};
 JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_BOTH.jingle]                = JSJAC_JINGLE_SENDERS_BOTH.sdp;
@@ -4091,7 +4122,7 @@ function JSJaCJingle(args) {
         var has_stun = false;
 
         for(i in config.iceServers) {
-          if((config.iceServers[i].url).match(/^stun:/i)) {
+          if((config.iceServers[i].url).match(R_NETWORK_PROTOCOLS.stun)) {
             has_stun = true; break;
           }
         }
@@ -4758,7 +4789,7 @@ function JSJaCJingle(args) {
         var fingerprint = self.util_stanza_get_element(transport, 'fingerprint', NS_JINGLE_APPS_DTLS);
 
         if(fingerprint.length) {
-          payload_obj.transports.fingerprint          = {};
+          payload_obj.transports.fingerprint       = {};
           payload_obj.transports.fingerprint.setup = self.util_stanza_get_attribute(fingerprint, 'setup');
           payload_obj.transports.fingerprint.hash  = self.util_stanza_get_attribute(fingerprint, 'hash');
           payload_obj.transports.fingerprint.value = self.util_stanza_get_value(fingerprint);
@@ -5401,14 +5432,14 @@ function JSJaCJingle(args) {
 
     try {
       var payloads_str = '';
-      var is_common_credentials = (self.util_object_length(payloads) > 1) ? false : true;
+      var is_common_credentials = self._util_is_sdp_common_credentials(payloads);
 
       // Common vars
       var i, c, j, k, l, m, n, o, p, q, r, s, t, u,
           cur_name, cur_name_first, cur_name_obj,
           cur_media, cur_senders,
           cur_group_semantics, cur_group_names, cur_group_name,
-          cur_transports_obj, cur_transports_obj_first, cur_description_obj,
+          cur_network_obj, cur_transports_obj, cur_transports_obj_first, cur_description_obj,
           cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
           cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption,
           cur_d_ssrc, cur_d_ssrc_id, cur_d_ssrc_obj, cur_d_ssrc_group, cur_d_ssrc_group_semantics, cur_d_ssrc_group_obj,
@@ -5469,6 +5500,9 @@ function JSJaCJingle(args) {
         // No media?
         if(!cur_media) continue;
 
+        // Network
+        cur_network_obj       = self._util_network_extract_main(cur_name, sdp_candidates);
+
         // Transports
         cur_transports_obj    = cur_name_obj.transports || {};
         cur_d_pwd             = cur_transports_obj.pwd;
@@ -5490,15 +5524,24 @@ function JSJaCJingle(args) {
         // Current media
         payloads_str += self._util_sdp_generate_description_media(
           cur_media,
+          cur_network_obj.port,
           cur_d_encryption,
           cur_d_fingerprint,
           cur_d_payload
         );
         payloads_str += WEBRTC_SDP_LINE_BREAK;
 
-        payloads_str += 'c=IN IP4 0.0.0.0';
+        payloads_str += 'c=' + 
+                        cur_network_obj.scope + ' ' + 
+                        cur_network_obj.protocol + ' ' + 
+                        cur_network_obj.ip;
         payloads_str += WEBRTC_SDP_LINE_BREAK;
-        payloads_str += 'a=rtcp:1 IN IP4 0.0.0.0';
+
+        payloads_str += 'a=rtcp:' + 
+                        cur_network_obj.port + ' ' + 
+                        cur_network_obj.scope + ' ' + 
+                        cur_network_obj.protocol + ' ' + 
+                        cur_network_obj.ip;
         payloads_str += WEBRTC_SDP_LINE_BREAK;
 
         // Specific credentials?
@@ -5747,9 +5790,9 @@ function JSJaCJingle(args) {
       var username        = jid.getNode()   ? jid.getNode()   : '-';
       var session_id      = '1';
       var session_version = '1';
-      var nettype         = 'IN';
-      var addrtype        = 'IP4';
-      var unicast_address = jid.getDomain() ? jid.getDomain() : '127.0.0.1';
+      var nettype         = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT;
+      var addrtype        = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT;
+      var unicast_address = JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT;
 
       // Line content
       sdp_origin += 'o=';
@@ -5804,14 +5847,14 @@ function JSJaCJingle(args) {
   /**
    * @private
    */
-  self._util_sdp_generate_description_media = function(media, crypto, fingerprint, payload) {
+  self._util_sdp_generate_description_media = function(media, port, crypto, fingerprint, payload) {
     var sdp_media = '';
 
     try {
       var i;
       var type_ids = [];
 
-      sdp_media += 'm=' + media + ' 1 ';
+      sdp_media += 'm=' + media + ' ' + port + ' ';
 
       // Protocol
       if((crypto && crypto.length) || (fingerprint && fingerprint.hash && fingerprint.value))
@@ -5965,6 +6008,119 @@ function JSJaCJingle(args) {
     }
 
     return constraints;
+  };
+
+  /**
+   * @private
+   */
+  self._util_is_sdp_common_credentials = function(payloads) {
+    var is_same = true;
+
+    try {
+      var i,
+          prev_credentials, cur_credentials;
+
+      for(i in payloads) {
+        cur_credentials = payloads[i].transports;
+
+        if(typeof prev_credentials == 'object') {
+          if((prev_credentials.ufrag !== cur_credentials.ufrag)  ||
+             (prev_credentials.pwd !== cur_credentials.pwd  )    ||
+             (JSON.stringify(prev_credentials.fingerprint) !== JSON.stringify(cur_credentials.fingerprint)
+            )) {
+            is_same = false;
+            break;
+          }
+        }
+
+        prev_credentials = cur_credentials;
+      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_is_sdp_common_credentials > ' + e, 1);
+    }
+
+    return is_same;
+  };
+
+  /**
+   * @private
+   */
+  self._util_network_extract_main = function(media, candidates) {
+    var network_obj = {
+      'ip': JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT,
+      'port': JSJAC_JINGLE_SDP_CANDIDATE_PORT_DEFAULT,
+      'scope': JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT,
+      'protocol': JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT
+    };
+
+    var local_obj, remote_obj;
+
+    try {
+      var i,
+          cur_candidate, cur_candidate_parse;
+
+      var fn_proceed_parse = function(type, candidate_eval) {
+        var r_lan, protocol;
+
+        var parse_obj = {
+          'ip': candidate_eval.ip,
+          'port': candidate_eval.port
+        };
+
+        if(candidate_eval.ip.match(R_NETWORK_IP.all.v4)) {
+          r_lan = R_NETWORK_IP.lan.v4;
+          parse_obj.protocol = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_V4;
+        } else if(candidate_eval.ip.match(R_NETWORK_IP.all.v6)) {
+          r_lan = R_NETWORK_IP.lan.v6;
+          parse_obj.protocol = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_V6;
+        } else {
+          return;
+        }
+
+        if((type === JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST) &&
+           candidate_eval.ip.match(r_lan)) {
+          // Local
+          parse_obj.scope = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_LOCAL;
+        } else if(type === JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX) {
+          // Remote
+          parse_obj.scope = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE;
+        } else {
+          return;
+        }
+
+        return parse_obj;
+      };
+
+      for(i in candidates) {
+        cur_candidate = candidates[i];
+
+        if(cur_candidate.id == media || cur_candidate.label == media) {
+          cur_candidate_parse = self._util_sdp_parse_candidate(cur_candidate.candidate);
+
+          if(cur_candidate_parse.type === JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST) {
+            // Only proceed if no local network yet
+            if(typeof local_obj == 'undefined') {
+              local_obj = fn_proceed_parse(JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST, cur_candidate_parse);
+            }
+          } else if(cur_candidate_parse.type === JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX) {
+            // Only proceed if no remote network yet
+            if(typeof remote_obj == 'undefined') {
+              remote_obj = fn_proceed_parse(JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX, cur_candidate_parse);
+            }
+          }
+        }
+      }
+
+      if(typeof remote_obj != 'undefined') {
+        network_obj = remote_obj;
+      } else if(typeof local_obj != 'undefined') {
+        network_obj = local_obj;
+      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_network_extract_main > ' + e, 1);
+    }
+
+    return network_obj;
   };
 
   /**
@@ -6721,18 +6877,18 @@ function JSJaCJingle(args) {
 
       // Matches!
       if(matches) {
-        candidate.component  = matches[2]  || error++;
-        candidate.foundation = matches[1]  || error++;
-        candidate.generation = matches[16] || JSJAC_JINGLE_GENERATION;
-        candidate.id         = self.util_generate_id();
-        candidate.ip         = matches[5]  || error++;
-        candidate.network    = JSJAC_JINGLE_NETWORK;
-        candidate.port       = matches[6]  || error++;
-        candidate.priority   = matches[4]  || error++;
-        candidate.protocol   = matches[3]  || error++;
+        candidate.component     = matches[2]  || error++;
+        candidate.foundation    = matches[1]  || error++;
+        candidate.generation    = matches[16] || JSJAC_JINGLE_GENERATION;
+        candidate.id            = self.util_generate_id();
+        candidate.ip            = matches[5]  || error++;
+        candidate.network       = JSJAC_JINGLE_NETWORK;
+        candidate.port          = matches[6]  || error++;
+        candidate.priority      = matches[4]  || error++;
+        candidate.protocol      = matches[3]  || error++;
         candidate['rel-addr']   = matches[11];
         candidate['rel-port']   = matches[13];
-        candidate.type       = matches[8]  || error++;
+        candidate.type          = matches[8]  || error++;
       }
 
       // Incomplete?
