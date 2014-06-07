@@ -5411,7 +5411,7 @@ function JSJaCJingle(args) {
           cur_transports_obj, cur_transports_obj_first, cur_description_obj,
           cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
           cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption,
-          cur_d_ssrc, cur_d_ssrc_obj, cur_d_ssrc_group, cur_d_ssrc_group_semantics, cur_d_ssrc_group_obj,
+          cur_d_ssrc, cur_d_ssrc_id, cur_d_ssrc_obj, cur_d_ssrc_group, cur_d_ssrc_group_semantics, cur_d_ssrc_group_obj,
           cur_d_rtcp_fb_obj,
           cur_d_payload, cur_d_payload_obj, cur_d_payload_obj_attrs, cur_d_payload_obj_id,
           cur_d_payload_obj_parameter, cur_d_payload_obj_parameter_obj, cur_d_payload_obj_parameter_str,
