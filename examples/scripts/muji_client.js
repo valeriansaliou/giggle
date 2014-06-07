@@ -21,6 +21,7 @@ var ARGS = {
     remote_view : null,
     resolution  : 'md',
     sdp_trace   : (url_param('sdp') == '1'),
+    net_trace   : (url_param('net') == '1'),
     debug       : (new JSJaCConsoleLogger(4)),
 
     // Custom handlers (optional)
@@ -166,8 +167,9 @@ function url_param(name) {
     try {
         var uri_param = (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [,null])[1];
 
-        if(uri_param)
+        if(uri_param) {
             return decodeURI(uri_param);
+        }
 
         return null;
     } catch(e) {
