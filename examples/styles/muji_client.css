@@ -8,64 +8,81 @@
   @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
-#roster_call {
-    list-style: none;
-    margin-top: 26px;
-    display: none;
+#fieldset_live .room_container {
+    margin-left: 21px;
 }
 
-#roster_call.disabled {
-    opacity: 0.6;
+#fieldset_live .room_container h6 {
+    margin-bottom: 44px;
 }
 
-#roster_call li {
-    margin: 7px 0;
+#fieldset_live .room_container .video_remote {
+    margin: 0 3px 6px 3px;
+    float: left;
 }
 
-#roster_call li a {
-    color: #413f5b;
-    text-decoration: none;
-    font-size: 0.9em;
-    display: inline-block;
-}
-
-#roster_call.disabled li a {
-    cursor: default;
-}
-
-#roster_call li a:hover,
-#roster_call li a:active {
-    text-decoration: underline;
-}
-
-#roster_call.disabled li a:hover,
-#roster_call.disabled li a:active {
-    text-decoration: none;
-}
-
-.video_container {
-    width: 642px;
-    height: 362px;
-    margin: 0 auto 8px auto;
+#chat_container {
+    border-width: 1px 0;
+    border-style: solid;
+    border-color: #e6e6e6;
+    text-align: left;
+    height: 108px;
+    margin-top: 20px;
+    margin-bottom: 10px;
     position: relative;
 }
 
+#chat_box {
+    position: absolute;
+    left: 188px;
+    right: 8px;
+    top: 8px;
+    bottom: 8px;
+}
+
+#chat_messages,
+#chat_form {
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
+#chat_messages {
+    border-bottom: 1px solid #e5e5e5;
+    overflow: auto;
+    bottom: 30px;
+    top: 0;
+}
+
+#chat_messages p.message {
+    font-size: 12px;
+    margin: 0 0 2px 0;
+}
+
+#chat_messages p.message b.name {
+    border-right: 1px solid #e5e5e5;
+    margin-right: 8px;
+    padding-right: 8px;
+}
+
+#chat_form {
+    bottom: 0;
+}
+
+#chat_form input {
+    width: 400px;
+    padding-top: 2px;
+    padding-bottom: 3px;
+}
+
+#chat_form button {
+    width: 90px;
+}
+
 #video_local {
-    opacity: 0.6;
     position: absolute;
     left: 8px;
     bottom: 8px;
-    -webkit-transition: all 0.4s ease-in-out 0.2s;
-    -moz-transition: all 0.4s ease-in-out 0.2s;
-    -o-transition: all 0.4s ease-in-out 0.2s;
-    transition: all 0.4s ease-in-out 0.2s;
-}
-
-#video_local:hover {
-    width: 320px;
-    height: 180px;
-    opacity: 1;
-    cursor: pointer;
 }
 
 #live_unmute {

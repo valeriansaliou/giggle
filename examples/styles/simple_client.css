@@ -8,41 +8,6 @@
   @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
-#roster_call {
-    list-style: none;
-    margin-top: 26px;
-    display: none;
-}
-
-#roster_call.disabled {
-    opacity: 0.6;
-}
-
-#roster_call li {
-    margin: 7px 0;
-}
-
-#roster_call li a {
-    color: #413f5b;
-    text-decoration: none;
-    font-size: 0.9em;
-    display: inline-block;
-}
-
-#roster_call.disabled li a {
-    cursor: default;
-}
-
-#roster_call li a:hover,
-#roster_call li a:active {
-    text-decoration: underline;
-}
-
-#roster_call.disabled li a:hover,
-#roster_call.disabled li a:active {
-    text-decoration: none;
-}
-
 .video_container {
     width: 642px;
     height: 362px;

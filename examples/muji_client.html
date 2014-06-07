@@ -80,17 +80,16 @@
   </fieldset>
 
   <fieldset id="fieldset_call" disabled>
-    <legend>Call A JID (Jingle/WebRTC)</legend>
+    <legend>Join a call room (Jingle/WebRTC)</legend>
 
     <form id="form_call" action="#">
       <label>
-        <span class="label">Full JID</span>
-        <input name="call_jid" type="text" placeholder="friend@jappix.com/resource" required="" />
+        <span class="label">Room JID</span>
+        <input name="call_room" type="text" placeholder="room@muc.jappix.com" value="1_room_jsjacjingle@muc.jappix.com" required="" />
       </label>
 
-      <button name="call_audio" type="submit">Audio Call</button>
+      <button name="call_audio" type="submit">Audio Only</button>
       <button name="call_video" type="submit">Video Call</button>
-      <button name="call_screen" type="submit">Screen Share</button>
 
       <div id="call_error" class="error call_notif"></div>
       <div id="call_success" class="success call_notif"></div>
@@ -101,25 +100,74 @@
   </fieldset>
 
   <fieldset id="fieldset_live" disabled>
-    <legend>See Me Live!</legend>
+    <legend>Room Participants</legend>
 
-    <div class="video_container">
-      <video id="video_remote" src="" alt="" width="640" height="360" poster="./images/video_poster_big.png">
-        <h6>Your browser does not support the video element :(</h6>
-      </video>
+    <div class="room_container">
+      <!--<div class="video_remote_container">
+        <video class="video_remote" src="" alt="" width="320" height="180" poster="./images/video_poster_big.png"></video>
+      </div>-->
 
+      <h6>Nobody there, except you.</h6>
+
+      <div class="clear"></div>
+    </div>
+
+    <div id="chat_container">
       <video id="video_local" src="" alt="" width="160" height="90" poster="./images/video_poster_small.png"></video>
+
+      <div id="chat_box">
+        <div id="chat_messages">
+          <p class="message">
+            <b class="name">webrtc.2</b>
+            <span class="text">Hello buddies!</span>
+          </p>
+
+          <p class="message">
+            <b class="name">webrtc.2</b>
+            <span class="text">Hello buddies!</span>
+          </p>
+
+          <p class="message">
+            <b class="name">webrtc.2</b>
+            <span class="text">Hello buddies!</span>
+          </p>
+
+          <p class="message">
+            <b class="name">webrtc.2</b>
+            <span class="text">Hello buddies!</span>
+          </p>
+
+          <p class="message">
+            <b class="name">webrtc.2</b>
+            <span class="text">Hello buddies!</span>
+          </p>
+
+          <p class="message">
+            <b class="name">webrtc.2</b>
+            <span class="text">Hello buddies!</span>
+          </p>
+        </div>
+
+        <form id="chat_form" action="#" method="post">
+          <input name="message" type="text" placeholder="Enter your message..."></textarea>
+          <button type="submit">Send</button>
+        </form>
+      </div>
     </div>
 
     <form id="form_live" action="#">
       <button id="live_mute">Mute</button>
       <button id="live_unmute">Unmute</button>
 
-      <button type="submit">Terminate</button>
+      <button type="submit">Leave</button>
 
       <div id="live_error" class="error live_notif"></div>
       <div id="live_success" class="success live_notif"></div>
       <div id="live_info" class="info live_notif"></div>
     </form>
   </fieldset>
+
+  <div id="copyright">
+    © 2014 - <a href="https://frenchtouch.pro/">FrenchTouch Web Agency</a> and the <a href="https://jappix.org/">Jappix Project</a> team.
+  </div>
 </body>

@@ -20,6 +20,11 @@ body {
     position: relative;
 }
 
+.clear {
+    clear: both;
+    display: block;
+}
+
 img {
     width: 61px;
     height: 70px;
@@ -40,6 +45,13 @@ h4 {
     font-weight: normal;
     text-transform: uppercase;
     margin: 0 0 24px 0;
+}
+
+h6 {
+    color: #6d6d6d;
+    font-size: 12px;
+    font-weight: normal;
+    text-transform: uppercase;
 }
 
 hr {
@@ -139,6 +151,53 @@ fieldset:disabled video {
     color: #0047ae;
 }
 
+#roster_call {
+    list-style: none;
+    margin-top: 26px;
+    display: none;
+}
+
+#roster_call.disabled {
+    opacity: 0.6;
+}
+
+#roster_call li {
+    margin: 7px 0;
+}
+
+#roster_call li a {
+    color: #413f5b;
+    text-decoration: none;
+    font-size: 0.9em;
+    display: inline-block;
+}
+
+#roster_call.disabled li a {
+    cursor: default;
+}
+
+#roster_call li a:hover,
+#roster_call li a:active {
+    text-decoration: underline;
+}
+
+#roster_call.disabled li a:hover,
+#roster_call.disabled li a:active {
+    text-decoration: none;
+}
+
 #login_disconnect {
     display: none;
+}
+
+#copyright {
+    color: #969696;
+    text-align: center;
+    font-size: 11px;
+    margin: 75px 0 24px 0;
+}
+
+#copyright a {
+    color: #808080;
+    font-weight: bold;
 }
