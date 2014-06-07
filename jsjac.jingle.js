@@ -117,7 +117,7 @@ var R_WEBRTC_SDP_ICE_PAYLOAD   = {
 
 var R_NETWORK_PROTOCOLS        = {
   stun: /^stun:/i
-}
+};
 
 var R_NETWORK_IP               = {
   all: {
@@ -129,7 +129,7 @@ var R_NETWORK_IP               = {
     v4: /(^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)/,
     v6: /((::1)|(^fe80::))(.+)?/i
   }
-}
+};
 
 
 /**
