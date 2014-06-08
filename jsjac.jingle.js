@@ -151,11 +151,13 @@ var NS_JINGLE_APPS_STUB                             = 'urn:xmpp:jingle:apps:stub
 var NS_JINGLE_APPS_DTLS                             = 'urn:xmpp:tmp:jingle:apps:dtls:0';
 var NS_JINGLE_APPS_GROUPING                         = 'urn:xmpp:jingle:apps:grouping:0';
 
+var NS_JINGLE_TRANSPORTS_RAWUDP                     = 'urn:xmpp:jingle:transports:raw-udp:1';
 var NS_JINGLE_TRANSPORTS_ICEUDP                     = 'urn:xmpp:jingle:transports:ice-udp:1';
 var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transports:stub:0';
 
 var NS_JINGLE_SECURITY_STUB                         = 'urn:xmpp:jingle:security:stub:0';
 
+var NS_JABBER_JINGLENODES                           = 'http://jabber.org/protocol/jinglenodes';
 var NS_TELEPATHY_MUJI                               = 'http://telepathy.freedesktop.org/muji';
 
 var NS_EXTDISCO                                     = 'urn:xmpp:extdisco:1';
@@ -174,6 +176,9 @@ var MAP_DISCO_JINGLE                                = [
   NS_JINGLE_APPS_RTP,
   NS_JINGLE_APPS_RTP_AUDIO,
   NS_JINGLE_APPS_RTP_VIDEO,
+
+  /* http://xmpp.org/extensions/xep-0177.html */
+  NS_JINGLE_TRANSPORTS_RAWUDP,
 
   /* http://xmpp.org/extensions/xep-0176.html#support */
   NS_JINGLE_TRANSPORTS_ICEUDP,
@@ -199,6 +204,9 @@ var MAP_DISCO_JINGLE                                = [
 
   /* http://xmpp.org/extensions/xep-0272.html */
   NS_TELEPATHY_MUJI,
+
+  /* http://xmpp.org/extensions/xep-0278.html */
+  NS_JABBER_JINGLENODES,
 
   /* http://xmpp.org/extensions/xep-0215.html */
   NS_EXTDISCO
