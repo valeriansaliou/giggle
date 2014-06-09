@@ -4263,11 +4263,13 @@ function JSJaCJingle(args) {
     if(stanza.length)  stanza = stanza[0];
 
     try {
+      var i;
+
       // Get only in lower level (not all sub-levels)
       var matches = stanza.getElementsByTagNameNS(ns, name);
 
       if(matches && matches.length) {
-        for(var i in matches) {
+        for(i = 0; i < matches.length; i++) {
           if(matches[i] && matches[i].parentNode == stanza)
             matches_result.push(matches[i]);
         }
