@@ -91,7 +91,7 @@ var WEBRTC_SDP_LINE_BREAK      = '\r\n';
 var WEBRTC_SDP_TYPE_OFFER      = 'offer';
 var WEBRTC_SDP_TYPE_ANSWER     = 'answer';
 
-var R_WEBRTC_SDP_ICE_CANDIDATE = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\d{1,10}) ([a-zA-Z0-9:\.]{1,45}) (\d{1,5}) (typ) (host|srflx|prflx|relay)( (raddr) ([a-zA-Z0-9:\.]{1,45}) (rport) (\d{1,5}))?( (generation) (\d))?/i;
+var R_WEBRTC_SDP_CANDIDATE     = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\d{1,10}) ([a-zA-Z0-9:\.]{1,45}) (\d{1,5}) (typ) (host|srflx|prflx|relay)( (raddr) ([a-zA-Z0-9:\.]{1,45}) (rport) (\d{1,5}))?( (generation) (\d))?/i;
 
 var R_WEBRTC_SDP_ICE_PAYLOAD   = {
   rtpmap          : /^a=rtpmap:(\d+) (([^\s\/]+)\/(\d+)(\/([^\s\/]+))?)?/i,
@@ -320,11 +320,41 @@ var JSJAC_JINGLE_STANZA_TYPE_GET                     = 'get';
 
 var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST             = 'host';
 var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX            = 'srflx';
+var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_PRFLX            = 'prflx';
+var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_RELAY            = 'relay';
+
+var JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE            = 'ice';
+var JSJAC_JINGLE_SDP_CANDIDATE_METHOD_RAW            = 'raw';
+
+var JSJAC_JINGLE_SDP_CANDIDATE_MAP_ICEUDP            = [
+  { n: 'component',  r: 1 },
+  { n: 'foundation', r: 1 },
+  { n: 'generation', r: 1 },
+  { n: 'id',         r: 1 },
+  { n: 'ip',         r: 1 },
+  { n: 'network',    r: 1 },
+  { n: 'port',       r: 1 },
+  { n: 'priority',   r: 1 },
+  { n: 'protocol',   r: 1 },
+  { n: 'rel-addr',   r: 0 },
+  { n: 'rel-port',   r: 0 },
+  { n: 'type',       r: 1 }
+];
+var JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP            = [
+  { n: 'component',  r: 1 },
+  { n: 'generation', r: 1 },
+  { n: 'id',         r: 1 },
+  { n: 'ip',         r: 1 },
+  { n: 'port',       r: 1 },
+  { n: 'type',       r: 1 }
+];
 
 var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_LOCAL           = 'IN';
 var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE          = 'IN';
-var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_V4           = 'IP4';
-var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_V6           = 'IP6';
+var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V4          = 'IP4';
+var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V6          = 'IP6';
+var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_TCP          = 'tcp';
+var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_UDP          = 'udp';
 
 var JSJAC_JINGLE_SDP_CANDIDATE_IP_V4                 = '0.0.0.0';
 var JSJAC_JINGLE_SDP_CANDIDATE_IP_V6                 = '::';
@@ -332,7 +362,9 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IP_V6                 = '::';
 var JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT            = JSJAC_JINGLE_SDP_CANDIDATE_IP_V4;
 var JSJAC_JINGLE_SDP_CANDIDATE_PORT_DEFAULT          = '1';
 var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT         = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE;
-var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT      = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_V4;
+var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT     = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V4;
+var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT      = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_UDP;
+var JSJAC_JINGLE_SDP_CANDIDATE_PRIORITY_DEFAULT      = '1';
 
 
 
@@ -340,107 +372,113 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT      = JSJAC_JINGLE_SDP_CANDIDAT
  * JSJSAC JINGLE CONSTANTS MAPPING
  */
 
-var JSJAC_JINGLE_BROWSERS                                             = {};
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_FIREFOX]                   = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_CHROME]                    = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_SAFARI]                    = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_OPERA]                     = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_IE]                        = 1;
+var JSJAC_JINGLE_SDP_CANDIDATE_TYPES  = {};
+JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST]   = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE;
+JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX]  = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE;
+JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_PRFLX]  = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE;
+JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_RELAY]  = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_RAW;
 
-var JSJAC_JINGLE_SENDERS            = {};
-JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_BOTH.jingle]                = JSJAC_JINGLE_SENDERS_BOTH.sdp;
-JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_INITIATOR.jingle]           = JSJAC_JINGLE_SENDERS_INITIATOR.sdp;
-JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_NONE.jingle]                = JSJAC_JINGLE_SENDERS_NONE.sdp;
-JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_RESPONDER.jingle]           = JSJAC_JINGLE_SENDERS_RESPONDER.sdp;
+var JSJAC_JINGLE_BROWSERS             = {};
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_FIREFOX]                      = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_CHROME]                       = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_SAFARI]                       = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_OPERA]                        = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_IE]                           = 1;
 
-var JSJAC_JINGLE_CREATORS           = {};
-JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_INITIATOR]                 = 1;
-JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_RESPONDER]                 = 1;
+var JSJAC_JINGLE_SENDERS              = {};
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_BOTH.jingle]                   = JSJAC_JINGLE_SENDERS_BOTH.sdp;
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_INITIATOR.jingle]              = JSJAC_JINGLE_SENDERS_INITIATOR.sdp;
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_NONE.jingle]                   = JSJAC_JINGLE_SENDERS_NONE.sdp;
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_RESPONDER.jingle]              = JSJAC_JINGLE_SENDERS_RESPONDER.sdp;
 
-var JSJAC_JINGLE_STATUSES           = {};
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INACTIVE]                   = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INITIATING]                 = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INITIATED]                  = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_ACCEPTING]                  = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_ACCEPTED]                   = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATING]                = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATED]                 = 1;
+var JSJAC_JINGLE_CREATORS             = {};
+JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_INITIATOR]                    = 1;
+JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_RESPONDER]                    = 1;
 
-var JSJAC_JINGLE_ACTIONS            = {};
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_ACCEPT]              = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_ADD]                 = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_MODIFY]              = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_REJECT]              = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_REMOVE]              = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_DESCRIPTION_INFO]            = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SECURITY_INFO]               = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_ACCEPT]              = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_INFO]                = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_INITIATE]            = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_TERMINATE]           = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT]            = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_INFO]              = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REJECT]            = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE]           = 1;
+var JSJAC_JINGLE_STATUSES             = {};
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INACTIVE]                      = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INITIATING]                    = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INITIATED]                     = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_ACCEPTING]                     = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_ACCEPTED]                      = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATING]                   = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATED]                    = 1;
 
-var JSJAC_JINGLE_ERRORS             = {};
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_OUT_OF_ORDER.jingle]           = 1;
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_TIE_BREAK.jingle]              = 1;
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNKNOWN_SESSION.jingle]        = 1;
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.jingle]       = 1;
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_SECURITY_REQUIRED.jingle]      = 1;
+var JSJAC_JINGLE_ACTIONS              = {};
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_ACCEPT]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_ADD]                    = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_MODIFY]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_REJECT]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_REMOVE]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_DESCRIPTION_INFO]               = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SECURITY_INFO]                  = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_ACCEPT]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_INFO]                   = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_INITIATE]               = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_TERMINATE]              = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT]               = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_INFO]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REJECT]               = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE]              = 1;
 
-var XMPP_ERRORS                     = {};
-XMPP_ERRORS[XMPP_ERROR_UNEXPECTED_REQUEST.xmpp]                       = 1;
-XMPP_ERRORS[XMPP_ERROR_CONFLICT.xmpp]                                 = 1;
-XMPP_ERRORS[XMPP_ERROR_ITEM_NOT_FOUND.xmpp]                           = 1;
-XMPP_ERRORS[XMPP_ERROR_NOT_ACCEPTABLE.xmpp]                           = 1;
-XMPP_ERRORS[XMPP_ERROR_FEATURE_NOT_IMPLEMENTED.xmpp]                  = 1;
-XMPP_ERRORS[XMPP_ERROR_SERVICE_UNAVAILABLE.xmpp]                      = 1;
-XMPP_ERRORS[XMPP_ERROR_REDIRECT.xmpp]                                 = 1;
-XMPP_ERRORS[XMPP_ERROR_RESOURCE_CONSTRAINT.xmpp]                      = 1;
-XMPP_ERRORS[XMPP_ERROR_BAD_REQUEST.xmpp]                              = 1;
+var JSJAC_JINGLE_ERRORS               = {};
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_OUT_OF_ORDER.jingle]              = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_TIE_BREAK.jingle]                 = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNKNOWN_SESSION.jingle]           = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.jingle]          = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_SECURITY_REQUIRED.jingle]         = 1;
 
-var JSJAC_JINGLE_REASONS            = {};
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION]         = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_BUSY]                        = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_CANCEL]                      = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR]          = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_DECLINE]                     = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_EXPIRED]                     = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_FAILED_APPLICATION]          = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_FAILED_TRANSPORT]            = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_GENERAL_ERROR]               = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_GONE]                        = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS]     = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_MEDIA_ERROR]                 = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_SECURITY_ERROR]              = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_SUCCESS]                     = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_TIMEOUT]                     = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS]    = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS]      = 1;
+var XMPP_ERRORS                       = {};
+XMPP_ERRORS[XMPP_ERROR_UNEXPECTED_REQUEST.xmpp]                          = 1;
+XMPP_ERRORS[XMPP_ERROR_CONFLICT.xmpp]                                    = 1;
+XMPP_ERRORS[XMPP_ERROR_ITEM_NOT_FOUND.xmpp]                              = 1;
+XMPP_ERRORS[XMPP_ERROR_NOT_ACCEPTABLE.xmpp]                              = 1;
+XMPP_ERRORS[XMPP_ERROR_FEATURE_NOT_IMPLEMENTED.xmpp]                     = 1;
+XMPP_ERRORS[XMPP_ERROR_SERVICE_UNAVAILABLE.xmpp]                         = 1;
+XMPP_ERRORS[XMPP_ERROR_REDIRECT.xmpp]                                    = 1;
+XMPP_ERRORS[XMPP_ERROR_RESOURCE_CONSTRAINT.xmpp]                         = 1;
+XMPP_ERRORS[XMPP_ERROR_BAD_REQUEST.xmpp]                                 = 1;
 
-var JSJAC_JINGLE_SESSION_INFOS      = {};
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_ACTIVE]          = 1;
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_HOLD]            = 1;
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_MUTE]            = 1;
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_RINGING]         = 1;
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNHOLD]          = 1;
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]          = 1;
+var JSJAC_JINGLE_REASONS              = {};
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION]            = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_BUSY]                           = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_CANCEL]                         = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR]             = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_DECLINE]                        = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_EXPIRED]                        = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_FAILED_APPLICATION]             = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_FAILED_TRANSPORT]               = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_GENERAL_ERROR]                  = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_GONE]                           = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS]        = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_MEDIA_ERROR]                    = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_SECURITY_ERROR]                 = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_SUCCESS]                        = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_TIMEOUT]                        = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS]       = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS]         = 1;
 
-var JSJAC_JINGLE_MEDIAS             = {};
-JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                         = { label: '0' };
-JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                         = { label: '1' };
+var JSJAC_JINGLE_SESSION_INFOS        = {};
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_ACTIVE]             = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_HOLD]               = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_MUTE]               = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_RINGING]            = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNHOLD]             = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]             = 1;
 
-var JSJAC_JINGLE_VIDEO_SOURCES      = {};
-JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_CAMERA]          = 1;
-JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_SCREEN]          = 1;
+var JSJAC_JINGLE_MEDIAS               = {};
+JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                            = { label: '0' };
+JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                            = { label: '1' };
 
-var JSJAC_JINGLE_STANZAS            = {};
-JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_ALL]                    = 1;
-JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_RESULT]                 = 1;
-JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_SET]                    = 1;
-JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_GET]                    = 1;
+var JSJAC_JINGLE_VIDEO_SOURCES        = {};
+JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_CAMERA]             = 1;
+JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_SCREEN]             = 1;
+
+var JSJAC_JINGLE_STANZAS              = {};
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_ALL]                       = 1;
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_RESULT]                    = 1;
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_SET]                       = 1;
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_GET]                       = 1;
 
 
 
@@ -4817,37 +4855,31 @@ function JSJaCJingle(args) {
     var candidate_arr = [];
 
     try {
-      // Common vars
-      var i,
-          transport, candidate,
-          cur_candidate, cur_candidate_obj;
+      var fn_parse_transport = function(namespace, parse_obj) {
+        var transport = self.util_stanza_get_element(stanza_content, 'transport', namespace);
+        
+        if(transport.length) {
+          self._util_stanza_parse_node(
+            transport,
+            'candidate',
+            namespace,
+            candidate_arr,
+            parse_obj
+          );
+        }
+      };
 
-      // Parse transport candidates
-      transport = self.util_stanza_get_element(stanza_content, 'transport', NS_JINGLE_TRANSPORTS_ICEUDP);
-      
-      if(transport.length) {
-        self._util_stanza_parse_node(
-          transport,
-          'candidate',
-          NS_JINGLE_TRANSPORTS_ICEUDP,
-          candidate_arr,
+      // Parse ICE-UDP transport candidates
+      fn_parse_transport(
+        NS_JINGLE_TRANSPORTS_ICEUDP,
+        JSJAC_JINGLE_SDP_CANDIDATE_MAP_ICEUDP
+      );
 
-          [
-            { n: 'component',  r: 1 },
-            { n: 'foundation', r: 1 },
-            { n: 'generation', r: 1 },
-            { n: 'id',         r: 1 },
-            { n: 'ip',         r: 1 },
-            { n: 'network',    r: 1 },
-            { n: 'port',       r: 1 },
-            { n: 'priority',   r: 1 },
-            { n: 'protocol',   r: 1 },
-            { n: 'rel-addr',   r: 0 },
-            { n: 'rel-port',   r: 0 },
-            { n: 'type',       r: 1 }
-          ]
-        );
-      }
+      // Parse RAW-UDP transport candidates
+      fn_parse_transport(
+        NS_JINGLE_TRANSPORTS_RAWUDP,
+        JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP
+      );
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_stanza_parse_candidate > ' + e, 1);
     }
@@ -5112,34 +5144,52 @@ function JSJaCJingle(args) {
         }
 
         // Build transport
-        var cs_transport = cur_content.transport;
+        var cs_transport = self._util_generate_transport(cur_content.transport);
 
-        var transport = self._util_stanza_build_node(
-                          stanza,
-                          content,
-                          [cs_transport.attrs],
-                          'transport',
-                          NS_JINGLE_TRANSPORTS_ICEUDP
-                        );
+        var fn_build_transport = function(transport_obj, namespace) {
+          var transport = self._util_stanza_build_node(
+            stanza,
+            content,
+            [transport_obj.attrs],
+            'transport',
+            namespace
+          );
 
-        // Fingerprint
-        self._util_stanza_build_node(
-          stanza,
-          transport,
-          [cs_transport.fingerprint],
-          'fingerprint',
-          NS_JINGLE_APPS_DTLS,
-          'value'
-        );
+          // Fingerprint
+          self._util_stanza_build_node(
+            stanza,
+            transport,
+            [transport_obj.fingerprint],
+            'fingerprint',
+            NS_JINGLE_APPS_DTLS,
+            'value'
+          );
 
-        // Candidates
-        self._util_stanza_build_node(
-          stanza,
-          transport,
-          cs_transport.candidate,
-          'candidate',
-          NS_JINGLE_TRANSPORTS_ICEUDP
-        );
+          // Candidates
+          self._util_stanza_build_node(
+            stanza,
+            transport,
+            transport_obj.candidate,
+            'candidate',
+            namespace
+          );
+        };
+
+        // Transport candidates: ICE-UDP
+        if((cs_transport.ice.candidate).length > 0) {
+          fn_build_transport(
+            cs_transport.ice,
+            NS_JINGLE_TRANSPORTS_ICEUDP
+          );
+        }
+
+        // Transport candidates: RAW-UDP
+        if((cs_transport.raw.candidate).length > 0) {
+          fn_build_transport(
+            cs_transport.raw,
+            NS_JINGLE_TRANSPORTS_RAWUDP
+          );
+        }
       }
     } catch(e) {
       self.get_debug().log('[JSJaCJingle] _util_stanza_generate_content_local > ' + e, 1);
@@ -5225,6 +5275,59 @@ function JSJaCJingle(args) {
     }
 
     return content_obj;
+  };
+
+  /**
+   * @private
+   */
+  self._util_generate_transport = function(transport_init_obj) {
+    var transport_obj = {
+      'ice': {},
+      'raw': {}
+    };
+
+    try {
+      var i, j, k,
+          cur_attr,
+          cur_candidate, cur_transport;
+
+      // Reduce RAW-UDP map object for simpler search
+      var rawudp_map = {};
+      for(i in JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP) {
+        rawudp_map[JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP[i].n] = 1;
+      }
+
+      var fn_init_obj = function(transport_sub_obj) {
+        transport_sub_obj.attrs = transport_init_obj.attrs;
+        transport_sub_obj.fingerprint = transport_init_obj.fingerprint;
+        transport_sub_obj.candidate = [];
+      };
+
+      for(j in transport_obj)
+        fn_init_obj(transport_obj[j]);
+
+      // Nest candidates in their category
+      for(k = 0; k < (transport_init_obj.candidate).length; k++) {
+        cur_candidate = self.util_object_clone(transport_init_obj.candidate[k]);
+
+        if(cur_candidate.type in JSJAC_JINGLE_SDP_CANDIDATE_TYPES) {
+          // Remove attributes that are not required by RAW-UDP (XEP-0177 compliance)
+          if(JSJAC_JINGLE_SDP_CANDIDATE_TYPES[cur_candidate.type] === JSJAC_JINGLE_SDP_CANDIDATE_METHOD_RAW) {
+            for(cur_attr in cur_candidate) {
+              if(typeof rawudp_map[cur_attr] == 'undefined')
+                delete cur_candidate[cur_attr];
+            }
+          }
+
+          cur_transport = transport_obj[JSJAC_JINGLE_SDP_CANDIDATE_TYPES[cur_candidate.type]];
+          cur_transport.candidate.push(cur_candidate);
+        }
+      }
+    } catch(e) {
+      self.get_debug().log('[JSJaCJingle] _util_generate_transport > ' + e, 1);
+    }
+
+    return transport_obj;
   };
 
   /**
@@ -5382,21 +5485,24 @@ function JSJaCJingle(args) {
           cur_candidate_str = '';
 
           cur_candidate_str += 'a=candidate:';
-          cur_candidate_str += cur_candidate.foundation;
+          cur_candidate_str += (cur_candidate.foundation || cur_candidate.id);
           cur_candidate_str += ' ';
           cur_candidate_str += cur_candidate.component;
           cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate.protocol;
+          cur_candidate_str += cur_candidate.protocol || JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT;
           cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate.priority;
+          cur_candidate_str += cur_candidate.priority || JSJAC_JINGLE_SDP_CANDIDATE_PRIORITY_DEFAULT;
           cur_candidate_str += ' ';
           cur_candidate_str += cur_candidate.ip;
           cur_candidate_str += ' ';
           cur_candidate_str += cur_candidate.port;
-          cur_candidate_str += ' ';
-          cur_candidate_str += 'typ';
-          cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate.type;
+
+          if(cur_candidate.type) {
+            cur_candidate_str += ' ';
+            cur_candidate_str += 'typ';
+            cur_candidate_str += ' ';
+            cur_candidate_str += cur_candidate.type;
+          }
 
           if(cur_candidate['rel-addr'] && cur_candidate['rel-port']) {
             cur_candidate_str += ' ';
@@ -5799,7 +5905,7 @@ function JSJaCJingle(args) {
       var session_id      = '1';
       var session_version = '1';
       var nettype         = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT;
-      var addrtype        = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT;
+      var addrtype        = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT;
       var unicast_address = JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT;
 
       // Line content
@@ -6058,7 +6164,7 @@ function JSJaCJingle(args) {
       'ip': JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT,
       'port': JSJAC_JINGLE_SDP_CANDIDATE_PORT_DEFAULT,
       'scope': JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT,
-      'protocol': JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT
+      'protocol': JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT
     };
 
     var local_obj, remote_obj;
@@ -6077,10 +6183,10 @@ function JSJaCJingle(args) {
 
         if(candidate_eval.ip.match(R_NETWORK_IP.all.v4)) {
           r_lan = R_NETWORK_IP.lan.v4;
-          parse_obj.protocol = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_V4;
+          parse_obj.protocol = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V4;
         } else if(candidate_eval.ip.match(R_NETWORK_IP.all.v6)) {
           r_lan = R_NETWORK_IP.lan.v6;
-          parse_obj.protocol = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_V6;
+          parse_obj.protocol = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V6;
         } else {
           return;
         }
@@ -6716,7 +6822,7 @@ function JSJaCJingle(args) {
         }
 
         // 'candidate' line? (shouldn't be there)
-        m_candidate = R_WEBRTC_SDP_ICE_CANDIDATE.exec(cur_line);
+        m_candidate = R_WEBRTC_SDP_CANDIDATE.exec(cur_line);
 
         if(m_candidate) {
           self._util_sdp_parse_candidate_store({
@@ -6881,7 +6987,7 @@ function JSJaCJingle(args) {
       if(!sdp_candidate)  return candidate;
 
       var error     = 0;
-      var matches   = R_WEBRTC_SDP_ICE_CANDIDATE.exec(sdp_candidate);
+      var matches   = R_WEBRTC_SDP_CANDIDATE.exec(sdp_candidate);
 
       // Matches!
       if(matches) {
