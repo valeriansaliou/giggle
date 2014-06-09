@@ -158,6 +158,7 @@ var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transport
 var NS_JINGLE_SECURITY_STUB                         = 'urn:xmpp:jingle:security:stub:0';
 
 var NS_JABBER_JINGLENODES                           = 'http://jabber.org/protocol/jinglenodes';
+var NS_JABBER_JINGLENODES_CHANNEL                   = 'http://jabber.org/protocol/jinglenodes#channel';
 var NS_TELEPATHY_MUJI                               = 'http://telepathy.freedesktop.org/muji';
 
 var NS_EXTDISCO                                     = 'urn:xmpp:extdisco:1';
@@ -502,6 +503,10 @@ var JSJAC_JINGLE_STORE_EXTDISCO   = {
 var JSJAC_JINGLE_STORE_FALLBACK   = {
   stun : {},
   turn : {}
+};
+
+var JSJAC_JINGLE_STORE_RELAYNODES = {
+  stun  : {}
 };
 
 var JSJAC_JINGLE_STORE_DEFER      = {
@@ -1576,7 +1581,6 @@ function JSJaCJingle(args) {
 
     return false;
   };
-
 
 
   /**
@@ -4101,6 +4105,7 @@ function JSJaCJingle(args) {
       var stun_config = self.util_object_collect(
         self.get_stun(),
         JSJAC_JINGLE_STORE_EXTDISCO.stun,
+        JSJAC_JINGLE_STORE_RELAYNODES.stun,
         JSJAC_JINGLE_STORE_FALLBACK.stun
       );
 
@@ -4969,6 +4974,35 @@ function JSJaCJingle(args) {
       var cur_media;
       var content_local = override_content ? override_content : self._get_content_local();
 
+      var fn_build_transport = function(content, transport_obj, namespace) {
+        var transport = self._util_stanza_build_node(
+          stanza,
+          content,
+          [transport_obj.attrs],
+          'transport',
+          namespace
+        );
+
+        // Fingerprint
+        self._util_stanza_build_node(
+          stanza,
+          transport,
+          [transport_obj.fingerprint],
+          'fingerprint',
+          NS_JINGLE_APPS_DTLS,
+          'value'
+        );
+
+        // Candidates
+        self._util_stanza_build_node(
+          stanza,
+          transport,
+          transport_obj.candidate,
+          'candidate',
+          namespace
+        );
+      };
+
       for(cur_media in content_local) {
         var cur_content = content_local[cur_media];
 
@@ -5146,38 +5180,10 @@ function JSJaCJingle(args) {
         // Build transport
         var cs_transport = self._util_generate_transport(cur_content.transport);
 
-        var fn_build_transport = function(transport_obj, namespace) {
-          var transport = self._util_stanza_build_node(
-            stanza,
-            content,
-            [transport_obj.attrs],
-            'transport',
-            namespace
-          );
-
-          // Fingerprint
-          self._util_stanza_build_node(
-            stanza,
-            transport,
-            [transport_obj.fingerprint],
-            'fingerprint',
-            NS_JINGLE_APPS_DTLS,
-            'value'
-          );
-
-          // Candidates
-          self._util_stanza_build_node(
-            stanza,
-            transport,
-            transport_obj.candidate,
-            'candidate',
-            namespace
-          );
-        };
-
         // Transport candidates: ICE-UDP
         if((cs_transport.ice.candidate).length > 0) {
           fn_build_transport(
+            content,
             cs_transport.ice,
             NS_JINGLE_TRANSPORTS_ICEUDP
           );
@@ -5186,6 +5192,7 @@ function JSJaCJingle(args) {
         // Transport candidates: RAW-UDP
         if((cs_transport.raw.candidate).length > 0) {
           fn_build_transport(
+            content,
             cs_transport.raw,
             NS_JINGLE_TRANSPORTS_RAWUDP
           );
@@ -7447,6 +7454,8 @@ function JSJaCJingle_listen(args) {
     // Discover available network services
     if(!args || args.extdisco !== false)
       JSJaCJingle_extdisco();
+    if(!args || args.relaynodes !== false)
+      JSJaCJingle_relaynodes();
     if(args.fallback && typeof args.fallback === 'string')
       JSJaCJingle_fallback(args.fallback);
   } catch(e) {
@@ -7660,6 +7669,79 @@ function JSJaCJingle_extdisco() {
     });
   } catch(e) {
     JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:extdisco > ' + e, 1);
+    
+    // Execute deferred requests
+    JSJaCJingle_defer(false);
+  }
+}
+
+/**
+ * Query the server for Jingle Relay Nodes services
+ */
+function JSJaCJingle_relaynodes() {
+  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:relaynodes > Discovering available Jingle Relay Nodes services...', 2);
+
+  try {
+    // Pending state (defer other requests)
+    JSJaCJingle_defer(true);
+
+    // Build request
+    var request = new JSJaCIQ();
+
+    request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
+    request.setType(JSJAC_JINGLE_STANZA_TYPE_GET);
+
+    request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_JABBER_JINGLENODES }));
+
+    JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
+      try {
+        // Parse response
+        if(response.getType() == JSJAC_JINGLE_STANZA_TYPE_RESULT) {
+          var i,
+              stun_arr, cur_stun,
+              cur_policy, cur_address, cur_protocol;
+
+          var services = response.getChild('services', NS_JABBER_JINGLENODES);
+
+          if(services) {
+            // Parse STUN servers
+            stun_arr = services.getElementsByTagNameNS(NS_JABBER_JINGLENODES, 'stun');
+
+            for(i = 0; i < stun_arr.length; i++) {
+              cur_stun = stun_arr[i];
+
+              cur_policy    = cur_stun.getAttribute('policy')    || null;
+              cur_address   = cur_stun.getAttribute('address')   || null;
+              cur_port      = cur_stun.getAttribute('port')      || null;
+              cur_protocol  = cur_stun.getAttribute('protocol')  || null;
+
+              if(!cur_address || !cur_protocol || !cur_policy || (cur_policy && cur_policy != 'public'))  continue;
+
+              JSJAC_JINGLE_STORE_RELAYNODES.stun[cur_address] = {
+                'port'      : cur_port,
+                'transport' : cur_protocol,
+                'type'      : 'stun'
+              };
+
+              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:relaynodes > handle > STUN service stored (address: ' + cur_address + ', port: ' + cur_port + ', policy: ' + cur_policy + ', protocol: ' + cur_protocol + ').', 4);
+            }
+          }
+
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:relaynodes > handle > Discovered available Jingle Relay Nodes services.', 2);
+        } else {
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:relaynodes > handle > Could not discover Jingle Relay Nodes services (server might not support XEP-0278).', 0);
+        }
+      } catch(e) {
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:relaynodes > handle > ' + e, 1);
+      }
+
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:relaynodes > Ready.', 2);
+
+      // Execute deferred requests
+      JSJaCJingle_defer(false);
+    });
+  } catch(e) {
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle] lib:relaynodes > ' + e, 1);
     
     // Execute deferred requests
     JSJaCJingle_defer(false);
