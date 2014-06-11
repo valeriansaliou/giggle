@@ -21,10 +21,6 @@
   },
 
   "scripts": {
-    "watch": "npm install; grunt watch",
-    "build": "npm install; grunt build",
-    "rebuild": "npm install; grunt rebuild",
-    "clean": "npm install; grunt clean",
     "test": "npm install; grunt test"
   },
 

@@ -9,6 +9,35 @@
 
 module.exports = function(grunt) {
 
+
+  // Map tasks
+  var GRUNT_TASKS_BUILD = {
+    all: ['clean:reset', 'concat', 'copy', 'uglify', 'clean:temporary']
+  };
+
+  var GRUNT_TASKS_TEST = {
+    all: ['build', 'lint']
+  };
+
+  var GRUNT_TASKS_LINT = {
+    js: ['jshint']
+  };
+
+
+  // Map files
+  var GRUNT_SRC_FILES = [
+    'src/jsjac.jingle.header.js',
+    'src/jsjac.jingle.constants.js',
+    'src/jsjac.jingle.base.js',
+    'src/jsjac.jingle.utils.js',
+    'src/jsjac.jingle.peer.js',
+    'src/jsjac.jingle.single.js',
+    'src/jsjac.jingle.muji.js',
+    'src/jsjac.jingle.commons.js',
+    'src/jsjac.jingle.init.js'
+  ];
+
+
   // Project configuration
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -22,14 +51,15 @@ module.exports = function(grunt) {
 
       javascripts: {
         files: 'src/**.js',
-        tasks: ['clean:reset', 'concat', 'uglify']
+        tasks: GRUNT_TASKS_BUILD.all
       }
     },
 
 
     // Task: Clean
     clean: {
-      reset: ['build/*']
+      temporary: ['tmp/'],
+      reset: ['tmp/', 'build/*']
     },
 
 
@@ -42,14 +72,14 @@ module.exports = function(grunt) {
     // Task: Concat
     concat: {
       options: {
-        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n\n'
+        banner: '/*! <%= pkg.name %> (full) - <%= grunt.template.today("yyyy-mm-dd") %> */\n\n'
       },
 
       all: {
-        files: {
-          src: 'src/**.js',
-          dest: 'build/jsjac.jingle.js'
-        }
+        files: [{
+          src: GRUNT_SRC_FILES,
+          dest: 'tmp/jsjac.jingle.js',
+        }]
       }
     },
 
@@ -57,10 +87,10 @@ module.exports = function(grunt) {
     // Task: Copy
     copy: {
       all: {
-        files: {
+        files: [{
           src: 'tmp/jsjac.jingle.js',
           dest: 'build/jsjac.jingle.js'
-        }
+        }]
       }
     },
 
@@ -69,14 +99,14 @@ module.exports = function(grunt) {
     uglify: {
       options: {
         report: 'min',
-        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n\n'
+        banner: '/*! <%= pkg.name %> (minified) - <%= grunt.template.today("yyyy-mm-dd") %> */\n\n'
       },
 
       javascripts: {
-        files: {
+        files: [{
           src: 'tmp/jsjac.jingle.js',
           dest: 'build/jsjac.jingle.min.js'
-        }
+        }]
       }
     }
   });
@@ -91,20 +121,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
 
 
-  // Map tasks
-  var GRUNT_TASKS_BUILD = {
-    all: [['concat',0], ['uglify',0]]
-  };
-
-  var GRUNT_TASKS_TEST = {
-    all: [['lint',0]]
-  };
-
-  var GRUNT_TASKS_LINT = {
-    js: [['jshint',0]]
-  };
-
-
   // Register tasks
   grunt.registerTask('default', function() {
     return grunt.warn('Usage:' + '\n\n' + 'test - grunt test' + '\n\n');
@@ -113,17 +129,16 @@ module.exports = function(grunt) {
   grunt.registerTask('test', function() {
     for(t in GRUNT_TASKS_TEST) {
       for(i in GRUNT_TASKS_TEST[t]) {
-        grunt.task.run(GRUNT_TASKS_TEST[t][i][0] + (GRUNT_TASKS_TEST[t][i][1] ? (':' + t) : ''));
+        grunt.task.run(GRUNT_TASKS_TEST[t][i]);
       }
     }
   });
 
-  grunt.registerTask('build', function(t) {
-    // Force target to 'all'
-    t = 'all';
-
-    for(i in GRUNT_TASKS_BUILD[t]) {
-      grunt.task.run(GRUNT_TASKS_BUILD[t][i][0] + (GRUNT_TASKS_BUILD[t][i][1] ? (':' + t) : ''));
+  grunt.registerTask('build', function() {
+    for(t in GRUNT_TASKS_BUILD) {
+      for(i in GRUNT_TASKS_BUILD[t]) {
+        grunt.task.run(GRUNT_TASKS_BUILD[t][i]);
+      }
     }
   });
 
@@ -144,14 +159,9 @@ module.exports = function(grunt) {
       t = lint_t_all[c];
 
       for(i in GRUNT_TASKS_LINT[t]) {
-        grunt.task.run(GRUNT_TASKS_LINT[t][i][0] + (GRUNT_TASKS_LINT[t][i][1] ? (':' + t) : ''));
+        grunt.task.run(GRUNT_TASKS_LINT[t][i]);
       }
     }
-  });
-
-  grunt.registerTask('rebuild', function() {
-    grunt.task.run('clean:reset');
-    grunt.task.run('build');
   });
 
 };
