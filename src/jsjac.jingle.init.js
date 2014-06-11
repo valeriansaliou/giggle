@@ -12,7 +12,7 @@
  * Query the server for external services
  */
 function JSJaCJingle_extdisco() {
-  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > Discovering available services...', 2);
+  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > Discovering available services...', 2);
 
   try {
     // Pending state (defer other requests)
@@ -53,7 +53,7 @@ function JSJaCJingle_extdisco() {
               if(!cur_host || !cur_type)  continue;
 
               if(!(cur_type in JSJAC_JINGLE_STORE_EXTDISCO)) {
-                JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
+                JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
                 continue;
               }
 
@@ -68,25 +68,25 @@ function JSJaCJingle_extdisco() {
                 JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host].password = cur_password;
               }
 
-              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > handle > Service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
+              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > handle > Service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
             }
           }
 
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > handle > Discovered available services.', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > handle > Discovered available services.', 2);
         } else {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > handle > Could not discover services (server might not support XEP-0215).', 0);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > handle > Could not discover services (server might not support XEP-0215).', 0);
         }
       } catch(e) {
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > handle > ' + e, 1);
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > handle > ' + e, 1);
       }
 
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > Ready.', 2);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > Ready.', 2);
 
       // Execute deferred requests
       JSJaCJingle_defer(false);
     });
   } catch(e) {
-    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > ' + e, 1);
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > ' + e, 1);
     
     // Execute deferred requests
     JSJaCJingle_defer(false);
@@ -97,7 +97,7 @@ function JSJaCJingle_extdisco() {
  * Query the server for Jingle Relay Nodes services
  */
 function JSJaCJingle_relaynodes() {
-  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > Discovering available Jingle Relay Nodes services...', 2);
+  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > Discovering available Jingle Relay Nodes services...', 2);
 
   try {
     // Pending state (defer other requests)
@@ -141,25 +141,25 @@ function JSJaCJingle_relaynodes() {
                 'type'      : 'stun'
               };
 
-              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > handle > STUN service stored (address: ' + cur_address + ', port: ' + cur_port + ', policy: ' + cur_policy + ', protocol: ' + cur_protocol + ').', 4);
+              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > handle > STUN service stored (address: ' + cur_address + ', port: ' + cur_port + ', policy: ' + cur_policy + ', protocol: ' + cur_protocol + ').', 4);
             }
           }
 
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > handle > Discovered available Jingle Relay Nodes services.', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > handle > Discovered available Jingle Relay Nodes services.', 2);
         } else {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > handle > Could not discover Jingle Relay Nodes services (server might not support XEP-0278).', 0);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > handle > Could not discover Jingle Relay Nodes services (server might not support XEP-0278).', 0);
         }
       } catch(e) {
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > handle > ' + e, 1);
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > handle > ' + e, 1);
       }
 
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > Ready.', 2);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > Ready.', 2);
 
       // Execute deferred requests
       JSJaCJingle_defer(false);
     });
   } catch(e) {
-    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > ' + e, 1);
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > ' + e, 1);
     
     // Execute deferred requests
     JSJaCJingle_defer(false);
@@ -170,7 +170,7 @@ function JSJaCJingle_relaynodes() {
  * Query some external APIs for fallback STUN/TURN (must be configured)
  */
 function JSJaCJingle_fallback(fallback_url) {
-  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > Discovering fallback services...', 2);
+  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > Discovering fallback services...', 2);
 
   try {
     // Pending state (defer other requests)
@@ -196,7 +196,7 @@ function JSJaCJingle_fallback(fallback_url) {
               cur_username, cur_password;
 
           if(data.uris && data.uris.length) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Parsing ' + data.uris.length + ' URIs...', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Parsing ' + data.uris.length + ' URIs...', 2);
 
             for(i in data.uris) {
               cur_url = data.uris[i];
@@ -217,7 +217,7 @@ function JSJaCJingle_fallback(fallback_url) {
                   if(!cur_host || !cur_type)  continue;
 
                   if(!(cur_type in JSJAC_JINGLE_STORE_FALLBACK)) {
-                    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
+                    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
                     continue;
                   }
 
@@ -232,24 +232,24 @@ function JSJaCJingle_fallback(fallback_url) {
                     JSJAC_JINGLE_STORE_FALLBACK[cur_type][cur_host].password = cur_password;
                   }
 
-                  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Fallback service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
+                  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Fallback service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
                 } else {
-                  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Fallback service not stored, weird URI (' + cur_url + ').', 0);
+                  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Fallback service not stored, weird URI (' + cur_url + ').', 0);
                 }
               }
             }
 
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Finished parsing URIs.', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Finished parsing URIs.', 2);
           } else {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > No URI to parse.', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > No URI to parse.', 2);
           }
 
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Discovered fallback services.', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Discovered fallback services.', 2);
         } else {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Could not discover fallback services (API malfunction).', 0);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Could not discover fallback services (API malfunction).', 0);
         }
 
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > Ready.', 2);
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > Ready.', 2);
 
         // Execute deferred requests
         JSJaCJingle_defer(false);
@@ -258,6 +258,6 @@ function JSJaCJingle_fallback(fallback_url) {
 
     xhr.send();
   } catch(e) {
-    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > ' + e, 1);
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > ' + e, 1);
   }
 }

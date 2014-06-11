@@ -12,9 +12,1763 @@
  * @depends https://github.com/sstrigler/JSJaC
  */
 
+//     Underscore.js 1.6.0
+//     http://underscorejs.org
+//     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+//     Underscore may be freely distributed under the MIT license.
+
+(function() {
+
+  // Baseline setup
+  // --------------
+
+  // Establish the root object, `window` in the browser, or `exports` on the server.
+  var root = this;
+
+  // Save the previous value of the `_` variable.
+  var previousUnderscore = root._;
+
+  // Establish the object that gets returned to break out of a loop iteration.
+  var breaker = {};
+
+  // Save bytes in the minified (but not gzipped) version:
+  var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
+
+  // Create quick reference variables for speed access to core prototypes.
+  var
+    push             = ArrayProto.push,
+    slice            = ArrayProto.slice,
+    concat           = ArrayProto.concat,
+    toString         = ObjProto.toString,
+    hasOwnProperty   = ObjProto.hasOwnProperty;
+
+  // All **ECMAScript 5** native function implementations that we hope to use
+  // are declared here.
+  var
+    nativeForEach      = ArrayProto.forEach,
+    nativeMap          = ArrayProto.map,
+    nativeReduce       = ArrayProto.reduce,
+    nativeReduceRight  = ArrayProto.reduceRight,
+    nativeFilter       = ArrayProto.filter,
+    nativeEvery        = ArrayProto.every,
+    nativeSome         = ArrayProto.some,
+    nativeIndexOf      = ArrayProto.indexOf,
+    nativeLastIndexOf  = ArrayProto.lastIndexOf,
+    nativeIsArray      = Array.isArray,
+    nativeKeys         = Object.keys,
+    nativeBind         = FuncProto.bind;
+
+  // Create a safe reference to the Underscore object for use below.
+  var _ = function(obj) {
+    if (obj instanceof _) return obj;
+    if (!(this instanceof _)) return new _(obj);
+    this._wrapped = obj;
+  };
+
+  // Export the Underscore object for **Node.js**, with
+  // backwards-compatibility for the old `require()` API. If we're in
+  // the browser, add `_` as a global object via a string identifier,
+  // for Closure Compiler "advanced" mode.
+  if (typeof exports !== 'undefined') {
+    if (typeof module !== 'undefined' && module.exports) {
+      exports = module.exports = _;
+    }
+    exports._ = _;
+  } else {
+    root._ = _;
+  }
+
+  // Current version.
+  _.VERSION = '1.6.0';
+
+  // Collection Functions
+  // --------------------
+
+  // The cornerstone, an `each` implementation, aka `forEach`.
+  // Handles objects with the built-in `forEach`, arrays, and raw objects.
+  // Delegates to **ECMAScript 5**'s native `forEach` if available.
+  var each = _.each = _.forEach = function(obj, iterator, context) {
+    if (obj == null) return obj;
+    if (nativeForEach && obj.forEach === nativeForEach) {
+      obj.forEach(iterator, context);
+    } else if (obj.length === +obj.length) {
+      for (var i = 0, length = obj.length; i < length; i++) {
+        if (iterator.call(context, obj[i], i, obj) === breaker) return;
+      }
+    } else {
+      var keys = _.keys(obj);
+      for (var i = 0, length = keys.length; i < length; i++) {
+        if (iterator.call(context, obj[keys[i]], keys[i], obj) === breaker) return;
+      }
+    }
+    return obj;
+  };
+
+  // Return the results of applying the iterator to each element.
+  // Delegates to **ECMAScript 5**'s native `map` if available.
+  _.map = _.collect = function(obj, iterator, context) {
+    var results = [];
+    if (obj == null) return results;
+    if (nativeMap && obj.map === nativeMap) return obj.map(iterator, context);
+    each(obj, function(value, index, list) {
+      results.push(iterator.call(context, value, index, list));
+    });
+    return results;
+  };
+
+  var reduceError = 'Reduce of empty array with no initial value';
+
+  // **Reduce** builds up a single result from a list of values, aka `inject`,
+  // or `foldl`. Delegates to **ECMAScript 5**'s native `reduce` if available.
+  _.reduce = _.foldl = _.inject = function(obj, iterator, memo, context) {
+    var initial = arguments.length > 2;
+    if (obj == null) obj = [];
+    if (nativeReduce && obj.reduce === nativeReduce) {
+      if (context) iterator = _.bind(iterator, context);
+      return initial ? obj.reduce(iterator, memo) : obj.reduce(iterator);
+    }
+    each(obj, function(value, index, list) {
+      if (!initial) {
+        memo = value;
+        initial = true;
+      } else {
+        memo = iterator.call(context, memo, value, index, list);
+      }
+    });
+    if (!initial) throw new TypeError(reduceError);
+    return memo;
+  };
+
+  // The right-associative version of reduce, also known as `foldr`.
+  // Delegates to **ECMAScript 5**'s native `reduceRight` if available.
+  _.reduceRight = _.foldr = function(obj, iterator, memo, context) {
+    var initial = arguments.length > 2;
+    if (obj == null) obj = [];
+    if (nativeReduceRight && obj.reduceRight === nativeReduceRight) {
+      if (context) iterator = _.bind(iterator, context);
+      return initial ? obj.reduceRight(iterator, memo) : obj.reduceRight(iterator);
+    }
+    var length = obj.length;
+    if (length !== +length) {
+      var keys = _.keys(obj);
+      length = keys.length;
+    }
+    each(obj, function(value, index, list) {
+      index = keys ? keys[--length] : --length;
+      if (!initial) {
+        memo = obj[index];
+        initial = true;
+      } else {
+        memo = iterator.call(context, memo, obj[index], index, list);
+      }
+    });
+    if (!initial) throw new TypeError(reduceError);
+    return memo;
+  };
+
+  // Return the first value which passes a truth test. Aliased as `detect`.
+  _.find = _.detect = function(obj, predicate, context) {
+    var result;
+    any(obj, function(value, index, list) {
+      if (predicate.call(context, value, index, list)) {
+        result = value;
+        return true;
+      }
+    });
+    return result;
+  };
+
+  // Return all the elements that pass a truth test.
+  // Delegates to **ECMAScript 5**'s native `filter` if available.
+  // Aliased as `select`.
+  _.filter = _.select = function(obj, predicate, context) {
+    var results = [];
+    if (obj == null) return results;
+    if (nativeFilter && obj.filter === nativeFilter) return obj.filter(predicate, context);
+    each(obj, function(value, index, list) {
+      if (predicate.call(context, value, index, list)) results.push(value);
+    });
+    return results;
+  };
+
+  // Return all the elements for which a truth test fails.
+  _.reject = function(obj, predicate, context) {
+    return _.filter(obj, function(value, index, list) {
+      return !predicate.call(context, value, index, list);
+    }, context);
+  };
+
+  // Determine whether all of the elements match a truth test.
+  // Delegates to **ECMAScript 5**'s native `every` if available.
+  // Aliased as `all`.
+  _.every = _.all = function(obj, predicate, context) {
+    predicate || (predicate = _.identity);
+    var result = true;
+    if (obj == null) return result;
+    if (nativeEvery && obj.every === nativeEvery) return obj.every(predicate, context);
+    each(obj, function(value, index, list) {
+      if (!(result = result && predicate.call(context, value, index, list))) return breaker;
+    });
+    return !!result;
+  };
+
+  // Determine if at least one element in the object matches a truth test.
+  // Delegates to **ECMAScript 5**'s native `some` if available.
+  // Aliased as `any`.
+  var any = _.some = _.any = function(obj, predicate, context) {
+    predicate || (predicate = _.identity);
+    var result = false;
+    if (obj == null) return result;
+    if (nativeSome && obj.some === nativeSome) return obj.some(predicate, context);
+    each(obj, function(value, index, list) {
+      if (result || (result = predicate.call(context, value, index, list))) return breaker;
+    });
+    return !!result;
+  };
+
+  // Determine if the array or object contains a given value (using `===`).
+  // Aliased as `include`.
+  _.contains = _.include = function(obj, target) {
+    if (obj == null) return false;
+    if (nativeIndexOf && obj.indexOf === nativeIndexOf) return obj.indexOf(target) != -1;
+    return any(obj, function(value) {
+      return value === target;
+    });
+  };
+
+  // Invoke a method (with arguments) on every item in a collection.
+  _.invoke = function(obj, method) {
+    var args = slice.call(arguments, 2);
+    var isFunc = _.isFunction(method);
+    return _.map(obj, function(value) {
+      return (isFunc ? method : value[method]).apply(value, args);
+    });
+  };
+
+  // Convenience version of a common use case of `map`: fetching a property.
+  _.pluck = function(obj, key) {
+    return _.map(obj, _.property(key));
+  };
+
+  // Convenience version of a common use case of `filter`: selecting only objects
+  // containing specific `key:value` pairs.
+  _.where = function(obj, attrs) {
+    return _.filter(obj, _.matches(attrs));
+  };
+
+  // Convenience version of a common use case of `find`: getting the first object
+  // containing specific `key:value` pairs.
+  _.findWhere = function(obj, attrs) {
+    return _.find(obj, _.matches(attrs));
+  };
+
+  // Return the maximum element or (element-based computation).
+  // Can't optimize arrays of integers longer than 65,535 elements.
+  // See [WebKit Bug 80797](https://bugs.webkit.org/show_bug.cgi?id=80797)
+  _.max = function(obj, iterator, context) {
+    if (!iterator && _.isArray(obj) && obj[0] === +obj[0] && obj.length < 65535) {
+      return Math.max.apply(Math, obj);
+    }
+    var result = -Infinity, lastComputed = -Infinity;
+    each(obj, function(value, index, list) {
+      var computed = iterator ? iterator.call(context, value, index, list) : value;
+      if (computed > lastComputed) {
+        result = value;
+        lastComputed = computed;
+      }
+    });
+    return result;
+  };
+
+  // Return the minimum element (or element-based computation).
+  _.min = function(obj, iterator, context) {
+    if (!iterator && _.isArray(obj) && obj[0] === +obj[0] && obj.length < 65535) {
+      return Math.min.apply(Math, obj);
+    }
+    var result = Infinity, lastComputed = Infinity;
+    each(obj, function(value, index, list) {
+      var computed = iterator ? iterator.call(context, value, index, list) : value;
+      if (computed < lastComputed) {
+        result = value;
+        lastComputed = computed;
+      }
+    });
+    return result;
+  };
+
+  // Shuffle an array, using the modern version of the
+  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
+  _.shuffle = function(obj) {
+    var rand;
+    var index = 0;
+    var shuffled = [];
+    each(obj, function(value) {
+      rand = _.random(index++);
+      shuffled[index - 1] = shuffled[rand];
+      shuffled[rand] = value;
+    });
+    return shuffled;
+  };
+
+  // Sample **n** random values from a collection.
+  // If **n** is not specified, returns a single random element.
+  // The internal `guard` argument allows it to work with `map`.
+  _.sample = function(obj, n, guard) {
+    if (n == null || guard) {
+      if (obj.length !== +obj.length) obj = _.values(obj);
+      return obj[_.random(obj.length - 1)];
+    }
+    return _.shuffle(obj).slice(0, Math.max(0, n));
+  };
+
+  // An internal function to generate lookup iterators.
+  var lookupIterator = function(value) {
+    if (value == null) return _.identity;
+    if (_.isFunction(value)) return value;
+    return _.property(value);
+  };
+
+  // Sort the object's values by a criterion produced by an iterator.
+  _.sortBy = function(obj, iterator, context) {
+    iterator = lookupIterator(iterator);
+    return _.pluck(_.map(obj, function(value, index, list) {
+      return {
+        value: value,
+        index: index,
+        criteria: iterator.call(context, value, index, list)
+      };
+    }).sort(function(left, right) {
+      var a = left.criteria;
+      var b = right.criteria;
+      if (a !== b) {
+        if (a > b || a === void 0) return 1;
+        if (a < b || b === void 0) return -1;
+      }
+      return left.index - right.index;
+    }), 'value');
+  };
+
+  // An internal function used for aggregate "group by" operations.
+  var group = function(behavior) {
+    return function(obj, iterator, context) {
+      var result = {};
+      iterator = lookupIterator(iterator);
+      each(obj, function(value, index) {
+        var key = iterator.call(context, value, index, obj);
+        behavior(result, key, value);
+      });
+      return result;
+    };
+  };
+
+  // Groups the object's values by a criterion. Pass either a string attribute
+  // to group by, or a function that returns the criterion.
+  _.groupBy = group(function(result, key, value) {
+    _.has(result, key) ? result[key].push(value) : result[key] = [value];
+  });
+
+  // Indexes the object's values by a criterion, similar to `groupBy`, but for
+  // when you know that your index values will be unique.
+  _.indexBy = group(function(result, key, value) {
+    result[key] = value;
+  });
+
+  // Counts instances of an object that group by a certain criterion. Pass
+  // either a string attribute to count by, or a function that returns the
+  // criterion.
+  _.countBy = group(function(result, key) {
+    _.has(result, key) ? result[key]++ : result[key] = 1;
+  });
+
+  // Use a comparator function to figure out the smallest index at which
+  // an object should be inserted so as to maintain order. Uses binary search.
+  _.sortedIndex = function(array, obj, iterator, context) {
+    iterator = lookupIterator(iterator);
+    var value = iterator.call(context, obj);
+    var low = 0, high = array.length;
+    while (low < high) {
+      var mid = (low + high) >>> 1;
+      iterator.call(context, array[mid]) < value ? low = mid + 1 : high = mid;
+    }
+    return low;
+  };
+
+  // Safely create a real, live array from anything iterable.
+  _.toArray = function(obj) {
+    if (!obj) return [];
+    if (_.isArray(obj)) return slice.call(obj);
+    if (obj.length === +obj.length) return _.map(obj, _.identity);
+    return _.values(obj);
+  };
+
+  // Return the number of elements in an object.
+  _.size = function(obj) {
+    if (obj == null) return 0;
+    return (obj.length === +obj.length) ? obj.length : _.keys(obj).length;
+  };
+
+  // Array Functions
+  // ---------------
+
+  // Get the first element of an array. Passing **n** will return the first N
+  // values in the array. Aliased as `head` and `take`. The **guard** check
+  // allows it to work with `_.map`.
+  _.first = _.head = _.take = function(array, n, guard) {
+    if (array == null) return void 0;
+    if ((n == null) || guard) return array[0];
+    if (n < 0) return [];
+    return slice.call(array, 0, n);
+  };
+
+  // Returns everything but the last entry of the array. Especially useful on
+  // the arguments object. Passing **n** will return all the values in
+  // the array, excluding the last N. The **guard** check allows it to work with
+  // `_.map`.
+  _.initial = function(array, n, guard) {
+    return slice.call(array, 0, array.length - ((n == null) || guard ? 1 : n));
+  };
+
+  // Get the last element of an array. Passing **n** will return the last N
+  // values in the array. The **guard** check allows it to work with `_.map`.
+  _.last = function(array, n, guard) {
+    if (array == null) return void 0;
+    if ((n == null) || guard) return array[array.length - 1];
+    return slice.call(array, Math.max(array.length - n, 0));
+  };
+
+  // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
+  // Especially useful on the arguments object. Passing an **n** will return
+  // the rest N values in the array. The **guard**
+  // check allows it to work with `_.map`.
+  _.rest = _.tail = _.drop = function(array, n, guard) {
+    return slice.call(array, (n == null) || guard ? 1 : n);
+  };
+
+  // Trim out all falsy values from an array.
+  _.compact = function(array) {
+    return _.filter(array, _.identity);
+  };
+
+  // Internal implementation of a recursive `flatten` function.
+  var flatten = function(input, shallow, output) {
+    if (shallow && _.every(input, _.isArray)) {
+      return concat.apply(output, input);
+    }
+    each(input, function(value) {
+      if (_.isArray(value) || _.isArguments(value)) {
+        shallow ? push.apply(output, value) : flatten(value, shallow, output);
+      } else {
+        output.push(value);
+      }
+    });
+    return output;
+  };
+
+  // Flatten out an array, either recursively (by default), or just one level.
+  _.flatten = function(array, shallow) {
+    return flatten(array, shallow, []);
+  };
+
+  // Return a version of the array that does not contain the specified value(s).
+  _.without = function(array) {
+    return _.difference(array, slice.call(arguments, 1));
+  };
+
+  // Split an array into two arrays: one whose elements all satisfy the given
+  // predicate, and one whose elements all do not satisfy the predicate.
+  _.partition = function(array, predicate) {
+    var pass = [], fail = [];
+    each(array, function(elem) {
+      (predicate(elem) ? pass : fail).push(elem);
+    });
+    return [pass, fail];
+  };
+
+  // Produce a duplicate-free version of the array. If the array has already
+  // been sorted, you have the option of using a faster algorithm.
+  // Aliased as `unique`.
+  _.uniq = _.unique = function(array, isSorted, iterator, context) {
+    if (_.isFunction(isSorted)) {
+      context = iterator;
+      iterator = isSorted;
+      isSorted = false;
+    }
+    var initial = iterator ? _.map(array, iterator, context) : array;
+    var results = [];
+    var seen = [];
+    each(initial, function(value, index) {
+      if (isSorted ? (!index || seen[seen.length - 1] !== value) : !_.contains(seen, value)) {
+        seen.push(value);
+        results.push(array[index]);
+      }
+    });
+    return results;
+  };
+
+  // Produce an array that contains the union: each distinct element from all of
+  // the passed-in arrays.
+  _.union = function() {
+    return _.uniq(_.flatten(arguments, true));
+  };
+
+  // Produce an array that contains every item shared between all the
+  // passed-in arrays.
+  _.intersection = function(array) {
+    var rest = slice.call(arguments, 1);
+    return _.filter(_.uniq(array), function(item) {
+      return _.every(rest, function(other) {
+        return _.contains(other, item);
+      });
+    });
+  };
+
+  // Take the difference between one array and a number of other arrays.
+  // Only the elements present in just the first array will remain.
+  _.difference = function(array) {
+    var rest = concat.apply(ArrayProto, slice.call(arguments, 1));
+    return _.filter(array, function(value){ return !_.contains(rest, value); });
+  };
+
+  // Zip together multiple lists into a single array -- elements that share
+  // an index go together.
+  _.zip = function() {
+    var length = _.max(_.pluck(arguments, 'length').concat(0));
+    var results = new Array(length);
+    for (var i = 0; i < length; i++) {
+      results[i] = _.pluck(arguments, '' + i);
+    }
+    return results;
+  };
+
+  // Converts lists into objects. Pass either a single array of `[key, value]`
+  // pairs, or two parallel arrays of the same length -- one of keys, and one of
+  // the corresponding values.
+  _.object = function(list, values) {
+    if (list == null) return {};
+    var result = {};
+    for (var i = 0, length = list.length; i < length; i++) {
+      if (values) {
+        result[list[i]] = values[i];
+      } else {
+        result[list[i][0]] = list[i][1];
+      }
+    }
+    return result;
+  };
+
+  // If the browser doesn't supply us with indexOf (I'm looking at you, **MSIE**),
+  // we need this function. Return the position of the first occurrence of an
+  // item in an array, or -1 if the item is not included in the array.
+  // Delegates to **ECMAScript 5**'s native `indexOf` if available.
+  // If the array is large and already in sort order, pass `true`
+  // for **isSorted** to use binary search.
+  _.indexOf = function(array, item, isSorted) {
+    if (array == null) return -1;
+    var i = 0, length = array.length;
+    if (isSorted) {
+      if (typeof isSorted == 'number') {
+        i = (isSorted < 0 ? Math.max(0, length + isSorted) : isSorted);
+      } else {
+        i = _.sortedIndex(array, item);
+        return array[i] === item ? i : -1;
+      }
+    }
+    if (nativeIndexOf && array.indexOf === nativeIndexOf) return array.indexOf(item, isSorted);
+    for (; i < length; i++) if (array[i] === item) return i;
+    return -1;
+  };
+
+  // Delegates to **ECMAScript 5**'s native `lastIndexOf` if available.
+  _.lastIndexOf = function(array, item, from) {
+    if (array == null) return -1;
+    var hasIndex = from != null;
+    if (nativeLastIndexOf && array.lastIndexOf === nativeLastIndexOf) {
+      return hasIndex ? array.lastIndexOf(item, from) : array.lastIndexOf(item);
+    }
+    var i = (hasIndex ? from : array.length);
+    while (i--) if (array[i] === item) return i;
+    return -1;
+  };
+
+  // Generate an integer Array containing an arithmetic progression. A port of
+  // the native Python `range()` function. See
+  // [the Python documentation](http://docs.python.org/library/functions.html#range).
+  _.range = function(start, stop, step) {
+    if (arguments.length <= 1) {
+      stop = start || 0;
+      start = 0;
+    }
+    step = arguments[2] || 1;
+
+    var length = Math.max(Math.ceil((stop - start) / step), 0);
+    var idx = 0;
+    var range = new Array(length);
+
+    while(idx < length) {
+      range[idx++] = start;
+      start += step;
+    }
+
+    return range;
+  };
+
+  // Function (ahem) Functions
+  // ------------------
+
+  // Reusable constructor function for prototype setting.
+  var ctor = function(){};
+
+  // Create a function bound to a given object (assigning `this`, and arguments,
+  // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
+  // available.
+  _.bind = function(func, context) {
+    var args, bound;
+    if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
+    if (!_.isFunction(func)) throw new TypeError;
+    args = slice.call(arguments, 2);
+    return bound = function() {
+      if (!(this instanceof bound)) return func.apply(context, args.concat(slice.call(arguments)));
+      ctor.prototype = func.prototype;
+      var self = new ctor;
+      ctor.prototype = null;
+      var result = func.apply(self, args.concat(slice.call(arguments)));
+      if (Object(result) === result) return result;
+      return self;
+    };
+  };
+
+  // Partially apply a function by creating a version that has had some of its
+  // arguments pre-filled, without changing its dynamic `this` context. _ acts
+  // as a placeholder, allowing any combination of arguments to be pre-filled.
+  _.partial = function(func) {
+    var boundArgs = slice.call(arguments, 1);
+    return function() {
+      var position = 0;
+      var args = boundArgs.slice();
+      for (var i = 0, length = args.length; i < length; i++) {
+        if (args[i] === _) args[i] = arguments[position++];
+      }
+      while (position < arguments.length) args.push(arguments[position++]);
+      return func.apply(this, args);
+    };
+  };
+
+  // Bind a number of an object's methods to that object. Remaining arguments
+  // are the method names to be bound. Useful for ensuring that all callbacks
+  // defined on an object belong to it.
+  _.bindAll = function(obj) {
+    var funcs = slice.call(arguments, 1);
+    if (funcs.length === 0) throw new Error('bindAll must be passed function names');
+    each(funcs, function(f) { obj[f] = _.bind(obj[f], obj); });
+    return obj;
+  };
+
+  // Memoize an expensive function by storing its results.
+  _.memoize = function(func, hasher) {
+    var memo = {};
+    hasher || (hasher = _.identity);
+    return function() {
+      var key = hasher.apply(this, arguments);
+      return _.has(memo, key) ? memo[key] : (memo[key] = func.apply(this, arguments));
+    };
+  };
+
+  // Delays a function for the given number of milliseconds, and then calls
+  // it with the arguments supplied.
+  _.delay = function(func, wait) {
+    var args = slice.call(arguments, 2);
+    return setTimeout(function(){ return func.apply(null, args); }, wait);
+  };
+
+  // Defers a function, scheduling it to run after the current call stack has
+  // cleared.
+  _.defer = function(func) {
+    return _.delay.apply(_, [func, 1].concat(slice.call(arguments, 1)));
+  };
+
+  // Returns a function, that, when invoked, will only be triggered at most once
+  // during a given window of time. Normally, the throttled function will run
+  // as much as it can, without ever going more than once per `wait` duration;
+  // but if you'd like to disable the execution on the leading edge, pass
+  // `{leading: false}`. To disable execution on the trailing edge, ditto.
+  _.throttle = function(func, wait, options) {
+    var context, args, result;
+    var timeout = null;
+    var previous = 0;
+    options || (options = {});
+    var later = function() {
+      previous = options.leading === false ? 0 : _.now();
+      timeout = null;
+      result = func.apply(context, args);
+      context = args = null;
+    };
+    return function() {
+      var now = _.now();
+      if (!previous && options.leading === false) previous = now;
+      var remaining = wait - (now - previous);
+      context = this;
+      args = arguments;
+      if (remaining <= 0) {
+        clearTimeout(timeout);
+        timeout = null;
+        previous = now;
+        result = func.apply(context, args);
+        context = args = null;
+      } else if (!timeout && options.trailing !== false) {
+        timeout = setTimeout(later, remaining);
+      }
+      return result;
+    };
+  };
+
+  // Returns a function, that, as long as it continues to be invoked, will not
+  // be triggered. The function will be called after it stops being called for
+  // N milliseconds. If `immediate` is passed, trigger the function on the
+  // leading edge, instead of the trailing.
+  _.debounce = function(func, wait, immediate) {
+    var timeout, args, context, timestamp, result;
+
+    var later = function() {
+      var last = _.now() - timestamp;
+      if (last < wait) {
+        timeout = setTimeout(later, wait - last);
+      } else {
+        timeout = null;
+        if (!immediate) {
+          result = func.apply(context, args);
+          context = args = null;
+        }
+      }
+    };
+
+    return function() {
+      context = this;
+      args = arguments;
+      timestamp = _.now();
+      var callNow = immediate && !timeout;
+      if (!timeout) {
+        timeout = setTimeout(later, wait);
+      }
+      if (callNow) {
+        result = func.apply(context, args);
+        context = args = null;
+      }
+
+      return result;
+    };
+  };
+
+  // Returns a function that will be executed at most one time, no matter how
+  // often you call it. Useful for lazy initialization.
+  _.once = function(func) {
+    var ran = false, memo;
+    return function() {
+      if (ran) return memo;
+      ran = true;
+      memo = func.apply(this, arguments);
+      func = null;
+      return memo;
+    };
+  };
+
+  // Returns the first function passed as an argument to the second,
+  // allowing you to adjust arguments, run code before and after, and
+  // conditionally execute the original function.
+  _.wrap = function(func, wrapper) {
+    return _.partial(wrapper, func);
+  };
+
+  // Returns a function that is the composition of a list of functions, each
+  // consuming the return value of the function that follows.
+  _.compose = function() {
+    var funcs = arguments;
+    return function() {
+      var args = arguments;
+      for (var i = funcs.length - 1; i >= 0; i--) {
+        args = [funcs[i].apply(this, args)];
+      }
+      return args[0];
+    };
+  };
+
+  // Returns a function that will only be executed after being called N times.
+  _.after = function(times, func) {
+    return function() {
+      if (--times < 1) {
+        return func.apply(this, arguments);
+      }
+    };
+  };
+
+  // Object Functions
+  // ----------------
+
+  // Retrieve the names of an object's properties.
+  // Delegates to **ECMAScript 5**'s native `Object.keys`
+  _.keys = function(obj) {
+    if (!_.isObject(obj)) return [];
+    if (nativeKeys) return nativeKeys(obj);
+    var keys = [];
+    for (var key in obj) if (_.has(obj, key)) keys.push(key);
+    return keys;
+  };
+
+  // Retrieve the values of an object's properties.
+  _.values = function(obj) {
+    var keys = _.keys(obj);
+    var length = keys.length;
+    var values = new Array(length);
+    for (var i = 0; i < length; i++) {
+      values[i] = obj[keys[i]];
+    }
+    return values;
+  };
+
+  // Convert an object into a list of `[key, value]` pairs.
+  _.pairs = function(obj) {
+    var keys = _.keys(obj);
+    var length = keys.length;
+    var pairs = new Array(length);
+    for (var i = 0; i < length; i++) {
+      pairs[i] = [keys[i], obj[keys[i]]];
+    }
+    return pairs;
+  };
+
+  // Invert the keys and values of an object. The values must be serializable.
+  _.invert = function(obj) {
+    var result = {};
+    var keys = _.keys(obj);
+    for (var i = 0, length = keys.length; i < length; i++) {
+      result[obj[keys[i]]] = keys[i];
+    }
+    return result;
+  };
+
+  // Return a sorted list of the function names available on the object.
+  // Aliased as `methods`
+  _.functions = _.methods = function(obj) {
+    var names = [];
+    for (var key in obj) {
+      if (_.isFunction(obj[key])) names.push(key);
+    }
+    return names.sort();
+  };
+
+  // Extend a given object with all the properties in passed-in object(s).
+  _.extend = function(obj) {
+    each(slice.call(arguments, 1), function(source) {
+      if (source) {
+        for (var prop in source) {
+          obj[prop] = source[prop];
+        }
+      }
+    });
+    return obj;
+  };
+
+  // Return a copy of the object only containing the whitelisted properties.
+  _.pick = function(obj) {
+    var copy = {};
+    var keys = concat.apply(ArrayProto, slice.call(arguments, 1));
+    each(keys, function(key) {
+      if (key in obj) copy[key] = obj[key];
+    });
+    return copy;
+  };
+
+   // Return a copy of the object without the blacklisted properties.
+  _.omit = function(obj) {
+    var copy = {};
+    var keys = concat.apply(ArrayProto, slice.call(arguments, 1));
+    for (var key in obj) {
+      if (!_.contains(keys, key)) copy[key] = obj[key];
+    }
+    return copy;
+  };
+
+  // Fill in a given object with default properties.
+  _.defaults = function(obj) {
+    each(slice.call(arguments, 1), function(source) {
+      if (source) {
+        for (var prop in source) {
+          if (obj[prop] === void 0) obj[prop] = source[prop];
+        }
+      }
+    });
+    return obj;
+  };
+
+  // Create a (shallow-cloned) duplicate of an object.
+  _.clone = function(obj) {
+    if (!_.isObject(obj)) return obj;
+    return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
+  };
+
+  // Invokes interceptor with the obj, and then returns obj.
+  // The primary purpose of this method is to "tap into" a method chain, in
+  // order to perform operations on intermediate results within the chain.
+  _.tap = function(obj, interceptor) {
+    interceptor(obj);
+    return obj;
+  };
+
+  // Internal recursive comparison function for `isEqual`.
+  var eq = function(a, b, aStack, bStack) {
+    // Identical objects are equal. `0 === -0`, but they aren't identical.
+    // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
+    if (a === b) return a !== 0 || 1 / a == 1 / b;
+    // A strict comparison is necessary because `null == undefined`.
+    if (a == null || b == null) return a === b;
+    // Unwrap any wrapped objects.
+    if (a instanceof _) a = a._wrapped;
+    if (b instanceof _) b = b._wrapped;
+    // Compare `[[Class]]` names.
+    var className = toString.call(a);
+    if (className != toString.call(b)) return false;
+    switch (className) {
+      // Strings, numbers, dates, and booleans are compared by value.
+      case '[object String]':
+        // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
+        // equivalent to `new String("5")`.
+        return a == String(b);
+      case '[object Number]':
+        // `NaN`s are equivalent, but non-reflexive. An `egal` comparison is performed for
+        // other numeric values.
+        return a != +a ? b != +b : (a == 0 ? 1 / a == 1 / b : a == +b);
+      case '[object Date]':
+      case '[object Boolean]':
+        // Coerce dates and booleans to numeric primitive values. Dates are compared by their
+        // millisecond representations. Note that invalid dates with millisecond representations
+        // of `NaN` are not equivalent.
+        return +a == +b;
+      // RegExps are compared by their source patterns and flags.
+      case '[object RegExp]':
+        return a.source == b.source &&
+               a.global == b.global &&
+               a.multiline == b.multiline &&
+               a.ignoreCase == b.ignoreCase;
+    }
+    if (typeof a != 'object' || typeof b != 'object') return false;
+    // Assume equality for cyclic structures. The algorithm for detecting cyclic
+    // structures is adapted from ES 5.1 section 15.12.3, abstract operation `JO`.
+    var length = aStack.length;
+    while (length--) {
+      // Linear search. Performance is inversely proportional to the number of
+      // unique nested structures.
+      if (aStack[length] == a) return bStack[length] == b;
+    }
+    // Objects with different constructors are not equivalent, but `Object`s
+    // from different frames are.
+    var aCtor = a.constructor, bCtor = b.constructor;
+    if (aCtor !== bCtor && !(_.isFunction(aCtor) && (aCtor instanceof aCtor) &&
+                             _.isFunction(bCtor) && (bCtor instanceof bCtor))
+                        && ('constructor' in a && 'constructor' in b)) {
+      return false;
+    }
+    // Add the first object to the stack of traversed objects.
+    aStack.push(a);
+    bStack.push(b);
+    var size = 0, result = true;
+    // Recursively compare objects and arrays.
+    if (className == '[object Array]') {
+      // Compare array lengths to determine if a deep comparison is necessary.
+      size = a.length;
+      result = size == b.length;
+      if (result) {
+        // Deep compare the contents, ignoring non-numeric properties.
+        while (size--) {
+          if (!(result = eq(a[size], b[size], aStack, bStack))) break;
+        }
+      }
+    } else {
+      // Deep compare objects.
+      for (var key in a) {
+        if (_.has(a, key)) {
+          // Count the expected number of properties.
+          size++;
+          // Deep compare each member.
+          if (!(result = _.has(b, key) && eq(a[key], b[key], aStack, bStack))) break;
+        }
+      }
+      // Ensure that both objects contain the same number of properties.
+      if (result) {
+        for (key in b) {
+          if (_.has(b, key) && !(size--)) break;
+        }
+        result = !size;
+      }
+    }
+    // Remove the first object from the stack of traversed objects.
+    aStack.pop();
+    bStack.pop();
+    return result;
+  };
+
+  // Perform a deep comparison to check if two objects are equal.
+  _.isEqual = function(a, b) {
+    return eq(a, b, [], []);
+  };
+
+  // Is a given array, string, or object empty?
+  // An "empty" object has no enumerable own-properties.
+  _.isEmpty = function(obj) {
+    if (obj == null) return true;
+    if (_.isArray(obj) || _.isString(obj)) return obj.length === 0;
+    for (var key in obj) if (_.has(obj, key)) return false;
+    return true;
+  };
+
+  // Is a given value a DOM element?
+  _.isElement = function(obj) {
+    return !!(obj && obj.nodeType === 1);
+  };
+
+  // Is a given value an array?
+  // Delegates to ECMA5's native Array.isArray
+  _.isArray = nativeIsArray || function(obj) {
+    return toString.call(obj) == '[object Array]';
+  };
+
+  // Is a given variable an object?
+  _.isObject = function(obj) {
+    return obj === Object(obj);
+  };
+
+  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp.
+  each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp'], function(name) {
+    _['is' + name] = function(obj) {
+      return toString.call(obj) == '[object ' + name + ']';
+    };
+  });
+
+  // Define a fallback version of the method in browsers (ahem, IE), where
+  // there isn't any inspectable "Arguments" type.
+  if (!_.isArguments(arguments)) {
+    _.isArguments = function(obj) {
+      return !!(obj && _.has(obj, 'callee'));
+    };
+  }
+
+  // Optimize `isFunction` if appropriate.
+  if (typeof (/./) !== 'function') {
+    _.isFunction = function(obj) {
+      return typeof obj === 'function';
+    };
+  }
+
+  // Is a given object a finite number?
+  _.isFinite = function(obj) {
+    return isFinite(obj) && !isNaN(parseFloat(obj));
+  };
+
+  // Is the given value `NaN`? (NaN is the only number which does not equal itself).
+  _.isNaN = function(obj) {
+    return _.isNumber(obj) && obj != +obj;
+  };
+
+  // Is a given value a boolean?
+  _.isBoolean = function(obj) {
+    return obj === true || obj === false || toString.call(obj) == '[object Boolean]';
+  };
+
+  // Is a given value equal to null?
+  _.isNull = function(obj) {
+    return obj === null;
+  };
+
+  // Is a given variable undefined?
+  _.isUndefined = function(obj) {
+    return obj === void 0;
+  };
+
+  // Shortcut function for checking if an object has a given property directly
+  // on itself (in other words, not on a prototype).
+  _.has = function(obj, key) {
+    return hasOwnProperty.call(obj, key);
+  };
+
+  // Utility Functions
+  // -----------------
+
+  // Run Underscore.js in *noConflict* mode, returning the `_` variable to its
+  // previous owner. Returns a reference to the Underscore object.
+  _.noConflict = function() {
+    root._ = previousUnderscore;
+    return this;
+  };
+
+  // Keep the identity function around for default iterators.
+  _.identity = function(value) {
+    return value;
+  };
+
+  _.constant = function(value) {
+    return function () {
+      return value;
+    };
+  };
+
+  _.property = function(key) {
+    return function(obj) {
+      return obj[key];
+    };
+  };
+
+  // Returns a predicate for checking whether an object has a given set of `key:value` pairs.
+  _.matches = function(attrs) {
+    return function(obj) {
+      if (obj === attrs) return true; //avoid comparing an object to itself.
+      for (var key in attrs) {
+        if (attrs[key] !== obj[key])
+          return false;
+      }
+      return true;
+    }
+  };
+
+  // Run a function **n** times.
+  _.times = function(n, iterator, context) {
+    var accum = Array(Math.max(0, n));
+    for (var i = 0; i < n; i++) accum[i] = iterator.call(context, i);
+    return accum;
+  };
+
+  // Return a random integer between min and max (inclusive).
+  _.random = function(min, max) {
+    if (max == null) {
+      max = min;
+      min = 0;
+    }
+    return min + Math.floor(Math.random() * (max - min + 1));
+  };
+
+  // A (possibly faster) way to get the current timestamp as an integer.
+  _.now = Date.now || function() { return new Date().getTime(); };
+
+  // List of HTML entities for escaping.
+  var entityMap = {
+    escape: {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;'
+    }
+  };
+  entityMap.unescape = _.invert(entityMap.escape);
+
+  // Regexes containing the keys and values listed immediately above.
+  var entityRegexes = {
+    escape:   new RegExp('[' + _.keys(entityMap.escape).join('') + ']', 'g'),
+    unescape: new RegExp('(' + _.keys(entityMap.unescape).join('|') + ')', 'g')
+  };
+
+  // Functions for escaping and unescaping strings to/from HTML interpolation.
+  _.each(['escape', 'unescape'], function(method) {
+    _[method] = function(string) {
+      if (string == null) return '';
+      return ('' + string).replace(entityRegexes[method], function(match) {
+        return entityMap[method][match];
+      });
+    };
+  });
+
+  // If the value of the named `property` is a function then invoke it with the
+  // `object` as context; otherwise, return it.
+  _.result = function(object, property) {
+    if (object == null) return void 0;
+    var value = object[property];
+    return _.isFunction(value) ? value.call(object) : value;
+  };
+
+  // Add your own custom functions to the Underscore object.
+  _.mixin = function(obj) {
+    each(_.functions(obj), function(name) {
+      var func = _[name] = obj[name];
+      _.prototype[name] = function() {
+        var args = [this._wrapped];
+        push.apply(args, arguments);
+        return result.call(this, func.apply(_, args));
+      };
+    });
+  };
+
+  // Generate a unique integer id (unique within the entire client session).
+  // Useful for temporary DOM ids.
+  var idCounter = 0;
+  _.uniqueId = function(prefix) {
+    var id = ++idCounter + '';
+    return prefix ? prefix + id : id;
+  };
+
+  // By default, Underscore uses ERB-style template delimiters, change the
+  // following template settings to use alternative delimiters.
+  _.templateSettings = {
+    evaluate    : /<%([\s\S]+?)%>/g,
+    interpolate : /<%=([\s\S]+?)%>/g,
+    escape      : /<%-([\s\S]+?)%>/g
+  };
+
+  // When customizing `templateSettings`, if you don't want to define an
+  // interpolation, evaluation or escaping regex, we need one that is
+  // guaranteed not to match.
+  var noMatch = /(.)^/;
+
+  // Certain characters need to be escaped so that they can be put into a
+  // string literal.
+  var escapes = {
+    "'":      "'",
+    '\\':     '\\',
+    '\r':     'r',
+    '\n':     'n',
+    '\t':     't',
+    '\u2028': 'u2028',
+    '\u2029': 'u2029'
+  };
+
+  var escaper = /\\|'|\r|\n|\t|\u2028|\u2029/g;
+
+  // JavaScript micro-templating, similar to John Resig's implementation.
+  // Underscore templating handles arbitrary delimiters, preserves whitespace,
+  // and correctly escapes quotes within interpolated code.
+  _.template = function(text, data, settings) {
+    var render;
+    settings = _.defaults({}, settings, _.templateSettings);
+
+    // Combine delimiters into one regular expression via alternation.
+    var matcher = new RegExp([
+      (settings.escape || noMatch).source,
+      (settings.interpolate || noMatch).source,
+      (settings.evaluate || noMatch).source
+    ].join('|') + '|$', 'g');
+
+    // Compile the template source, escaping string literals appropriately.
+    var index = 0;
+    var source = "__p+='";
+    text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
+      source += text.slice(index, offset)
+        .replace(escaper, function(match) { return '\\' + escapes[match]; });
+
+      if (escape) {
+        source += "'+\n((__t=(" + escape + "))==null?'':_.escape(__t))+\n'";
+      }
+      if (interpolate) {
+        source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
+      }
+      if (evaluate) {
+        source += "';\n" + evaluate + "\n__p+='";
+      }
+      index = offset + match.length;
+      return match;
+    });
+    source += "';\n";
+
+    // If a variable is not specified, place data values in local scope.
+    if (!settings.variable) source = 'with(obj||{}){\n' + source + '}\n';
+
+    source = "var __t,__p='',__j=Array.prototype.join," +
+      "print=function(){__p+=__j.call(arguments,'');};\n" +
+      source + "return __p;\n";
+
+    try {
+      render = new Function(settings.variable || 'obj', '_', source);
+    } catch (e) {
+      e.source = source;
+      throw e;
+    }
+
+    if (data) return render(data, _);
+    var template = function(data) {
+      return render.call(this, data, _);
+    };
+
+    // Provide the compiled function source as a convenience for precompilation.
+    template.source = 'function(' + (settings.variable || 'obj') + '){\n' + source + '}';
+
+    return template;
+  };
+
+  // Add a "chain" function, which will delegate to the wrapper.
+  _.chain = function(obj) {
+    return _(obj).chain();
+  };
+
+  // OOP
+  // ---------------
+  // If Underscore is called as a function, it returns a wrapped object that
+  // can be used OO-style. This wrapper holds altered versions of all the
+  // underscore functions. Wrapped objects may be chained.
+
+  // Helper function to continue chaining intermediate results.
+  var result = function(obj) {
+    return this._chain ? _(obj).chain() : obj;
+  };
+
+  // Add all of the Underscore functions to the wrapper object.
+  _.mixin(_);
+
+  // Add all mutator Array functions to the wrapper.
+  each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function(name) {
+    var method = ArrayProto[name];
+    _.prototype[name] = function() {
+      var obj = this._wrapped;
+      method.apply(obj, arguments);
+      if ((name == 'shift' || name == 'splice') && obj.length === 0) delete obj[0];
+      return result.call(this, obj);
+    };
+  });
+
+  // Add all accessor Array functions to the wrapper.
+  each(['concat', 'join', 'slice'], function(name) {
+    var method = ArrayProto[name];
+    _.prototype[name] = function() {
+      return result.call(this, method.apply(this._wrapped, arguments));
+    };
+  });
+
+  _.extend(_.prototype, {
+
+    // Start chaining a wrapped Underscore object.
+    chain: function() {
+      this._chain = true;
+      return this;
+    },
+
+    // Extracts the result from a wrapped and chained object.
+    value: function() {
+      return this._wrapped;
+    }
+
+  });
+
+  // AMD registration happens at the end for compatibility with AMD loaders
+  // that may not enforce next-turn semantics on modules. Even though general
+  // practice for AMD registration is to be anonymous, underscore registers
+  // as a named module because, like jQuery, it is a base library that is
+  // popular enough to be bundled in a third party lib, but not be part of
+  // an AMD load request. Those cases could generate an error when an
+  // anonymous define() is called outside of a loader request.
+  if (typeof define === 'function' && define.amd) {
+    define('underscore', [], function() {
+      return _;
+    });
+  }
+}).call(this);
+
+/*
+Ring.js
+
+Copyright (c) 2013, Nicolas Vanhoren
+
+Released under the MIT license
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+(function() {
+/* jshint es3: true, proto: true */
+"use strict";
+
+if (typeof(exports) !== "undefined") { // nodejs
+    var underscore = require("underscore");
+    underscore.extend(exports, declare(underscore));
+} else if (typeof(define) !== "undefined") { // amd
+    define(["underscore"], declare);
+} else { // define global variable
+    window.ring = declare(_);
+}
+
+
+function declare(_) {
+    var ring = {};
+
+    function RingObject() {}
+    /**
+        ring.Object
+
+        The base class of all other classes. It doesn't have much uses except
+        testing testing if an object uses the Ring.js class system using
+        ring.instance(x, ring.Object)
+    */
+    ring.Object = RingObject;
+    _.extend(ring.Object, {
+        __mro__: [ring.Object],
+        __properties__: {__ringConstructor__: function() {}},
+        __classId__: 1,
+        __parents__: [],
+        __classIndex__: {"1": ring.Object}
+    });
+    _.extend(ring.Object.prototype, {
+        __ringConstructor__: ring.Object.__properties__.__ringConstructor__
+    });
+
+    // utility function to have Object.create on all browsers
+    var objectCreate = function(o) {
+        function CreatedObject(){}
+        CreatedObject.prototype = o;
+        var tmp = new CreatedObject();
+        tmp.__proto__ = o;
+        return tmp;
+    };
+    ring.__objectCreate = objectCreate;
+
+    var classCounter = 3;
+    var fnTest = /xyz/.test(function(){xyz();}) ? /\$super\b/ : /.*/;
+
+    /**
+        ring.create([parents,] properties)
+
+        Creates a new class and returns it.
+
+        properties is a dictionary of the methods and attributes that should
+        be added to the new class' prototype.
+
+        parents is a list of the classes this new class should extend. If not
+        specified or an empty list is specified this class will inherit from one
+        class: ring.Object.
+    */
+    ring.create = function() {
+        // arguments parsing
+        var args = _.toArray(arguments);
+        args.reverse();
+        var props = args[0];
+        var parents = args.length >= 2 ? args[1] : [];
+        if (! (parents instanceof Array))
+            parents = [parents];
+        _.each(parents, function(el) {
+            toRingClass(el);
+        });
+        if (parents.length === 0)
+            parents = [ring.Object];
+        // constructor handling
+        var cons = props.constructor !== Object ? props.constructor : undefined;
+        props = _.clone(props);
+        delete props.constructor;
+        if (cons)
+            props.__ringConstructor__ = cons;
+        else { //retro compatibility
+            cons = props.init;
+            delete props.init;
+            if (cons)
+                props.__ringConstructor__ = cons;
+        }
+        // create real class
+        var claz = function Instance() {
+            this.$super = null;
+            this.__ringConstructor__.apply(this, arguments);
+        };
+        claz.__properties__ = props;
+        // mro creation
+        var toMerge = _.pluck(parents, "__mro__");
+        toMerge = toMerge.concat([parents]);
+        var __mro__ = [claz].concat(mergeMro(toMerge));
+        //generate prototype
+        var prototype = Object.prototype;
+        _.each(_.clone(__mro__).reverse(), function(claz) {
+            var current = objectCreate(prototype);
+            _.extend(current, claz.__properties__);
+            _.each(_.keys(current), function(key) {
+                var p = current[key];
+                if (typeof p !== "function" || ! fnTest.test(p) ||
+                    (key !== "__ringConstructor__" && claz.__ringConvertedObject__))
+                    return;
+                current[key] = (function(name, fct, supProto) {
+                    return function() {
+                        var tmp = this.$super;
+                        this.$super = supProto[name];
+                        try {
+                            return fct.apply(this, arguments);
+                        } finally {
+                            this.$super = tmp;
+                        }
+                    };
+                })(key, p, prototype);
+            });
+            current.constructor = claz;
+            prototype = current;
+        });
+        // remaining operations
+        var id = classCounter++;
+        claz.__mro__ = __mro__;
+        claz.__parents__ = parents;
+        claz.prototype = prototype;
+        claz.__classId__ = id;
+        // construct classes index
+        claz.__classIndex__ = {};
+        _.each(claz.__mro__, function(c) {
+            claz.__classIndex__[c.__classId__] = c;
+        });
+        // class init
+        if (claz.prototype.classInit) {
+            claz.__classInit__ = claz.prototype.classInit;
+            delete claz.prototype.classInit;
+        }
+        _.each(_.chain(claz.__mro__).clone().reverse().value(), function(c) {
+            if (c.__classInit__) {
+                var ret = c.__classInit__(claz.prototype);
+                if (ret !== undefined)
+                    claz.prototype = ret;
+            }
+        });
+
+        return claz;
+    };
+
+    var mergeMro = function(toMerge) {
+        /* jshint loopfunc:true */
+        // C3 merge() implementation
+        var __mro__ = [];
+        var current = _.clone(toMerge);
+        while (true) {
+            var found = false;
+            for (var i=0; i < current.length; i++) {
+                if (current[i].length === 0)
+                    continue;
+                var currentClass = current[i][0];
+                var isInTail = _.find(current, function(lst) {
+                    return _.contains(_.rest(lst), currentClass);
+                });
+                if (! isInTail) {
+                    found = true;
+                    __mro__.push(currentClass);
+                    current = _.map(current, function(lst) {
+                        if (_.head(lst) === currentClass)
+                            return _.rest(lst);
+                        else
+                            return lst;
+                    });
+                    break;
+                }
+            }
+            if (found)
+                continue;
+            if (_.all(current, function(i) { return i.length === 0; }))
+                return __mro__;
+            throw new ring.ValueError("Cannot create a consistent method resolution order (MRO)");
+        }
+    };
+
+    /**
+        Convert an existing class to be used with the ring.js class system.
+    */
+    var toRingClass = function(claz) {
+        if (claz.__classId__)
+            return;
+        var proto = ! Object.getOwnPropertyNames ? claz.prototype : (function() {
+            var keys = {};
+            (function crawl(p) {
+                if (p === Object.prototype)
+                    return;
+                _.extend(keys, _.chain(Object.getOwnPropertyNames(p))
+                    .map(function(el) {return [el, true];})
+                    .object().value());
+                crawl(Object.getPrototypeOf(p));
+            })(claz.prototype);
+            return _.object(_.map(_.keys(keys), function(k) {return [k, claz.prototype[k]];}));
+        })();
+        proto = _.chain(proto).map(function(v, k) { return [k, v]; })
+            .filter(function(el) {return el[0] !== "constructor" && el[0] !== "__proto__";})
+            .object().value();
+        var id = classCounter++;
+        _.extend(claz, {
+            __mro__: [claz, ring.Object],
+            __properties__: _.extend({}, proto, {
+                __ringConstructor__: function() {
+                    this.$super.apply(this, arguments);
+                    var tmp = this.$super;
+                    this.$super = null;
+                    try {
+                        claz.apply(this, arguments);
+                    } finally {
+                        this.$super = tmp;
+                    }
+                }
+            }),
+            __classId__: id,
+            __parents__: [ring.Object],
+            __classIndex__: {"1": ring.Object},
+            __ringConvertedObject__: true
+        });
+        claz.__classIndex__[id] = claz;
+    };
+
+    /**
+        ring.instance(obj, type)
+
+        Returns true if obj is an instance of type or an instance of a sub-class of type.
+
+        It is necessary to use this method instead of instanceof when using the Ring.js class
+        system because instanceof will not be able to detect sub-classes.
+
+        If used with obj or type that do not use the Ring.js class system this method will
+        use instanceof instead. So it should be safe to replace all usages of instanceof
+        by ring.instance() in any program, whether or not it uses Ring.js.
+
+        Additionaly this method allows to test the type of simple JavaScript types like strings.
+        To do so, pass a string instead of a type as second argument. Examples:
+
+            ring.instance("", "string") // returns true
+            ring.instance(function() {}, "function") // returns true
+            ring.instance({}, "object") // returns true
+            ring.instance(1, "number") // returns true
+    */
+    ring.instance = function(obj, type) {
+        if (typeof(obj) === "object" && obj.constructor && obj.constructor.__classIndex__ &&
+            typeof(type) === "function" && typeof(type.__classId__) === "number") {
+            return obj.constructor.__classIndex__[type.__classId__] !== undefined;
+        }
+        if (typeof(type) === "string")
+            return typeof(obj) === type;
+        return obj instanceof type;
+    };
+
+    /**
+        A class to easily create new classes representing exceptions. This class is special
+        because it is a sub-class of the standard Error class of JavaScript. Examples:
+
+        ring.instance(e, Error)
+
+        e instanceof Error
+
+        This two expressions will always be true if e is an instance of ring.Error or any
+        sub-class of ring.Error.
+
+    */
+    ring.Error = ring.create({
+        /**
+            The name attribute is used in the default implementation of the toString() method
+            of the standard JavaScript Error class. According to the standard, all sub-classes
+            of Error should define a new name.
+        */
+        name: "ring.Error",
+        /**
+            A default message to use in instances of this class if there is no arguments given
+            to the constructor.
+        */
+        defaultMessage: "",
+        /**
+            Constructor arguments:
+
+            message: The message to put in the instance. If there is no message specified, the
+            message will be this.defaultMessage.
+        */
+        constructor: function(message) {
+            this.message = message || this.defaultMessage;
+        },
+        classInit: function(prototype) {
+            // some black magic to reconstitute a complete prototype chain
+            // with Error at the end
+            var protos = [];
+            var gather = function(proto) {
+                if (! proto)
+                    return;
+                protos.push(proto);
+                gather(proto.__proto__);
+            };
+            gather(prototype);
+            var current = new Error();
+            _.each(_.clone(protos).reverse(), function(proto) {
+                var tmp = objectCreate(current);
+                // using _.each to avoid traversing prototypes
+                _.each(proto, function(v, k) {
+                    if (k !== "__proto__")
+                        tmp[k] = v;
+                });
+                current = tmp;
+            });
+            return current;
+        }
+    });
+
+    /**
+        A type of exception to inform that a method received an argument with an incorrect value.
+    */
+    ring.ValueError = ring.create([ring.Error], {
+        name: "ring.ValueError"
+    });
+
+    /**
+        This method allows to find the super of a method when that method has been re-defined
+        in a child class.
+
+        Contrary to this.$super(), this function allows to find a super method in another method
+        than the re-defining one. Example:
+
+        var A = ring.create({
+            fctA: function() {...};
+        });
+
+        var B = ring.create([A], {
+            fctA: function() {...};
+            fctB: function() {
+                ring.getSuper(B, this, "fctA")(); // here we call the original fctA() method
+                // as it was defined in the A class
+            };
+        });
+
+        This method is much slower than this.$super(), so this.$super() should always be
+        preferred when it is possible to use it.
+
+        Arguments:
+
+        * currentClass: The current class. It is necessary to specify it for this function
+          to work properly.
+        * obj: The current object (this in most cases).
+        * attributeName: The name of the desired attribute as it appeared in the base class.
+
+        Returns the attribute as it was defined in the base class. If that attribute is a function,
+        it will be binded to obj.
+    */
+    ring.getSuper = function(currentClass, obj, attributeName) {
+        var pos;
+        var __mro__ = obj.constructor.__mro__;
+        for (var i = 0; i < __mro__.length; i++) {
+            if (__mro__[i] === currentClass) {
+                pos = i;
+                break;
+            }
+        }
+        if (pos === undefined)
+            throw new ring.ValueError("Class not found in instance's method resolution order.");
+        var find = function(proto, counter) {
+            if (counter === 0)
+                return proto;
+            return find(proto.__proto__, counter - 1);
+        };
+        var proto = find(obj.constructor.prototype, pos + 1);
+        var att;
+        if (attributeName !== "constructor" && attributeName !== "init") // retro compatibility
+            att = proto[attributeName];
+        else
+            att = proto.__ringConstructor__;
+        if (ring.instance(att, "function"))
+            return _.bind(att, obj);
+        else
+            return att;
+    };
+
+    return ring;
+}
+})();
+
 /**
- * @fileoverview JSJaC Jingle library, implementation of XEP-0166.
- * Written originally for Uno.im service requirements
+ * @fileoverview JSJaC Jingle library - Header
  *
  * @url https://github.com/valeriansaliou/jsjac-jingle
  * @depends https://github.com/sstrigler/JSJaC
@@ -540,1532 +2294,6 @@ var JSJAC_JINGLE_STORE_DEFER      = {
 var R_JSJAC_JINGLE_SERVICE_URI    = /^(\w+):([^:\?]+)(?::(\d+))?(?:\?transport=(\w+))?/i;
 
 /**
- * @fileoverview JSJaC Jingle library - Base call lib
- *
- * @url https://github.com/valeriansaliou/jsjac-jingle
- * @depends https://github.com/sstrigler/JSJaC
- * @author Valérian Saliou https://valeriansaliou.name/
- * @license Mozilla Public License v2.0 (MPL v2.0)
- */
-
-
-/**
- * JSJSAC JINGLE METHODS
- */
-
-/**
- * Creates a new XMPP Jingle session.
- * @class Somewhat abstract base class for XMPP Jingle sessions. Contains all
- * of the code in common for all Jingle sessions
- * @constructor
- * @param {Object} args Jingle session arguments.
- * @param {function} args.session_initiate_pending The initiate pending custom handler.
- * @param {function} args.session_initiate_success The initiate success custom handler.
- * @param {function} args.session_initiate_error The initiate error custom handler.
- * @param {function} args.session_initiate_request The initiate request custom handler.
- * @param {function} args.session_accept_pending The accept pending custom handler.
- * @param {function} args.session_accept_success The accept success custom handler.
- * @param {function} args.session_accept_error The accept error custom handler.
- * @param {function} args.session_accept_request The accept request custom handler.
- * @param {function} args.session_info_success The info success custom handler.
- * @param {function} args.session_info_error The info error custom handler.
- * @param {function} args.session_info_request The info request custom handler.
- * @param {function} args.session_terminate_pending The terminate pending custom handler.
- * @param {function} args.session_terminate_success The terminate success custom handler.
- * @param {function} args.session_terminate_error The terminate error custom handler.
- * @param {function} args.session_terminate_request The terminate request custom handler.
- * @param {function} args.add_remote_view The remote view media add (audio/video) custom handler.
- * @param {function} args.remove_remote_view The remote view media removal (audio/video) custom handler.
- * @param {DOM} args.local_view The path to the local stream view element.
- * @param {DOM} args.remote_view The path to the remote stream view element.
- * @param {string} args.to The full JID to start the Jingle session with.
- * @param {string} args.media The media type to be used in the Jingle session.
- * @param {string} args.resolution The resolution to be used for video in the Jingle session.
- * @param {string} args.bandwidth The bandwidth to be limited for video in the Jingle session.
- * @param {string} args.fps The framerate to be used for video in the Jingle session.
- * @param {object} args.stun A list of STUN servers to use (override the default one).
- * @param {object} args.turn A list of TURN servers to use.
- * @param {boolean} args.sdp_trace Log SDP trace in console (requires a debug interface).
- * @param {boolean} args.net_trace Log network packet trace in console (requires a debug interface).
- * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
- */
-function JSJaCJingleBase(args) {
-  var self = this;
-
-  if(args && args.session_initiate_pending)
-    /**
-     * @private
-     */
-    self._session_initiate_pending = args.session_initiate_pending;
-
-  if(args && args.session_initiate_success)
-    /**
-     * @private
-     */
-    self._session_initiate_success = args.session_initiate_success;
-
-  if(args && args.session_initiate_error)
-    /**
-     * @private
-     */
-    self._session_initiate_error = args.session_initiate_error;
-
-  if(args && args.session_initiate_request)
-    /**
-     * @private
-     */
-    self._session_initiate_request = args.session_initiate_request;
-
-  if(args && args.session_accept_pending)
-    /**
-     * @private
-     */
-    self._session_accept_pending = args.session_accept_pending;
-
-  if(args && args.session_accept_success)
-    /**
-     * @private
-     */
-    self._session_accept_success = args.session_accept_success;
-
-  if(args && args.session_accept_error)
-    /**
-     * @private
-     */
-    self._session_accept_error = args.session_accept_error;
-
-  if(args && args.session_accept_request)
-    /**
-     * @private
-     */
-    self._session_accept_request = args.session_accept_request;
-
-  if(args && args.session_info_success)
-    /**
-     * @private
-     */
-    self._session_info_success = args.session_info_success;
-
-  if(args && args.session_info_error)
-    /**
-     * @private
-     */
-    self._session_info_error = args.session_info_error;
-
-  if(args && args.session_info_request)
-    /**
-     * @private
-     */
-    self._session_info_request = args.session_info_request;
-
-  if(args && args.session_terminate_pending)
-    /**
-     * @private
-     */
-    self._session_terminate_pending = args.session_terminate_pending;
-
-  if(args && args.session_terminate_success)
-    /**
-     * @private
-     */
-    self._session_terminate_success = args.session_terminate_success;
-
-  if(args && args.session_terminate_error)
-    /**
-     * @private
-     */
-    self._session_terminate_error = args.session_terminate_error;
-
-  if(args && args.session_terminate_request)
-    /**
-     * @private
-     */
-    self._session_terminate_request = args.session_terminate_request;
-
-  if(args && args.add_remote_view)
-    /**
-     * @private
-     */
-    self._add_remote_view = args.add_remote_view;
-
-  if(args && args.remove_remote_view)
-    /**
-     * @private
-     */
-    self._remove_remote_view = args.remove_remote_view;
-
-  if(args && args.to)
-    /**
-     * @private
-     */
-    self._to = args.to;
-
-  if(args && args.media)
-    /**
-     * @private
-     */
-    self._media = args.media;
-
-  if(args && args.video_source)
-    /**
-     * @private
-     */
-    self._video_source = args.video_source;
-
-  if(args && args.resolution)
-    /**
-     * @private
-     */
-    self._resolution = args.resolution;
-
-  if(args && args.bandwidth)
-    /**
-     * @private
-     */
-    self._bandwidth = args.bandwidth;
-
-  if(args && args.fps)
-    /**
-     * @private
-     */
-    self._fps = args.fps;
-
-  if(args && args.local_view)
-    /**
-     * @private
-     */
-    self._local_view = [args.local_view];
-
-  if(args && args.remote_view)
-    /**
-     * @private
-     */
-    self._remote_view = [args.remote_view];
-
-  if(args && args.stun) {
-    /**
-     * @private
-     */
-    self._stun = args.stun;
-  } else {
-    self._stun = {};
-  }
-
-  if(args && args.turn) {
-    /**
-     * @private
-     */
-    self._turn = args.turn;
-  } else {
-    self._turn = {};
-  }
-
-  if(args && args.sdp_trace)
-    /**
-     * @private
-     */
-    self._sdp_trace = args.sdp_trace;
-
-  if(args && args.net_trace)
-    /**
-     * @private
-     */
-    self._net_trace = args.net_trace;
-
-  if(args && args.debug && args.debug.log) {
-      /**
-       * Reference to debugger interface
-       * (needs to implement method <code>log</code>)
-       * @type JSJaCDebugger
-       */
-    self._debug = args.debug;
-  } else {
-    self._debug = JSJAC_JINGLE_STORE_DEBUG;
-  }
-
-  /**
-   * @private
-   */
-  self._local_stream = null;
-
-  /**
-   * @private
-   */
-  self._remote_stream = null;
-
-  /**
-   * @private
-   */
-  self._content_local = {};
-
-  /**
-   * @private
-   */
-  self._content_remote = {};
-
-  /**
-   * @private
-   */
-  self._payloads_local = [];
-
-  /**
-   * @private
-   */
-  self._group_local = {};
-
-  /**
-   * @private
-   */
-  self._candidates_local = {};
-
-  /**
-   * @private
-   */
-  self._candidates_queue_local = {};
-
-  /**
-   * @private
-   */
-  self._payloads_remote = {};
-
-  /**
-   * @private
-   */
-  self._group_remote = {};
-
-  /**
-   * @private
-   */
-  self._candidates_remote = {};
-
-  /**
-   * @private
-   */
-  self._candidates_queue_remote = {};
-
-  /**
-   * @private
-   */
-  self._initiator = '';
-
-  /**
-   * @private
-   */
-  self._responder = '';
-
-  /**
-   * @private
-   */
-  self._mute = {};
-
-  /**
-   * @private
-   */
-  self._lock = false;
-
-  /**
-   * @private
-   */
-  self._media_busy = false;
-
-  /**
-   * @private
-   */
-  self._sid = '';
-
-  /**
-   * @private
-   */
-  self._name = {};
-
-  /**
-   * @private
-   */
-  self._senders = {};
-
-  /**
-   * @private
-   */
-  self._creator = {};
-
-  /**
-   * @private
-   */
-  self._status = JSJAC_JINGLE_STATUS_INACTIVE;
-
-  /**
-   * @private
-   */
-  self._reason = JSJAC_JINGLE_REASON_CANCEL;
-
-  /**
-   * @private
-   */
-  self._handlers = {};
-
-  /**
-   * @private
-   */
-  self._peer_connection = null;
-
-  /**
-   * @private
-   */
-  self._id = 0;
-
-  /**
-   * @private
-   */
-  self._sent_id = {};
-
-  /**
-   * @private
-   */
-  self._received_id = {};
-
-  
-
-  /**
-   * JSJSAC JINGLE GETTERS
-   */
-
-  /**
-   * @private
-   */
-  self._get_session_initiate_pending = function() {
-    if(typeof self._session_initiate_pending == 'function')
-      return self._session_initiate_pending;
-
-    return function() {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_initiate_success = function() {
-    if(typeof self._session_initiate_success == 'function')
-      return self._session_initiate_success;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_initiate_error = function() {
-    if(typeof self._session_initiate_error == 'function')
-      return self._session_initiate_error;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_initiate_request = function() {
-    if(typeof self._session_initiate_request == 'function')
-      return self._session_initiate_request;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_accept_pending = function() {
-    if(typeof self._session_accept_pending == 'function')
-      return self._session_accept_pending;
-
-    return function() {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_accept_success = function() {
-    if(typeof self._session_accept_success == 'function')
-      return self._session_accept_success;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_accept_error = function() {
-    if(typeof self._session_accept_error == 'function')
-      return self._session_accept_error;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_accept_request = function() {
-    if(typeof self._session_accept_request == 'function')
-      return self._session_accept_request;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_info_success = function() {
-    if(typeof self._session_info_success == 'function')
-      return self._session_info_success;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_info_error = function() {
-    if(typeof self._session_info_error == 'function')
-      return self._session_info_error;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_info_request = function() {
-    if(typeof self._session_info_request == 'function')
-      return self._session_info_request;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_terminate_pending = function() {
-    if(typeof self._session_terminate_pending == 'function')
-      return self._session_terminate_pending;
-
-    return function() {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_terminate_success = function() {
-    if(typeof self._session_terminate_success == 'function')
-      return self._session_terminate_success;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_terminate_error = function() {
-    if(typeof self._session_terminate_error == 'function')
-      return self._session_terminate_error;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_session_terminate_request = function() {
-    if(typeof self._session_terminate_request == 'function')
-      return self._session_terminate_request;
-
-    return function(stanza) {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_add_remote_view = function() {
-    if(typeof self._add_remote_view == 'function')
-      return self._add_remote_view;
-
-    return function() {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_remove_remote_view = function() {
-    if(typeof self._remove_remote_view == 'function')
-      return self._remove_remote_view;
-
-    return function() {};
-  };
-
-  /**
-   * @private
-   */
-  self._get_local_stream = function() {
-    return self._local_stream;
-  };
-
-  /**
-   * @private
-   */
-  self._get_remote_stream = function() {
-    return self._remote_stream;
-  };
-
-  /**
-   * @private
-   */
-  self._get_payloads_local = function(name) {
-    if(name)
-      return (name in self._payloads_local) ? self._payloads_local[name] : {};
-
-    return self._payloads_local;
-  };
-
-  /**
-   * @private
-   */
-  self._get_group_local = function(semantics) {
-    if(semantics)
-      return (semantics in self._group_local) ? self._group_local[semantics] : {};
-
-    return self._group_local;
-  };
-
-  /**
-   * @private
-   */
-  self._get_candidates_local = function(name) {
-    if(name)
-      return (name in self._candidates_local) ? self._candidates_local[name] : {};
-
-    return self._candidates_local;
-  };
-
-  /**
-   * @private
-   */
-  self._get_candidates_queue_local = function(name) {
-    if(name)
-      return (name in self._candidates_queue_local) ? self._candidates_queue_local[name] : {};
-
-    return self._candidates_queue_local;
-  };
-
-  /**
-   * @private
-   */
-  self._get_payloads_remote = function(name) {
-    if(name)
-      return (name in self._payloads_remote) ? self._payloads_remote[name] : {};
-
-    return self._payloads_remote;
-  };
-
-  /**
-   * @private
-   */
-  self._get_group_remote = function(semantics) {
-    if(semantics)
-      return (semantics in self._group_remote) ? self._group_remote[semantics] : {};
-
-    return self._group_remote;
-  };
-
-  /**
-   * @private
-   */
-  self._get_candidates_remote = function(name) {
-    if(name)
-      return (name in self._candidates_remote) ? self._candidates_remote[name] : [];
-
-    return self._candidates_remote;
-  };
-
-  /**
-   * @private
-   */
-  self._get_candidates_queue_remote = function(name) {
-    if(name)
-      return (name in self._candidates_queue_remote) ? self._candidates_queue_remote[name] : {};
-
-    return self._candidates_queue_remote;
-  };
-
-  /**
-   * @private
-   */
-  self._get_content_local = function(name) {
-    if(name)
-      return (name in self._content_local) ? self._content_local[name] : {};
-
-    return self._content_local;
-  };
-
-  /**
-   * @private
-   */
-  self._get_content_remote = function(name) {
-    if(name)
-      return (name in self._content_remote) ? self._content_remote[name] : {};
-
-    return self._content_remote;
-  };
-
-  /**
-   * @private
-   */
-  self._get_handlers = function(type, id) {
-    type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
-
-    if(id) {
-      if(type != JSJAC_JINGLE_STANZA_TYPE_ALL && type in self._handlers && typeof self._handlers[type][id] == 'function')
-        return self._handlers[type][id];
-
-      if(JSJAC_JINGLE_STANZA_TYPE_ALL in self._handlers && typeof self._handlers[JSJAC_JINGLE_STANZA_TYPE_ALL][id] == 'function')
-        return self._handlers[type][id];
-    }
-
-    return null;
-  };
-
-  /**
-   * @private
-   */
-  self._get_peer_connection = function() {
-    return self._peer_connection;
-  };
-
-  /**
-   * @private
-   */
-  self._get_id = function() {
-    return self._id;
-  };
-
-  /**
-   * @private
-   */
-  self._get_id_pre = function() {
-    return JSJAC_JINGLE_STANZA_ID_PRE + '_' + (self.get_sid() || '0') + '_';
-  };
-
-  /**
-   * @private
-   */
-  self._get_id_new = function() {
-    var trans_id = self._get_id() + 1;
-    self._set_id(trans_id);
-
-    return self._get_id_pre() + trans_id;
-  };
-
-  /**
-   * @private
-   */
-  self._get_sent_id = function() {
-    return self._sent_id;
-  };
-
-  /**
-   * @private
-   */
-  self._get_received_id = function() {
-    return self._received_id;
-  };
-
-  /**
-   * Gets the mute state
-   * @return mute value
-   * @type boolean
-   */
-  self.get_mute = function(name) {
-    if(!name) name = '*';
-
-    return (name in self._mute) ? self._mute[name] : false;
-  };
-
-  /**
-   * Gets the lock value
-   * @return lock value
-   * @type boolean
-   */
-  self.get_lock = function() {
-    return self._lock || !JSJAC_JINGLE_AVAILABLE;
-  };
-
-  /**
-   * Gets the media busy value
-   * @return media busy value
-   * @type boolean
-   */
-  self.get_media_busy = function() {
-    return self._media_busy;
-  };
-
-  /**
-   * Gets the sid value
-   * @return sid value
-   * @type string
-   */
-  self.get_sid = function() {
-    return self._sid;
-  };
-
-  /**
-   * Gets the status value
-   * @return status value
-   * @type string
-   */
-  self.get_status = function() {
-    return self._status;
-  };
-
-  /**
-   * Gets the reason value
-   * @return reason value
-   * @type string
-   */
-  self.get_reason = function() {
-    return self._reason;
-  };
-
-  /**
-   * Gets the is_muji value
-   * @return is_muji value
-   * @type boolean
-   */
-  self.get_is_muji = function() {
-    return self._is_muji || false;
-  };
-
-  /**
-   * Gets the to value
-   * @return to value
-   * @type string
-   */
-  self.get_to = function() {
-    return self._to;
-  };
-
-  /**
-   * Gets the media value
-   * @return media value
-   * @type string
-   */
-  self.get_media = function() {
-    return (self._media && self._media in JSJAC_JINGLE_MEDIAS) ? self._media : JSJAC_JINGLE_MEDIA_VIDEO;
-  };
-
-  /**
-   * Gets a list of medias in use
-   * @return media list
-   * @type object
-   */
-  self.get_media_all = function() {
-    if(self.get_media() == JSJAC_JINGLE_MEDIA_AUDIO)
-      return [JSJAC_JINGLE_MEDIA_AUDIO];
-
-    return [JSJAC_JINGLE_MEDIA_AUDIO, JSJAC_JINGLE_MEDIA_VIDEO];
-  };
-
-  /**
-   * Gets the video source value
-   * @return video source value
-   * @type string
-   */
-  self.get_video_source = function() {
-    return (self._video_source && self._video_source in JSJAC_JINGLE_VIDEO_SOURCES) ? self._video_source : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
-  };
-
-  /**
-   * Gets the resolution value
-   * @return resolution value
-   * @type string
-   */
-  self.get_resolution = function() {
-    return self._resolution ? (self._resolution).toString() : null;
-  };
-
-  /**
-   * Gets the bandwidth value
-   * @return bandwidth value
-   * @type string
-   */
-  self.get_bandwidth = function() {
-    return self._bandwidth ? (self._bandwidth).toString() : null;
-  };
-
-  /**
-   * Gets the fps value
-   * @return fps value
-   * @type string
-   */
-  self.get_fps = function() {
-    return self._fps ? (self._fps).toString() : null;
-  };
-
-  /**
-   * Gets the name value
-   * @return name value
-   * @type string
-   */
-  self.get_name = function(name) {
-    if(name)
-      return name in self._name;
-
-    return self._name;
-  };
-
-  /**
-   * Gets the senders value
-   * @return senders value
-   * @type string
-   */
-  self.get_senders = function(name) {
-    if(name)
-      return (name in self._senders) ? self._senders[name] : null;
-
-    return self._senders;
-  };
-
-  /**
-   * Gets the creator value
-   * @return creator value
-   * @type string
-   */
-  self.get_creator = function(name) {
-    if(name)
-      return (name in self._creator) ? self._creator[name] : null;
-
-    return self._creator;
-  };
-
-  /**
-   * Gets the creator value (for this)
-   * @return creator value
-   * @type string
-   */
-  self.get_creator_this = function(name) {
-    return self.get_responder() == self.get_to() ? JSJAC_JINGLE_CREATOR_INITIATOR : JSJAC_JINGLE_CREATOR_RESPONDER;
-  };
-
-  /**
-   * Gets the initiator value
-   * @return initiator value
-   * @type string
-   */
-  self.get_initiator = function() {
-    return self._initiator;
-  };
-
-  /**
-   * Gets the response value
-   * @return response value
-   * @type string
-   */
-  self.get_responder = function() {
-    return self._responder;
-  };
-
-  /**
-   * Gets the local_view value
-   * @return local_view value
-   * @type DOM
-   */
-  self.get_local_view = function() {
-    return (typeof self._local_view == 'object') ? self._local_view : [];
-  };
-
-  /**
-   * Gets the remote_view value
-   * @return remote_view value
-   * @type DOM
-   */
-  self.get_remote_view = function() {
-    return (typeof self._remote_view == 'object') ? self._remote_view : [];
-  };
-
-  /**
-   * Gets the STUN servers
-   * @return STUN servers
-   * @type object
-   */
-  self.get_stun = function() {
-    return (typeof self._stun == 'object') ? self._stun : {};
-  };
-
-  /**
-   * Gets the TURN servers
-   * @return TURN servers
-   * @type object
-   */
-  self.get_turn = function() {
-    return (typeof self._turn == 'object') ? self._turn : {};
-  };
-
-  /**
-   * Gets the SDP trace value
-   * @return SDP trace value
-   * @type boolean
-   */
-  self.get_sdp_trace = function() {
-    return (self._sdp_trace === true);
-  };
-
-  /**
-   * Gets the network packet trace value
-   * @return Network packet trace value
-   * @type boolean
-   */
-  self.get_net_trace = function() {
-    return (self._net_trace === true);
-  };
-
-  /**
-   * Gets the debug value
-   * @return debug value
-   * @type JSJaCDebugger
-   */
-  self.get_debug = function() {
-    return self._debug;
-  };
-
-
-
-  /**
-   * JSJSAC JINGLE SETTERS
-   */
-
-  /**
-   * @private
-   */
-  self._set_session_initiate_pending = function(session_initiate_pending) {
-    self._session_initiate_pending = session_initiate_pending;
-  };
-
-  /**
-   * @private
-   */
-  self._set_initiate_success = function(initiate_success) {
-    self._session_initiate_success = initiate_success;
-  };
-
-  /**
-   * @private
-   */
-  self._set_initiate_error = function(initiate_error) {
-    self._session_initiate_error = initiate_error;
-  };
-
-  /**
-   * @private
-   */
-  self._set_initiate_request = function(initiate_request) {
-    self._session_initiate_request = initiate_request;
-  };
-
-  /**
-   * @private
-   */
-  self._set_accept_pending = function(accept_pending) {
-    self._session_accept_pending = accept_pending;
-  };
-
-  /**
-   * @private
-   */
-  self._set_accept_success = function(accept_success) {
-    self._session_accept_success = accept_success;
-  };
-
-  /**
-   * @private
-   */
-  self._set_accept_error = function(accept_error) {
-    self._session_accept_error = accept_error;
-  };
-
-  /**
-   * @private
-   */
-  self._set_accept_request = function(accept_request) {
-    self._session_accept_request = accept_request;
-  };
-
-  /**
-   * @private
-   */
-  self._set_info_success = function(info_success) {
-    self._session_info_success = info_success;
-  };
-
-  /**
-   * @private
-   */
-  self._set_info_error = function(info_error) {
-    self._session_info_error = info_error;
-  };
-
-  /**
-   * @private
-   */
-  self._set_info_request = function(info_request) {
-    self._session_info_request = info_request;
-  };
-
-  /**
-   * @private
-   */
-  self._set_terminate_pending = function(terminate_pending) {
-    self._session_terminate_pending = terminate_pending;
-  };
-
-  /**
-   * @private
-   */
-  self._set_terminate_success = function(terminate_success) {
-    self._session_terminate_success = terminate_success;
-  };
-
-  /**
-   * @private
-   */
-  self._set_terminate_error = function(terminate_error) {
-    self._session_terminate_error = terminate_error;
-  };
-
-  /**
-   * @private
-   */
-  self._set_terminate_request = function(terminate_request) {
-    self._session_terminate_request = terminate_request;
-  };
-
-  /**
-   * @private
-   */
-  self._set_local_stream = function(local_stream) {
-    try {
-      if(!local_stream && self._local_stream) {
-        (self._local_stream).stop();
-
-        self._util_peer_stream_detach(
-          self.get_local_view()
-        );
-      }
-
-      self._local_stream = local_stream;
-
-      if(local_stream) {
-        self._util_peer_stream_attach(
-          self.get_local_view(),
-          self._get_local_stream(),
-          true
-        );
-      } else {
-        self._util_peer_stream_detach(
-          self.get_local_view()
-        );
-      }
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _set_local_stream > ' + e, 1);
-    }
-  };
-
-  /**
-   * @private
-   */
-  self._set_remote_stream = function(remote_stream) {
-    try {
-      if(!remote_stream && self._remote_stream) {
-        self._util_peer_stream_detach(
-          self.get_remote_view()
-        );
-      }
-
-      self._remote_stream = remote_stream;
-
-      if(remote_stream) {
-        self._util_peer_stream_attach(
-          self.get_remote_view(),
-          self._get_remote_stream(),
-          false
-        );
-      } else {
-        self._util_peer_stream_detach(
-          self.get_remote_view()
-        );
-      }
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _set_remote_stream > ' + e, 1);
-    }
-  };
-
-  /**
-   * @private
-   */
-  self._set_local_view = function(local_view) {
-    if(typeof self._local_view !== 'object')
-      self._local_view = [];
-
-    self._local_view.push(local_view);
-  };
-
-  /**
-   * @private
-   */
-  self._set_remote_view = function(remote_view) {
-    if(typeof self._remote_view !== 'object')
-      self._remote_view = [];
-
-    self._remote_view.push(remote_view);
-  };
-
-  /**
-   * @private
-   */
-  self._set_payloads_local = function(name, payload_data) {
-    self._payloads_local[name] = payload_data;
-  };
-
-  /**
-   * @private
-   */
-  self._set_group_local = function(semantics, group_data) {
-    self._group_local[semantics] = group_data;
-  };
-
-  /**
-   * @private
-   */
-  self._set_candidates_local = function(name, candidate_data) {
-    if(!(name in self._candidates_local))  self._candidates_local[name] = [];
-
-    (self._candidates_local[name]).push(candidate_data);
-  };
-
-  /**
-   * @private
-   */
-  self._set_candidates_queue_local = function(name, candidate_data) {
-    try {
-      if(name === null) {
-        self._candidates_queue_local = {};
-      } else {
-        if(!(name in self._candidates_queue_local))  self._candidates_queue_local[name] = [];
-
-        (self._candidates_queue_local[name]).push(candidate_data);
-      }
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _set_candidates_queue_local > ' + e, 1);
-    }
-  };
-
-  /**
-   * @private
-   */
-  self._set_payloads_remote = function(name, payload_data) {
-    self._payloads_remote[name] = payload_data;
-  };
-
-  /**
-   * @private
-   */
-  self._set_payloads_remote_add = function(name, payload_data) {
-    try {
-      if(!(name in self._payloads_remote)) {
-        self._set_payloads_remote(name, payload_data);
-      } else {
-        var key;
-        var payloads_store = self._payloads_remote[name].descriptions.payload;
-        var payloads_add   = payload_data.descriptions.payload;
-
-        for(key in payloads_add) {
-          if(!(key in payloads_store))
-            payloads_store[key] = payloads_add[key];
-        }
-      }
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _set_payloads_remote_add > ' + e, 1);
-    }
-  };
-
-  /**
-   * @private
-   */
-  self._set_group_remote = function(semantics, group_data) {
-    self._group_remote[semantics] = group_data;
-  };
-
-  /**
-   * @private
-   */
-  self._set_candidates_remote = function(name, candidate_data) {
-    self._candidates_remote[name] = candidate_data;
-  };
-
-  /**
-   * @private
-   */
-  self._set_candidates_queue_remote = function(name, candidate_data) {
-    if(name === null)
-      self._candidates_queue_remote = {};
-    else
-      self._candidates_queue_remote[name] = (candidate_data);
-  };
-
-  /**
-   * @private
-   */
-  self._set_candidates_remote_add = function(name, candidate_data) {
-    try {
-      if(!name) return;
-
-      if(!(name in self._candidates_remote))
-        self._set_candidates_remote(name, []);
-   
-      var c, i;
-      var candidate_ids = [];
-
-      for(c in self._get_candidates_remote(name))
-        candidate_ids.push(self._get_candidates_remote(name)[c].id);
-
-      for(i in candidate_data) {
-        if((candidate_data[i].id).indexOf(candidate_ids) !== -1)
-          self._get_candidates_remote(name).push(candidate_data[i]);
-      }
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _set_candidates_remote_add > ' + e, 1);
-    }
-  };
-
-  /**
-   * @private
-   */
-  self._set_content_local = function(name, content_local) {
-    self._content_local[name] = content_local;
-  };
-
-  /**
-   * @private
-   */
-  self._set_content_remote = function(name, content_remote) {
-    self._content_remote[name] = content_remote;
-  };
-
-  /**
-   * @private
-   */
-  self._set_handlers = function(type, id, handler) {
-    if(!(type in self._handlers))  self._handlers[type] = {};
-
-    self._handlers[type][id] = handler;
-  };
-
-  /**
-   * @private
-   */
-  self._set_peer_connection = function(peer_connection) {
-    self._peer_connection = peer_connection;
-  };
-
-  /**
-   * @private
-   */
-  self._set_id = function(id) {
-    self._id = id;
-  };
-
-  /**
-   * @private
-   */
-  self._set_sent_id = function(sent_id) {
-    self._sent_id[sent_id] = 1;
-  };
-
-  /**
-   * @private
-   */
-  self._set_received_id = function(received_id) {
-    self._received_id[received_id] = 1;
-  };
-
-  /**
-   * @private
-   */
-  self._set_mute = function(name, mute) {
-    if(!name || name == '*') {
-      self._mute = {};
-      name = '*';
-    }
-
-    self._mute[name] = mute;
-  };
-
-  /**
-   * @private
-   */
-  self._set_lock = function(lock) {
-    self._lock = lock;
-  };
-
-  /**
-   * Gets the media busy value
-   * @return media busy value
-   * @type boolean
-   */
-  self._set_media_busy = function(busy) {
-    self._media_busy = busy;
-  };
-
-  /**
-   * @private
-   */
-  self._set_sid = function(sid) {
-    self._sid = sid;
-  };
-
-  /**
-   * @private
-   */
-  self._set_status = function(status) {
-    self._status = status;
-  };
-
-  /**
-   * @private
-   */
-  self._set_reason = function(reason) {
-    self._reason = reason || JSJAC_JINGLE_REASON_CANCEL;
-  };
-
-  /**
-   * @private
-   */
-  self._set_is_muji = function(is_muji) {
-    self._is_muji = is_muji;
-  };
-
-  /**
-   * @private
-   */
-  self._set_to = function(to) {
-    self._to = to;
-  };
-
-  /**
-   * @private
-   */
-  self._set_media = function(media) {
-    self._media = media;
-  };
-
-  /**
-   * @private
-   */
-  self._set_video_source = function() {
-    self._video_source = video_source;
-  };
-
-  /**
-   * @private
-   */
-  self._set_resolution = function(resolution) {
-    self._resolution = resolution;
-  };
-
-  /**
-   * @private
-   */
-  self._set_bandwidth = function(bandwidth) {
-    self._bandwidth = bandwidth;
-  };
-
-  /**
-   * @private
-   */
-  self._set_fps = function(fps) {
-    self._fps = fps;
-  };
-
-  /**
-   * @private
-   */
-  self._set_name = function(name) {
-    self._name[name] = 1;
-  };
-
-  /**
-   * @private
-   */
-  self._set_senders = function(name, senders) {
-    if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
-
-    self._senders[name] = senders;
-  };
-
-  /**
-   * @private
-   */
-  self._set_creator = function(name, creator) {
-    if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
-
-    self._creator[name] = creator;
-  };
-
-  /**
-   * @private
-   */
-  self._set_initiator = function(initiator) {
-    self._initiator = initiator;
-  };
-
-  /**
-   * @private
-   */
-  self._set_responder = function(responder) {
-    self._responder = responder;
-  };
-
-  /**
-   * @private
-   */
-  self._set_stun = function(stun_host, stun_data) {
-    self._stun[stun_server] = stun_data;
-  };
-
-  /**
-   * @private
-   */
-  self._set_turn = function(turn_host, turn_data) {
-    self._turn[turn_server] = turn_data;
-  };
-
-  /**
-   * @private
-   */
-  self._set_sdp_trace = function(sdp_trace) {
-    self._sdp_trace = sdp_trace;
-  };
-
-  /**
-   * @private
-   */
-  self._set_net_trace = function(net_trace) {
-    self._net_trace = net_trace;
-  };
-
-  /**
-   * @private
-   */
-  self._set_debug = function(debug) {
-    self._debug = debug;
-  };
-}
-
-/**
  * @fileoverview JSJaC Jingle library - Utilities
  *
  * @url https://github.com/valeriansaliou/jsjac-jingle
@@ -2079,7 +2307,7 @@ function JSJaCJingleBase(args) {
  * JSJSAC JINGLE UTILITIES
  */
 
-function JSJaCJingleUtils(args) {
+function __JSJaCJingleUtils(args) {
   var self = this;
 
   /**
@@ -2097,7 +2325,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_array_remove_value > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_array_remove_value > ' + e, 1);
     }
 
     return array;
@@ -2117,7 +2345,7 @@ function JSJaCJingleUtils(args) {
         if(object.hasOwnProperty(key))  l++;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_object_length > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_object_length > ' + e, 1);
     }
 
     return l;
@@ -2186,10 +2414,10 @@ function JSJaCJingleUtils(args) {
           return copy;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_object_clone > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_object_clone > ' + e, 1);
     }
 
-    self.get_debug().log('[JSJaCJingle] util_object_clone > Cannot clone this object.', 1);
+    self.get_debug().log('[JSJaCJingle:utils] util_object_clone > Cannot clone this object.', 1);
   };
 
   /**
@@ -2222,7 +2450,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_browser > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_browser > ' + e, 1);
     }
 
     return browser_info;
@@ -2321,7 +2549,7 @@ function JSJaCJingleUtils(args) {
         return config;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_config_ice > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_config_ice > ' + e, 1);
     }
 
     return WEBRTC_CONFIGURATION.peer_connection.config;
@@ -2339,7 +2567,7 @@ function JSJaCJingleUtils(args) {
       try {
         return (stanza[0]).firstChild.nodeValue || null;
       } catch(_e) {
-        self.get_debug().log('[JSJaCJingle] util_stanza_get_value > ' + _e, 1);
+        self.get_debug().log('[JSJaCJingle:utils] util_stanza_get_value > ' + _e, 1);
       }
     }
 
@@ -2360,7 +2588,7 @@ function JSJaCJingleUtils(args) {
       try {
         return (stanza[0]).getAttribute(name) || null;
       } catch(_e) {
-        self.get_debug().log('[JSJaCJingle] util_stanza_get_attribute > ' + _e, 1);
+        self.get_debug().log('[JSJaCJingle:utils] util_stanza_get_attribute > ' + _e, 1);
       }
     }
 
@@ -2379,7 +2607,7 @@ function JSJaCJingleUtils(args) {
       try {
         (stanza[0]).setAttribute(name, value);
       } catch(_e) {
-        self.get_debug().log('[JSJaCJingle] util_stanza_set_attribute > ' + _e, 1);
+        self.get_debug().log('[JSJaCJingle:utils] util_stanza_set_attribute > ' + _e, 1);
       }
     }
   };
@@ -2411,7 +2639,7 @@ function JSJaCJingleUtils(args) {
 
       return matches_result;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_stanza_get_element > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_stanza_get_element > ' + e, 1);
     }
 
     return matches_result;
@@ -2426,7 +2654,7 @@ function JSJaCJingleUtils(args) {
     try {
       return stanza.getChild('jingle', NS_JINGLE);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_stanza_jingle > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_stanza_jingle > ' + e, 1);
     }
 
     return null;
@@ -2441,7 +2669,7 @@ function JSJaCJingleUtils(args) {
     try {
       return stanza.getFrom() || null;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_stanza_from > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_stanza_from > ' + e, 1);
     }
 
     return null;
@@ -2459,7 +2687,7 @@ function JSJaCJingleUtils(args) {
         'sid'
       );
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_stanza_sid > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_stanza_sid > ' + e, 1);
     }
   };
 
@@ -2472,7 +2700,7 @@ function JSJaCJingleUtils(args) {
     try {
       return !((stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && self.util_stanza_sid(stanza) != self.get_sid()) || self.util_stanza_from(stanza) != self.get_to());
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_stanza_safe > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_stanza_safe > ' + e, 1);
     }
 
     return false;
@@ -2500,7 +2728,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_stanza_terminate_reason > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_stanza_terminate_reason > ' + e, 1);
     }
 
     return null;
@@ -2524,7 +2752,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_stanza_session_info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_stanza_session_info > ' + e, 1);
     }
 
     return null;
@@ -2540,25 +2768,25 @@ function JSJaCJingleUtils(args) {
       var t_sid = self.get_sid();
       var t_status = self.get_status();
 
-      self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Registered (id: ' + t_id + ', status: ' + t_status + ').', 4);
+      self.get_debug().log('[JSJaCJingle:utils] util_stanza_timeout > Registered (id: ' + t_id + ', status: ' + t_status + ').', 4);
 
       setTimeout(function() {
-        self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Cheking (id: ' + t_id + ', status: ' + t_status + '-' + self.get_status() + ').', 4);
+        self.get_debug().log('[JSJaCJingle:utils] util_stanza_timeout > Cheking (id: ' + t_id + ', status: ' + t_status + '-' + self.get_status() + ').', 4);
 
         // State did not change?
         if(self.get_sid() == t_sid && self.get_status() == t_status && !(t_id in self._get_received_id())) {
-          self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza timeout.', 2);
+          self.get_debug().log('[JSJaCJingle:utils] util_stanza_timeout > Stanza timeout.', 2);
 
           self.unregister_handler(t_type, t_id);
 
           if(handlers.external)  (handlers.external)(self);
           if(handlers.internal)  (handlers.internal)();
         } else {
-          self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Stanza successful.', 4);
+          self.get_debug().log('[JSJaCJingle:utils] util_stanza_timeout > Stanza successful.', 4);
         }
       }, (JSJAC_JINGLE_STANZA_TIMEOUT * 1000));
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_stanza_timeout > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_stanza_timeout > ' + e, 1);
     }
   };
 
@@ -2600,7 +2828,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_stanza_parse_node > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_parse_node > ' + e, 1);
     }
   };
 
@@ -2658,7 +2886,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_stanza_parse_content > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_parse_content > ' + e, 1);
     }
 
     return false;
@@ -2712,7 +2940,7 @@ function JSJaCJingleUtils(args) {
 
       return true;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_stanza_parse_group > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_parse_group > ' + e, 1);
     }
 
     return false;
@@ -2789,7 +3017,7 @@ function JSJaCJingleUtils(args) {
         var cd_ssrc  = self.util_stanza_get_attribute(description, 'ssrc');
 
         if(!cd_media)
-          self.get_debug().log('[JSJaCJingle] util_stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
+          self.get_debug().log('[JSJaCJingle:utils] util_stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
 
         // Initialize current description
         init_content();
@@ -2983,7 +3211,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_stanza_parse_payload > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_parse_payload > ' + e, 1);
     }
 
     return payload_obj;
@@ -3022,7 +3250,7 @@ function JSJaCJingleUtils(args) {
         JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP
       );
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_stanza_parse_candidate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_parse_candidate > ' + e, 1);
     }
 
     return candidate_arr;
@@ -3054,7 +3282,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_stanza_build_node > name: ' + name + ' > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_build_node > name: ' + name + ' > ' + e, 1);
     }
 
     return node;
@@ -3075,7 +3303,7 @@ function JSJaCJingleUtils(args) {
 
       for(cur_attr in attrs) self.util_stanza_set_attribute(jingle, cur_attr, attrs[cur_attr]);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_stanza_generate_jingle > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_generate_jingle > ' + e, 1);
     }
 
     return jingle;
@@ -3098,7 +3326,7 @@ function JSJaCJingleUtils(args) {
           break;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_stanza_generate_session_info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_generate_session_info > ' + e, 1);
     }
   };
 
@@ -3335,7 +3563,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_stanza_generate_content_local > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_generate_content_local > ' + e, 1);
     }
   };
 
@@ -3368,7 +3596,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_stanza_generate_group_local > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_generate_group_local > ' + e, 1);
     }
   };
 
@@ -3414,7 +3642,7 @@ function JSJaCJingleUtils(args) {
       if(payloads.transports && payloads.transports.fingerprint)
         content_obj.transport.fingerprint  = payloads.transports.fingerprint;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_generate_content > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_generate_content > ' + e, 1);
     }
 
     return content_obj;
@@ -3467,7 +3695,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_generate_transport > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_generate_transport > ' + e, 1);
     }
 
     return transport_obj;
@@ -3494,7 +3722,7 @@ function JSJaCJingleUtils(args) {
         );
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_build_content_local > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_build_content_local > ' + e, 1);
     }
   };
 
@@ -3519,7 +3747,7 @@ function JSJaCJingleUtils(args) {
         );
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_build_content_remote > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_build_content_remote > ' + e, 1);
     }
   };
 
@@ -3551,7 +3779,7 @@ function JSJaCJingleUtils(args) {
 
       if(!name) name = media;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_name_generate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_name_generate > ' + e, 1);
     }
 
     return name;
@@ -3581,7 +3809,7 @@ function JSJaCJingleUtils(args) {
 
       if(!media)  media = name;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_media_generate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_media_generate > ' + e, 1);
     }
 
     return media;
@@ -3599,7 +3827,7 @@ function JSJaCJingleUtils(args) {
 
       return sdp_obj;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_sdp_generate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_generate > ' + e, 1);
     }
 
     return {};
@@ -3675,7 +3903,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_sdp_generate_candidates > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_generate_candidates > ' + e, 1);
     }
 
     return candidates_arr;
@@ -4021,7 +4249,7 @@ function JSJaCJingleUtils(args) {
       payloads_obj.type = type;
       payloads_obj.sdp  = payloads_str;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_sdp_generate_description > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_generate_description > ' + e, 1);
     }
 
     return payloads_obj;
@@ -4060,7 +4288,7 @@ function JSJaCJingleUtils(args) {
       sdp_origin += addrtype + ' ';
       sdp_origin += unicast_address;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_sdp_generate_origin > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_generate_origin > ' + e, 1);
     }
 
     return sdp_origin;
@@ -4124,7 +4352,7 @@ function JSJaCJingleUtils(args) {
 
       sdp_media += ' ' + type_ids.join(' ');
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_sdp_generate_description_media > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_generate_description_media > ' + e, 1);
     }
 
     return sdp_media;
@@ -4244,11 +4472,11 @@ function JSJaCJingleUtils(args) {
         if(self.get_media()        == JSJAC_JINGLE_MEDIA_VIDEO         && 
            self.get_video_source() != JSJAC_JINGLE_VIDEO_SOURCE_CAMERA ) {
           if(document.location.protocol !== 'https:')
-            self.get_debug().log('[JSJaCJingle] util_generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
+            self.get_debug().log('[JSJaCJingle:utils] util_generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
 
           // Unsupported browser? (for that feature)
           if(self._util_browser().name != JSJAC_JINGLE_BROWSER_CHROME) {
-            self.get_debug().log('[JSJaCJingle] util_generate_constraints > Video source not supported by ' + self._util_browser().name + ' (source: ' + self.get_video_source() + ').', 1);
+            self.get_debug().log('[JSJaCJingle:utils] util_generate_constraints > Video source not supported by ' + self._util_browser().name + ' (source: ' + self.get_video_source() + ').', 1);
             
             self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
             return;
@@ -4261,7 +4489,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] util_generate_constraints > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] util_generate_constraints > ' + e, 1);
     }
 
     return constraints;
@@ -4293,7 +4521,7 @@ function JSJaCJingleUtils(args) {
         prev_credentials = cur_credentials;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_is_sdp_common_credentials > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_is_sdp_common_credentials > ' + e, 1);
     }
 
     return is_same;
@@ -4374,7 +4602,7 @@ function JSJaCJingleUtils(args) {
         network_obj = local_obj;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_network_extract_main > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_network_extract_main > ' + e, 1);
     }
 
     return network_obj;
@@ -4439,7 +4667,7 @@ function JSJaCJingleUtils(args) {
           break;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_map_register_view > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_map_register_view > ' + e, 1);
     }
 
     return fn;
@@ -4471,7 +4699,7 @@ function JSJaCJingleUtils(args) {
         if(typeof mute == 'boolean') element[i].muted = mute;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_peer_stream_attach > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_peer_stream_attach > ' + e, 1);
     }
   };
 
@@ -4487,7 +4715,7 @@ function JSJaCJingleUtils(args) {
         element[i].src = '';
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_peer_stream_detach > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_peer_stream_detach > ' + e, 1);
     }
   };
 
@@ -4994,7 +5222,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_sdp_parse_payload > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_parse_payload > ' + e, 1);
     }
 
     return payload;
@@ -5035,7 +5263,7 @@ function JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_sdp_parse_group > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_parse_group > ' + e, 1);
     }
 
     return group;
@@ -5069,7 +5297,7 @@ function JSJaCJingleUtils(args) {
 
       // Try media constraints? (less reliable)
       if(!res_height || !res_width) {
-        self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > Could not get local video resolution, falling back on constraints (local video may not be ready).', 0);
+        self.get_debug().log('[JSJaCJingle:utils] _util_sdp_resolution_payload > Could not get local video resolution, falling back on constraints (local video may not be ready).', 0);
 
         constraints = self.util_generate_constraints();
 
@@ -5078,7 +5306,7 @@ function JSJaCJingleUtils(args) {
            typeof constraints.video.mandatory           !== 'object'  || 
            typeof constraints.video.mandatory.minWidth  !== 'number'  || 
            typeof constraints.video.mandatory.minHeight !== 'number'  ) {
-          self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > Could not get local video resolution (not sending it).', 1);
+          self.get_debug().log('[JSJaCJingle:utils] _util_sdp_resolution_payload > Could not get local video resolution (not sending it).', 1);
           return payload;
         }
 
@@ -5112,9 +5340,9 @@ function JSJaCJingleUtils(args) {
         }
       }
 
-      self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > Got local video resolution (' + res_width + 'x' + res_height + ').', 2);
+      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_resolution_payload > Got local video resolution (' + res_width + 'x' + res_height + ').', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_sdp_resolution_payload > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_resolution_payload > ' + e, 1);
     }
 
     return payload;
@@ -5151,7 +5379,7 @@ function JSJaCJingleUtils(args) {
       // Incomplete?
       if(error !== 0) return {};
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _util_sdp_parse_candidate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_parse_candidate > ' + e, 1);
     }
 
     return candidate;
@@ -5201,7 +5429,7 @@ function JSJaCJingleUtils(args) {
  * JSJSAC JINGLE PEER API
  */
 
-function JSJaCJinglePeer() {
+function __JSJaCJinglePeer() {
   var self = this;
 
 
@@ -5209,7 +5437,7 @@ function JSJaCJinglePeer() {
    * @private
    */
   self._peer_connection_create = function(sdp_message_callback) {
-    self.get_debug().log('[JSJaCJingle] _peer_connection_create', 4);
+    self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create', 4);
 
     try {
       // Log STUN servers in use
@@ -5218,9 +5446,9 @@ function JSJaCJinglePeer() {
 
       if(typeof ice_config.iceServers == 'object') {
         for(i = 0; i < (ice_config.iceServers).length; i++)
-          self.get_debug().log('[JSJaCJingle] _peer_connection_create > Using ICE server at: ' + ice_config.iceServers[i].url + ' (' + (i + 1) + ').', 2);
+          self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > Using ICE server at: ' + ice_config.iceServers[i].url + ' (' + (i + 1) + ').', 2);
       } else {
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > No ICE server configured. Network may not work properly.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > No ICE server configured. Network may not work properly.', 0);
       }
 
       // Create the RTCPeerConnection object
@@ -5245,12 +5473,12 @@ function JSJaCJinglePeer() {
           // In which action stanza should candidates be sent?
           if((self.is_initiator() && self.get_status() == JSJAC_JINGLE_STATUS_INITIATING)  ||
              (self.is_responder() && self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING)) {
-            self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got initial candidates.', 2);
+            self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > onicecandidate > Got initial candidates.', 2);
 
             // Execute what's next (initiate/accept session)
             sdp_message_callback();
           } else {
-            self.get_debug().log('[JSJaCJingle] _peer_connection_create > onicecandidate > Got more candidates (on the go).', 2);
+            self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > onicecandidate > Got more candidates (on the go).', 2);
 
             // Send unsent candidates
             var candidates_queue_local = self._get_candidates_queue_local();
@@ -5266,7 +5494,7 @@ function JSJaCJinglePeer() {
 
       // Event: oniceconnectionstatechange
       self._get_peer_connection().oniceconnectionstatechange = function(e) {
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > oniceconnectionstatechange', 2);
+        self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > oniceconnectionstatechange', 2);
 
         // Connection errors?
         switch(this.iceConnectionState) {
@@ -5281,14 +5509,14 @@ function JSJaCJinglePeer() {
             self._peer_timeout(this.iceConnectionState); break;
         }
 
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > oniceconnectionstatechange > (state: ' + this.iceConnectionState + ').', 2);
+        self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > oniceconnectionstatechange > (state: ' + this.iceConnectionState + ').', 2);
       };
 
       // Event: onaddstream
       self._get_peer_connection().onaddstream = function(e) {
         if (!e) return;
 
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > onaddstream', 2);
+        self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > onaddstream', 2);
 
         // Attach remote stream to DOM view
         self._set_remote_stream(e.stream);
@@ -5296,7 +5524,7 @@ function JSJaCJinglePeer() {
 
       // Event: onremovestream
       self._get_peer_connection().onremovestream = function(e) {
-        self.get_debug().log('[JSJaCJingle] _peer_connection_create > onremovestream', 2);
+        self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > onremovestream', 2);
 
         // Detach remote stream from DOM view
         self._set_remote_stream(null);
@@ -5306,7 +5534,7 @@ function JSJaCJinglePeer() {
       self._get_peer_connection().addStream(self._get_local_stream()); 
 
       // Create offer
-      self.get_debug().log('[JSJaCJingle] _peer_connection_create > Getting local description...', 2);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > Getting local description...', 2);
 
       if(self.is_initiator()) {
         // Local description
@@ -5322,7 +5550,7 @@ function JSJaCJinglePeer() {
           self._get_candidates_queue_remote()
         );
 
-        if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
+        if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
 
         // Remote description
         self._get_peer_connection().setRemoteDescription(
@@ -5333,7 +5561,7 @@ function JSJaCJinglePeer() {
           },
 
           function(e) {
-            if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+            if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
 
             // Error (descriptions are incompatible)
             self.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
@@ -5362,7 +5590,7 @@ function JSJaCJinglePeer() {
         self._set_candidates_queue_remote(null);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_connection_create > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > ' + e, 1);
     }
   };
 
@@ -5370,10 +5598,10 @@ function JSJaCJinglePeer() {
    * @private
    */
   self._peer_get_user_media = function(callback) {
-    self.get_debug().log('[JSJaCJingle] _peer_get_user_media', 4);
+    self.get_debug().log('[JSJaCJingle:peer] _peer_get_user_media', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_get_user_media > Getting user media...', 2);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_get_user_media > Getting user media...', 2);
 
       (WEBRTC_GET_MEDIA.bind(navigator))(
         self.util_generate_constraints(),
@@ -5381,7 +5609,7 @@ function JSJaCJinglePeer() {
         self._peer_got_user_media_error.bind(this)
       );
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_get_user_media > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_get_user_media > ' + e, 1);
     }
   };
 
@@ -5389,19 +5617,19 @@ function JSJaCJinglePeer() {
    * @private
    */
   self._peer_got_user_media_success = function(callback, stream) {
-    self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success', 4);
+    self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_success', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Got user media.', 2);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_success > Got user media.', 2);
 
       self._set_local_stream(stream);
 
       if(callback && typeof callback == 'function') {
         if((self.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) && self.get_local_view().length) {
-          self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
+          self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
 
           var fn_loaded = function() {
-            self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > Local video loaded.', 2);
+            self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_success > Local video loaded.', 2);
 
             this.removeEventListener('loadeddata', fn_loaded, false);
             callback();
@@ -5413,7 +5641,7 @@ function JSJaCJinglePeer() {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_got_user_media_success > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_success > ' + e, 1);
     }
   };
 
@@ -5421,7 +5649,7 @@ function JSJaCJinglePeer() {
    * @private
    */
   self._peer_got_user_media_error = function(error) {
-    self.get_debug().log('[JSJaCJingle] _peer_got_user_media_error', 4);
+    self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_error', 4);
 
     try {
       (self._get_session_initiate_error())(self);
@@ -5432,9 +5660,9 @@ function JSJaCJinglePeer() {
       // Not needed in case we are the initiator (no packet sent, ever)
       if(self.is_responder()) self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
 
-      self.get_debug().log('[JSJaCJingle] _peer_got_user_media_error > Failed (' + (error.PERMISSION_DENIED ? 'permission denied' : 'unknown' ) + ').', 1);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_error > Failed (' + (error.PERMISSION_DENIED ? 'permission denied' : 'unknown' ) + ').', 1);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_got_user_media_error > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_error > ' + e, 1);
     }
   };
 
@@ -5442,12 +5670,12 @@ function JSJaCJinglePeer() {
    * @private
    */
   self._peer_got_description = function(sdp_local) {
-    self.get_debug().log('[JSJaCJingle] _peer_got_description', 4);
+    self.get_debug().log('[JSJaCJingle:peer] _peer_got_description', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_got_description > Got local description.', 2);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_got_description > Got local description.', 2);
 
-      if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (local:raw)' + '\n\n' + sdp_local.sdp, 4);
+      if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (local:raw)' + '\n\n' + sdp_local.sdp, 4);
 
       // Convert SDP raw data to an object
       var cur_name;
@@ -5482,7 +5710,7 @@ function JSJaCJinglePeer() {
         )
       );
 
-      if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
+      if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
 
       self._get_peer_connection().setLocalDescription(
         (new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)),
@@ -5492,15 +5720,15 @@ function JSJaCJinglePeer() {
         },
 
         function(e) {
-          if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (local:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+          if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (local:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
 
           // Error (descriptions are incompatible)
         }
       );
 
-      self.get_debug().log('[JSJaCJingle] _peer_got_description > Waiting for local candidates...', 2);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_got_description > Waiting for local candidates...', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_got_description > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_got_description > ' + e, 1);
     }
   };
 
@@ -5508,12 +5736,12 @@ function JSJaCJinglePeer() {
    * @private
    */
   self._peer_fail_description = function() {
-    self.get_debug().log('[JSJaCJingle] _peer_fail_description', 4);
+    self.get_debug().log('[JSJaCJingle:peer] _peer_fail_description', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_fail_description > Could not get local description!', 1);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_fail_description > Could not get local description!', 1);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_fail_description > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_fail_description > ' + e, 1);
     }
   };
 
@@ -5521,10 +5749,10 @@ function JSJaCJinglePeer() {
    * @private
    */
   self._peer_sound = function(enable) {
-    self.get_debug().log('[JSJaCJingle] _peer_sound', 4);
+    self.get_debug().log('[JSJaCJingle:peer] _peer_sound', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle] _peer_sound > Enable: ' + enable + ' (current: ' + self.get_mute(JSJAC_JINGLE_MEDIA_AUDIO) + ').', 2);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_sound > Enable: ' + enable + ' (current: ' + self.get_mute(JSJAC_JINGLE_MEDIA_AUDIO) + ').', 2);
 
       var i;
       var audio_tracks = self._get_local_stream().getAudioTracks();
@@ -5532,7 +5760,7 @@ function JSJaCJinglePeer() {
       for(i = 0; i < audio_tracks.length; i++)
         audio_tracks[i].enabled = enable;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_sound > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_sound > ' + e, 1);
     }
   };
 
@@ -5549,14 +5777,14 @@ function JSJaCJinglePeer() {
       setTimeout(function() {
         // State did not change?
         if(self.get_sid() == t_sid && self._get_peer_connection().iceConnectionState == state) {
-          self.get_debug().log('[JSJaCJingle] util_stanza_timeout > Peer timeout.', 2);
+          self.get_debug().log('[JSJaCJingle:peer] util_stanza_timeout > Peer timeout.', 2);
 
           // Error (transports are incompatible)
           self.terminate(args.reason || JSJAC_JINGLE_REASON_FAILED_TRANSPORT);
         }
       }, ((args.timer || JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT) * 1000));
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _peer_timeout > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] _peer_timeout > ' + e, 1);
     }
   };
 
@@ -5564,7 +5792,7 @@ function JSJaCJinglePeer() {
    * @private
    */
   self._peer_stop = function() {
-    self.get_debug().log('[JSJaCJingle] _peer_stop', 4);
+    self.get_debug().log('[JSJaCJingle:peer] _peer_stop', 4);
 
     // Detach media streams from DOM view
     self._set_local_stream(null);
@@ -5578,6 +5806,1533 @@ function JSJaCJinglePeer() {
     JSJaCJingle_remove(self.get_sid());
   };
 }
+
+/**
+ * @fileoverview JSJaC Jingle library - Base call lib
+ *
+ * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @depends https://github.com/sstrigler/JSJaC
+ * @author Valérian Saliou https://valeriansaliou.name/
+ * @license Mozilla Public License v2.0 (MPL v2.0)
+ */
+
+
+/**
+ * JSJSAC JINGLE METHODS
+ */
+
+/**
+ * Creates a new XMPP Jingle session.
+ * @class Somewhat abstract base class for XMPP Jingle sessions. Contains all
+ * of the code in common for all Jingle sessions
+ * @constructor
+ * @param {Object} args Jingle session arguments.
+ * @param {function} args.session_initiate_pending The initiate pending custom handler.
+ * @param {function} args.session_initiate_success The initiate success custom handler.
+ * @param {function} args.session_initiate_error The initiate error custom handler.
+ * @param {function} args.session_initiate_request The initiate request custom handler.
+ * @param {function} args.session_accept_pending The accept pending custom handler.
+ * @param {function} args.session_accept_success The accept success custom handler.
+ * @param {function} args.session_accept_error The accept error custom handler.
+ * @param {function} args.session_accept_request The accept request custom handler.
+ * @param {function} args.session_info_success The info success custom handler.
+ * @param {function} args.session_info_error The info error custom handler.
+ * @param {function} args.session_info_request The info request custom handler.
+ * @param {function} args.session_terminate_pending The terminate pending custom handler.
+ * @param {function} args.session_terminate_success The terminate success custom handler.
+ * @param {function} args.session_terminate_error The terminate error custom handler.
+ * @param {function} args.session_terminate_request The terminate request custom handler.
+ * @param {function} args.add_remote_view The remote view media add (audio/video) custom handler.
+ * @param {function} args.remove_remote_view The remote view media removal (audio/video) custom handler.
+ * @param {DOM} args.local_view The path to the local stream view element.
+ * @param {DOM} args.remote_view The path to the remote stream view element.
+ * @param {string} args.to The full JID to start the Jingle session with.
+ * @param {string} args.media The media type to be used in the Jingle session.
+ * @param {string} args.resolution The resolution to be used for video in the Jingle session.
+ * @param {string} args.bandwidth The bandwidth to be limited for video in the Jingle session.
+ * @param {string} args.fps The framerate to be used for video in the Jingle session.
+ * @param {object} args.stun A list of STUN servers to use (override the default one).
+ * @param {object} args.turn A list of TURN servers to use.
+ * @param {boolean} args.sdp_trace Log SDP trace in console (requires a debug interface).
+ * @param {boolean} args.net_trace Log network packet trace in console (requires a debug interface).
+ * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
+ */
+
+var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
+  constructor: function(args) {
+    if(args && args.session_initiate_pending)
+      /**
+       * @private
+       */
+      this._session_initiate_pending = args.session_initiate_pending;
+
+    if(args && args.session_initiate_success)
+      /**
+       * @private
+       */
+      this._session_initiate_success = args.session_initiate_success;
+
+    if(args && args.session_initiate_error)
+      /**
+       * @private
+       */
+      this._session_initiate_error = args.session_initiate_error;
+
+    if(args && args.session_initiate_request)
+      /**
+       * @private
+       */
+      this._session_initiate_request = args.session_initiate_request;
+
+    if(args && args.session_accept_pending)
+      /**
+       * @private
+       */
+      this._session_accept_pending = args.session_accept_pending;
+
+    if(args && args.session_accept_success)
+      /**
+       * @private
+       */
+      this._session_accept_success = args.session_accept_success;
+
+    if(args && args.session_accept_error)
+      /**
+       * @private
+       */
+      this._session_accept_error = args.session_accept_error;
+
+    if(args && args.session_accept_request)
+      /**
+       * @private
+       */
+      this._session_accept_request = args.session_accept_request;
+
+    if(args && args.session_info_success)
+      /**
+       * @private
+       */
+      this._session_info_success = args.session_info_success;
+
+    if(args && args.session_info_error)
+      /**
+       * @private
+       */
+      this._session_info_error = args.session_info_error;
+
+    if(args && args.session_info_request)
+      /**
+       * @private
+       */
+      this._session_info_request = args.session_info_request;
+
+    if(args && args.session_terminate_pending)
+      /**
+       * @private
+       */
+      this._session_terminate_pending = args.session_terminate_pending;
+
+    if(args && args.session_terminate_success)
+      /**
+       * @private
+       */
+      this._session_terminate_success = args.session_terminate_success;
+
+    if(args && args.session_terminate_error)
+      /**
+       * @private
+       */
+      this._session_terminate_error = args.session_terminate_error;
+
+    if(args && args.session_terminate_request)
+      /**
+       * @private
+       */
+      this._session_terminate_request = args.session_terminate_request;
+
+    if(args && args.add_remote_view)
+      /**
+       * @private
+       */
+      this._add_remote_view = args.add_remote_view;
+
+    if(args && args.remove_remote_view)
+      /**
+       * @private
+       */
+      this._remove_remote_view = args.remove_remote_view;
+
+    if(args && args.to)
+      /**
+       * @private
+       */
+      this._to = args.to;
+
+    if(args && args.media)
+      /**
+       * @private
+       */
+      this._media = args.media;
+
+    if(args && args.video_source)
+      /**
+       * @private
+       */
+      this._video_source = args.video_source;
+
+    if(args && args.resolution)
+      /**
+       * @private
+       */
+      this._resolution = args.resolution;
+
+    if(args && args.bandwidth)
+      /**
+       * @private
+       */
+      this._bandwidth = args.bandwidth;
+
+    if(args && args.fps)
+      /**
+       * @private
+       */
+      this._fps = args.fps;
+
+    if(args && args.local_view)
+      /**
+       * @private
+       */
+      this._local_view = [args.local_view];
+
+    if(args && args.remote_view)
+      /**
+       * @private
+       */
+      this._remote_view = [args.remote_view];
+
+    if(args && args.stun) {
+      /**
+       * @private
+       */
+      this._stun = args.stun;
+    } else {
+      this._stun = {};
+    }
+
+    if(args && args.turn) {
+      /**
+       * @private
+       */
+      this._turn = args.turn;
+    } else {
+      this._turn = {};
+    }
+
+    if(args && args.sdp_trace)
+      /**
+       * @private
+       */
+      this._sdp_trace = args.sdp_trace;
+
+    if(args && args.net_trace)
+      /**
+       * @private
+       */
+      this._net_trace = args.net_trace;
+
+    if(args && args.debug && args.debug.log) {
+        /**
+         * Reference to debugger interface
+         * (needs to implement method <code>log</code>)
+         * @type JSJaCDebugger
+         */
+      this._debug = args.debug;
+    } else {
+      this._debug = JSJAC_JINGLE_STORE_DEBUG;
+    }
+
+    /**
+     * @private
+     */
+    this._local_stream = null;
+
+    /**
+     * @private
+     */
+    this._remote_stream = null;
+
+    /**
+     * @private
+     */
+    this._content_local = {};
+
+    /**
+     * @private
+     */
+    this._content_remote = {};
+
+    /**
+     * @private
+     */
+    this._payloads_local = [];
+
+    /**
+     * @private
+     */
+    this._group_local = {};
+
+    /**
+     * @private
+     */
+    this._candidates_local = {};
+
+    /**
+     * @private
+     */
+    this._candidates_queue_local = {};
+
+    /**
+     * @private
+     */
+    this._payloads_remote = {};
+
+    /**
+     * @private
+     */
+    this._group_remote = {};
+
+    /**
+     * @private
+     */
+    this._candidates_remote = {};
+
+    /**
+     * @private
+     */
+    this._candidates_queue_remote = {};
+
+    /**
+     * @private
+     */
+    this._initiator = '';
+
+    /**
+     * @private
+     */
+    this._responder = '';
+
+    /**
+     * @private
+     */
+    this._mute = {};
+
+    /**
+     * @private
+     */
+    this._lock = false;
+
+    /**
+     * @private
+     */
+    this._media_busy = false;
+
+    /**
+     * @private
+     */
+    this._sid = '';
+
+    /**
+     * @private
+     */
+    this._name = {};
+
+    /**
+     * @private
+     */
+    this._senders = {};
+
+    /**
+     * @private
+     */
+    this._creator = {};
+
+    /**
+     * @private
+     */
+    this._status = JSJAC_JINGLE_STATUS_INACTIVE;
+
+    /**
+     * @private
+     */
+    this._reason = JSJAC_JINGLE_REASON_CANCEL;
+
+    /**
+     * @private
+     */
+    this._handlers = {};
+
+    /**
+     * @private
+     */
+    this._peer_connection = null;
+
+    /**
+     * @private
+     */
+    this._id = 0;
+
+    /**
+     * @private
+     */
+    this._sent_id = {};
+
+    /**
+     * @private
+     */
+    this._received_id = {};
+  },
+
+  
+
+  /**
+   * JSJSAC JINGLE GETTERS
+   */
+
+  /**
+   * @private
+   */
+  _get_session_initiate_pending: function() {
+    if(typeof this._session_initiate_pending == 'function')
+      return this._session_initiate_pending;
+
+    return function() {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_initiate_success: function() {
+    if(typeof this._session_initiate_success == 'function')
+      return this._session_initiate_success;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_initiate_error: function() {
+    if(typeof this._session_initiate_error == 'function')
+      return this._session_initiate_error;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_initiate_request: function() {
+    if(typeof this._session_initiate_request == 'function')
+      return this._session_initiate_request;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_accept_pending: function() {
+    if(typeof this._session_accept_pending == 'function')
+      return this._session_accept_pending;
+
+    return function() {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_accept_success: function() {
+    if(typeof this._session_accept_success == 'function')
+      return this._session_accept_success;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_accept_error: function() {
+    if(typeof this._session_accept_error == 'function')
+      return this._session_accept_error;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_accept_request: function() {
+    if(typeof this._session_accept_request == 'function')
+      return this._session_accept_request;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_info_success: function() {
+    if(typeof this._session_info_success == 'function')
+      return this._session_info_success;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_info_error: function() {
+    if(typeof this._session_info_error == 'function')
+      return this._session_info_error;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_info_request: function() {
+    if(typeof this._session_info_request == 'function')
+      return this._session_info_request;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_terminate_pending: function() {
+    if(typeof this._session_terminate_pending == 'function')
+      return this._session_terminate_pending;
+
+    return function() {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_terminate_success: function() {
+    if(typeof this._session_terminate_success == 'function')
+      return this._session_terminate_success;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_terminate_error: function() {
+    if(typeof this._session_terminate_error == 'function')
+      return this._session_terminate_error;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_session_terminate_request: function() {
+    if(typeof this._session_terminate_request == 'function')
+      return this._session_terminate_request;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * @private
+   */
+  _get_add_remote_view: function() {
+    if(typeof this._add_remote_view == 'function')
+      return this._add_remote_view;
+
+    return function() {};
+  },
+
+  /**
+   * @private
+   */
+  _get_remove_remote_view: function() {
+    if(typeof this._remove_remote_view == 'function')
+      return this._remove_remote_view;
+
+    return function() {};
+  },
+
+  /**
+   * @private
+   */
+  _get_local_stream: function() {
+    return this._local_stream;
+  },
+
+  /**
+   * @private
+   */
+  _get_remote_stream: function() {
+    return this._remote_stream;
+  },
+
+  /**
+   * @private
+   */
+  _get_payloads_local: function(name) {
+    if(name)
+      return (name in this._payloads_local) ? this._payloads_local[name] : {};
+
+    return this._payloads_local;
+  },
+
+  /**
+   * @private
+   */
+  _get_group_local: function(semantics) {
+    if(semantics)
+      return (semantics in this._group_local) ? this._group_local[semantics] : {};
+
+    return this._group_local;
+  },
+
+  /**
+   * @private
+   */
+  _get_candidates_local: function(name) {
+    if(name)
+      return (name in this._candidates_local) ? this._candidates_local[name] : {};
+
+    return this._candidates_local;
+  },
+
+  /**
+   * @private
+   */
+  _get_candidates_queue_local: function(name) {
+    if(name)
+      return (name in this._candidates_queue_local) ? this._candidates_queue_local[name] : {};
+
+    return this._candidates_queue_local;
+  },
+
+  /**
+   * @private
+   */
+  _get_payloads_remote: function(name) {
+    if(name)
+      return (name in this._payloads_remote) ? this._payloads_remote[name] : {};
+
+    return this._payloads_remote;
+  },
+
+  /**
+   * @private
+   */
+  _get_group_remote: function(semantics) {
+    if(semantics)
+      return (semantics in this._group_remote) ? this._group_remote[semantics] : {};
+
+    return this._group_remote;
+  },
+
+  /**
+   * @private
+   */
+  _get_candidates_remote: function(name) {
+    if(name)
+      return (name in this._candidates_remote) ? this._candidates_remote[name] : [];
+
+    return this._candidates_remote;
+  },
+
+  /**
+   * @private
+   */
+  _get_candidates_queue_remote: function(name) {
+    if(name)
+      return (name in this._candidates_queue_remote) ? this._candidates_queue_remote[name] : {};
+
+    return this._candidates_queue_remote;
+  },
+
+  /**
+   * @private
+   */
+  _get_content_local: function(name) {
+    if(name)
+      return (name in this._content_local) ? this._content_local[name] : {};
+
+    return this._content_local;
+  },
+
+  /**
+   * @private
+   */
+  _get_content_remote: function(name) {
+    if(name)
+      return (name in this._content_remote) ? this._content_remote[name] : {};
+
+    return this._content_remote;
+  },
+
+  /**
+   * @private
+   */
+  _get_handlers: function(type, id) {
+    type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
+
+    if(id) {
+      if(type != JSJAC_JINGLE_STANZA_TYPE_ALL && type in this._handlers && typeof this._handlers[type][id] == 'function')
+        return this._handlers[type][id];
+
+      if(JSJAC_JINGLE_STANZA_TYPE_ALL in this._handlers && typeof this._handlers[JSJAC_JINGLE_STANZA_TYPE_ALL][id] == 'function')
+        return this._handlers[type][id];
+    }
+
+    return null;
+  },
+
+  /**
+   * @private
+   */
+  _get_peer_connection: function() {
+    return this._peer_connection;
+  },
+
+  /**
+   * @private
+   */
+  _get_id: function() {
+    return this._id;
+  },
+
+  /**
+   * @private
+   */
+  _get_id_pre: function() {
+    return JSJAC_JINGLE_STANZA_ID_PRE + '_' + (this.get_sid() || '0') + '_';
+  },
+
+  /**
+   * @private
+   */
+  _get_id_new: function() {
+    var trans_id = this._get_id() + 1;
+    this._set_id(trans_id);
+
+    return this._get_id_pre() + trans_id;
+  },
+
+  /**
+   * @private
+   */
+  _get_sent_id: function() {
+    return this._sent_id;
+  },
+
+  /**
+   * @private
+   */
+  _get_received_id: function() {
+    return this._received_id;
+  },
+
+  /**
+   * Gets the mute state
+   * @return mute value
+   * @type boolean
+   */
+  get_mute: function(name) {
+    if(!name) name = '*';
+
+    return (name in this._mute) ? this._mute[name] : false;
+  },
+
+  /**
+   * Gets the lock value
+   * @return lock value
+   * @type boolean
+   */
+  get_lock: function() {
+    return this._lock || !JSJAC_JINGLE_AVAILABLE;
+  },
+
+  /**
+   * Gets the media busy value
+   * @return media busy value
+   * @type boolean
+   */
+  get_media_busy: function() {
+    return this._media_busy;
+  },
+
+  /**
+   * Gets the sid value
+   * @return sid value
+   * @type string
+   */
+  get_sid: function() {
+    return this._sid;
+  },
+
+  /**
+   * Gets the status value
+   * @return status value
+   * @type string
+   */
+  get_status: function() {
+    return this._status;
+  },
+
+  /**
+   * Gets the reason value
+   * @return reason value
+   * @type string
+   */
+  get_reason: function() {
+    return this._reason;
+  },
+
+  /**
+   * Gets the is_muji value
+   * @return is_muji value
+   * @type boolean
+   */
+  get_is_muji: function() {
+    return this._is_muji || false;
+  },
+
+  /**
+   * Gets the to value
+   * @return to value
+   * @type string
+   */
+  get_to: function() {
+    return this._to;
+  },
+
+  /**
+   * Gets the media value
+   * @return media value
+   * @type string
+   */
+  get_media: function() {
+    return (this._media && this._media in JSJAC_JINGLE_MEDIAS) ? this._media : JSJAC_JINGLE_MEDIA_VIDEO;
+  },
+
+  /**
+   * Gets a list of medias in use
+   * @return media list
+   * @type object
+   */
+  get_media_all: function() {
+    if(this.get_media() == JSJAC_JINGLE_MEDIA_AUDIO)
+      return [JSJAC_JINGLE_MEDIA_AUDIO];
+
+    return [JSJAC_JINGLE_MEDIA_AUDIO, JSJAC_JINGLE_MEDIA_VIDEO];
+  },
+
+  /**
+   * Gets the video source value
+   * @return video source value
+   * @type string
+   */
+  get_video_source: function() {
+    return (this._video_source && this._video_source in JSJAC_JINGLE_VIDEO_SOURCES) ? this._video_source : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
+  },
+
+  /**
+   * Gets the resolution value
+   * @return resolution value
+   * @type string
+   */
+  get_resolution: function() {
+    return this._resolution ? (this._resolution).toString() : null;
+  },
+
+  /**
+   * Gets the bandwidth value
+   * @return bandwidth value
+   * @type string
+   */
+  get_bandwidth: function() {
+    return this._bandwidth ? (this._bandwidth).toString() : null;
+  },
+
+  /**
+   * Gets the fps value
+   * @return fps value
+   * @type string
+   */
+  get_fps: function() {
+    return this._fps ? (this._fps).toString() : null;
+  },
+
+  /**
+   * Gets the name value
+   * @return name value
+   * @type string
+   */
+  get_name: function(name) {
+    if(name)
+      return name in this._name;
+
+    return this._name;
+  },
+
+  /**
+   * Gets the senders value
+   * @return senders value
+   * @type string
+   */
+  get_senders: function(name) {
+    if(name)
+      return (name in this._senders) ? this._senders[name] : null;
+
+    return this._senders;
+  },
+
+  /**
+   * Gets the creator value
+   * @return creator value
+   * @type string
+   */
+  get_creator: function(name) {
+    if(name)
+      return (name in this._creator) ? this._creator[name] : null;
+
+    return this._creator;
+  },
+
+  /**
+   * Gets the creator value (for this)
+   * @return creator value
+   * @type string
+   */
+  get_creator_this: function(name) {
+    return this.get_responder() == this.get_to() ? JSJAC_JINGLE_CREATOR_INITIATOR : JSJAC_JINGLE_CREATOR_RESPONDER;
+  },
+
+  /**
+   * Gets the initiator value
+   * @return initiator value
+   * @type string
+   */
+  get_initiator: function() {
+    return this._initiator;
+  },
+
+  /**
+   * Gets the response value
+   * @return response value
+   * @type string
+   */
+  get_responder: function() {
+    return this._responder;
+  },
+
+  /**
+   * Gets the local_view value
+   * @return local_view value
+   * @type DOM
+   */
+  get_local_view: function() {
+    return (typeof this._local_view == 'object') ? this._local_view : [];
+  },
+
+  /**
+   * Gets the remote_view value
+   * @return remote_view value
+   * @type DOM
+   */
+  get_remote_view: function() {
+    return (typeof this._remote_view == 'object') ? this._remote_view : [];
+  },
+
+  /**
+   * Gets the STUN servers
+   * @return STUN servers
+   * @type object
+   */
+  get_stun: function() {
+    return (typeof this._stun == 'object') ? this._stun : {};
+  },
+
+  /**
+   * Gets the TURN servers
+   * @return TURN servers
+   * @type object
+   */
+  get_turn: function() {
+    return (typeof this._turn == 'object') ? this._turn : {};
+  },
+
+  /**
+   * Gets the SDP trace value
+   * @return SDP trace value
+   * @type boolean
+   */
+  get_sdp_trace: function() {
+    return (this._sdp_trace === true);
+  },
+
+  /**
+   * Gets the network packet trace value
+   * @return Network packet trace value
+   * @type boolean
+   */
+  get_net_trace: function() {
+    return (this._net_trace === true);
+  },
+
+  /**
+   * Gets the debug value
+   * @return debug value
+   * @type JSJaCDebugger
+   */
+  get_debug: function() {
+    return this._debug;
+  },
+
+
+
+  /**
+   * JSJSAC JINGLE SETTERS
+   */
+
+  /**
+   * @private
+   */
+  _set_session_initiate_pending: function(session_initiate_pending) {
+    this._session_initiate_pending = session_initiate_pending;
+  },
+
+  /**
+   * @private
+   */
+  _set_initiate_success: function(initiate_success) {
+    this._session_initiate_success = initiate_success;
+  },
+
+  /**
+   * @private
+   */
+  _set_initiate_error: function(initiate_error) {
+    this._session_initiate_error = initiate_error;
+  },
+
+  /**
+   * @private
+   */
+  _set_initiate_request: function(initiate_request) {
+    this._session_initiate_request = initiate_request;
+  },
+
+  /**
+   * @private
+   */
+  _set_accept_pending: function(accept_pending) {
+    this._session_accept_pending = accept_pending;
+  },
+
+  /**
+   * @private
+   */
+  _set_accept_success: function(accept_success) {
+    this._session_accept_success = accept_success;
+  },
+
+  /**
+   * @private
+   */
+  _set_accept_error: function(accept_error) {
+    this._session_accept_error = accept_error;
+  },
+
+  /**
+   * @private
+   */
+  _set_accept_request: function(accept_request) {
+    this._session_accept_request = accept_request;
+  },
+
+  /**
+   * @private
+   */
+  _set_info_success: function(info_success) {
+    this._session_info_success = info_success;
+  },
+
+  /**
+   * @private
+   */
+  _set_info_error: function(info_error) {
+    this._session_info_error = info_error;
+  },
+
+  /**
+   * @private
+   */
+  _set_info_request: function(info_request) {
+    this._session_info_request = info_request;
+  },
+
+  /**
+   * @private
+   */
+  _set_terminate_pending: function(terminate_pending) {
+    this._session_terminate_pending = terminate_pending;
+  },
+
+  /**
+   * @private
+   */
+  _set_terminate_success: function(terminate_success) {
+    this._session_terminate_success = terminate_success;
+  },
+
+  /**
+   * @private
+   */
+  _set_terminate_error: function(terminate_error) {
+    this._session_terminate_error = terminate_error;
+  },
+
+  /**
+   * @private
+   */
+  _set_terminate_request: function(terminate_request) {
+    this._session_terminate_request = terminate_request;
+  },
+
+  /**
+   * @private
+   */
+  _set_local_stream: function(local_stream) {
+    try {
+      if(!local_stream && this._local_stream) {
+        (this._local_stream).stop();
+
+        this._util_peer_stream_detach(
+          this.get_local_view()
+        );
+      }
+
+      this._local_stream = local_stream;
+
+      if(local_stream) {
+        this._util_peer_stream_attach(
+          this.get_local_view(),
+          this._get_local_stream(),
+          true
+        );
+      } else {
+        this._util_peer_stream_detach(
+          this.get_local_view()
+        );
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _set_local_stream > ' + e, 1);
+    }
+  },
+
+  /**
+   * @private
+   */
+  _set_remote_stream: function(remote_stream) {
+    try {
+      if(!remote_stream && this._remote_stream) {
+        this._util_peer_stream_detach(
+          this.get_remote_view()
+        );
+      }
+
+      this._remote_stream = remote_stream;
+
+      if(remote_stream) {
+        this._util_peer_stream_attach(
+          this.get_remote_view(),
+          this._get_remote_stream(),
+          false
+        );
+      } else {
+        this._util_peer_stream_detach(
+          this.get_remote_view()
+        );
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _set_remote_stream > ' + e, 1);
+    }
+  },
+
+  /**
+   * @private
+   */
+  _set_local_view: function(local_view) {
+    if(typeof this._local_view !== 'object')
+      this._local_view = [];
+
+    this._local_view.push(local_view);
+  },
+
+  /**
+   * @private
+   */
+  _set_remote_view: function(remote_view) {
+    if(typeof this._remote_view !== 'object')
+      this._remote_view = [];
+
+    this._remote_view.push(remote_view);
+  },
+
+  /**
+   * @private
+   */
+  _set_payloads_local: function(name, payload_data) {
+    this._payloads_local[name] = payload_data;
+  },
+
+  /**
+   * @private
+   */
+  _set_group_local: function(semantics, group_data) {
+    this._group_local[semantics] = group_data;
+  },
+
+  /**
+   * @private
+   */
+  _set_candidates_local: function(name, candidate_data) {
+    if(!(name in this._candidates_local))  this._candidates_local[name] = [];
+
+    (this._candidates_local[name]).push(candidate_data);
+  },
+
+  /**
+   * @private
+   */
+  _set_candidates_queue_local: function(name, candidate_data) {
+    try {
+      if(name === null) {
+        this._candidates_queue_local = {};
+      } else {
+        if(!(name in this._candidates_queue_local))  this._candidates_queue_local[name] = [];
+
+        (this._candidates_queue_local[name]).push(candidate_data);
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _set_candidates_queue_local > ' + e, 1);
+    }
+  },
+
+  /**
+   * @private
+   */
+  _set_payloads_remote: function(name, payload_data) {
+    this._payloads_remote[name] = payload_data;
+  },
+
+  /**
+   * @private
+   */
+  _set_payloads_remote_add: function(name, payload_data) {
+    try {
+      if(!(name in this._payloads_remote)) {
+        this._set_payloads_remote(name, payload_data);
+      } else {
+        var key;
+        var payloads_store = this._payloads_remote[name].descriptions.payload;
+        var payloads_add   = payload_data.descriptions.payload;
+
+        for(key in payloads_add) {
+          if(!(key in payloads_store))
+            payloads_store[key] = payloads_add[key];
+        }
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _set_payloads_remote_add > ' + e, 1);
+    }
+  },
+
+  /**
+   * @private
+   */
+  _set_group_remote: function(semantics, group_data) {
+    this._group_remote[semantics] = group_data;
+  },
+
+  /**
+   * @private
+   */
+  _set_candidates_remote: function(name, candidate_data) {
+    this._candidates_remote[name] = candidate_data;
+  },
+
+  /**
+   * @private
+   */
+  _set_candidates_queue_remote: function(name, candidate_data) {
+    if(name === null)
+      this._candidates_queue_remote = {};
+    else
+      this._candidates_queue_remote[name] = (candidate_data);
+  },
+
+  /**
+   * @private
+   */
+  _set_candidates_remote_add: function(name, candidate_data) {
+    try {
+      if(!name) return;
+
+      if(!(name in this._candidates_remote))
+        this._set_candidates_remote(name, []);
+   
+      var c, i;
+      var candidate_ids = [];
+
+      for(c in this._get_candidates_remote(name))
+        candidate_ids.push(this._get_candidates_remote(name)[c].id);
+
+      for(i in candidate_data) {
+        if((candidate_data[i].id).indexOf(candidate_ids) !== -1)
+          this._get_candidates_remote(name).push(candidate_data[i]);
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _set_candidates_remote_add > ' + e, 1);
+    }
+  },
+
+  /**
+   * @private
+   */
+  _set_content_local: function(name, content_local) {
+    this._content_local[name] = content_local;
+  },
+
+  /**
+   * @private
+   */
+  _set_content_remote: function(name, content_remote) {
+    this._content_remote[name] = content_remote;
+  },
+
+  /**
+   * @private
+   */
+  _set_handlers: function(type, id, handler) {
+    if(!(type in this._handlers))  this._handlers[type] = {};
+
+    this._handlers[type][id] = handler;
+  },
+
+  /**
+   * @private
+   */
+  _set_peer_connection: function(peer_connection) {
+    this._peer_connection = peer_connection;
+  },
+
+  /**
+   * @private
+   */
+  _set_id: function(id) {
+    this._id = id;
+  },
+
+  /**
+   * @private
+   */
+  _set_sent_id: function(sent_id) {
+    this._sent_id[sent_id] = 1;
+  },
+
+  /**
+   * @private
+   */
+  _set_received_id: function(received_id) {
+    this._received_id[received_id] = 1;
+  },
+
+  /**
+   * @private
+   */
+  _set_mute: function(name, mute) {
+    if(!name || name == '*') {
+      this._mute = {};
+      name = '*';
+    }
+
+    this._mute[name] = mute;
+  },
+
+  /**
+   * @private
+   */
+  _set_lock: function(lock) {
+    this._lock = lock;
+  },
+
+  /**
+   * Gets the media busy value
+   * @return media busy value
+   * @type boolean
+   */
+  _set_media_busy: function(busy) {
+    this._media_busy = busy;
+  },
+
+  /**
+   * @private
+   */
+  _set_sid: function(sid) {
+    this._sid = sid;
+  },
+
+  /**
+   * @private
+   */
+  _set_status: function(status) {
+    this._status = status;
+  },
+
+  /**
+   * @private
+   */
+  _set_reason: function(reason) {
+    this._reason = reason || JSJAC_JINGLE_REASON_CANCEL;
+  },
+
+  /**
+   * @private
+   */
+  _set_is_muji: function(is_muji) {
+    this._is_muji = is_muji;
+  },
+
+  /**
+   * @private
+   */
+  _set_to: function(to) {
+    this._to = to;
+  },
+
+  /**
+   * @private
+   */
+  _set_media: function(media) {
+    this._media = media;
+  },
+
+  /**
+   * @private
+   */
+  _set_video_source: function() {
+    this._video_source = video_source;
+  },
+
+  /**
+   * @private
+   */
+  _set_resolution: function(resolution) {
+    this._resolution = resolution;
+  },
+
+  /**
+   * @private
+   */
+  _set_bandwidth: function(bandwidth) {
+    this._bandwidth = bandwidth;
+  },
+
+  /**
+   * @private
+   */
+  _set_fps: function(fps) {
+    this._fps = fps;
+  },
+
+  /**
+   * @private
+   */
+  _set_name: function(name) {
+    this._name[name] = 1;
+  },
+
+  /**
+   * @private
+   */
+  _set_senders: function(name, senders) {
+    if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
+
+    this._senders[name] = senders;
+  },
+
+  /**
+   * @private
+   */
+  _set_creator: function(name, creator) {
+    if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
+
+    this._creator[name] = creator;
+  },
+
+  /**
+   * @private
+   */
+  _set_initiator: function(initiator) {
+    this._initiator = initiator;
+  },
+
+  /**
+   * @private
+   */
+  _set_responder: function(responder) {
+    this._responder = responder;
+  },
+
+  /**
+   * @private
+   */
+  _set_stun: function(stun_host, stun_data) {
+    this._stun[stun_server] = stun_data;
+  },
+
+  /**
+   * @private
+   */
+  _set_turn: function(turn_host, turn_data) {
+    this._turn[turn_server] = turn_data;
+  },
+
+  /**
+   * @private
+   */
+  _set_sdp_trace: function(sdp_trace) {
+    this._sdp_trace = sdp_trace;
+  },
+
+  /**
+   * @private
+   */
+  _set_net_trace: function(net_trace) {
+    this._net_trace = net_trace;
+  },
+
+  /**
+   * @private
+   */
+  _set_debug: function(debug) {
+    this._debug = debug;
+  },
+});
 
 /**
  * @fileoverview JSJaC Jingle library - Single (one-to-one) call lib
@@ -5607,28 +7362,28 @@ function JSJaCJingleSingle(args) {
    * Initiates a new Jingle session.
    */
   self.initiate = function() {
-    self.get_debug().log('[JSJaCJingle] initiate', 4);
+    self.get_debug().log('[JSJaCJingle:peer] initiate', 4);
 
     try {
       // Locked?
       if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle] initiate > Cannot initiate, resource locked. Please open another session or check WebRTC support.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] initiate > Cannot initiate, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
       if(JSJaCJingle_defer(function() { self.initiate(); })) {
-        self.get_debug().log('[JSJaCJingle] initiate > Deferred (waiting for the library components to be initiated).', 0);
+        self.get_debug().log('[JSJaCJingle:peer] initiate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
       if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
-        self.get_debug().log('[JSJaCJingle] initiate > Cannot initiate, resource not inactive (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] initiate > Cannot initiate, resource not inactive (status: ' + self.get_status() + ').', 0);
         return;
       }
 
-      self.get_debug().log('[JSJaCJingle] initiate > New Jingle session with media: ' + self.get_media(), 2);
+      self.get_debug().log('[JSJaCJingle:peer] initiate > New Jingle session with media: ' + self.get_media(), 2);
 
       // Common vars
       var i, cur_name;
@@ -5668,13 +7423,13 @@ function JSJaCJingleSingle(args) {
       // Initialize WebRTC
       self._peer_get_user_media(function() {
         self._peer_connection_create(function() {
-          self.get_debug().log('[JSJaCJingle] initiate > Ready to begin Jingle negotiation.', 2);
+          self.get_debug().log('[JSJaCJingle:peer] initiate > Ready to begin Jingle negotiation.', 2);
 
           self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
         });
       });
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] initiate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] initiate > ' + e, 1);
     }
   };
 
@@ -5682,28 +7437,28 @@ function JSJaCJingleSingle(args) {
    * Accepts the Jingle session.
    */
   self.accept = function() {
-    self.get_debug().log('[JSJaCJingle] accept', 4);
+    self.get_debug().log('[JSJaCJingle:peer] accept', 4);
 
     try {
       // Locked?
       if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle] accept > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] accept > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
       if(JSJaCJingle_defer(function() { self.accept(); })) {
-        self.get_debug().log('[JSJaCJingle] accept > Deferred (waiting for the library components to be initiated).', 0);
+        self.get_debug().log('[JSJaCJingle:peer] accept > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
       if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
-        self.get_debug().log('[JSJaCJingle] accept > Cannot accept, resource not initiated (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] accept > Cannot accept, resource not initiated (status: ' + self.get_status() + ').', 0);
         return;
       }
 
-      self.get_debug().log('[JSJaCJingle] accept > New Jingle session with media: ' + self.get_media(), 2);
+      self.get_debug().log('[JSJaCJingle:peer] accept > New Jingle session with media: ' + self.get_media(), 2);
 
       // Trigger accept pending custom callback
       (self._get_session_accept_pending())(self);
@@ -5714,14 +7469,14 @@ function JSJaCJingleSingle(args) {
       // Initialize WebRTC
       self._peer_get_user_media(function() {
         self._peer_connection_create(function() {
-          self.get_debug().log('[JSJaCJingle] accept > Ready to complete Jingle negotiation.', 2);
+          self.get_debug().log('[JSJaCJingle:peer] accept > Ready to complete Jingle negotiation.', 2);
 
           // Process accept actions
           self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_ACCEPT });
         });
       });
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] accept > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] accept > ' + e, 1);
     }
   };
 
@@ -5729,24 +7484,24 @@ function JSJaCJingleSingle(args) {
    * Sends a Jingle session info.
    */
   self.info = function(name, args) {
-    self.get_debug().log('[JSJaCJingle] info', 4);
+    self.get_debug().log('[JSJaCJingle:peer] info', 4);
 
     try {
       // Locked?
       if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle] info > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] info > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
       if(JSJaCJingle_defer(function() { self.info(name, args); })) {
-        self.get_debug().log('[JSJaCJingle] info > Deferred (waiting for the library components to be initiated).', 0);
+        self.get_debug().log('[JSJaCJingle:peer] info > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
       if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED)) {
-        self.get_debug().log('[JSJaCJingle] info > Cannot send info, resource not active (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] info > Cannot send info, resource not active (status: ' + self.get_status() + ').', 0);
         return;
       }
 
@@ -5759,7 +7514,7 @@ function JSJaCJingleSingle(args) {
 
       self.send(JSJAC_JINGLE_STANZA_TYPE_SET, args);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] info > ' + e, 1);
     }
   };
 
@@ -5767,24 +7522,24 @@ function JSJaCJingleSingle(args) {
    * Terminates the Jingle session.
    */
   self.terminate = function(reason) {
-    self.get_debug().log('[JSJaCJingle] terminate', 4);
+    self.get_debug().log('[JSJaCJingle:peer] terminate', 4);
 
     try {
       // Locked?
       if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource locked. Please open another session or check WebRTC support.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] terminate > Cannot terminate, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
       if(JSJaCJingle_defer(function() { self.terminate(reason); })) {
-        self.get_debug().log('[JSJaCJingle] terminate > Deferred (waiting for the library components to be initiated).', 0);
+        self.get_debug().log('[JSJaCJingle:peer] terminate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
       if(self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
-        self.get_debug().log('[JSJaCJingle] terminate > Cannot terminate, resource already terminated (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] terminate > Cannot terminate, resource already terminated (status: ' + self.get_status() + ').', 0);
         return;
       }
 
@@ -5797,7 +7552,7 @@ function JSJaCJingleSingle(args) {
       // Process terminate actions
       self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_TERMINATE, reason: reason });
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] terminate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] terminate > ' + e, 1);
     }
   };
 
@@ -5805,18 +7560,18 @@ function JSJaCJingleSingle(args) {
    * Sends a given Jingle stanza packet
    */
   self.send = function(type, args) {
-    self.get_debug().log('[JSJaCJingle] send', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send', 4);
 
     try {
       // Locked?
       if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle] send > Cannot send, resource locked. Please open another session or check WebRTC support.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] send > Cannot send, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
       if(JSJaCJingle_defer(function() { self.send(type, args); })) {
-        self.get_debug().log('[JSJaCJingle] send > Deferred (waiting for the library components to be initiated).', 0);
+        self.get_debug().log('[JSJaCJingle:peer] send > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
@@ -5834,7 +7589,7 @@ function JSJaCJingleSingle(args) {
 
       if(type == JSJAC_JINGLE_STANZA_TYPE_SET) {
         if(!(args.action && args.action in JSJAC_JINGLE_ACTIONS)) {
-          self.get_debug().log('[JSJaCJingle] send > Stanza action unknown: ' + (args.action || 'undefined'), 1);
+          self.get_debug().log('[JSJaCJingle:peer] send > Stanza action unknown: ' + (args.action || 'undefined'), 1);
           return;
         }
 
@@ -5888,23 +7643,23 @@ function JSJaCJingleSingle(args) {
             self.send_transport_replace(stanza); break;
 
           default:
-            self.get_debug().log('[JSJaCJingle] send > Unexpected error.', 1);
+            self.get_debug().log('[JSJaCJingle:peer] send > Unexpected error.', 1);
 
             return false;
         }
       } else if(type != JSJAC_JINGLE_STANZA_TYPE_RESULT) {
-        self.get_debug().log('[JSJaCJingle] send > Stanza type must either be set or result.', 1);
+        self.get_debug().log('[JSJaCJingle:peer] send > Stanza type must either be set or result.', 1);
 
         return false;
       }
 
       JSJAC_JINGLE_STORE_CONNECTION.send(stanza);
 
-      if(self.get_net_trace())  self.get_debug().log('[JSJaCJingle] Outgoing packet sent' + '\n\n' + stanza.xml());
+      if(self.get_net_trace())  self.get_debug().log('[JSJaCJingle:peer] Outgoing packet sent' + '\n\n' + stanza.xml());
 
       return true;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send > ' + e, 1);
     }
 
     return false;
@@ -5914,20 +7669,20 @@ function JSJaCJingleSingle(args) {
    * Handles a given Jingle stanza response
    */
   self.handle = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle', 4);
 
     try {
-      if(self.get_net_trace())  self.get_debug().log('[JSJaCJingle] Incoming packet received' + '\n\n' + stanza.xml());
+      if(self.get_net_trace())  self.get_debug().log('[JSJaCJingle:peer] Incoming packet received' + '\n\n' + stanza.xml());
 
       // Locked?
       if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle] handle > Cannot handle, resource locked. Please open another session or check WebRTC support.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] handle > Cannot handle, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
       if(JSJaCJingle_defer(function() { self.handle(stanza); })) {
-        self.get_debug().log('[JSJaCJingle] handle > Deferred (waiting for the library components to be initiated).', 0);
+        self.get_debug().log('[JSJaCJingle:peer] handle > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
@@ -5938,7 +7693,7 @@ function JSJaCJingleSingle(args) {
 
       // Submit to custom handler
       if(typeof self._get_handlers(type, id) == 'function') {
-        self.get_debug().log('[JSJaCJingle] handle > Submitted to custom handler.', 2);
+        self.get_debug().log('[JSJaCJingle:peer] handle > Submitted to custom handler.', 2);
 
         (self._get_handlers(type, id))(stanza);
         self.unregister_handler(type, id);
@@ -6004,7 +7759,7 @@ function JSJaCJingleSingle(args) {
           self.handle_transport_replace(stanza); break;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle > ' + e, 1);
     }
   };
 
@@ -6012,24 +7767,24 @@ function JSJaCJingleSingle(args) {
    * Mutes a Jingle session (local)
    */
   self.mute = function(name) {
-    self.get_debug().log('[JSJaCJingle] mute', 4);
+    self.get_debug().log('[JSJaCJingle:peer] mute', 4);
 
     try {
       // Locked?
       if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle] mute > Cannot mute, resource locked. Please open another session or check WebRTC support.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] mute > Cannot mute, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
       if(JSJaCJingle_defer(function() { self.mute(name); })) {
-        self.get_debug().log('[JSJaCJingle] mute > Deferred (waiting for the library components to be initiated).', 0);
+        self.get_debug().log('[JSJaCJingle:peer] mute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Already muted?
       if(self.get_mute(name)) {
-        self.get_debug().log('[JSJaCJingle] mute > Resource already muted.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] mute > Resource already muted.', 0);
         return;
       }
 
@@ -6038,7 +7793,7 @@ function JSJaCJingleSingle(args) {
 
       self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_MUTE, name: name });
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] mute > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] mute > ' + e, 1);
     }
   };
 
@@ -6046,24 +7801,24 @@ function JSJaCJingleSingle(args) {
    * Unmutes a Jingle session (local)
    */
   self.unmute = function(name) {
-    self.get_debug().log('[JSJaCJingle] unmute', 4);
+    self.get_debug().log('[JSJaCJingle:peer] unmute', 4);
 
     try {
       // Locked?
       if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle] unmute > Cannot unmute, resource locked. Please open another session or check WebRTC support.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] unmute > Cannot unmute, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
       if(JSJaCJingle_defer(function() { self.unmute(name); })) {
-        self.get_debug().log('[JSJaCJingle] unmute > Deferred (waiting for the library components to be initiated).', 0);
+        self.get_debug().log('[JSJaCJingle:peer] unmute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Already unmute?
       if(!self.get_mute(name)) {
-        self.get_debug().log('[JSJaCJingle] unmute > Resource already unmuted.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] unmute > Resource already unmuted.', 0);
         return;
       }
 
@@ -6072,7 +7827,7 @@ function JSJaCJingleSingle(args) {
 
       self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE, name: name });
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] unmute > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] unmute > ' + e, 1);
     }
   };
 
@@ -6082,18 +7837,18 @@ function JSJaCJingleSingle(args) {
   self.media = function(media) {
     /* DEV: don't expect this to work as of now! */
 
-    self.get_debug().log('[JSJaCJingle] media', 4);
+    self.get_debug().log('[JSJaCJingle:peer] media', 4);
 
     try {
       // Locked?
       if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle] media > Cannot change media, resource locked. Please open another session or check WebRTC support.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] media > Cannot change media, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
       if(JSJaCJingle_defer(function() { self.media(media); })) {
-        self.get_debug().log('[JSJaCJingle] media > Deferred (waiting for the library components to be initiated).', 0);
+        self.get_debug().log('[JSJaCJingle:peer] media > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
@@ -6103,23 +7858,23 @@ function JSJaCJingleSingle(args) {
 
       // Media unknown?
       if(!(media in JSJAC_JINGLE_MEDIAS)) {
-        self.get_debug().log('[JSJaCJingle] media > No media provided or media unsupported (media: ' + media + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] media > No media provided or media unsupported (media: ' + media + ').', 0);
         return;
       }
 
       // Already using provided media?
       if(self.get_media() == media) {
-        self.get_debug().log('[JSJaCJingle] media > Resource already using this media (media: ' + media + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] media > Resource already using this media (media: ' + media + ').', 0);
         return;
       }
 
       // Switch locked for now? (another one is being processed)
       if(self.get_media_busy()) {
-        self.get_debug().log('[JSJaCJingle] media > Resource already busy switching media (busy: ' + self.get_media() + ', media: ' + media + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] media > Resource already busy switching media (busy: ' + self.get_media() + ', media: ' + media + ').', 0);
         return;
       }
 
-      self.get_debug().log('[JSJaCJingle] media > Changing media to: ' + media + '...', 2);
+      self.get_debug().log('[JSJaCJingle:peer] media > Changing media to: ' + media + '...', 2);
 
       // Store new media
       self._set_media(media);
@@ -6130,7 +7885,7 @@ function JSJaCJingleSingle(args) {
         // TODO: the flow is something like that...
         /*self._peer_get_user_media(function() {
           self._peer_connection_create(function() {
-            self.get_debug().log('[JSJaCJingle] media > Ready to change media (to: ' + media + ').', 2);
+            self.get_debug().log('[JSJaCJingle:peer] media > Ready to change media (to: ' + media + ').', 2);
 
             // 'content-add' >> video
             // TODO: restart video stream configuration
@@ -6144,7 +7899,7 @@ function JSJaCJingleSingle(args) {
         // TODO: the flow is something like that...
         /*self._peer_get_user_media(function() {
           self._peer_connection_create(function() {
-            self.get_debug().log('[JSJaCJingle] media > Ready to change media (to: ' + media + ').', 2);
+            self.get_debug().log('[JSJaCJingle:peer] media > Ready to change media (to: ' + media + ').', 2);
 
             // 'content-remove' >> video
             // TODO: remove video stream configuration
@@ -6157,7 +7912,7 @@ function JSJaCJingleSingle(args) {
         });*/
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] media > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] media > ' + e, 1);
     }
   };
 
@@ -6165,27 +7920,27 @@ function JSJaCJingleSingle(args) {
    * Registers a given handler on a given Jingle stanza
    */
   self.register_handler = function(type, id, fn) {
-    self.get_debug().log('[JSJaCJingle] register_handler', 4);
+    self.get_debug().log('[JSJaCJingle:peer] register_handler', 4);
 
     try {
       type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
 
       if(typeof fn !== 'function') {
-        self.get_debug().log('[JSJaCJingle] register_handler > fn parameter not passed or not a function!', 1);
+        self.get_debug().log('[JSJaCJingle:peer] register_handler > fn parameter not passed or not a function!', 1);
         return false;
       }
 
       if(id) {
         self._set_handlers(type, id, fn);
 
-        self.get_debug().log('[JSJaCJingle] register_handler > Registered handler for id: ' + id + ' and type: ' + type, 3);
+        self.get_debug().log('[JSJaCJingle:peer] register_handler > Registered handler for id: ' + id + ' and type: ' + type, 3);
         return true;
       } else {
-        self.get_debug().log('[JSJaCJingle] register_handler > Could not register handler (no ID).', 1);
+        self.get_debug().log('[JSJaCJingle:peer] register_handler > Could not register handler (no ID).', 1);
         return false;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] register_handler > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] register_handler > ' + e, 1);
     }
 
     return false;
@@ -6195,7 +7950,7 @@ function JSJaCJingleSingle(args) {
    * Unregisters the given handler on a given Jingle stanza
    */
   self.unregister_handler = function(type, id) {
-    self.get_debug().log('[JSJaCJingle] unregister_handler', 4);
+    self.get_debug().log('[JSJaCJingle:peer] unregister_handler', 4);
 
     try {
       type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
@@ -6203,14 +7958,14 @@ function JSJaCJingleSingle(args) {
       if(type in self._handlers && id in self._handlers[type]) {
         delete self._handlers[type][id];
 
-        self.get_debug().log('[JSJaCJingle] unregister_handler > Unregistered handler for id: ' + id + ' and type: ' + type, 3);
+        self.get_debug().log('[JSJaCJingle:peer] unregister_handler > Unregistered handler for id: ' + id + ' and type: ' + type, 3);
         return true;
       } else {
-        self.get_debug().log('[JSJaCJingle] unregister_handler > Could not unregister handler with id: ' + id + ' and type: ' + type + ' (not found).', 2);
+        self.get_debug().log('[JSJaCJingle:peer] unregister_handler > Could not unregister handler with id: ' + id + ' and type: ' + type + ' (not found).', 2);
         return false;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] unregister_handler > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] unregister_handler > ' + e, 1);
     }
 
     return false;
@@ -6220,7 +7975,7 @@ function JSJaCJingleSingle(args) {
    * Registers a view element
    */
   self.register_view = function(type, view) {
-    self.get_debug().log('[JSJaCJingle] register_view', 4);
+    self.get_debug().log('[JSJaCJingle:peer] register_view', 4);
 
     try {
       // Get view functions
@@ -6232,7 +7987,7 @@ function JSJaCJingleSingle(args) {
         // Check view is not already registered
         for(i in (fn.view.get)()) {
           if((fn.view.get)()[i] == view) {
-            self.get_debug().log('[JSJaCJingle] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
+            self.get_debug().log('[JSJaCJingle:peer] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
             return true;
           }
         }
@@ -6246,15 +8001,15 @@ function JSJaCJingleSingle(args) {
           fn.mute
         );
 
-        self.get_debug().log('[JSJaCJingle] register_view > Registered view of type: ' + type, 3);
+        self.get_debug().log('[JSJaCJingle:peer] register_view > Registered view of type: ' + type, 3);
 
         return true;
       } else {
-        self.get_debug().log('[JSJaCJingle] register_view > Could not register view of type: ' + type + ' (type unknown).', 1);
+        self.get_debug().log('[JSJaCJingle:peer] register_view > Could not register view of type: ' + type + ' (type unknown).', 1);
         return false;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] register_view > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] register_view > ' + e, 1);
     }
 
     return false;
@@ -6264,7 +8019,7 @@ function JSJaCJingleSingle(args) {
    * Unregisters a view element
    */
   self.unregister_view = function(type, view) {
-    self.get_debug().log('[JSJaCJingle] unregister_view', 4);
+    self.get_debug().log('[JSJaCJingle:peer] unregister_view', 4);
 
     try {
       // Get view functions
@@ -6286,19 +8041,19 @@ function JSJaCJingleSingle(args) {
               view
             );
 
-            self.get_debug().log('[JSJaCJingle] unregister_view > Unregistered view of type: ' + type, 3);
+            self.get_debug().log('[JSJaCJingle:peer] unregister_view > Unregistered view of type: ' + type, 3);
             return true;
           }
         }
 
-        self.get_debug().log('[JSJaCJingle] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
+        self.get_debug().log('[JSJaCJingle:peer] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
         return true;
       } else {
-        self.get_debug().log('[JSJaCJingle] unregister_view > Could not unregister view of type: ' + type + ' (type unknown).', 1);
+        self.get_debug().log('[JSJaCJingle:peer] unregister_view > Could not unregister view of type: ' + type + ' (type unknown).', 1);
         return false;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] unregister_view > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] unregister_view > ' + e, 1);
     }
 
     return false;
@@ -6313,16 +8068,16 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle content accept
    */
   self.send_content_accept = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] send_content_accept', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_content_accept', 4);
 
     try {
       // TODO: remove from remote 'content-add' queue
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle] send_content_accept > Feature not implemented!', 0);
+      self.get_debug().log('[JSJaCJingle:peer] send_content_accept > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_content_accept > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_content_accept > ' + e, 1);
     }
   };
 
@@ -6330,15 +8085,15 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle content add
    */
   self.send_content_add = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] send_content_add', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_content_add', 4);
 
     try {
       // TODO: push to local 'content-add' queue
 
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle] send_content_add > Feature not implemented!', 0);
+      self.get_debug().log('[JSJaCJingle:peer] send_content_add > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_content_add > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_content_add > ' + e, 1);
     }
   };
 
@@ -6346,15 +8101,15 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle content modify
    */
   self.send_content_modify = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] send_content_modify', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_content_modify', 4);
 
     try {
       // TODO: push to local 'content-modify' queue
 
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle] send_content_modify > Feature not implemented!', 0);
+      self.get_debug().log('[JSJaCJingle:peer] send_content_modify > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_content_modify > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_content_modify > ' + e, 1);
     }
   };
 
@@ -6362,15 +8117,15 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle content reject
    */
   self.send_content_reject = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] send_content_reject', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_content_reject', 4);
 
     try {
       // TODO: remove from remote 'content-add' queue
 
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle] send_content_reject > Feature not implemented!', 0);
+      self.get_debug().log('[JSJaCJingle:peer] send_content_reject > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_content_reject > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_content_reject > ' + e, 1);
     }
   };
 
@@ -6378,15 +8133,15 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle content remove
    */
   self.send_content_remove = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] send_content_remove', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_content_remove', 4);
 
     try {
       // TODO: add to local 'content-remove' queue
 
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle] send_content_remove > Feature not implemented!', 0);
+      self.get_debug().log('[JSJaCJingle:peer] send_content_remove > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_content_remove > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_content_remove > ' + e, 1);
     }
   };
 
@@ -6394,13 +8149,13 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle description info
    */
   self.send_description_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] send_description_info', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_description_info', 4);
 
     try {
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle] send_description_info > Feature not implemented!', 0);
+      self.get_debug().log('[JSJaCJingle:peer] send_description_info > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_description_info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_description_info > ' + e, 1);
     }
   };
 
@@ -6408,13 +8163,13 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle security info
    */
   self.send_security_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] send_security_info', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_security_info', 4);
 
     try {
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle] send_security_info > Feature not implemented!', 0);
+      self.get_debug().log('[JSJaCJingle:peer] send_security_info > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_security_info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_security_info > ' + e, 1);
     }
   };
 
@@ -6422,17 +8177,17 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle session accept
    */
   self.send_session_accept = function(stanza, args) {
-    self.get_debug().log('[JSJaCJingle] send_session_accept', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_session_accept', 4);
 
     try {
       if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING) {
-        self.get_debug().log('[JSJaCJingle] send_session_accept > Cannot send accept stanza, resource not accepting (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] send_session_accept > Cannot send accept stanza, resource not accepting (status: ' + self.get_status() + ').', 0);
         self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
       if(!args) {
-          self.get_debug().log('[JSJaCJingle] send_session_accept > Argument not provided.', 1);
+          self.get_debug().log('[JSJaCJingle:peer] send_session_accept > Argument not provided.', 1);
           return;
       }
 
@@ -6457,9 +8212,9 @@ function JSJaCJingleSingle(args) {
         internal:   self.handle_session_accept_error
       });
 
-      self.get_debug().log('[JSJaCJingle] send_session_accept > Sent.', 4);
+      self.get_debug().log('[JSJaCJingle:peer] send_session_accept > Sent.', 4);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_session_accept > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_session_accept > ' + e, 1);
     }
   };
 
@@ -6467,11 +8222,11 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle session info
    */
   self.send_session_info = function(stanza, args) {
-    self.get_debug().log('[JSJaCJingle] send_session_info', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_session_info', 4);
 
     try {
       if(!args) {
-        self.get_debug().log('[JSJaCJingle] send_session_info > Argument not provided.', 1);
+        self.get_debug().log('[JSJaCJingle:peer] send_session_info > Argument not provided.', 1);
         return;
       }
 
@@ -6498,9 +8253,9 @@ function JSJaCJingleSingle(args) {
         internal:   self.handle_session_info_error
       });
 
-      self.get_debug().log('[JSJaCJingle] send_session_info > Sent (name: ' + args.info + ').', 2);
+      self.get_debug().log('[JSJaCJingle:peer] send_session_info > Sent (name: ' + args.info + ').', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_session_info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_session_info > ' + e, 1);
     }
   };
 
@@ -6508,16 +8263,16 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle session initiate
    */
   self.send_session_initiate = function(stanza, args) {
-    self.get_debug().log('[JSJaCJingle] send_session_initiate', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_session_initiate', 4);
 
     try {
       if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATING) {
-        self.get_debug().log('[JSJaCJingle] send_session_initiate > Cannot send initiate stanza, resource not initiating (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] send_session_initiate > Cannot send initiate stanza, resource not initiating (status: ' + self.get_status() + ').', 0);
         return;
       }
 
       if(!args) {
-        self.get_debug().log('[JSJaCJingle] send_session_initiate > Argument not provided.', 1);
+        self.get_debug().log('[JSJaCJingle:peer] send_session_initiate > Argument not provided.', 1);
         return;
       }
 
@@ -6542,9 +8297,9 @@ function JSJaCJingleSingle(args) {
         internal:   self.handle_session_initiate_error
       });
 
-      self.get_debug().log('[JSJaCJingle] send_session_initiate > Sent.', 2);
+      self.get_debug().log('[JSJaCJingle:peer] send_session_initiate > Sent.', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_session_initiate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_session_initiate > ' + e, 1);
     }
   };
 
@@ -6552,16 +8307,16 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle session terminate
    */
   self.send_session_terminate = function(stanza, args) {
-    self.get_debug().log('[JSJaCJingle] send_session_terminate', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_session_terminate', 4);
 
     try {
       if(self.get_status() != JSJAC_JINGLE_STATUS_TERMINATING) {
-        self.get_debug().log('[JSJaCJingle] send_session_terminate > Cannot send terminate stanza, resource not terminating (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] send_session_terminate > Cannot send terminate stanza, resource not terminating (status: ' + self.get_status() + ').', 0);
         return;
       }
 
       if(!args) {
-        self.get_debug().log('[JSJaCJingle] send_session_terminate > Argument not provided.', 1);
+        self.get_debug().log('[JSJaCJingle:peer] send_session_terminate > Argument not provided.', 1);
         return;
       }
 
@@ -6591,9 +8346,9 @@ function JSJaCJingleSingle(args) {
         internal:   self.handle_session_terminate_error
       });
 
-      self.get_debug().log('[JSJaCJingle] send_session_terminate > Sent (reason: ' + args.reason + ').', 2);
+      self.get_debug().log('[JSJaCJingle:peer] send_session_terminate > Sent (reason: ' + args.reason + ').', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_session_terminate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_session_terminate > ' + e, 1);
     }
   };
 
@@ -6601,13 +8356,13 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle transport accept
    */
   self.send_transport_accept = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] send_transport_accept', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_transport_accept', 4);
 
     try {
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle] send_transport_accept > Feature not implemented!', 0);
+      self.get_debug().log('[JSJaCJingle:peer] send_transport_accept > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_transport_accept > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_transport_accept > ' + e, 1);
     }
   };
 
@@ -6615,21 +8370,21 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle transport info
    */
   self.send_transport_info = function(stanza, args) {
-    self.get_debug().log('[JSJaCJingle] send_transport_info', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_transport_info', 4);
 
     try {
       if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
-        self.get_debug().log('[JSJaCJingle] send_transport_info > Cannot send transport info, resource not initiated, nor accepting, nor accepted (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] send_transport_info > Cannot send transport info, resource not initiated, nor accepting, nor accepted (status: ' + self.get_status() + ').', 0);
         return;
       }
 
       if(!args) {
-        self.get_debug().log('[JSJaCJingle] send_transport_info > Argument not provided.', 1);
+        self.get_debug().log('[JSJaCJingle:peer] send_transport_info > Argument not provided.', 1);
         return;
       }
 
       if(self.util_object_length(self._get_candidates_queue_local()) === 0) {
-        self.get_debug().log('[JSJaCJingle] send_transport_info > No local candidate in queue.', 1);
+        self.get_debug().log('[JSJaCJingle:peer] send_transport_info > No local candidate in queue.', 1);
         return;
       }
 
@@ -6666,9 +8421,9 @@ function JSJaCJingleSingle(args) {
         internal: self.handle_transport_info_error
       });
 
-      self.get_debug().log('[JSJaCJingle] send_transport_info > Sent.', 2);
+      self.get_debug().log('[JSJaCJingle:peer] send_transport_info > Sent.', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_transport_info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_transport_info > ' + e, 1);
     }
   };
 
@@ -6676,13 +8431,13 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle transport reject
    */
   self.send_transport_reject = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] send_transport_reject', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_transport_reject', 4);
 
     try {
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle] send_transport_reject > Feature not implemented!', 0);
+      self.get_debug().log('[JSJaCJingle:peer] send_transport_reject > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_transport_reject > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_transport_reject > ' + e, 1);
     }
   };
 
@@ -6690,13 +8445,13 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle transport replace
    */
   self.send_transport_replace = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] send_transport_replace', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_transport_replace', 4);
 
     try {
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle] send_transport_replace > Feature not implemented!', 0);
+      self.get_debug().log('[JSJaCJingle:peer] send_transport_replace > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_transport_replace > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_transport_replace > ' + e, 1);
     }
   };
 
@@ -6704,22 +8459,22 @@ function JSJaCJingleSingle(args) {
    * Sends the Jingle transport replace
    */
   self.send_error = function(stanza, error) {
-    self.get_debug().log('[JSJaCJingle] send_error', 4);
+    self.get_debug().log('[JSJaCJingle:peer] send_error', 4);
 
     try {
       // Assert
       if(!('type' in error)) {
-        self.get_debug().log('[JSJaCJingle] send_error > Type unknown.', 1);
+        self.get_debug().log('[JSJaCJingle:peer] send_error > Type unknown.', 1);
         return;
       }
 
       if('jingle' in error && !(error.jingle in JSJAC_JINGLE_ERRORS)) {
-        self.get_debug().log('[JSJaCJingle] send_error > Jingle condition unknown (' + error.jingle + ').', 1);
+        self.get_debug().log('[JSJaCJingle:peer] send_error > Jingle condition unknown (' + error.jingle + ').', 1);
         return;
       }
 
       if('xmpp' in error && !(error.xmpp in XMPP_ERRORS)) {
-        self.get_debug().log('[JSJaCJingle] send_error > XMPP condition unknown (' + error.xmpp + ').', 1);
+        self.get_debug().log('[JSJaCJingle:peer] send_error > XMPP condition unknown (' + error.xmpp + ').', 1);
         return;
       }
 
@@ -6736,9 +8491,9 @@ function JSJaCJingleSingle(args) {
 
       JSJAC_JINGLE_STORE_CONNECTION.send(stanza_error);
 
-      self.get_debug().log('[JSJaCJingle] send_error > Sent: ' + (error.jingle || error.xmpp), 2);
+      self.get_debug().log('[JSJaCJingle:peer] send_error > Sent: ' + (error.jingle || error.xmpp), 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] send_error > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] send_error > ' + e, 1);
     }
   };
 
@@ -6753,7 +8508,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_content_accept = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_content_accept', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_content_accept', 4);
 
     try {
       // TODO: start to flow accepted stream
@@ -6763,7 +8518,7 @@ function JSJaCJingleSingle(args) {
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_content_accept > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_content_accept > ' + e, 1);
     }
   };
 
@@ -6772,7 +8527,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_content_add = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_content_add', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_content_add', 4);
 
     try {
       // TODO: request the user to start this content (need a custom handler)
@@ -6783,7 +8538,7 @@ function JSJaCJingleSingle(args) {
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_content_add > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_content_add > ' + e, 1);
     }
   };
 
@@ -6792,7 +8547,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_content_modify = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_content_modify', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_content_modify', 4);
 
     try {
       // TODO: change 'senders' value (direction of the stream)
@@ -6804,7 +8559,7 @@ function JSJaCJingleSingle(args) {
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_content_modify > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_content_modify > ' + e, 1);
     }
   };
 
@@ -6813,7 +8568,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_content_reject = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_content_reject', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_content_reject', 4);
 
     try {
       // TODO: remove rejected content from local 'content-add' queue
@@ -6821,7 +8576,7 @@ function JSJaCJingleSingle(args) {
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_content_reject > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_content_reject > ' + e, 1);
     }
   };
 
@@ -6830,7 +8585,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_content_remove = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_content_remove', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_content_remove', 4);
 
     try {
       // TODO: stop flowing removed stream
@@ -6839,7 +8594,7 @@ function JSJaCJingleSingle(args) {
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_content_remove > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_content_remove > ' + e, 1);
     }
   };
 
@@ -6848,13 +8603,13 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_description_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_description_info', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_description_info', 4);
 
     try {
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_description_info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_description_info > ' + e, 1);
     }
   };
 
@@ -6863,13 +8618,13 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_security_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_security_info', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_security_info', 4);
 
     try {
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_security_info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_security_info > ' + e, 1);
     }
   };
 
@@ -6878,12 +8633,12 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_accept = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_accept', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_accept', 4);
 
     try {
       // Security preconditions
       if(!self.util_stanza_safe(stanza)) {
-        self.get_debug().log('[JSJaCJingle] handle_session_accept > Dropped unsafe stanza.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] handle_session_accept > Dropped unsafe stanza.', 0);
 
         self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
         return;
@@ -6914,7 +8669,7 @@ function JSJaCJingleSingle(args) {
           self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_accept > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_accept > ' + e, 1);
     }
   };
 
@@ -6923,13 +8678,13 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_accept_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_accept_success', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_success', 4);
 
     try {
       // Change session status
       self._set_status(JSJAC_JINGLE_STATUS_ACCEPTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_accept_success > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_success > ' + e, 1);
     }
   };
 
@@ -6938,13 +8693,13 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_accept_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_accept_error', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_error', 4);
 
     try {
       // Terminate the session (timeout)
       self.terminate(JSJAC_JINGLE_REASON_TIMEOUT);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_accept_error > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_error > ' + e, 1);
     }
   };
 
@@ -6953,12 +8708,12 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_accept_request = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_accept_request', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_request', 4);
 
     try {
       // Slot unavailable?
       if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
-        self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Cannot handle, resource already accepted (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_request > Cannot handle, resource already accepted (status: ' + self.get_status() + ').', 0);
         self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
@@ -6990,7 +8745,7 @@ function JSJaCJingleSingle(args) {
           self._get_candidates_queue_remote()
         );
 
-        if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
+        if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
 
         // Remote description
         self._get_peer_connection().setRemoteDescription(
@@ -7001,7 +8756,7 @@ function JSJaCJingleSingle(args) {
           },
 
           function(e) {
-            if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle] SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+            if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
 
             // Error (descriptions are incompatible)
             self.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
@@ -7033,10 +8788,10 @@ function JSJaCJingleSingle(args) {
         // Send error reply
         self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
 
-        self.get_debug().log('[JSJaCJingle] handle_session_accept_request > Error.', 1);
+        self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_request > Error.', 1);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_accept_request > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_request > ' + e, 1);
     }
   };
 
@@ -7045,12 +8800,12 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_info', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_info', 4);
 
     try {
       // Security preconditions
       if(!self.util_stanza_safe(stanza)) {
-        self.get_debug().log('[JSJaCJingle] handle_session_info > Dropped unsafe stanza.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] handle_session_info > Dropped unsafe stanza.', 0);
 
         self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
         return;
@@ -7080,7 +8835,7 @@ function JSJaCJingleSingle(args) {
           self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_info > ' + e, 1);
     }
   };
 
@@ -7089,7 +8844,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_info_success', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_info_success', 4);
   };
 
   /**
@@ -7097,7 +8852,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_info_error', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_info_error', 4);
   };
 
   /**
@@ -7105,7 +8860,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_info_request = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_info_request', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_info_request', 4);
 
     try {
       // Parse stanza
@@ -7121,7 +8876,7 @@ function JSJaCJingleSingle(args) {
       }
 
       if(info_result) {
-        self.get_debug().log('[JSJaCJingle] handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
+        self.get_debug().log('[JSJaCJingle:peer] handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
 
         // Process info actions
         self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
@@ -7130,7 +8885,7 @@ function JSJaCJingleSingle(args) {
         (self._get_session_info_success())(self, stanza);
         self.handle_session_info_success(stanza);
       } else {
-        self.get_debug().log('[JSJaCJingle] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ').', 1);
+        self.get_debug().log('[JSJaCJingle:peer] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ').', 1);
 
         // Send error reply
         self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
@@ -7140,7 +8895,7 @@ function JSJaCJingleSingle(args) {
         self.handle_session_info_error(stanza);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_info_request > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_info_request > ' + e, 1);
     }
   };
 
@@ -7149,7 +8904,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_initiate', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate', 4);
 
     try {
       switch(stanza.getType()) {
@@ -7175,7 +8930,7 @@ function JSJaCJingleSingle(args) {
           self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_initiate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate > ' + e, 1);
     }
   };
 
@@ -7184,13 +8939,13 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_initiate_success', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_success', 4);
 
     try {
       // Change session status
       self._set_status(JSJAC_JINGLE_STATUS_INITIATED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_initiate_success > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_success > ' + e, 1);
     }
   };
 
@@ -7199,7 +8954,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_initiate_error', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_error', 4);
 
     try {
       // Change session status
@@ -7211,7 +8966,7 @@ function JSJaCJingleSingle(args) {
       // Lock session (cannot be used later)
       self._set_lock(true);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_initiate_error > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_error > ' + e, 1);
     }
   };
 
@@ -7220,12 +8975,12 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_initiate_request = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_initiate_request', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_request', 4);
 
     try {
       // Slot unavailable?
       if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
-        self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Cannot handle, resource already initiated (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_request > Cannot handle, resource already initiated (status: ' + self.get_status() + ').', 0);
         self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
@@ -7267,7 +9022,7 @@ function JSJaCJingleSingle(args) {
           // Error (no media is supported)
           self.terminate(JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS);
 
-          self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Error (unsupported media).', 1);
+          self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_request > Error (unsupported media).', 1);
           return;
         }
 
@@ -7284,10 +9039,10 @@ function JSJaCJingleSingle(args) {
         // Send error reply
         self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
 
-        self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > Error (bad request).', 1);
+        self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_request > Error (bad request).', 1);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_initiate_request > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_request > ' + e, 1);
     }
   };
 
@@ -7296,14 +9051,14 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_terminate = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate', 4);
 
     try {
       var type = stanza.getType();
 
       // Security preconditions
       if(!self.util_stanza_safe(stanza)) {
-        self.get_debug().log('[JSJaCJingle] handle_session_terminate > Dropped unsafe stanza.', 0);
+        self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate > Dropped unsafe stanza.', 0);
 
         self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
         return;
@@ -7333,7 +9088,7 @@ function JSJaCJingleSingle(args) {
           self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_terminate > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate > ' + e, 1);
     }
   };
 
@@ -7342,7 +9097,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_terminate_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate_success', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_success', 4);
 
     try {
       // Change session status
@@ -7351,7 +9106,7 @@ function JSJaCJingleSingle(args) {
       // Stop WebRTC
       self._peer_stop();
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_terminate_success > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_success > ' + e, 1);
     }
   };
 
@@ -7360,7 +9115,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_terminate_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate_error', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_error', 4);
 
     try {
       // Change session status
@@ -7372,9 +9127,9 @@ function JSJaCJingleSingle(args) {
       // Lock session (cannot be used later)
       self._set_lock(true);
 
-      self.get_debug().log('[JSJaCJingle] handle_session_terminate_error > Forced session termination locally.', 0);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_error > Forced session termination locally.', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_terminate_error > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_error > ' + e, 1);
     }
   };
 
@@ -7383,12 +9138,12 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_session_terminate_request = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_session_terminate_request', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_request', 4);
 
     try {
       // Slot unavailable?
       if(self.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
-        self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > Cannot handle, resource not active (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_request > Cannot handle, resource not active (status: ' + self.get_status() + ').', 0);
         self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
@@ -7406,9 +9161,9 @@ function JSJaCJingleSingle(args) {
       // Process terminate actions
       self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
 
-      self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > (reason: ' + self.get_reason() + ').', 3);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_request > (reason: ' + self.get_reason() + ').', 3);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_session_terminate_request > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_request > ' + e, 1);
     }
   };
 
@@ -7417,13 +9172,13 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_transport_accept = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_transport_accept', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_transport_accept', 4);
 
     try {
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_content_accept > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_content_accept > ' + e, 1);
     }
   };
 
@@ -7432,12 +9187,12 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_transport_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_transport_info', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_transport_info', 4);
 
     try {
       // Slot unavailable?
       if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
-        self.get_debug().log('[JSJaCJingle] handle_transport_info > Cannot handle, resource not initiated, nor accepting, nor accepted (status: ' + self.get_status() + ').', 0);
+        self.get_debug().log('[JSJaCJingle:peer] handle_transport_info > Cannot handle, resource not initiated, nor accepting, nor accepted (status: ' + self.get_status() + ').', 0);
         self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
@@ -7482,10 +9237,10 @@ function JSJaCJingleSingle(args) {
         // Send error reply
         self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
 
-        self.get_debug().log('[JSJaCJingle] handle_transport_info > Error.', 1);
+        self.get_debug().log('[JSJaCJingle:peer] handle_transport_info > Error.', 1);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_transport_info > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_transport_info > ' + e, 1);
     }
   };
 
@@ -7494,7 +9249,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_transport_info_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_transport_info_success', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_transport_info_success', 4);
   };
 
   /**
@@ -7502,7 +9257,7 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_transport_info_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_transport_info_error', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_transport_info_error', 4);
   };
 
   /**
@@ -7510,13 +9265,13 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_transport_reject = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_transport_reject', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_transport_reject', 4);
 
     try {
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_transport_reject > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_transport_reject > ' + e, 1);
     }
   };
 
@@ -7525,13 +9280,13 @@ function JSJaCJingleSingle(args) {
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
   self.handle_transport_replace = function(stanza) {
-    self.get_debug().log('[JSJaCJingle] handle_transport_replace', 4);
+    self.get_debug().log('[JSJaCJingle:peer] handle_transport_replace', 4);
 
     try {
       // Not implemented for now
       self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] handle_transport_replace > ' + e, 1);
+      self.get_debug().log('[JSJaCJingle:peer] handle_transport_replace > ' + e, 1);
     }
   };
 

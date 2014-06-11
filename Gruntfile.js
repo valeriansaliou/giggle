@@ -25,17 +25,25 @@ module.exports = function(grunt) {
 
 
   // Map files
+  var GRUNT_LIB_FILES = [
+    'lib/underscore.js',
+    'lib/ring.js'
+  ];
+
   var GRUNT_SRC_FILES = [
     'src/jsjac.jingle.header.js',
     'src/jsjac.jingle.constants.js',
-    'src/jsjac.jingle.base.js',
     'src/jsjac.jingle.utils.js',
+    'src/jsjac.jingle.sdp.js',
     'src/jsjac.jingle.peer.js',
+    'src/jsjac.jingle.base.js',
     'src/jsjac.jingle.single.js',
     'src/jsjac.jingle.muji.js',
     'src/jsjac.jingle.commons.js',
     'src/jsjac.jingle.init.js'
   ];
+
+  var GRUNT_FILES = GRUNT_LIB_FILES.concat(GRUNT_SRC_FILES);
 
 
   // Map functions
@@ -95,7 +103,7 @@ module.exports = function(grunt) {
 
       all: {
         files: [{
-          src: GRUNT_SRC_FILES,
+          src: GRUNT_FILES,
           dest: 'tmp/jsjac.jingle.js',
         }]
       }

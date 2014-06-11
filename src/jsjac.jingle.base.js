@@ -9,10 +9,6 @@
 
 
 /**
- * JSJSAC JINGLE METHODS
- */
-
-/**
  * Creates a new XMPP Jingle session.
  * @class Somewhat abstract base class for XMPP Jingle sessions. Contains all
  * of the code in common for all Jingle sessions
@@ -48,339 +44,347 @@
  * @param {boolean} args.net_trace Log network packet trace in console (requires a debug interface).
  * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
  */
-function JSJaCJingleBase(args) {
-  var self = this;
 
-  if(args && args.session_initiate_pending)
-    /**
-     * @private
-     */
-    self._session_initiate_pending = args.session_initiate_pending;
-
-  if(args && args.session_initiate_success)
-    /**
-     * @private
-     */
-    self._session_initiate_success = args.session_initiate_success;
-
-  if(args && args.session_initiate_error)
-    /**
-     * @private
-     */
-    self._session_initiate_error = args.session_initiate_error;
-
-  if(args && args.session_initiate_request)
-    /**
-     * @private
-     */
-    self._session_initiate_request = args.session_initiate_request;
-
-  if(args && args.session_accept_pending)
-    /**
-     * @private
-     */
-    self._session_accept_pending = args.session_accept_pending;
-
-  if(args && args.session_accept_success)
-    /**
-     * @private
-     */
-    self._session_accept_success = args.session_accept_success;
-
-  if(args && args.session_accept_error)
-    /**
-     * @private
-     */
-    self._session_accept_error = args.session_accept_error;
-
-  if(args && args.session_accept_request)
-    /**
-     * @private
-     */
-    self._session_accept_request = args.session_accept_request;
-
-  if(args && args.session_info_success)
-    /**
-     * @private
-     */
-    self._session_info_success = args.session_info_success;
-
-  if(args && args.session_info_error)
-    /**
-     * @private
-     */
-    self._session_info_error = args.session_info_error;
-
-  if(args && args.session_info_request)
-    /**
-     * @private
-     */
-    self._session_info_request = args.session_info_request;
-
-  if(args && args.session_terminate_pending)
-    /**
-     * @private
-     */
-    self._session_terminate_pending = args.session_terminate_pending;
-
-  if(args && args.session_terminate_success)
-    /**
-     * @private
-     */
-    self._session_terminate_success = args.session_terminate_success;
-
-  if(args && args.session_terminate_error)
-    /**
-     * @private
-     */
-    self._session_terminate_error = args.session_terminate_error;
-
-  if(args && args.session_terminate_request)
-    /**
-     * @private
-     */
-    self._session_terminate_request = args.session_terminate_request;
-
-  if(args && args.add_remote_view)
-    /**
-     * @private
-     */
-    self._add_remote_view = args.add_remote_view;
-
-  if(args && args.remove_remote_view)
-    /**
-     * @private
-     */
-    self._remove_remote_view = args.remove_remote_view;
-
-  if(args && args.to)
-    /**
-     * @private
-     */
-    self._to = args.to;
-
-  if(args && args.media)
-    /**
-     * @private
-     */
-    self._media = args.media;
-
-  if(args && args.video_source)
-    /**
-     * @private
-     */
-    self._video_source = args.video_source;
-
-  if(args && args.resolution)
-    /**
-     * @private
-     */
-    self._resolution = args.resolution;
-
-  if(args && args.bandwidth)
-    /**
-     * @private
-     */
-    self._bandwidth = args.bandwidth;
-
-  if(args && args.fps)
-    /**
-     * @private
-     */
-    self._fps = args.fps;
-
-  if(args && args.local_view)
-    /**
-     * @private
-     */
-    self._local_view = [args.local_view];
-
-  if(args && args.remote_view)
-    /**
-     * @private
-     */
-    self._remote_view = [args.remote_view];
-
-  if(args && args.stun) {
-    /**
-     * @private
-     */
-    self._stun = args.stun;
-  } else {
-    self._stun = {};
-  }
-
-  if(args && args.turn) {
-    /**
-     * @private
-     */
-    self._turn = args.turn;
-  } else {
-    self._turn = {};
-  }
-
-  if(args && args.sdp_trace)
-    /**
-     * @private
-     */
-    self._sdp_trace = args.sdp_trace;
-
-  if(args && args.net_trace)
-    /**
-     * @private
-     */
-    self._net_trace = args.net_trace;
-
-  if(args && args.debug && args.debug.log) {
+var __JSJaCJingleBase = ring.create({
+  /**
+   * Constructor
+   */
+  constructor: function(args) {
+    this.utils  = new JSJaCJingleUtils(this);
+    this.sdp    = new JSJaCJingleSDP(this);
+    this.peer   = new JSJaCJinglePeer(this);
+    
+    if(args && args.session_initiate_pending)
       /**
-       * Reference to debugger interface
-       * (needs to implement method <code>log</code>)
-       * @type JSJaCDebugger
+       * @private
        */
-    self._debug = args.debug;
-  } else {
-    self._debug = JSJAC_JINGLE_STORE_DEBUG;
-  }
+      this._session_initiate_pending = args.session_initiate_pending;
 
-  /**
-   * @private
-   */
-  self._local_stream = null;
+    if(args && args.session_initiate_success)
+      /**
+       * @private
+       */
+      this._session_initiate_success = args.session_initiate_success;
 
-  /**
-   * @private
-   */
-  self._remote_stream = null;
+    if(args && args.session_initiate_error)
+      /**
+       * @private
+       */
+      this._session_initiate_error = args.session_initiate_error;
 
-  /**
-   * @private
-   */
-  self._content_local = {};
+    if(args && args.session_initiate_request)
+      /**
+       * @private
+       */
+      this._session_initiate_request = args.session_initiate_request;
 
-  /**
-   * @private
-   */
-  self._content_remote = {};
+    if(args && args.session_accept_pending)
+      /**
+       * @private
+       */
+      this._session_accept_pending = args.session_accept_pending;
 
-  /**
-   * @private
-   */
-  self._payloads_local = [];
+    if(args && args.session_accept_success)
+      /**
+       * @private
+       */
+      this._session_accept_success = args.session_accept_success;
 
-  /**
-   * @private
-   */
-  self._group_local = {};
+    if(args && args.session_accept_error)
+      /**
+       * @private
+       */
+      this._session_accept_error = args.session_accept_error;
 
-  /**
-   * @private
-   */
-  self._candidates_local = {};
+    if(args && args.session_accept_request)
+      /**
+       * @private
+       */
+      this._session_accept_request = args.session_accept_request;
 
-  /**
-   * @private
-   */
-  self._candidates_queue_local = {};
+    if(args && args.session_info_success)
+      /**
+       * @private
+       */
+      this._session_info_success = args.session_info_success;
 
-  /**
-   * @private
-   */
-  self._payloads_remote = {};
+    if(args && args.session_info_error)
+      /**
+       * @private
+       */
+      this._session_info_error = args.session_info_error;
 
-  /**
-   * @private
-   */
-  self._group_remote = {};
+    if(args && args.session_info_request)
+      /**
+       * @private
+       */
+      this._session_info_request = args.session_info_request;
 
-  /**
-   * @private
-   */
-  self._candidates_remote = {};
+    if(args && args.session_terminate_pending)
+      /**
+       * @private
+       */
+      this._session_terminate_pending = args.session_terminate_pending;
 
-  /**
-   * @private
-   */
-  self._candidates_queue_remote = {};
+    if(args && args.session_terminate_success)
+      /**
+       * @private
+       */
+      this._session_terminate_success = args.session_terminate_success;
 
-  /**
-   * @private
-   */
-  self._initiator = '';
+    if(args && args.session_terminate_error)
+      /**
+       * @private
+       */
+      this._session_terminate_error = args.session_terminate_error;
 
-  /**
-   * @private
-   */
-  self._responder = '';
+    if(args && args.session_terminate_request)
+      /**
+       * @private
+       */
+      this._session_terminate_request = args.session_terminate_request;
 
-  /**
-   * @private
-   */
-  self._mute = {};
+    if(args && args.add_remote_view)
+      /**
+       * @private
+       */
+      this._add_remote_view = args.add_remote_view;
 
-  /**
-   * @private
-   */
-  self._lock = false;
+    if(args && args.remove_remote_view)
+      /**
+       * @private
+       */
+      this._remove_remote_view = args.remove_remote_view;
 
-  /**
-   * @private
-   */
-  self._media_busy = false;
+    if(args && args.to)
+      /**
+       * @private
+       */
+      this._to = args.to;
 
-  /**
-   * @private
-   */
-  self._sid = '';
+    if(args && args.media)
+      /**
+       * @private
+       */
+      this._media = args.media;
 
-  /**
-   * @private
-   */
-  self._name = {};
+    if(args && args.video_source)
+      /**
+       * @private
+       */
+      this._video_source = args.video_source;
 
-  /**
-   * @private
-   */
-  self._senders = {};
+    if(args && args.resolution)
+      /**
+       * @private
+       */
+      this._resolution = args.resolution;
 
-  /**
-   * @private
-   */
-  self._creator = {};
+    if(args && args.bandwidth)
+      /**
+       * @private
+       */
+      this._bandwidth = args.bandwidth;
 
-  /**
-   * @private
-   */
-  self._status = JSJAC_JINGLE_STATUS_INACTIVE;
+    if(args && args.fps)
+      /**
+       * @private
+       */
+      this._fps = args.fps;
 
-  /**
-   * @private
-   */
-  self._reason = JSJAC_JINGLE_REASON_CANCEL;
+    if(args && args.local_view)
+      /**
+       * @private
+       */
+      this._local_view = [args.local_view];
 
-  /**
-   * @private
-   */
-  self._handlers = {};
+    if(args && args.remote_view)
+      /**
+       * @private
+       */
+      this._remote_view = [args.remote_view];
 
-  /**
-   * @private
-   */
-  self._peer_connection = null;
+    if(args && args.stun) {
+      /**
+       * @private
+       */
+      this._stun = args.stun;
+    } else {
+      this._stun = {};
+    }
 
-  /**
-   * @private
-   */
-  self._id = 0;
+    if(args && args.turn) {
+      /**
+       * @private
+       */
+      this._turn = args.turn;
+    } else {
+      this._turn = {};
+    }
 
-  /**
-   * @private
-   */
-  self._sent_id = {};
+    if(args && args.sdp_trace)
+      /**
+       * @private
+       */
+      this._sdp_trace = args.sdp_trace;
 
-  /**
-   * @private
-   */
-  self._received_id = {};
+    if(args && args.net_trace)
+      /**
+       * @private
+       */
+      this._net_trace = args.net_trace;
+
+    if(args && args.debug && args.debug.log) {
+        /**
+         * Reference to debugger interface
+         * (needs to implement method <code>log</code>)
+         * @type JSJaCDebugger
+         */
+      this._debug = args.debug;
+    } else {
+      this._debug = JSJAC_JINGLE_STORE_DEBUG;
+    }
+
+    /**
+     * @private
+     */
+    this._local_stream = null;
+
+    /**
+     * @private
+     */
+    this._remote_stream = null;
+
+    /**
+     * @private
+     */
+    this._content_local = {};
+
+    /**
+     * @private
+     */
+    this._content_remote = {};
+
+    /**
+     * @private
+     */
+    this._payloads_local = [];
+
+    /**
+     * @private
+     */
+    this._group_local = {};
+
+    /**
+     * @private
+     */
+    this._candidates_local = {};
+
+    /**
+     * @private
+     */
+    this._candidates_queue_local = {};
+
+    /**
+     * @private
+     */
+    this._payloads_remote = {};
+
+    /**
+     * @private
+     */
+    this._group_remote = {};
+
+    /**
+     * @private
+     */
+    this._candidates_remote = {};
+
+    /**
+     * @private
+     */
+    this._candidates_queue_remote = {};
+
+    /**
+     * @private
+     */
+    this._initiator = '';
+
+    /**
+     * @private
+     */
+    this._responder = '';
+
+    /**
+     * @private
+     */
+    this._mute = {};
+
+    /**
+     * @private
+     */
+    this._lock = false;
+
+    /**
+     * @private
+     */
+    this._media_busy = false;
+
+    /**
+     * @private
+     */
+    this._sid = '';
+
+    /**
+     * @private
+     */
+    this._name = {};
+
+    /**
+     * @private
+     */
+    this._senders = {};
+
+    /**
+     * @private
+     */
+    this._creator = {};
+
+    /**
+     * @private
+     */
+    this._status = JSJAC_JINGLE_STATUS_INACTIVE;
+
+    /**
+     * @private
+     */
+    this._reason = JSJAC_JINGLE_REASON_CANCEL;
+
+    /**
+     * @private
+     */
+    this._handlers = {};
+
+    /**
+     * @private
+     */
+    this._peer_connection = null;
+
+    /**
+     * @private
+     */
+    this._id = 0;
+
+    /**
+     * @private
+     */
+    this._sent_id = {};
+
+    /**
+     * @private
+     */
+    this._received_id = {};
+  },
 
   
 
@@ -391,605 +395,605 @@ function JSJaCJingleBase(args) {
   /**
    * @private
    */
-  self._get_session_initiate_pending = function() {
-    if(typeof self._session_initiate_pending == 'function')
-      return self._session_initiate_pending;
+  get_session_initiate_pending: function() {
+    if(typeof this._session_initiate_pending == 'function')
+      return this._session_initiate_pending;
 
     return function() {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_initiate_success = function() {
-    if(typeof self._session_initiate_success == 'function')
-      return self._session_initiate_success;
+  get_session_initiate_success: function() {
+    if(typeof this._session_initiate_success == 'function')
+      return this._session_initiate_success;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_initiate_error = function() {
-    if(typeof self._session_initiate_error == 'function')
-      return self._session_initiate_error;
+  get_session_initiate_error: function() {
+    if(typeof this._session_initiate_error == 'function')
+      return this._session_initiate_error;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_initiate_request = function() {
-    if(typeof self._session_initiate_request == 'function')
-      return self._session_initiate_request;
+  get_session_initiate_request: function() {
+    if(typeof this._session_initiate_request == 'function')
+      return this._session_initiate_request;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_accept_pending = function() {
-    if(typeof self._session_accept_pending == 'function')
-      return self._session_accept_pending;
+  get_session_accept_pending: function() {
+    if(typeof this._session_accept_pending == 'function')
+      return this._session_accept_pending;
 
     return function() {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_accept_success = function() {
-    if(typeof self._session_accept_success == 'function')
-      return self._session_accept_success;
+  get_session_accept_success: function() {
+    if(typeof this._session_accept_success == 'function')
+      return this._session_accept_success;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_accept_error = function() {
-    if(typeof self._session_accept_error == 'function')
-      return self._session_accept_error;
+  get_session_accept_error: function() {
+    if(typeof this._session_accept_error == 'function')
+      return this._session_accept_error;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_accept_request = function() {
-    if(typeof self._session_accept_request == 'function')
-      return self._session_accept_request;
+  get_session_accept_request: function() {
+    if(typeof this._session_accept_request == 'function')
+      return this._session_accept_request;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_info_success = function() {
-    if(typeof self._session_info_success == 'function')
-      return self._session_info_success;
+  get_session_info_success: function() {
+    if(typeof this._session_info_success == 'function')
+      return this._session_info_success;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_info_error = function() {
-    if(typeof self._session_info_error == 'function')
-      return self._session_info_error;
+  get_session_info_error: function() {
+    if(typeof this._session_info_error == 'function')
+      return this._session_info_error;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_info_request = function() {
-    if(typeof self._session_info_request == 'function')
-      return self._session_info_request;
+  get_session_info_request: function() {
+    if(typeof this._session_info_request == 'function')
+      return this._session_info_request;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_terminate_pending = function() {
-    if(typeof self._session_terminate_pending == 'function')
-      return self._session_terminate_pending;
+  get_session_terminate_pending: function() {
+    if(typeof this._session_terminate_pending == 'function')
+      return this._session_terminate_pending;
 
     return function() {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_terminate_success = function() {
-    if(typeof self._session_terminate_success == 'function')
-      return self._session_terminate_success;
+  get_session_terminate_success: function() {
+    if(typeof this._session_terminate_success == 'function')
+      return this._session_terminate_success;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_terminate_error = function() {
-    if(typeof self._session_terminate_error == 'function')
-      return self._session_terminate_error;
+  get_session_terminate_error: function() {
+    if(typeof this._session_terminate_error == 'function')
+      return this._session_terminate_error;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_session_terminate_request = function() {
-    if(typeof self._session_terminate_request == 'function')
-      return self._session_terminate_request;
+  get_session_terminate_request: function() {
+    if(typeof this._session_terminate_request == 'function')
+      return this._session_terminate_request;
 
     return function(stanza) {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_add_remote_view = function() {
-    if(typeof self._add_remote_view == 'function')
-      return self._add_remote_view;
+  get_add_remote_view: function() {
+    if(typeof this._add_remote_view == 'function')
+      return this._add_remote_view;
 
     return function() {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_remove_remote_view = function() {
-    if(typeof self._remove_remote_view == 'function')
-      return self._remove_remote_view;
+  get_remove_remote_view: function() {
+    if(typeof this._remove_remote_view == 'function')
+      return this._remove_remote_view;
 
     return function() {};
-  };
+  },
 
   /**
    * @private
    */
-  self._get_local_stream = function() {
-    return self._local_stream;
-  };
+  get_local_stream: function() {
+    return this._local_stream;
+  },
 
   /**
    * @private
    */
-  self._get_remote_stream = function() {
-    return self._remote_stream;
-  };
+  get_remote_stream: function() {
+    return this._remote_stream;
+  },
 
   /**
    * @private
    */
-  self._get_payloads_local = function(name) {
+  get_payloads_local: function(name) {
     if(name)
-      return (name in self._payloads_local) ? self._payloads_local[name] : {};
+      return (name in this._payloads_local) ? this._payloads_local[name] : {};
 
-    return self._payloads_local;
-  };
+    return this._payloads_local;
+  },
 
   /**
    * @private
    */
-  self._get_group_local = function(semantics) {
+  get_group_local: function(semantics) {
     if(semantics)
-      return (semantics in self._group_local) ? self._group_local[semantics] : {};
+      return (semantics in this._group_local) ? this._group_local[semantics] : {};
 
-    return self._group_local;
-  };
+    return this._group_local;
+  },
 
   /**
    * @private
    */
-  self._get_candidates_local = function(name) {
+  get_candidates_local: function(name) {
     if(name)
-      return (name in self._candidates_local) ? self._candidates_local[name] : {};
+      return (name in this._candidates_local) ? this._candidates_local[name] : {};
 
-    return self._candidates_local;
-  };
+    return this._candidates_local;
+  },
 
   /**
    * @private
    */
-  self._get_candidates_queue_local = function(name) {
+  get_candidates_queue_local: function(name) {
     if(name)
-      return (name in self._candidates_queue_local) ? self._candidates_queue_local[name] : {};
+      return (name in this._candidates_queue_local) ? this._candidates_queue_local[name] : {};
 
-    return self._candidates_queue_local;
-  };
+    return this._candidates_queue_local;
+  },
 
   /**
    * @private
    */
-  self._get_payloads_remote = function(name) {
+  get_payloads_remote: function(name) {
     if(name)
-      return (name in self._payloads_remote) ? self._payloads_remote[name] : {};
+      return (name in this._payloads_remote) ? this._payloads_remote[name] : {};
 
-    return self._payloads_remote;
-  };
+    return this._payloads_remote;
+  },
 
   /**
    * @private
    */
-  self._get_group_remote = function(semantics) {
+  get_group_remote: function(semantics) {
     if(semantics)
-      return (semantics in self._group_remote) ? self._group_remote[semantics] : {};
+      return (semantics in this._group_remote) ? this._group_remote[semantics] : {};
 
-    return self._group_remote;
-  };
+    return this._group_remote;
+  },
 
   /**
    * @private
    */
-  self._get_candidates_remote = function(name) {
+  get_candidates_remote: function(name) {
     if(name)
-      return (name in self._candidates_remote) ? self._candidates_remote[name] : [];
+      return (name in this._candidates_remote) ? this._candidates_remote[name] : [];
 
-    return self._candidates_remote;
-  };
+    return this._candidates_remote;
+  },
 
   /**
    * @private
    */
-  self._get_candidates_queue_remote = function(name) {
+  get_candidates_queue_remote: function(name) {
     if(name)
-      return (name in self._candidates_queue_remote) ? self._candidates_queue_remote[name] : {};
+      return (name in this._candidates_queue_remote) ? this._candidates_queue_remote[name] : {};
 
-    return self._candidates_queue_remote;
-  };
+    return this._candidates_queue_remote;
+  },
 
   /**
    * @private
    */
-  self._get_content_local = function(name) {
+  get_content_local: function(name) {
     if(name)
-      return (name in self._content_local) ? self._content_local[name] : {};
+      return (name in this._content_local) ? this._content_local[name] : {};
 
-    return self._content_local;
-  };
+    return this._content_local;
+  },
 
   /**
    * @private
    */
-  self._get_content_remote = function(name) {
+  get_content_remote: function(name) {
     if(name)
-      return (name in self._content_remote) ? self._content_remote[name] : {};
+      return (name in this._content_remote) ? this._content_remote[name] : {};
 
-    return self._content_remote;
-  };
+    return this._content_remote;
+  },
 
   /**
    * @private
    */
-  self._get_handlers = function(type, id) {
+  get_handlers: function(type, id) {
     type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
 
     if(id) {
-      if(type != JSJAC_JINGLE_STANZA_TYPE_ALL && type in self._handlers && typeof self._handlers[type][id] == 'function')
-        return self._handlers[type][id];
+      if(type != JSJAC_JINGLE_STANZA_TYPE_ALL && type in this._handlers && typeof this._handlers[type][id] == 'function')
+        return this._handlers[type][id];
 
-      if(JSJAC_JINGLE_STANZA_TYPE_ALL in self._handlers && typeof self._handlers[JSJAC_JINGLE_STANZA_TYPE_ALL][id] == 'function')
-        return self._handlers[type][id];
+      if(JSJAC_JINGLE_STANZA_TYPE_ALL in this._handlers && typeof this._handlers[JSJAC_JINGLE_STANZA_TYPE_ALL][id] == 'function')
+        return this._handlers[type][id];
     }
 
     return null;
-  };
+  },
 
   /**
    * @private
    */
-  self._get_peer_connection = function() {
-    return self._peer_connection;
-  };
+  get_peer_connection: function() {
+    return this._peer_connection;
+  },
 
   /**
    * @private
    */
-  self._get_id = function() {
-    return self._id;
-  };
+  get_id: function() {
+    return this._id;
+  },
 
   /**
    * @private
    */
-  self._get_id_pre = function() {
-    return JSJAC_JINGLE_STANZA_ID_PRE + '_' + (self.get_sid() || '0') + '_';
-  };
+  get_id_pre: function() {
+    return JSJAC_JINGLE_STANZA_ID_PRE + '_' + (this.get_sid() || '0') + '_';
+  },
 
   /**
    * @private
    */
-  self._get_id_new = function() {
-    var trans_id = self._get_id() + 1;
-    self._set_id(trans_id);
+  get_id_new: function() {
+    var trans_id = this.get_id() + 1;
+    this.set_id(trans_id);
 
-    return self._get_id_pre() + trans_id;
-  };
-
-  /**
-   * @private
-   */
-  self._get_sent_id = function() {
-    return self._sent_id;
-  };
+    return this.get_id_pre() + trans_id;
+  },
 
   /**
    * @private
    */
-  self._get_received_id = function() {
-    return self._received_id;
-  };
+  get_sent_id: function() {
+    return this._sent_id;
+  },
+
+  /**
+   * @private
+   */
+  get_received_id: function() {
+    return this._received_id;
+  },
 
   /**
    * Gets the mute state
    * @return mute value
    * @type boolean
    */
-  self.get_mute = function(name) {
+  get_mute: function(name) {
     if(!name) name = '*';
 
-    return (name in self._mute) ? self._mute[name] : false;
-  };
+    return (name in this._mute) ? this._mute[name] : false;
+  },
 
   /**
    * Gets the lock value
    * @return lock value
    * @type boolean
    */
-  self.get_lock = function() {
-    return self._lock || !JSJAC_JINGLE_AVAILABLE;
-  };
+  get_lock: function() {
+    return this._lock || !JSJAC_JINGLE_AVAILABLE;
+  },
 
   /**
    * Gets the media busy value
    * @return media busy value
    * @type boolean
    */
-  self.get_media_busy = function() {
-    return self._media_busy;
-  };
+  get_media_busy: function() {
+    return this._media_busy;
+  },
 
   /**
    * Gets the sid value
    * @return sid value
    * @type string
    */
-  self.get_sid = function() {
-    return self._sid;
-  };
+  get_sid: function() {
+    return this._sid;
+  },
 
   /**
    * Gets the status value
    * @return status value
    * @type string
    */
-  self.get_status = function() {
-    return self._status;
-  };
+  get_status: function() {
+    return this._status;
+  },
 
   /**
    * Gets the reason value
    * @return reason value
    * @type string
    */
-  self.get_reason = function() {
-    return self._reason;
-  };
+  get_reason: function() {
+    return this._reason;
+  },
 
   /**
    * Gets the is_muji value
    * @return is_muji value
    * @type boolean
    */
-  self.get_is_muji = function() {
-    return self._is_muji || false;
-  };
+  get_is_muji: function() {
+    return this._is_muji || false;
+  },
 
   /**
    * Gets the to value
    * @return to value
    * @type string
    */
-  self.get_to = function() {
-    return self._to;
-  };
+  get_to: function() {
+    return this._to;
+  },
 
   /**
    * Gets the media value
    * @return media value
    * @type string
    */
-  self.get_media = function() {
-    return (self._media && self._media in JSJAC_JINGLE_MEDIAS) ? self._media : JSJAC_JINGLE_MEDIA_VIDEO;
-  };
+  get_media: function() {
+    return (this._media && this._media in JSJAC_JINGLE_MEDIAS) ? this._media : JSJAC_JINGLE_MEDIA_VIDEO;
+  },
 
   /**
    * Gets a list of medias in use
    * @return media list
    * @type object
    */
-  self.get_media_all = function() {
-    if(self.get_media() == JSJAC_JINGLE_MEDIA_AUDIO)
+  get_media_all: function() {
+    if(this.get_media() == JSJAC_JINGLE_MEDIA_AUDIO)
       return [JSJAC_JINGLE_MEDIA_AUDIO];
 
     return [JSJAC_JINGLE_MEDIA_AUDIO, JSJAC_JINGLE_MEDIA_VIDEO];
-  };
+  },
 
   /**
    * Gets the video source value
    * @return video source value
    * @type string
    */
-  self.get_video_source = function() {
-    return (self._video_source && self._video_source in JSJAC_JINGLE_VIDEO_SOURCES) ? self._video_source : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
-  };
+  get_video_source: function() {
+    return (this._video_source && this._video_source in JSJAC_JINGLE_VIDEO_SOURCES) ? this._video_source : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
+  },
 
   /**
    * Gets the resolution value
    * @return resolution value
    * @type string
    */
-  self.get_resolution = function() {
-    return self._resolution ? (self._resolution).toString() : null;
-  };
+  get_resolution: function() {
+    return this._resolution ? (this._resolution).toString() : null;
+  },
 
   /**
    * Gets the bandwidth value
    * @return bandwidth value
    * @type string
    */
-  self.get_bandwidth = function() {
-    return self._bandwidth ? (self._bandwidth).toString() : null;
-  };
+  get_bandwidth: function() {
+    return this._bandwidth ? (this._bandwidth).toString() : null;
+  },
 
   /**
    * Gets the fps value
    * @return fps value
    * @type string
    */
-  self.get_fps = function() {
-    return self._fps ? (self._fps).toString() : null;
-  };
+  get_fps: function() {
+    return this._fps ? (this._fps).toString() : null;
+  },
 
   /**
    * Gets the name value
    * @return name value
    * @type string
    */
-  self.get_name = function(name) {
+  get_name: function(name) {
     if(name)
-      return name in self._name;
+      return name in this._name;
 
-    return self._name;
-  };
+    return this._name;
+  },
 
   /**
    * Gets the senders value
    * @return senders value
    * @type string
    */
-  self.get_senders = function(name) {
+  get_senders: function(name) {
     if(name)
-      return (name in self._senders) ? self._senders[name] : null;
+      return (name in this._senders) ? this._senders[name] : null;
 
-    return self._senders;
-  };
+    return this._senders;
+  },
 
   /**
    * Gets the creator value
    * @return creator value
    * @type string
    */
-  self.get_creator = function(name) {
+  get_creator: function(name) {
     if(name)
-      return (name in self._creator) ? self._creator[name] : null;
+      return (name in this._creator) ? this._creator[name] : null;
 
-    return self._creator;
-  };
+    return this._creator;
+  },
 
   /**
    * Gets the creator value (for this)
    * @return creator value
    * @type string
    */
-  self.get_creator_this = function(name) {
-    return self.get_responder() == self.get_to() ? JSJAC_JINGLE_CREATOR_INITIATOR : JSJAC_JINGLE_CREATOR_RESPONDER;
-  };
+  get_creator_this: function(name) {
+    return this.get_responder() == this.get_to() ? JSJAC_JINGLE_CREATOR_INITIATOR : JSJAC_JINGLE_CREATOR_RESPONDER;
+  },
 
   /**
    * Gets the initiator value
    * @return initiator value
    * @type string
    */
-  self.get_initiator = function() {
-    return self._initiator;
-  };
+  get_initiator: function() {
+    return this._initiator;
+  },
 
   /**
    * Gets the response value
    * @return response value
    * @type string
    */
-  self.get_responder = function() {
-    return self._responder;
-  };
+  get_responder: function() {
+    return this._responder;
+  },
 
   /**
    * Gets the local_view value
    * @return local_view value
    * @type DOM
    */
-  self.get_local_view = function() {
-    return (typeof self._local_view == 'object') ? self._local_view : [];
-  };
+  get_local_view: function() {
+    return (typeof this._local_view == 'object') ? this._local_view : [];
+  },
 
   /**
    * Gets the remote_view value
    * @return remote_view value
    * @type DOM
    */
-  self.get_remote_view = function() {
-    return (typeof self._remote_view == 'object') ? self._remote_view : [];
-  };
+  get_remote_view: function() {
+    return (typeof this._remote_view == 'object') ? this._remote_view : [];
+  },
 
   /**
    * Gets the STUN servers
    * @return STUN servers
    * @type object
    */
-  self.get_stun = function() {
-    return (typeof self._stun == 'object') ? self._stun : {};
-  };
+  get_stun: function() {
+    return (typeof this._stun == 'object') ? this._stun : {};
+  },
 
   /**
    * Gets the TURN servers
    * @return TURN servers
    * @type object
    */
-  self.get_turn = function() {
-    return (typeof self._turn == 'object') ? self._turn : {};
-  };
+  get_turn: function() {
+    return (typeof this._turn == 'object') ? this._turn : {};
+  },
 
   /**
    * Gets the SDP trace value
    * @return SDP trace value
    * @type boolean
    */
-  self.get_sdp_trace = function() {
-    return (self._sdp_trace === true);
-  };
+  get_sdp_trace: function() {
+    return (this._sdp_trace === true);
+  },
 
   /**
    * Gets the network packet trace value
    * @return Network packet trace value
    * @type boolean
    */
-  self.get_net_trace = function() {
-    return (self._net_trace === true);
-  };
+  get_net_trace: function() {
+    return (this._net_trace === true);
+  },
 
   /**
    * Gets the debug value
    * @return debug value
    * @type JSJaCDebugger
    */
-  self.get_debug = function() {
-    return self._debug;
-  };
+  get_debug: function() {
+    return this._debug;
+  },
 
 
 
@@ -1000,245 +1004,245 @@ function JSJaCJingleBase(args) {
   /**
    * @private
    */
-  self._set_session_initiate_pending = function(session_initiate_pending) {
-    self._session_initiate_pending = session_initiate_pending;
-  };
+  set_session_initiate_pending: function(session_initiate_pending) {
+    this._session_initiate_pending = session_initiate_pending;
+  },
 
   /**
    * @private
    */
-  self._set_initiate_success = function(initiate_success) {
-    self._session_initiate_success = initiate_success;
-  };
+  set_initiate_success: function(initiate_success) {
+    this._session_initiate_success = initiate_success;
+  },
 
   /**
    * @private
    */
-  self._set_initiate_error = function(initiate_error) {
-    self._session_initiate_error = initiate_error;
-  };
+  set_initiate_error: function(initiate_error) {
+    this._session_initiate_error = initiate_error;
+  },
 
   /**
    * @private
    */
-  self._set_initiate_request = function(initiate_request) {
-    self._session_initiate_request = initiate_request;
-  };
+  set_initiate_request: function(initiate_request) {
+    this._session_initiate_request = initiate_request;
+  },
 
   /**
    * @private
    */
-  self._set_accept_pending = function(accept_pending) {
-    self._session_accept_pending = accept_pending;
-  };
+  set_accept_pending: function(accept_pending) {
+    this._session_accept_pending = accept_pending;
+  },
 
   /**
    * @private
    */
-  self._set_accept_success = function(accept_success) {
-    self._session_accept_success = accept_success;
-  };
+  set_accept_success: function(accept_success) {
+    this._session_accept_success = accept_success;
+  },
 
   /**
    * @private
    */
-  self._set_accept_error = function(accept_error) {
-    self._session_accept_error = accept_error;
-  };
+  set_accept_error: function(accept_error) {
+    this._session_accept_error = accept_error;
+  },
 
   /**
    * @private
    */
-  self._set_accept_request = function(accept_request) {
-    self._session_accept_request = accept_request;
-  };
+  set_accept_request: function(accept_request) {
+    this._session_accept_request = accept_request;
+  },
 
   /**
    * @private
    */
-  self._set_info_success = function(info_success) {
-    self._session_info_success = info_success;
-  };
+  set_info_success: function(info_success) {
+    this._session_info_success = info_success;
+  },
 
   /**
    * @private
    */
-  self._set_info_error = function(info_error) {
-    self._session_info_error = info_error;
-  };
+  set_info_error: function(info_error) {
+    this._session_info_error = info_error;
+  },
 
   /**
    * @private
    */
-  self._set_info_request = function(info_request) {
-    self._session_info_request = info_request;
-  };
+  set_info_request: function(info_request) {
+    this._session_info_request = info_request;
+  },
 
   /**
    * @private
    */
-  self._set_terminate_pending = function(terminate_pending) {
-    self._session_terminate_pending = terminate_pending;
-  };
+  set_terminate_pending: function(terminate_pending) {
+    this._session_terminate_pending = terminate_pending;
+  },
 
   /**
    * @private
    */
-  self._set_terminate_success = function(terminate_success) {
-    self._session_terminate_success = terminate_success;
-  };
+  set_terminate_success: function(terminate_success) {
+    this._session_terminate_success = terminate_success;
+  },
 
   /**
    * @private
    */
-  self._set_terminate_error = function(terminate_error) {
-    self._session_terminate_error = terminate_error;
-  };
+  set_terminate_error: function(terminate_error) {
+    this._session_terminate_error = terminate_error;
+  },
 
   /**
    * @private
    */
-  self._set_terminate_request = function(terminate_request) {
-    self._session_terminate_request = terminate_request;
-  };
+  set_terminate_request: function(terminate_request) {
+    this._session_terminate_request = terminate_request;
+  },
 
   /**
    * @private
    */
-  self._set_local_stream = function(local_stream) {
+  set_local_stream: function(local_stream) {
     try {
-      if(!local_stream && self._local_stream) {
-        (self._local_stream).stop();
+      if(!local_stream && this._local_stream) {
+        (this._local_stream).stop();
 
-        self._util_peer_stream_detach(
-          self.get_local_view()
+        this.peer.stream_detach(
+          this.get_local_view()
         );
       }
 
-      self._local_stream = local_stream;
+      this._local_stream = local_stream;
 
       if(local_stream) {
-        self._util_peer_stream_attach(
-          self.get_local_view(),
-          self._get_local_stream(),
+        this.peer.stream_attach(
+          this.get_local_view(),
+          this.get_local_stream(),
           true
         );
       } else {
-        self._util_peer_stream_detach(
-          self.get_local_view()
+        this.peer.stream_detach(
+          this.get_local_view()
         );
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _set_local_stream > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] set_local_stream > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._set_remote_stream = function(remote_stream) {
+  set_remote_stream: function(remote_stream) {
     try {
-      if(!remote_stream && self._remote_stream) {
-        self._util_peer_stream_detach(
-          self.get_remote_view()
+      if(!remote_stream && this._remote_stream) {
+        this.peer.stream_detach(
+          this.get_remote_view()
         );
       }
 
-      self._remote_stream = remote_stream;
+      this._remote_stream = remote_stream;
 
       if(remote_stream) {
-        self._util_peer_stream_attach(
-          self.get_remote_view(),
-          self._get_remote_stream(),
+        this.peer.stream_attach(
+          this.get_remote_view(),
+          this.get_remote_stream(),
           false
         );
       } else {
-        self._util_peer_stream_detach(
-          self.get_remote_view()
+        this.peer.stream_detach(
+          this.get_remote_view()
         );
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _set_remote_stream > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] set_remote_stream > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._set_local_view = function(local_view) {
-    if(typeof self._local_view !== 'object')
-      self._local_view = [];
+  set_local_view: function(local_view) {
+    if(typeof this._local_view !== 'object')
+      this._local_view = [];
 
-    self._local_view.push(local_view);
-  };
-
-  /**
-   * @private
-   */
-  self._set_remote_view = function(remote_view) {
-    if(typeof self._remote_view !== 'object')
-      self._remote_view = [];
-
-    self._remote_view.push(remote_view);
-  };
+    this._local_view.push(local_view);
+  },
 
   /**
    * @private
    */
-  self._set_payloads_local = function(name, payload_data) {
-    self._payloads_local[name] = payload_data;
-  };
+  set_remote_view: function(remote_view) {
+    if(typeof this._remote_view !== 'object')
+      this._remote_view = [];
+
+    this._remote_view.push(remote_view);
+  },
 
   /**
    * @private
    */
-  self._set_group_local = function(semantics, group_data) {
-    self._group_local[semantics] = group_data;
-  };
+  set_payloads_local: function(name, payload_data) {
+    this._payloads_local[name] = payload_data;
+  },
 
   /**
    * @private
    */
-  self._set_candidates_local = function(name, candidate_data) {
-    if(!(name in self._candidates_local))  self._candidates_local[name] = [];
-
-    (self._candidates_local[name]).push(candidate_data);
-  };
+  set_group_local: function(semantics, group_data) {
+    this._group_local[semantics] = group_data;
+  },
 
   /**
    * @private
    */
-  self._set_candidates_queue_local = function(name, candidate_data) {
+  set_candidates_local: function(name, candidate_data) {
+    if(!(name in this._candidates_local))  this._candidates_local[name] = [];
+
+    (this._candidates_local[name]).push(candidate_data);
+  },
+
+  /**
+   * @private
+   */
+  set_candidates_queue_local: function(name, candidate_data) {
     try {
       if(name === null) {
-        self._candidates_queue_local = {};
+        this._candidates_queue_local = {};
       } else {
-        if(!(name in self._candidates_queue_local))  self._candidates_queue_local[name] = [];
+        if(!(name in this._candidates_queue_local))  this._candidates_queue_local[name] = [];
 
-        (self._candidates_queue_local[name]).push(candidate_data);
+        (this._candidates_queue_local[name]).push(candidate_data);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _set_candidates_queue_local > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] set_candidates_queue_local > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._set_payloads_remote = function(name, payload_data) {
-    self._payloads_remote[name] = payload_data;
-  };
+  set_payloads_remote: function(name, payload_data) {
+    this._payloads_remote[name] = payload_data;
+  },
 
   /**
    * @private
    */
-  self._set_payloads_remote_add = function(name, payload_data) {
+  set_payloads_remote_add: function(name, payload_data) {
     try {
-      if(!(name in self._payloads_remote)) {
-        self._set_payloads_remote(name, payload_data);
+      if(!(name in this._payloads_remote)) {
+        this.set_payloads_remote(name, payload_data);
       } else {
         var key;
-        var payloads_store = self._payloads_remote[name].descriptions.payload;
+        var payloads_store = this._payloads_remote[name].descriptions.payload;
         var payloads_add   = payload_data.descriptions.payload;
 
         for(key in payloads_add) {
@@ -1247,279 +1251,303 @@ function JSJaCJingleBase(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _set_payloads_remote_add > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] set_payloads_remote_add > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._set_group_remote = function(semantics, group_data) {
-    self._group_remote[semantics] = group_data;
-  };
+  set_group_remote: function(semantics, group_data) {
+    this._group_remote[semantics] = group_data;
+  },
 
   /**
    * @private
    */
-  self._set_candidates_remote = function(name, candidate_data) {
-    self._candidates_remote[name] = candidate_data;
-  };
+  set_candidates_remote: function(name, candidate_data) {
+    this._candidates_remote[name] = candidate_data;
+  },
 
   /**
    * @private
    */
-  self._set_candidates_queue_remote = function(name, candidate_data) {
+  set_candidates_queue_remote: function(name, candidate_data) {
     if(name === null)
-      self._candidates_queue_remote = {};
+      this._candidates_queue_remote = {};
     else
-      self._candidates_queue_remote[name] = (candidate_data);
-  };
+      this._candidates_queue_remote[name] = (candidate_data);
+  },
 
   /**
    * @private
    */
-  self._set_candidates_remote_add = function(name, candidate_data) {
+  set_candidates_remote_add: function(name, candidate_data) {
     try {
       if(!name) return;
 
-      if(!(name in self._candidates_remote))
-        self._set_candidates_remote(name, []);
+      if(!(name in this._candidates_remote))
+        this.set_candidates_remote(name, []);
    
       var c, i;
       var candidate_ids = [];
 
-      for(c in self._get_candidates_remote(name))
-        candidate_ids.push(self._get_candidates_remote(name)[c].id);
+      for(c in this.get_candidates_remote(name))
+        candidate_ids.push(this.get_candidates_remote(name)[c].id);
 
       for(i in candidate_data) {
         if((candidate_data[i].id).indexOf(candidate_ids) !== -1)
-          self._get_candidates_remote(name).push(candidate_data[i]);
+          this.get_candidates_remote(name).push(candidate_data[i]);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle] _set_candidates_remote_add > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] set_candidates_remote_add > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._set_content_local = function(name, content_local) {
-    self._content_local[name] = content_local;
-  };
+  set_content_local: function(name, content_local) {
+    this._content_local[name] = content_local;
+  },
 
   /**
    * @private
    */
-  self._set_content_remote = function(name, content_remote) {
-    self._content_remote[name] = content_remote;
-  };
+  set_content_remote: function(name, content_remote) {
+    this._content_remote[name] = content_remote;
+  },
 
   /**
    * @private
    */
-  self._set_handlers = function(type, id, handler) {
-    if(!(type in self._handlers))  self._handlers[type] = {};
+  set_handlers: function(type, id, handler) {
+    if(!(type in this._handlers))  this._handlers[type] = {};
 
-    self._handlers[type][id] = handler;
-  };
-
-  /**
-   * @private
-   */
-  self._set_peer_connection = function(peer_connection) {
-    self._peer_connection = peer_connection;
-  };
+    this._handlers[type][id] = handler;
+  },
 
   /**
    * @private
    */
-  self._set_id = function(id) {
-    self._id = id;
-  };
+  set_peer_connection: function(peer_connection) {
+    this._peer_connection = peer_connection;
+  },
 
   /**
    * @private
    */
-  self._set_sent_id = function(sent_id) {
-    self._sent_id[sent_id] = 1;
-  };
+  set_id: function(id) {
+    this._id = id;
+  },
 
   /**
    * @private
    */
-  self._set_received_id = function(received_id) {
-    self._received_id[received_id] = 1;
-  };
+  set_sent_id: function(sent_id) {
+    this._sent_id[sent_id] = 1;
+  },
 
   /**
    * @private
    */
-  self._set_mute = function(name, mute) {
+  set_received_id: function(received_id) {
+    this._received_id[received_id] = 1;
+  },
+
+  /**
+   * @private
+   */
+  set_mute: function(name, mute) {
     if(!name || name == '*') {
-      self._mute = {};
+      this._mute = {};
       name = '*';
     }
 
-    self._mute[name] = mute;
-  };
+    this._mute[name] = mute;
+  },
 
   /**
    * @private
    */
-  self._set_lock = function(lock) {
-    self._lock = lock;
-  };
+  set_lock: function(lock) {
+    this._lock = lock;
+  },
 
   /**
    * Gets the media busy value
    * @return media busy value
    * @type boolean
    */
-  self._set_media_busy = function(busy) {
-    self._media_busy = busy;
-  };
+  set_media_busy: function(busy) {
+    this._media_busy = busy;
+  },
 
   /**
    * @private
    */
-  self._set_sid = function(sid) {
-    self._sid = sid;
-  };
+  set_sid: function(sid) {
+    this._sid = sid;
+  },
 
   /**
    * @private
    */
-  self._set_status = function(status) {
-    self._status = status;
-  };
+  set_status: function(status) {
+    this._status = status;
+  },
 
   /**
    * @private
    */
-  self._set_reason = function(reason) {
-    self._reason = reason || JSJAC_JINGLE_REASON_CANCEL;
-  };
+  set_reason: function(reason) {
+    this._reason = reason || JSJAC_JINGLE_REASON_CANCEL;
+  },
 
   /**
    * @private
    */
-  self._set_is_muji = function(is_muji) {
-    self._is_muji = is_muji;
-  };
+  set_is_muji: function(is_muji) {
+    this._is_muji = is_muji;
+  },
 
   /**
    * @private
    */
-  self._set_to = function(to) {
-    self._to = to;
-  };
+  set_to: function(to) {
+    this._to = to;
+  },
 
   /**
    * @private
    */
-  self._set_media = function(media) {
-    self._media = media;
-  };
+  set_media: function(media) {
+    this._media = media;
+  },
 
   /**
    * @private
    */
-  self._set_video_source = function() {
-    self._video_source = video_source;
-  };
+  set_video_source: function() {
+    this._video_source = video_source;
+  },
 
   /**
    * @private
    */
-  self._set_resolution = function(resolution) {
-    self._resolution = resolution;
-  };
+  set_resolution: function(resolution) {
+    this._resolution = resolution;
+  },
 
   /**
    * @private
    */
-  self._set_bandwidth = function(bandwidth) {
-    self._bandwidth = bandwidth;
-  };
+  set_bandwidth: function(bandwidth) {
+    this._bandwidth = bandwidth;
+  },
 
   /**
    * @private
    */
-  self._set_fps = function(fps) {
-    self._fps = fps;
-  };
+  set_fps: function(fps) {
+    this._fps = fps;
+  },
 
   /**
    * @private
    */
-  self._set_name = function(name) {
-    self._name[name] = 1;
-  };
+  set_name: function(name) {
+    this._name[name] = 1;
+  },
 
   /**
    * @private
    */
-  self._set_senders = function(name, senders) {
+  set_senders: function(name, senders) {
     if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
 
-    self._senders[name] = senders;
-  };
+    this._senders[name] = senders;
+  },
 
   /**
    * @private
    */
-  self._set_creator = function(name, creator) {
+  set_creator: function(name, creator) {
     if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
 
-    self._creator[name] = creator;
-  };
+    this._creator[name] = creator;
+  },
 
   /**
    * @private
    */
-  self._set_initiator = function(initiator) {
-    self._initiator = initiator;
-  };
+  set_initiator: function(initiator) {
+    this._initiator = initiator;
+  },
 
   /**
    * @private
    */
-  self._set_responder = function(responder) {
-    self._responder = responder;
-  };
+  set_responder: function(responder) {
+    this._responder = responder;
+  },
 
   /**
    * @private
    */
-  self._set_stun = function(stun_host, stun_data) {
-    self._stun[stun_server] = stun_data;
-  };
+  set_stun: function(stun_host, stun_data) {
+    this._stun[stun_server] = stun_data;
+  },
 
   /**
    * @private
    */
-  self._set_turn = function(turn_host, turn_data) {
-    self._turn[turn_server] = turn_data;
-  };
+  set_turn: function(turn_host, turn_data) {
+    this._turn[turn_server] = turn_data;
+  },
 
   /**
    * @private
    */
-  self._set_sdp_trace = function(sdp_trace) {
-    self._sdp_trace = sdp_trace;
-  };
+  set_sdp_trace: function(sdp_trace) {
+    this._sdp_trace = sdp_trace;
+  },
 
   /**
    * @private
    */
-  self._set_net_trace = function(net_trace) {
-    self._net_trace = net_trace;
-  };
+  set_net_trace: function(net_trace) {
+    this._net_trace = net_trace;
+  },
 
   /**
    * @private
    */
-  self._set_debug = function(debug) {
-    self._debug = debug;
-  };
-}
+  set_debug: function(debug) {
+    this._debug = debug;
+  },
+
+
+
+  /**
+   * JSJSAC JINGLE SHORTCUTS
+   */
+
+  /**
+   * Am I responder?
+   * @return Receiver state
+   * @type boolean
+   */
+  is_responder: function() {
+    return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
+  },
+
+  /**
+   * Am I initiator?
+   * @return Initiator state
+   * @type boolean
+   */
+  is_initiator: function() {
+    return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
+  },
+});

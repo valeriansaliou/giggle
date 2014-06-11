@@ -8,6 +8,25 @@
  */
 
 
+var JSJAC_JINGLE_INCLUDE_LIB = [
+  'underscore',
+  'ring'
+];
+
+var JSJAC_JINGLE_INCLUDE_SRC = [
+  'jsjac.jingle.header',
+  'jsjac.jingle.constants',
+  'jsjac.jingle.utils',
+  'jsjac.jingle.sdp',
+  'jsjac.jingle.peer',
+  'jsjac.jingle.base',
+  'jsjac.jingle.single',
+  'jsjac.jingle.muji',
+  'jsjac.jingle.commons',
+  'jsjac.jingle.init'
+];
+
+
 var JSJaCJingle = {
   require: function(library_name) {
     document.write(
@@ -16,17 +35,12 @@ var JSJaCJingle = {
   },
 
   load: function() {
-    var includes = [
-      'jsjac.jingle.header',
-      'jsjac.jingle.constants',
-      'jsjac.jingle.base',
-      'jsjac.jingle.utils',
-      'jsjac.jingle.peer',
-      'jsjac.jingle.single',
-      'jsjac.jingle.muji',
-      'jsjac.jingle.commons',
-      'jsjac.jingle.init'
-    ];
+    var includes = [], c;
+
+    for(c in JSJAC_JINGLE_INCLUDE_LIB) {
+      includes.push('../lib/' + JSJAC_JINGLE_INCLUDE_LIB[c]);
+    }
+    includes = includes.concat(JSJAC_JINGLE_INCLUDE_SRC);
 
     var scripts = document.getElementsByTagName('script');
     var path = './', i, j;

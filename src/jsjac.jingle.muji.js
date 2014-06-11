@@ -15,9 +15,8 @@
  * @param {Object} args Jingle session arguments.
  * @param {*} args.* Herits of JSJaCJingle() prototype
  */
-function JSJaCJingleMuji(args) {
-  if(typeof args != 'object')  args = {};
-  args.is_muji = true;
-
-  return (new JSJaCJingle(args));
-}
+var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
+  constructor: function() {
+    this.is_muji = true;
+  },
+});

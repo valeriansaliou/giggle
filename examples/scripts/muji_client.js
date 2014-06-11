@@ -25,7 +25,7 @@ var ARGS = {
     debug       : (new JSJaCConsoleLogger(4)),
 
     // Custom handlers (optional)
-    session_initiate_pending: function(self) {
+    session_initiate_pending: function(_this) {
         console.log('session_initiate_pending');
 
         $('.call_notif').hide();
@@ -35,31 +35,31 @@ var ARGS = {
         $('#roster_call').addClass('disabled');
     },
 
-    session_initiate_success: function(self, stanza) {
+    session_initiate_success: function(_this, stanza) {
         console.log('session_initiate_success');
 
         $('.call_notif').hide();
         $('#call_success').text('Initialized.').show();
 
         // This is an incoming call
-        if(self.is_responder()) {
+        if(_this.is_responder()) {
             // Hard-fix: avoids the JSJaC packets group timer (that will delay success reply)
             setTimeout(function() {
                 // Notify the other party that it's ringing there...
-                self.info(JSJAC_JINGLE_SESSION_INFO_RINGING);
+                _this.info(JSJAC_JINGLE_SESSION_INFO_RINGING);
 
                 // Request for Jingle session to be accepted
-                if(confirm("Incoming call from " + self.util_stanza_from(stanza) + "\n\nAccept?")) {
-                    $('#form_call input[name="call_room"]').val(self.get_to());
-                    self.accept();
+                if(confirm("Incoming call from " + _this.utils.stanza_from(stanza) + "\n\nAccept?")) {
+                    $('#form_call input[name="call_room"]').val(_this.get_to());
+                    _this.accept();
                 } else {
-                    self.terminate(JSJAC_JINGLE_REASON_DECLINE);
+                    _this.terminate(JSJAC_JINGLE_REASON_DECLINE);
                 }
             }, 1000);
         }
     },
 
-    session_initiate_error: function(self, stanza) {
+    session_initiate_error: function(_this, stanza) {
         console.log('session_initiate_error');
 
         $('.call_notif').hide();
@@ -69,23 +69,23 @@ var ARGS = {
         $('#roster_call').removeClass('disabled');
     },
 
-    session_initiate_request: function(self, stanza) {
+    session_initiate_request: function(_this, stanza) {
         console.log('session_initiate_request');
     },
 
-    session_accept_pending: function(self) {
+    session_accept_pending: function(_this) {
         console.log('session_accept_pending');
 
         $('.call_notif').hide();
         $('#call_info').text('Waiting to be accepted...').show();
 
-        if(self.is_responder()) {
+        if(_this.is_responder()) {
             $('#form_call').find('input, button:not([data-lock])').attr('disabled', true);
             $('#roster_call').addClass('disabled');
         }
     },
 
-    session_accept_success: function(self, stanza) {
+    session_accept_success: function(_this, stanza) {
         console.log('session_accept_success');
 
         $('.call_notif').hide();
@@ -95,7 +95,7 @@ var ARGS = {
         $('#fieldset_live').removeAttr('disabled');
     },
 
-    session_accept_error: function(self, stanza) {
+    session_accept_error: function(_this, stanza) {
         console.log('session_accept_error');
 
         $('.call_notif').hide();
@@ -105,23 +105,23 @@ var ARGS = {
         $('#roster_call').removeClass('disabled');
     },
 
-    session_accept_request: function(self, stanza) {
+    session_accept_request: function(_this, stanza) {
         console.log('session_accept_request');
     },
 
-    session_info_success: function(self, stanza) {
+    session_info_success: function(_this, stanza) {
         console.log('session_info_success');
     },
 
-    session_info_error: function(self, stanza) {
+    session_info_error: function(_this, stanza) {
         console.log('session_info_error');
     },
 
-    session_info_request: function(self, stanza) {
+    session_info_request: function(_this, stanza) {
         console.log('session_info_request');
     },
 
-    session_terminate_pending: function(self) {
+    session_terminate_pending: function(_this) {
         console.log('session_terminate_pending');
 
         $('.call_notif').hide();
@@ -130,11 +130,11 @@ var ARGS = {
         $('#form_live').find('button').attr('disabled', true);
     },
 
-    session_terminate_success: function(self, stanza) {
+    session_terminate_success: function(_this, stanza) {
         console.log('session_terminate_success');
 
         $('.call_notif').hide();
-        $('#call_success').text('Terminated (' + self.get_reason() + ').').show();
+        $('#call_success').text('Terminated (' + _this.get_reason() + ').').show();
 
         $('#fieldset_live').attr('disabled', true);
         $('#live_mute').show();
@@ -144,7 +144,7 @@ var ARGS = {
         $('#roster_call').removeClass('disabled');
     },
 
-    session_terminate_error: function(self, stanza) {
+    session_terminate_error: function(_this, stanza) {
         console.log('session_terminate_error');
 
         $('.call_notif').hide();
@@ -158,7 +158,7 @@ var ARGS = {
         $('#roster_call').removeClass('disabled');
     },
 
-    session_terminate_request: function(self, stanza) {
+    session_terminate_request: function(_this, stanza) {
         console.log('session_terminate_request');
     }
 };
@@ -231,7 +231,7 @@ $(document).ready(function() {
                                 ARGS.remote_view = document.getElementById('video_remote');
 
                                 // Let's go!
-                                JINGLE = new JSJaCJingle(ARGS);
+                                JINGLE = new JSJaCJingleMuji(ARGS);
                                 JINGLE.handle(stanza);
                             }
                         });
@@ -398,7 +398,7 @@ $(document).ready(function() {
                     ARGS.remote_view  = document.getElementById('video_remote');
 
                     // Let's go!
-                    JINGLE = new JSJaCJingle(ARGS);
+                    JINGLE = new JSJaCJingleMuji(ARGS);
                     JINGLE.initiate();
                 } catch(e) {
                     alert('jingle > ' + e);

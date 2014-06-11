@@ -70,7 +70,7 @@ function JSJaCJingle_route(stanza) {
     if(jingle && !JSJAC_JINGLE_AVAILABLE) {
       JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Dropped Jingle packet (WebRTC not available).', 0);
 
-      (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
+      (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
     } else {
       // New session? Or registered one?
       var session_route = JSJaCJingle_read(sid);
@@ -87,7 +87,7 @@ function JSJaCJingle_route(stanza) {
         } else if(stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && stanza.getFrom()) {
           JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Unknown Jingle session (sid: ' + sid + ').', 0);
 
-          (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+          (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
         }
       }
     }
