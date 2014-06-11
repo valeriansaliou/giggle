@@ -363,6 +363,20 @@ var JSJaCJingleUtils = ring.create({
   },
 
   /**
+   * Gets the Jingle Muji node from a stanza
+   * @returns {DOM} Jingle node
+   */
+  stanza_muji: function(stanza) {    
+    try {
+      return stanza.getChild('muji', NS_TELEPATHY_MUJI);
+    } catch(e) {
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_muji > ' + e, 1);
+    }
+
+    return null;
+  },
+
+  /**
    * Gets the from value from a stanza
    * @returns {string} from value
    */
@@ -1014,6 +1028,22 @@ var JSJaCJingleUtils = ring.create({
   },
 
   /**
+   * Generates stanza Muji node
+   * @returns {DOM} node
+   */
+  stanza_generate_muji: function(stanza) {    
+    var muji = null;
+
+    try {
+      muji = stanza.getNode().appendChild(stanza.buildNode('muji', { 'xmlns': NS_TELEPATHY_MUJI }));
+    } catch(e) {
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_muji > ' + e, 1);
+    }
+
+    return muji;
+  },
+
+  /**
    * Generates stanza session info
    */
   stanza_generate_session_info: function(stanza, jingle, args) {    
@@ -1469,10 +1499,29 @@ var JSJaCJingleUtils = ring.create({
     try {
       var i, cur_name;
 
-      var content_all = [
-        this.parent.get_content_remote(),
+      var content_all = [];
+
+      if(typeof this.parent.get_content_remote == 'function') {
+        // Single conference
+        content_all.push(
+          this.parent.get_content_remote()
+        );
+      } else if(typeof this.parent.get_participants == 'object') {
+        // Muji conference
+        var cur_participant, participants;
+
+        participants = this.parent.get_participants();
+
+        for(cur_participant in participants) {
+          content_all.push(
+            participants[cur_participant].content
+          );
+        }
+      }
+
+      content_all.push(
         this.parent.get_content_local()
-      ];
+      );
 
       for(i in content_all) {
         for(cur_name in content_all[i]) {

@@ -13,6 +13,22 @@
  * @class Creates a new XMPP Jingle session.
  * @constructor
  * @param {Object} args Jingle session arguments.
+ * @param {function} args.session_initiate_pending The initiate pending custom handler.
+ * @param {function} args.session_initiate_success The initiate success custom handler.
+ * @param {function} args.session_initiate_error The initiate error custom handler.
+ * @param {function} args.session_initiate_request The initiate request custom handler.
+ * @param {function} args.session_accept_pending The accept pending custom handler.
+ * @param {function} args.session_accept_success The accept success custom handler.
+ * @param {function} args.session_accept_error The accept error custom handler.
+ * @param {function} args.session_accept_request The accept request custom handler.
+ * @param {function} args.session_info_success The info success custom handler.
+ * @param {function} args.session_info_error The info error custom handler.
+ * @param {function} args.session_info_request The info request custom handler.
+ * @param {function} args.session_terminate_pending The terminate pending custom handler.
+ * @param {function} args.session_terminate_success The terminate success custom handler.
+ * @param {function} args.session_terminate_error The terminate error custom handler.
+ * @param {function} args.session_terminate_request The terminate request custom handler.
+ * @param {DOM} args.remote_view The path to the remote stream view element.
  */
 var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
   /**
@@ -20,6 +36,182 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
    */
   constructor: function(args) {
     this.$super(args);
+
+    if(args && args.session_initiate_pending)
+      /**
+       * @private
+       */
+      this._session_initiate_pending = args.session_initiate_pending;
+
+    if(args && args.session_initiate_success)
+      /**
+       * @private
+       */
+      this._session_initiate_success = args.session_initiate_success;
+
+    if(args && args.session_initiate_error)
+      /**
+       * @private
+       */
+      this._session_initiate_error = args.session_initiate_error;
+
+    if(args && args.session_initiate_request)
+      /**
+       * @private
+       */
+      this._session_initiate_request = args.session_initiate_request;
+
+    if(args && args.session_accept_pending)
+      /**
+       * @private
+       */
+      this._session_accept_pending = args.session_accept_pending;
+
+    if(args && args.session_accept_success)
+      /**
+       * @private
+       */
+      this._session_accept_success = args.session_accept_success;
+
+    if(args && args.session_accept_error)
+      /**
+       * @private
+       */
+      this._session_accept_error = args.session_accept_error;
+
+    if(args && args.session_accept_request)
+      /**
+       * @private
+       */
+      this._session_accept_request = args.session_accept_request;
+
+    if(args && args.session_info_success)
+      /**
+       * @private
+       */
+      this._session_info_success = args.session_info_success;
+
+    if(args && args.session_info_error)
+      /**
+       * @private
+       */
+      this._session_info_error = args.session_info_error;
+
+    if(args && args.session_info_request)
+      /**
+       * @private
+       */
+      this._session_info_request = args.session_info_request;
+
+    if(args && args.session_terminate_pending)
+      /**
+       * @private
+       */
+      this._session_terminate_pending = args.session_terminate_pending;
+
+    if(args && args.session_terminate_success)
+      /**
+       * @private
+       */
+      this._session_terminate_success = args.session_terminate_success;
+
+    if(args && args.session_terminate_error)
+      /**
+       * @private
+       */
+      this._session_terminate_error = args.session_terminate_error;
+
+    if(args && args.session_terminate_request)
+      /**
+       * @private
+       */
+      this._session_terminate_request = args.session_terminate_request;
+
+    if(args && args.remote_view)
+      /**
+       * @private
+       */
+      this._remote_view = [args.remote_view];
+
+    /**
+     * @private
+     */
+    this._remote_stream = null;
+
+    /**
+     * @private
+     */
+    this._content_remote = {};
+
+    /**
+     * @private
+     */
+    this._payloads_remote = {};
+
+    /**
+     * @private
+     */
+    this._group_remote = {};
+
+    /**
+     * @private
+     */
+    this._candidates_remote = {};
+
+    /**
+     * @private
+     */
+    this._candidates_queue_remote = {};
+
+    /**
+     * @private
+     */
+    this._initiator = '';
+
+    /**
+     * @private
+     */
+    this._responder = '';
+
+    /**
+     * @private
+     */
+    this._senders = {};
+
+    /**
+     * @private
+     */
+    this._creator = {};
+
+    /**
+     * @private
+     */
+    this._reason = JSJAC_JINGLE_REASON_CANCEL;
+
+    /**
+     * @private
+     */
+    this._handlers = {};
+
+    /**
+     * @private
+     */
+    this._peer_connection = null;
+
+    /**
+     * @private
+     */
+    this._id = 0;
+
+    /**
+     * @private
+     */
+    this._sent_id = {};
+
+    /**
+     * @private
+     */
+    this._received_id = {};
   },
 
 
@@ -1984,4 +2176,716 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       this.get_debug().log('[JSJaCJingle:single] handle_transport_replace > ' + e, 1);
     }
   },
+
+
+
+  /**
+   * JSJSAC JINGLE GETTERS
+   */
+
+  /**
+   * Gets the session initiate pending callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_initiate_pending: function() {
+    if(typeof this._session_initiate_pending == 'function')
+      return this._session_initiate_pending;
+
+    return function() {};
+  },
+
+  /**
+   * Gets the session initiate success callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_initiate_success: function() {
+    if(typeof this._session_initiate_success == 'function')
+      return this._session_initiate_success;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session initiate error callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_initiate_error: function() {
+    if(typeof this._session_initiate_error == 'function')
+      return this._session_initiate_error;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session initiate request callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_initiate_request: function() {
+    if(typeof this._session_initiate_request == 'function')
+      return this._session_initiate_request;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session accept pending callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_accept_pending: function() {
+    if(typeof this._session_accept_pending == 'function')
+      return this._session_accept_pending;
+
+    return function() {};
+  },
+
+  /**
+   * Gets the session accept success callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_accept_success: function() {
+    if(typeof this._session_accept_success == 'function')
+      return this._session_accept_success;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session accept error callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_accept_error: function() {
+    if(typeof this._session_accept_error == 'function')
+      return this._session_accept_error;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session accept request callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_accept_request: function() {
+    if(typeof this._session_accept_request == 'function')
+      return this._session_accept_request;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session info success callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_info_success: function() {
+    if(typeof this._session_info_success == 'function')
+      return this._session_info_success;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session info error callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_info_error: function() {
+    if(typeof this._session_info_error == 'function')
+      return this._session_info_error;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session info request callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_info_request: function() {
+    if(typeof this._session_info_request == 'function')
+      return this._session_info_request;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session terminate pending callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_terminate_pending: function() {
+    if(typeof this._session_terminate_pending == 'function')
+      return this._session_terminate_pending;
+
+    return function() {};
+  },
+
+  /**
+   * Gets the session terminate success callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_terminate_success: function() {
+    if(typeof this._session_terminate_success == 'function')
+      return this._session_terminate_success;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session terminate error callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_terminate_error: function() {
+    if(typeof this._session_terminate_error == 'function')
+      return this._session_terminate_error;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the session terminate request callback function
+   * @public
+   * @returns {function} Callback function
+   */
+  get_session_terminate_request: function() {
+    if(typeof this._session_terminate_request == 'function')
+      return this._session_terminate_request;
+
+    return function(stanza) {};
+  },
+
+  /**
+   * Gets the remote stream
+   * @public
+   * @returns {object} Remote stream instance
+   */
+  get_remote_stream: function() {
+    return this._remote_stream;
+  },
+
+  /**
+   * Gets the remote_view value
+   * @public
+   * @returns {DOM} remote_view value
+   */
+  get_remote_view: function() {
+    return (typeof this._remote_view == 'object') ? this._remote_view : [];
+  },
+
+  /**
+   * Gets the remote content
+   * @public
+   * @returns {object} Remote content object
+   */
+  get_content_remote: function(name) {
+    if(name)
+      return (name in this._content_remote) ? this._content_remote[name] : {};
+
+    return this._content_remote;
+  },
+
+  /**
+   * Gets the stanza handler
+   * @public
+   * @returns {function} Stanza handler
+   */
+  get_handlers: function(type, id) {
+    type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
+
+    if(id) {
+      if(type != JSJAC_JINGLE_STANZA_TYPE_ALL && type in this._handlers && typeof this._handlers[type][id] == 'function')
+        return this._handlers[type][id];
+
+      if(JSJAC_JINGLE_STANZA_TYPE_ALL in this._handlers && typeof this._handlers[JSJAC_JINGLE_STANZA_TYPE_ALL][id] == 'function')
+        return this._handlers[type][id];
+    }
+
+    return null;
+  },
+
+  /**
+   * Gets the peer connection
+   * @public
+   * @returns {object} Peer connection
+   */
+  get_peer_connection: function() {
+    return this._peer_connection;
+  },
+
+  /**
+   * Gets the ID
+   * @public
+   * @returns {number} ID value
+   */
+  get_id: function() {
+    return this._id;
+  },
+
+  /**
+   * Gets the prepended ID
+   * @public
+   * @returns {string} Prepended ID value
+   */
+  get_id_pre: function() {
+    return JSJAC_JINGLE_STANZA_ID_PRE + '_' + (this.get_sid() || '0') + '_';
+  },
+
+  /**
+   * Gets the new ID
+   * @public
+   * @returns {string} New ID value
+   */
+  get_id_new: function() {
+    var trans_id = this.get_id() + 1;
+    this.set_id(trans_id);
+
+    return this.get_id_pre() + trans_id;
+  },
+
+  /**
+   * Gets the sent IDs
+   * @public
+   * @returns {object} Sent IDs object
+   */
+  get_sent_id: function() {
+    return this._sent_id;
+  },
+
+  /**
+   * Gets the received IDs
+   * @public
+   * @returns {object} Received IDs object
+   */
+  get_received_id: function() {
+    return this._received_id;
+  },
+
+  /**
+   * Gets the remote payloads
+   * @public
+   * @returns {object} Remote payloads object
+   */
+  get_payloads_remote: function(name) {
+    if(name)
+      return (name in this._payloads_remote) ? this._payloads_remote[name] : {};
+
+    return this._payloads_remote;
+  },
+
+  /**
+   * Gets the remote group
+   * @public
+   * @returns {object} Remote group object
+   */
+  get_group_remote: function(semantics) {
+    if(semantics)
+      return (semantics in this._group_remote) ? this._group_remote[semantics] : {};
+
+    return this._group_remote;
+  },
+
+  /**
+   * Gets the remote candidates
+   * @public
+   * @returns {object} Remote candidates object
+   */
+  get_candidates_remote: function(name) {
+    if(name)
+      return (name in this._candidates_remote) ? this._candidates_remote[name] : [];
+
+    return this._candidates_remote;
+  },
+
+  /**
+   * Gets the remote candidates queue
+   * @public
+   * @returns {object} Remote candidates queue object
+   */
+  get_candidates_queue_remote: function(name) {
+    if(name)
+      return (name in this._candidates_queue_remote) ? this._candidates_queue_remote[name] : {};
+
+    return this._candidates_queue_remote;
+  },
+
+  /**
+   * Gets the senders value
+   * @public
+   * @returns {string} Senders value
+   */
+  get_senders: function(name) {
+    if(name)
+      return (name in this._senders) ? this._senders[name] : null;
+
+    return this._senders;
+  },
+
+  /**
+   * Gets the creator value
+   * @public
+   * @returns {string} Creator value
+   */
+  get_creator: function(name) {
+    if(name)
+      return (name in this._creator) ? this._creator[name] : null;
+
+    return this._creator;
+  },
+
+  /**
+   * Gets the creator value (for this)
+   * @public
+   * @returns {string} Creator value
+   */
+  get_creator_this: function(name) {
+    return this.get_responder() == this.get_to() ? JSJAC_JINGLE_CREATOR_INITIATOR : JSJAC_JINGLE_CREATOR_RESPONDER;
+  },
+
+  /**
+   * Gets the initiator value
+   * @public
+   * @returns {string} Initiator value
+   */
+  get_initiator: function() {
+    return this._initiator;
+  },
+
+  /**
+   * Gets the responder value
+   * @public
+   * @returns {string} Responder value
+   */
+  get_responder: function() {
+    return this._responder;
+  },
+
+  /**
+   * Gets the reason value
+   * @public
+   * @returns {string} Reason value
+   */
+  get_reason: function() {
+    return this._reason;
+  },
+
+
+
+  /**
+   * JSJSAC JINGLE SETTERS
+   */
+
+  /**
+   * Sets the session initiate pending callback function
+   */
+  set_session_initiate_pending: function(session_initiate_pending) {
+    this._session_initiate_pending = session_initiate_pending;
+  },
+
+  /**
+   * Sets the session initiate success callback function
+   */
+  set_initiate_success: function(initiate_success) {
+    this._session_initiate_success = initiate_success;
+  },
+
+  /**
+   * Sets the session initiate error callback function
+   */
+  set_initiate_error: function(initiate_error) {
+    this._session_initiate_error = initiate_error;
+  },
+
+  /**
+   * Sets the session initiate request callback function
+   */
+  set_initiate_request: function(initiate_request) {
+    this._session_initiate_request = initiate_request;
+  },
+
+  /**
+   * Sets the session accept pending callback function
+   */
+  set_accept_pending: function(accept_pending) {
+    this._session_accept_pending = accept_pending;
+  },
+
+  /**
+   * Sets the session accept success callback function
+   */
+  set_accept_success: function(accept_success) {
+    this._session_accept_success = accept_success;
+  },
+
+  /**
+   * Sets the session accept error callback function
+   */
+  set_accept_error: function(accept_error) {
+    this._session_accept_error = accept_error;
+  },
+
+  /**
+   * Sets the session accept request callback function
+   */
+  set_accept_request: function(accept_request) {
+    this._session_accept_request = accept_request;
+  },
+
+  /**
+   * Sets the session info success callback function
+   */
+  set_info_success: function(info_success) {
+    this._session_info_success = info_success;
+  },
+
+  /**
+   * Sets the session info error callback function
+   */
+  set_info_error: function(info_error) {
+    this._session_info_error = info_error;
+  },
+
+  /**
+   * Sets the session info request callback function
+   */
+  set_info_request: function(info_request) {
+    this._session_info_request = info_request;
+  },
+
+  /**
+   * Sets the session terminate pending callback function
+   */
+  set_terminate_pending: function(terminate_pending) {
+    this._session_terminate_pending = terminate_pending;
+  },
+
+  /**
+   * Sets the session terminate success callback function
+   */
+  set_terminate_success: function(terminate_success) {
+    this._session_terminate_success = terminate_success;
+  },
+
+  /**
+   * Sets the session terminate error callback function
+   */
+  set_terminate_error: function(terminate_error) {
+    this._session_terminate_error = terminate_error;
+  },
+
+  /**
+   * Sets the session terminate request callback function
+   */
+  set_terminate_request: function(terminate_request) {
+    this._session_terminate_request = terminate_request;
+  },
+
+  /**
+   * Sets the remote stream
+   */
+  set_remote_stream: function(remote_stream) {
+    try {
+      if(!remote_stream && this._remote_stream) {
+        this.peer.stream_detach(
+          this.get_remote_view()
+        );
+      }
+
+      this._remote_stream = remote_stream;
+
+      if(remote_stream) {
+        this.peer.stream_attach(
+          this.get_remote_view(),
+          this.get_remote_stream(),
+          false
+        );
+      } else {
+        this.peer.stream_detach(
+          this.get_remote_view()
+        );
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] set_remote_stream > ' + e, 1);
+    }
+  },
+
+  /**
+   * Sets the remote view
+   */
+  set_remote_view: function(remote_view) {
+    if(typeof this._remote_view !== 'object')
+      this._remote_view = [];
+
+    this._remote_view.push(remote_view);
+  },
+
+  /**
+   * Sets the remote content
+   */
+  set_content_remote: function(name, content_remote) {
+    this._content_remote[name] = content_remote;
+  },
+
+  /**
+   * Sets the stanza handlers
+   */
+  set_handlers: function(type, id, handler) {
+    if(!(type in this._handlers))  this._handlers[type] = {};
+
+    this._handlers[type][id] = handler;
+  },
+
+  /**
+   * Sets the peer connection
+   */
+  set_peer_connection: function(peer_connection) {
+    this._peer_connection = peer_connection;
+  },
+
+  /**
+   * Sets the ID
+   */
+  set_id: function(id) {
+    this._id = id;
+  },
+
+  /**
+   * Sets the sent ID
+   */
+  set_sent_id: function(sent_id) {
+    this._sent_id[sent_id] = 1;
+  },
+
+  /**
+   * Sets the last received ID
+   */
+  set_received_id: function(received_id) {
+    this._received_id[received_id] = 1;
+  },
+
+  /**
+   * Sets the remote payloads
+   */
+  set_payloads_remote: function(name, payload_data) {
+    this._payloads_remote[name] = payload_data;
+  },
+
+  /**
+   * Adds a remote payload
+   */
+  set_payloads_remote_add: function(name, payload_data) {
+    try {
+      if(!(name in this._payloads_remote)) {
+        this.set_payloads_remote(name, payload_data);
+      } else {
+        var key;
+        var payloads_store = this._payloads_remote[name].descriptions.payload;
+        var payloads_add   = payload_data.descriptions.payload;
+
+        for(key in payloads_add) {
+          if(!(key in payloads_store))
+            payloads_store[key] = payloads_add[key];
+        }
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] set_payloads_remote_add > ' + e, 1);
+    }
+  },
+
+  /**
+   * Sets the remote group
+   */
+  set_group_remote: function(semantics, group_data) {
+    this._group_remote[semantics] = group_data;
+  },
+
+  /**
+   * Sets the remote candidates
+   */
+  set_candidates_remote: function(name, candidate_data) {
+    this._candidates_remote[name] = candidate_data;
+  },
+
+  /**
+   * Sets the session initiate pending callback function
+   */
+  set_candidates_queue_remote: function(name, candidate_data) {
+    if(name === null)
+      this._candidates_queue_remote = {};
+    else
+      this._candidates_queue_remote[name] = (candidate_data);
+  },
+
+  /**
+   * Adds a remote candidate
+   */
+  set_candidates_remote_add: function(name, candidate_data) {
+    try {
+      if(!name) return;
+
+      if(!(name in this._candidates_remote))
+        this.set_candidates_remote(name, []);
+   
+      var c, i;
+      var candidate_ids = [];
+
+      for(c in this.get_candidates_remote(name))
+        candidate_ids.push(this.get_candidates_remote(name)[c].id);
+
+      for(i in candidate_data) {
+        if((candidate_data[i].id).indexOf(candidate_ids) !== -1)
+          this.get_candidates_remote(name).push(candidate_data[i]);
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] set_candidates_remote_add > ' + e, 1);
+    }
+  },
+
+   /**
+   * Sets the session senders
+   */
+  set_senders: function(name, senders) {
+    if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
+
+    this._senders[name] = senders;
+  },
+
+  /**
+   * Sets the session creator
+   */
+  set_creator: function(name, creator) {
+    if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
+
+    this._creator[name] = creator;
+  },
+
+  /**
+   * Sets the session initiator
+   */
+  set_initiator: function(initiator) {
+    this._initiator = initiator;
+  },
+
+  /**
+   * Sets the session responder
+   */
+  set_responder: function(responder) {
+    this._responder = responder;
+  },
+
+  /**
+   * Sets the termination reason
+   */
+  set_reason: function(reason) {
+    this._reason = reason || JSJAC_JINGLE_REASON_CANCEL;
+  },
+
 });

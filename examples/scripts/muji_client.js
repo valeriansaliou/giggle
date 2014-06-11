@@ -21,7 +21,46 @@ var ARGS = {
     resolution  : 'md',
     sdp_trace   : (url_param('sdp') == '1'),
     net_trace   : (url_param('net') == '1'),
-    debug       : (new JSJaCConsoleLogger(4))
+    debug       : (new JSJaCConsoleLogger(4)),
+
+    // Custom handlers (optional)
+    room_message: function(_this, stanza) {
+        console.log('room_message');
+
+        // TODO: handle chat message & display
+    },
+
+    session_prepare: function(_this) {
+        console.log('session_prepare');
+    },
+
+    session_initiate: function(_this) {
+        console.log('session_initiate');
+    },
+
+    session_leave: function(_this) {
+        console.log('session_leave');
+    },
+    
+    participant_join: function(_this, stanza) {
+        console.log('participant_join');
+    },
+    
+    participant_initiate: function(_this, stanza) {
+        console.log('participant_initiate');
+    },
+    
+    participant_leave: function(_this, stanza) {
+        console.log('participant_leave');
+    },
+    
+    add_remote_view: function(_this) {
+        console.log('add_remote_view');
+    },
+    
+    remove_remote_view: function(_this) {
+        console.log('remove_remote_view');
+    }
 };
 
 $(document).ready(function() {
@@ -89,7 +128,6 @@ $(document).ready(function() {
                                 // Session values
                                 ARGS.to          = stanza.getFrom() || null;
                                 ARGS.local_view  = document.getElementById('video_local');
-                                ARGS.remote_view = document.getElementById('video_remote');
 
                                 // Let's go!
                                 JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_MUJI, ARGS);
@@ -119,7 +157,7 @@ $(document).ready(function() {
                         else
                             $('#login_error').text('Invalid credentials.').show();
 
-                        if(SC_CONNECTED && JINGLE != null) JINGLE.terminate();
+                        if(SC_CONNECTED && JINGLE != null) JINGLE.leave();
 
                         $('#form_login').find('input, button').removeAttr('disabled');
                         $('#form_login button').show();
@@ -279,7 +317,7 @@ $(document).ready(function() {
         try {
             if(!SC_CONNECTED) return false;
 
-            if(JINGLE != null) JINGLE.terminate();
+            if(JINGLE != null) JINGLE.leave();
 
             $('.live_notif').hide();
         } catch(e) {
