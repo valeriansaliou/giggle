@@ -1,0 +1,40 @@
+{
+  "name": "jsjac-jingle",
+  "description": "JSJaCJingle.js",
+  "version": "0.7.0",
+  "homepage": "https://github.com/valeriansaliou/jsjac-jingle",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/valeriansaliou/jsjac-jingle.git"
+  },
+
+  "author": {
+    "name": "Valérian Saliou",
+    "url": "https://valeriansaliou.name/"
+  },
+
+  "main": "Gruntfile.js",
+
+  "engines": {
+    "node": ">=0.10.0"
+  },
+
+  "scripts": {
+    "watch": "npm install; grunt watch",
+    "build": "npm install; grunt build",
+    "rebuild": "npm install; grunt rebuild",
+    "clean": "npm install; grunt clean",
+    "test": "npm install; grunt test"
+  },
+
+  "devDependencies": {
+    "grunt": "0.4.5",
+    "grunt-contrib-jshint": "0.10.0",
+    "grunt-contrib-watch": "0.6.1",
+    "grunt-contrib-clean": "0.5.0",
+    "grunt-contrib-concat": "0.4.0",
+    "grunt-contrib-copy": "0.5.0",
+    "grunt-contrib-uglify": "0.4.0"
+  }
+}
