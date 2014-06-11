@@ -1997,6 +1997,9 @@ var MAP_DISCO_JINGLE                                = [
 
 var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true : false;
 
+var JSJAC_JINGLE_SESSION_SINGLE                      = 'single';
+var JSJAC_JINGLE_SESSION_MUJI                        = 'muji';
+
 var JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT                = 15;
 var JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT             = 5;
 var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
@@ -5807,7 +5810,7 @@ var JSJaCJinglePeer = ring.create({
       this.parent.get_peer_connection().close();
 
     // Remove this session from router
-    JSJaCJingle_remove(this.parent.get_sid());
+    JSJaCJingle.remove(this.parent.get_sid());
   },
 
   /**
@@ -5829,7 +5832,7 @@ var JSJaCJinglePeer = ring.create({
         if(typeof mute == 'boolean') element[i].muted = mute;
       }
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:utils] _peer_stream_attach > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] stream_attach > ' + e, 1);
     }
   },
 
@@ -5845,7 +5848,7 @@ var JSJaCJinglePeer = ring.create({
         element[i].src = '';
       }
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:utils] _peer_stream_detach > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] stream_detach > ' + e, 1);
     }
   },
 });
@@ -5881,8 +5884,6 @@ var JSJaCJinglePeer = ring.create({
  * @param {function} args.session_terminate_success The terminate success custom handler.
  * @param {function} args.session_terminate_error The terminate error custom handler.
  * @param {function} args.session_terminate_request The terminate request custom handler.
- * @param {function} args.add_remote_view The remote view media add (audio/video) custom handler.
- * @param {function} args.remove_remote_view The remote view media removal (audio/video) custom handler.
  * @param {DOM} args.local_view The path to the local stream view element.
  * @param {DOM} args.remote_view The path to the remote stream view element.
  * @param {string} args.to The full JID to start the Jingle session with.
@@ -5995,18 +5996,6 @@ var __JSJaCJingleBase = ring.create({
        * @private
        */
       this._session_terminate_request = args.session_terminate_request;
-
-    if(args && args.add_remote_view)
-      /**
-       * @private
-       */
-      this._add_remote_view = args.add_remote_view;
-
-    if(args && args.remove_remote_view)
-      /**
-       * @private
-       */
-      this._remove_remote_view = args.remove_remote_view;
 
     if(args && args.to)
       /**
@@ -6392,26 +6381,6 @@ var __JSJaCJingleBase = ring.create({
       return this._session_terminate_request;
 
     return function(stanza) {};
-  },
-
-  /**
-   * @private
-   */
-  get_add_remote_view: function() {
-    if(typeof this._add_remote_view == 'function')
-      return this._add_remote_view;
-
-    return function() {};
-  },
-
-  /**
-   * @private
-   */
-  get_remove_remote_view: function() {
-    if(typeof this._remove_remote_view == 'function')
-      return this._remove_remote_view;
-
-    return function() {};
   },
 
   /**
@@ -7436,7 +7405,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.initiate(); })) {
+      if(JSJaCJingle.defer(function() { this.initiate(); })) {
         this.get_debug().log('[JSJaCJingle:single] initiate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -7447,7 +7416,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         return;
       }
 
-      this.get_debug().log('[JSJaCJingle:single] initiate > New Jingle session with media: ' + this.get_media(), 2);
+      this.get_debug().log('[JSJaCJingle:single] initiate > New Jingle Single session with media: ' + this.get_media(), 2);
 
       // Common vars
       var i, cur_name;
@@ -7482,7 +7451,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Register session to common router
-      JSJaCJingle_add(this.get_sid(), this);
+      JSJaCJingle.add(this.get_sid(), this);
 
       // Initialize WebRTC
       var _this = this;
@@ -7513,7 +7482,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.accept(); })) {
+      if(JSJaCJingle.defer(function() { this.accept(); })) {
         this.get_debug().log('[JSJaCJingle:single] accept > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -7562,7 +7531,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.info(name, args); })) {
+      if(JSJaCJingle.defer(function() { this.info(name, args); })) {
         this.get_debug().log('[JSJaCJingle:single] info > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -7600,7 +7569,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.terminate(reason); })) {
+      if(JSJaCJingle.defer(function() { this.terminate(reason); })) {
         this.get_debug().log('[JSJaCJingle:single] terminate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -7638,7 +7607,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.send(type, args); })) {
+      if(JSJaCJingle.defer(function() { this.send(type, args); })) {
         this.get_debug().log('[JSJaCJingle:single] send > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -7749,7 +7718,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.handle(stanza); })) {
+      if(JSJaCJingle.defer(function() { this.handle(stanza); })) {
         this.get_debug().log('[JSJaCJingle:single] handle > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -7845,7 +7814,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.mute(name); })) {
+      if(JSJaCJingle.defer(function() { this.mute(name); })) {
         this.get_debug().log('[JSJaCJingle:single] mute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -7879,7 +7848,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.unmute(name); })) {
+      if(JSJaCJingle.defer(function() { this.unmute(name); })) {
         this.get_debug().log('[JSJaCJingle:single] unmute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -7915,7 +7884,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.media(media); })) {
+      if(JSJaCJingle.defer(function() { this.media(media); })) {
         this.get_debug().log('[JSJaCJingle:single] media > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -9084,7 +9053,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         this.set_responder(this.utils.connection_jid());
 
         // Register session to common router
-        JSJaCJingle_add(rd_sid, this);
+        JSJaCJingle.add(rd_sid, this);
 
         // Generate and store content data
         this.utils.build_content_remote();
@@ -9387,10 +9356,80 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
  * @constructor
  * @param {Object} args Jingle session arguments.
  * @param {*} args.* Herits of JSJaCJingle() prototype
+ * @param {function} args.add_remote_view The remote view media add (audio/video) custom handler.
+ * @param {function} args.remove_remote_view The remote view media removal (audio/video) custom handler.
  */
 var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
-  constructor: function() {
-    this.is_muji = true;
+  constructor: function(args) {
+    if(args && args.add_remote_view)
+      /**
+       * @private
+       */
+      this._add_remote_view = args.add_remote_view;
+
+    if(args && args.remove_remote_view)
+      /**
+       * @private
+       */
+      this._remove_remote_view = args.remove_remote_view;
+  },
+
+
+  /**
+   * Initiates a new Jingle session.
+   */
+  join: function() {
+    this.get_debug().log('[JSJaCJingle:muji] join', 4);
+
+    try {
+      // Locked?
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:muji] join > Cannot join, resource locked. Please open another session or check WebRTC support.', 0);
+        return;
+      }
+
+      // Defer?
+      if(JSJaCJingle.defer(function() { this.join(); })) {
+        this.get_debug().log('[JSJaCJingle:muji] join > Deferred (waiting for the library components to be initiated).', 0);
+        return;
+      }
+
+      // Slot unavailable?
+      if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
+        this.get_debug().log('[JSJaCJingle:muji] join > Cannot join, resource not inactive (status: ' + this.get_status() + ').', 0);
+        return;
+      }
+
+      this.get_debug().log('[JSJaCJingle:muji] join > New Jingle Muji session with media: ' + this.get_media(), 2);
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:muji] join > ' + e, 1);
+    }
+  },
+
+
+
+  /**
+   * JSJSAC JINGLE MUJI GETTERS
+   */
+
+  /**
+   * @private
+   */
+  get_add_remote_view: function() {
+    if(typeof this._add_remote_view == 'function')
+      return this._add_remote_view;
+
+    return function() {};
+  },
+
+  /**
+   * @private
+   */
+  get_remove_remote_view: function() {
+    if(typeof this._remove_remote_view == 'function')
+      return this._remove_remote_view;
+
+    return function() {};
   },
 });
 
@@ -9404,7 +9443,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
  */
 
 
-var JSJaCJingleInit = (new ring.create({
+var JSJaCJingleInit = new (ring.create({
   /**
    * Query the server for external services
    */
@@ -9413,7 +9452,7 @@ var JSJaCJingleInit = (new ring.create({
 
     try {
       // Pending state (defer other requests)
-      JSJaCJingle_defer(true);
+      JSJaCJingle.defer(true);
 
       // Build request
       var request = new JSJaCIQ();
@@ -9480,13 +9519,13 @@ var JSJaCJingleInit = (new ring.create({
         JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > Ready.', 2);
 
         // Execute deferred requests
-        JSJaCJingle_defer(false);
+        JSJaCJingle.defer(false);
       });
     } catch(e) {
       JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > ' + e, 1);
       
       // Execute deferred requests
-      JSJaCJingle_defer(false);
+      JSJaCJingle.defer(false);
     }
   },
 
@@ -9498,7 +9537,7 @@ var JSJaCJingleInit = (new ring.create({
 
     try {
       // Pending state (defer other requests)
-      JSJaCJingle_defer(true);
+      JSJaCJingle.defer(true);
 
       // Build request
       var request = new JSJaCIQ();
@@ -9553,13 +9592,13 @@ var JSJaCJingleInit = (new ring.create({
         JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > Ready.', 2);
 
         // Execute deferred requests
-        JSJaCJingle_defer(false);
+        JSJaCJingle.defer(false);
       });
     } catch(e) {
       JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > ' + e, 1);
       
       // Execute deferred requests
-      JSJaCJingle_defer(false);
+      JSJaCJingle.defer(false);
     }
   },
 
@@ -9571,7 +9610,7 @@ var JSJaCJingleInit = (new ring.create({
 
     try {
       // Pending state (defer other requests)
-      JSJaCJingle_defer(true);
+      JSJaCJingle.defer(true);
 
       // Generate fallback API URL
       fallback_url += '?username=' + 
@@ -9649,7 +9688,7 @@ var JSJaCJingleInit = (new ring.create({
           JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > Ready.', 2);
 
           // Execute deferred requests
-          JSJaCJingle_defer(false);
+          JSJaCJingle.defer(false);
         }
       };
 
@@ -9658,7 +9697,7 @@ var JSJaCJingleInit = (new ring.create({
       JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > ' + e, 1);
     }
   },
-}));
+}))();
 
 /**
  * @fileoverview JSJaC Jingle library - Common components
@@ -9670,7 +9709,33 @@ var JSJaCJingleInit = (new ring.create({
  */
 
 
-var JSJaCJingle = (new ring.create({
+var JSJaCJingle = new (ring.create({
+  /**
+   * Starts a new Jingle session
+   */
+  session: function(type, args) {
+    var jingle;
+
+    try {
+      switch(type) {
+        case JSJAC_JINGLE_SESSION_SINGLE:
+          jingle = new JSJaCJingleSingle(args);
+          break;
+
+        case JSJAC_JINGLE_SESSION_MUJI:
+          jingle = new JSJaCJingleMuji(args);
+          break;
+
+        default:
+          throw ('Unknown session type: ' + type);
+      }
+    } catch(e) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] session > ' + e, 1);
+    } finally {
+      return jingle;
+    }
+  },
+
   /**
    * Listens for Jingle events
    */
@@ -9686,19 +9751,19 @@ var JSJaCJingle = (new ring.create({
         JSJAC_JINGLE_STORE_DEBUG = args.debug;
 
       // Incoming IQs handler
-      JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', this.route);
+      JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', this.route.bind(this));
 
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:listen > Listening.', 2);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] listen > Listening.', 2);
 
       // Discover available network services
       if(!args || args.extdisco !== false)
-        JSJaCJingle_extdisco();
+        JSJaCJingleInit.extdisco();
       if(!args || args.relaynodes !== false)
-        JSJaCJingle_relaynodes();
+        JSJaCJingleInit.relaynodes();
       if(args.fallback && typeof args.fallback === 'string')
-        JSJaCJingle_fallback(args.fallback);
+        JSJaCJingleInit.fallback(args.fallback);
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:listen > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] listen > ' + e, 1);
     }
   },
 
@@ -9731,7 +9796,7 @@ var JSJaCJingle = (new ring.create({
 
       // WebRTC not available ATM?
       if(jingle && !JSJAC_JINGLE_AVAILABLE) {
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Dropped Jingle packet (WebRTC not available).', 0);
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > Dropped Jingle packet (WebRTC not available).', 0);
 
         (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
       } else {
@@ -9739,23 +9804,23 @@ var JSJaCJingle = (new ring.create({
         var session_route = this.read(sid);
 
         if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route === null) {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > New Jingle session (sid: ' + sid + ').', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > New Jingle session (sid: ' + sid + ').', 2);
 
           JSJAC_JINGLE_STORE_INITIATE(stanza);
         } else if(sid) {
           if(session_route !== null) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Routed to Jingle session (sid: ' + sid + ').', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > Routed to Jingle session (sid: ' + sid + ').', 2);
 
             session_route.handle(stanza);
           } else if(stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && stanza.getFrom()) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Unknown Jingle session (sid: ' + sid + ').', 0);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > Unknown Jingle session (sid: ' + sid + ').', 0);
 
             (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
           }
         }
       }
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > ' + e, 1);
     }
   },
 
@@ -9792,7 +9857,7 @@ var JSJaCJingle = (new ring.create({
         if(JSJAC_JINGLE_STORE_DEFER.deferred) {
           (JSJAC_JINGLE_STORE_DEFER.fn).push(arg);
 
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Registered a function to be executed once ready.', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] defer > Registered a function to be executed once ready.', 2);
         }
 
         return JSJAC_JINGLE_STORE_DEFER.deferred;
@@ -9804,19 +9869,19 @@ var JSJaCJingle = (new ring.create({
           if((--JSJAC_JINGLE_STORE_DEFER.count) <= 0) {
             JSJAC_JINGLE_STORE_DEFER.count = 0;
 
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Executing ' + JSJAC_JINGLE_STORE_DEFER.fn.length + ' deferred functions...', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] defer > Executing ' + JSJAC_JINGLE_STORE_DEFER.fn.length + ' deferred functions...', 2);
 
             while(JSJAC_JINGLE_STORE_DEFER.fn.length)
               ((JSJAC_JINGLE_STORE_DEFER.fn).shift())();
 
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Done executing deferred functions.', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] defer > Done executing deferred functions.', 2);
           }
         } else {
           ++JSJAC_JINGLE_STORE_DEFER.count;
         }
       }
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] defer > ' + e, 1);
     }
   },
 
@@ -9828,4 +9893,4 @@ var JSJaCJingle = (new ring.create({
   disco: function() {
     return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];
   },
-}));
+}))();

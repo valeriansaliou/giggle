@@ -424,7 +424,7 @@ var JSJaCJinglePeer = ring.create({
         if(typeof mute == 'boolean') element[i].muted = mute;
       }
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:peer] _peer_stream_attach > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] stream_attach > ' + e, 1);
     }
   },
 
@@ -440,7 +440,7 @@ var JSJaCJinglePeer = ring.create({
         element[i].src = '';
       }
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:peer] _peer_stream_detach > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] stream_detach > ' + e, 1);
     }
   },
 });

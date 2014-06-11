@@ -29,8 +29,6 @@
  * @param {function} args.session_terminate_success The terminate success custom handler.
  * @param {function} args.session_terminate_error The terminate error custom handler.
  * @param {function} args.session_terminate_request The terminate request custom handler.
- * @param {function} args.add_remote_view The remote view media add (audio/video) custom handler.
- * @param {function} args.remove_remote_view The remote view media removal (audio/video) custom handler.
  * @param {DOM} args.local_view The path to the local stream view element.
  * @param {DOM} args.remote_view The path to the remote stream view element.
  * @param {string} args.to The full JID to start the Jingle session with.
@@ -143,18 +141,6 @@ var __JSJaCJingleBase = ring.create({
        * @private
        */
       this._session_terminate_request = args.session_terminate_request;
-
-    if(args && args.add_remote_view)
-      /**
-       * @private
-       */
-      this._add_remote_view = args.add_remote_view;
-
-    if(args && args.remove_remote_view)
-      /**
-       * @private
-       */
-      this._remove_remote_view = args.remove_remote_view;
 
     if(args && args.to)
       /**
@@ -540,26 +526,6 @@ var __JSJaCJingleBase = ring.create({
       return this._session_terminate_request;
 
     return function(stanza) {};
-  },
-
-  /**
-   * @private
-   */
-  get_add_remote_view: function() {
-    if(typeof this._add_remote_view == 'function')
-      return this._add_remote_view;
-
-    return function() {};
-  },
-
-  /**
-   * @private
-   */
-  get_remove_remote_view: function() {
-    if(typeof this._remove_remote_view == 'function')
-      return this._remove_remote_view;
-
-    return function() {};
   },
 
   /**

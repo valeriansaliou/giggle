@@ -41,7 +41,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         return;
       }
 
-      this.get_debug().log('[JSJaCJingle:single] initiate > New Jingle session with media: ' + this.get_media(), 2);
+      this.get_debug().log('[JSJaCJingle:single] initiate > New Jingle Single session with media: ' + this.get_media(), 2);
 
       // Common vars
       var i, cur_name;
