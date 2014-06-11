@@ -12,7 +12,7 @@ module.exports = function(grunt) {
 
   // Map tasks
   var GRUNT_TASKS_BUILD = {
-    all: ['clean:reset', 'concat', 'copy', 'uglify', 'clean:temporary']
+    all: ['clean:reset', 'concat', 'copy', 'uglify', 'jsdoc', 'clean:temporary']
   };
 
   var GRUNT_TASKS_TEST = {
@@ -90,6 +90,18 @@ module.exports = function(grunt) {
     },
 
 
+    // Task: JSDoc
+    jsdoc : {
+      dist : {
+        src: GRUNT_SRC_FILES,
+
+        options: {
+            destination: 'doc/'
+        }
+      }
+    },
+
+
     // Task: JSHint
     jshint: {
       files: GRUNT_LINT_FILES
@@ -140,6 +152,7 @@ module.exports = function(grunt) {
 
 
   // Load plugins
+  grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-clean');

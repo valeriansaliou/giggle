@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: jsjac.jingle.constants.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: jsjac.jingle.constants.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * @fileoverview JSJaC Jingle library - Constants map
+ *
+ * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @depends https://github.com/sstrigler/JSJaC
+ * @author Valérian Saliou https://valeriansaliou.name/
+ * @license Mozilla Public License v2.0 (MPL v2.0)
+ */
+
+
+/**
+ * JINGLE WEBRTC
+ */
+
+var WEBRTC_GET_MEDIA           = ( navigator.webkitGetUserMedia     ||
+                                   navigator.mozGetUserMedia        ||
+                                   navigator.msGetUserMedia         ||
+                                   navigator.getUserMedia           );
+
+var WEBRTC_PEER_CONNECTION     = ( window.webkitRTCPeerConnection   ||
+                                   window.mozRTCPeerConnection      ||
+                                   window.RTCPeerConnection         );
+
+var WEBRTC_SESSION_DESCRIPTION = ( window.mozRTCSessionDescription  ||
+                                   window.RTCSessionDescription     );
+
+var WEBRTC_ICE_CANDIDATE       = ( window.mozRTCIceCandidate        ||
+                                   window.RTCIceCandidate           );
+
+var WEBRTC_CONFIGURATION = {
+  peer_connection : {
+    config        : {
+      iceServers : [{
+        url: 'stun:stun.jappix.com'
+      }]
+    },
+
+    constraints   : {
+      optional : [{
+        'DtlsSrtpKeyAgreement': true
+      }]
+    }
+  },
+
+  create_offer    : {
+    mandatory: {
+      'OfferToReceiveAudio' : true,
+      'OfferToReceiveVideo' : true
+    }
+  },
+
+  create_answer   : {
+    mandatory: {
+      'OfferToReceiveAudio' : true,
+      'OfferToReceiveVideo' : true
+    }
+  }
+};
+
+var WEBRTC_SDP_LINE_BREAK      = '\r\n';
+var WEBRTC_SDP_TYPE_OFFER      = 'offer';
+var WEBRTC_SDP_TYPE_ANSWER     = 'answer';
+
+var R_WEBRTC_SDP_CANDIDATE     = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\d{1,10}) ([a-zA-Z0-9:\.]{1,45}) (\d{1,5}) (typ) (host|srflx|prflx|relay)( (raddr) ([a-zA-Z0-9:\.]{1,45}) (rport) (\d{1,5}))?( (generation) (\d))?/i;
+
+var R_WEBRTC_SDP_ICE_PAYLOAD   = {
+  rtpmap          : /^a=rtpmap:(\d+) (([^\s\/]+)\/(\d+)(\/([^\s\/]+))?)?/i,
+  fmtp            : /^a=fmtp:(\d+) (.+)/i,
+  group           : /^a=group:(\S+) (.+)/,
+  rtcp_fb         : /^a=rtcp-fb:(\S+) (\S+)( (\S+))?/i,
+  rtcp_fb_trr_int : /^a=rtcp-fb:(\d+) trr-int (\d+)/i,
+  pwd             : /^a=ice-pwd:(\S+)/i,
+  ufrag           : /^a=ice-ufrag:(\S+)/i,
+  ptime           : /^a=ptime:(\d+)/i,
+  maxptime        : /^a=maxptime:(\d+)/i,
+  ssrc            : /^a=ssrc:(\d+) (\w+)(:(.+))?/i,
+  ssrc_group      : /^a=ssrc-group:(\S+) ([\d ]+)/i,
+  rtcp_mux        : /^a=rtcp-mux/i,
+  crypto          : /^a=crypto:(\d{1,9}) (\S+) (\S+)( (\S+))?/i,
+  zrtp_hash       : /^a=zrtp-hash:(\S+) (\S+)/i,
+  fingerprint     : /^a=fingerprint:(\S+) (\S+)/i,
+  setup           : /^a=setup:(\S+)/i,
+  extmap          : /^a=extmap:([^\s\/]+)(\/([^\s\/]+))? (\S+)/i,
+  bandwidth       : /^b=(\w+):(\d+)/i,
+  media           : /^m=(audio|video|application|data) /i
+};
+
+var R_NETWORK_PROTOCOLS        = {
+  stun: /^stun:/i
+};
+
+var R_NETWORK_IP               = {
+  all: {
+    v4: /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/,
+    v6: /^((?=.*::)(?!.*::.+::)(::)?([\dA-F]{1,4}:(:|\b)|){5}|([\dA-F]{1,4}:){6})((([\dA-F]{1,4}((?!\3)::|:\b|$))|(?!\2\3)){2}|(((2[0-4]|1\d|[1-9])?\d|25[0-5])\.?\b){4})$/i
+  },
+
+  lan: {
+    v4: /(^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)/,
+    v6: /((::1)|(^fe80::))(.+)?/i
+  }
+};
+
+
+/**
+ * JINGLE NAMESPACES
+ */
+
+var NS_JINGLE                                       = 'urn:xmpp:jingle:1';
+var NS_JINGLE_ERRORS                                = 'urn:xmpp:jingle:errors:1';
+
+var NS_JINGLE_APPS_RTP                              = 'urn:xmpp:jingle:apps:rtp:1';
+var NS_JINGLE_APPS_RTP_INFO                         = 'urn:xmpp:jingle:apps:rtp:info:1';
+var NS_JINGLE_APPS_RTP_AUDIO                        = 'urn:xmpp:jingle:apps:rtp:audio';
+var NS_JINGLE_APPS_RTP_VIDEO                        = 'urn:xmpp:jingle:apps:rtp:video';
+var NS_JINGLE_APPS_RTP_RTP_HDREXT                   = 'urn:xmpp:jingle:apps:rtp:rtp-hdrext:0';
+var NS_JINGLE_APPS_RTP_RTCP_FB                      = 'urn:xmpp:jingle:apps:rtp:rtcp-fb:0';
+var NS_JINGLE_APPS_RTP_ZRTP                         = 'urn:xmpp:jingle:apps:rtp:zrtp:1';
+var NS_JINGLE_APPS_RTP_SSMA                         = 'urn:xmpp:jingle:apps:rtp:ssma:0';
+var NS_JINGLE_APPS_STUB                             = 'urn:xmpp:jingle:apps:stub:0';
+var NS_JINGLE_APPS_DTLS                             = 'urn:xmpp:tmp:jingle:apps:dtls:0';
+var NS_JINGLE_APPS_GROUPING                         = 'urn:xmpp:jingle:apps:grouping:0';
+
+var NS_JINGLE_TRANSPORTS_RAWUDP                     = 'urn:xmpp:jingle:transports:raw-udp:1';
+var NS_JINGLE_TRANSPORTS_ICEUDP                     = 'urn:xmpp:jingle:transports:ice-udp:1';
+var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transports:stub:0';
+
+var NS_JINGLE_SECURITY_STUB                         = 'urn:xmpp:jingle:security:stub:0';
+
+var NS_JABBER_JINGLENODES                           = 'http://jabber.org/protocol/jinglenodes';
+var NS_JABBER_JINGLENODES_CHANNEL                   = 'http://jabber.org/protocol/jinglenodes#channel';
+var NS_TELEPATHY_MUJI                               = 'http://telepathy.freedesktop.org/muji';
+
+var NS_EXTDISCO                                     = 'urn:xmpp:extdisco:1';
+
+var NS_IETF_RFC_3264                                = 'urn:ietf:rfc:3264';
+var NS_IETF_RFC_5576                                = 'urn:ietf:rfc:5576';
+var NS_IETF_RFC_5888                                = 'urn:ietf:rfc:5888';
+
+var R_NS_JINGLE_APP                                 = /^urn:xmpp:jingle:app:(\w+)(:(\w+))?(:(\d+))?$/;
+var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transport:(\w+)$/;
+
+var MAP_DISCO_JINGLE                                = [
+  /* http://xmpp.org/extensions/xep-0166.html#support */
+  /* http://xmpp.org/extensions/xep-0167.html#support */
+  NS_JINGLE,
+  NS_JINGLE_APPS_RTP,
+  NS_JINGLE_APPS_RTP_AUDIO,
+  NS_JINGLE_APPS_RTP_VIDEO,
+
+  /* http://xmpp.org/extensions/xep-0177.html */
+  NS_JINGLE_TRANSPORTS_RAWUDP,
+
+  /* http://xmpp.org/extensions/xep-0176.html#support */
+  NS_JINGLE_TRANSPORTS_ICEUDP,
+  NS_IETF_RFC_3264,
+
+  /* http://xmpp.org/extensions/xep-0339.html#disco */
+  NS_IETF_RFC_5576,
+
+  /* http://xmpp.org/extensions/xep-0338.html#disco */
+  NS_IETF_RFC_5888,
+
+  /* http://xmpp.org/extensions/xep-0293.html#determining-support */
+  NS_JINGLE_APPS_RTP_RTCP_FB,
+
+  /* http://xmpp.org/extensions/xep-0294.html#determining-support */
+  NS_JINGLE_APPS_RTP_RTP_HDREXT,
+
+  /* http://xmpp.org/extensions/xep-0320.html#disco */
+  NS_JINGLE_APPS_DTLS,
+
+  /* http://xmpp.org/extensions/xep-0262.html */
+  NS_JINGLE_APPS_RTP_ZRTP,
+
+  /* http://xmpp.org/extensions/xep-0272.html */
+  NS_TELEPATHY_MUJI,
+
+  /* http://xmpp.org/extensions/xep-0278.html */
+  NS_JABBER_JINGLENODES,
+
+  /* http://xmpp.org/extensions/xep-0215.html */
+  NS_EXTDISCO
+];
+
+
+
+/**
+ * JSJAC JINGLE CONSTANTS
+ */
+
+var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true : false;
+
+var JSJAC_JINGLE_SESSION_SINGLE                      = 'single';
+var JSJAC_JINGLE_SESSION_MUJI                        = 'muji';
+
+var JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT                = 15;
+var JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT             = 5;
+var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
+var JSJAC_JINGLE_STANZA_ID_PRE                       = 'jj';
+
+var JSJAC_JINGLE_NETWORK                             = '0';
+var JSJAC_JINGLE_GENERATION                          = '0';
+
+var JSJAC_JINGLE_BROWSER_FIREFOX                     = 'Firefox';
+var JSJAC_JINGLE_BROWSER_CHROME                      = 'Chrome';
+var JSJAC_JINGLE_BROWSER_SAFARI                      = 'Safari';
+var JSJAC_JINGLE_BROWSER_OPERA                       = 'Opera';
+var JSJAC_JINGLE_BROWSER_IE                          = 'IE';
+
+var JSJAC_JINGLE_SENDERS_BOTH                        = { jingle: 'both',      sdp: 'sendrecv' };
+var JSJAC_JINGLE_SENDERS_INITIATOR                   = { jingle: 'initiator', sdp: 'sendonly' };
+var JSJAC_JINGLE_SENDERS_NONE                        = { jingle: 'none',      sdp: 'inactive' };
+var JSJAC_JINGLE_SENDERS_RESPONDER                   = { jingle: 'responder', sdp: 'recvonly' };
+
+var JSJAC_JINGLE_CREATOR_INITIATOR                   = 'initiator';
+var JSJAC_JINGLE_CREATOR_RESPONDER                   = 'responder';
+
+var JSJAC_JINGLE_STATUS_INACTIVE                     = 'inactive';
+var JSJAC_JINGLE_STATUS_INITIATING                   = 'initiating';
+var JSJAC_JINGLE_STATUS_INITIATED                    = 'initiated';
+var JSJAC_JINGLE_STATUS_ACCEPTING                    = 'accepting';
+var JSJAC_JINGLE_STATUS_ACCEPTED                     = 'accepted';
+var JSJAC_JINGLE_STATUS_TERMINATING                  = 'terminating';
+var JSJAC_JINGLE_STATUS_TERMINATED                   = 'terminated';
+
+var JSJAC_JINGLE_ACTION_CONTENT_ACCEPT               = 'content-accept';
+var JSJAC_JINGLE_ACTION_CONTENT_ADD                  = 'content-add';
+var JSJAC_JINGLE_ACTION_CONTENT_MODIFY               = 'content-modify';
+var JSJAC_JINGLE_ACTION_CONTENT_REJECT               = 'content-reject';
+var JSJAC_JINGLE_ACTION_CONTENT_REMOVE               = 'content-remove';
+var JSJAC_JINGLE_ACTION_DESCRIPTION_INFO             = 'description-info';
+var JSJAC_JINGLE_ACTION_SECURITY_INFO                = 'security-info';
+var JSJAC_JINGLE_ACTION_SESSION_ACCEPT               = 'session-accept';
+var JSJAC_JINGLE_ACTION_SESSION_INFO                 = 'session-info';
+var JSJAC_JINGLE_ACTION_SESSION_INITIATE             = 'session-initiate';
+var JSJAC_JINGLE_ACTION_SESSION_TERMINATE            = 'session-terminate';
+var JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT             = 'transport-accept';
+var JSJAC_JINGLE_ACTION_TRANSPORT_INFO               = 'transport-info';
+var JSJAC_JINGLE_ACTION_TRANSPORT_REJECT             = 'transport-reject';
+var JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE            = 'transport-replace';
+
+var JSJAC_JINGLE_ERROR_OUT_OF_ORDER                  = { jingle: 'out-of-order',           xmpp: 'unexpected-request',         type: 'wait'   };
+var JSJAC_JINGLE_ERROR_TIE_BREAK                     = { jingle: 'tie-break',              xmpp: 'conflict',                   type: 'cancel' };
+var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION               = { jingle: 'unknown-session',        xmpp: 'item-not-found',             type: 'cancel' };
+var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO              = { jingle: 'unsupported-info',       xmpp: 'feature-not-implemented',    type: 'modify' };
+var JSJAC_JINGLE_ERROR_SECURITY_REQUIRED             = { jingle: 'security-required',      xmpp: 'not-acceptable',             type: 'cancel' };
+
+var XMPP_ERROR_UNEXPECTED_REQUEST                    = { xmpp: 'unexpected-request',       type: 'wait' };
+var XMPP_ERROR_CONFLICT                              = { xmpp: 'conflict',                 type: 'cancel' };
+var XMPP_ERROR_ITEM_NOT_FOUND                        = { xmpp: 'item-not-found',           type: 'cancel' };
+var XMPP_ERROR_NOT_ACCEPTABLE                        = { xmpp: 'not-acceptable',           type: 'modify' };
+var XMPP_ERROR_FEATURE_NOT_IMPLEMENTED               = { xmpp: 'feature-not-implemented',  type: 'cancel' };
+var XMPP_ERROR_SERVICE_UNAVAILABLE                   = { xmpp: 'service-unavailable',      type: 'cancel' };
+var XMPP_ERROR_REDIRECT                              = { xmpp: 'redirect',                 type: 'modify' };
+var XMPP_ERROR_RESOURCE_CONSTRAINT                   = { xmpp: 'resource-constraint',      type: 'wait'   };
+var XMPP_ERROR_BAD_REQUEST                           = { xmpp: 'bad-request',              type: 'cancel' };
+
+var JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION          = 'alternative-session';
+var JSJAC_JINGLE_REASON_BUSY                         = 'busy';
+var JSJAC_JINGLE_REASON_CANCEL                       = 'cancel';
+var JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR           = 'connectivity-error';
+var JSJAC_JINGLE_REASON_DECLINE                      = 'decline';
+var JSJAC_JINGLE_REASON_EXPIRED                      = 'expired';
+var JSJAC_JINGLE_REASON_FAILED_APPLICATION           = 'failed-application';
+var JSJAC_JINGLE_REASON_FAILED_TRANSPORT             = 'failed-transport';
+var JSJAC_JINGLE_REASON_GENERAL_ERROR                = 'general-error';
+var JSJAC_JINGLE_REASON_GONE                         = 'gone';
+var JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS      = 'incompatible-parameters';
+var JSJAC_JINGLE_REASON_MEDIA_ERROR                  = 'media-error';
+var JSJAC_JINGLE_REASON_SECURITY_ERROR               = 'security-error';
+var JSJAC_JINGLE_REASON_SUCCESS                      = 'success';
+var JSJAC_JINGLE_REASON_TIMEOUT                      = 'timeout';
+var JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS     = 'unsupported-applications';
+var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS       = 'unsupported-transports';
+
+var JSJAC_JINGLE_SESSION_INFO_ACTIVE                 = 'active';
+var JSJAC_JINGLE_SESSION_INFO_HOLD                   = 'hold';
+var JSJAC_JINGLE_SESSION_INFO_MUTE                   = 'mute';
+var JSJAC_JINGLE_SESSION_INFO_RINGING                = 'ringing';
+var JSJAC_JINGLE_SESSION_INFO_UNHOLD                 = 'unhold';
+var JSJAC_JINGLE_SESSION_INFO_UNMUTE                 = 'unmute';
+
+var JSJAC_JINGLE_MEDIA_AUDIO                         = 'audio';
+var JSJAC_JINGLE_MEDIA_VIDEO                         = 'video';
+
+var JSJAC_JINGLE_VIDEO_SOURCE_CAMERA                 = 'camera';
+var JSJAC_JINGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
+
+var JSJAC_JINGLE_STANZA_TYPE_ALL                     = 'all';
+var JSJAC_JINGLE_STANZA_TYPE_RESULT                  = 'result';
+var JSJAC_JINGLE_STANZA_TYPE_SET                     = 'set';
+var JSJAC_JINGLE_STANZA_TYPE_GET                     = 'get';
+
+var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST             = 'host';
+var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX            = 'srflx';
+var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_PRFLX            = 'prflx';
+var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_RELAY            = 'relay';
+
+var JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE            = 'ice';
+var JSJAC_JINGLE_SDP_CANDIDATE_METHOD_RAW            = 'raw';
+
+var JSJAC_JINGLE_SDP_CANDIDATE_MAP_ICEUDP            = [
+  { n: 'component',  r: 1 },
+  { n: 'foundation', r: 1 },
+  { n: 'generation', r: 1 },
+  { n: 'id',         r: 1 },
+  { n: 'ip',         r: 1 },
+  { n: 'network',    r: 1 },
+  { n: 'port',       r: 1 },
+  { n: 'priority',   r: 1 },
+  { n: 'protocol',   r: 1 },
+  { n: 'rel-addr',   r: 0 },
+  { n: 'rel-port',   r: 0 },
+  { n: 'type',       r: 1 }
+];
+var JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP            = [
+  { n: 'component',  r: 1 },
+  { n: 'generation', r: 1 },
+  { n: 'id',         r: 1 },
+  { n: 'ip',         r: 1 },
+  { n: 'port',       r: 1 },
+  { n: 'type',       r: 1 }
+];
+
+var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_LOCAL           = 'IN';
+var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE          = 'IN';
+var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V4          = 'IP4';
+var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V6          = 'IP6';
+var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_TCP          = 'tcp';
+var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_UDP          = 'udp';
+
+var JSJAC_JINGLE_SDP_CANDIDATE_IP_V4                 = '0.0.0.0';
+var JSJAC_JINGLE_SDP_CANDIDATE_IP_V6                 = '::';
+
+var JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT            = JSJAC_JINGLE_SDP_CANDIDATE_IP_V4;
+var JSJAC_JINGLE_SDP_CANDIDATE_PORT_DEFAULT          = '1';
+var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT         = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE;
+var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT     = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V4;
+var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT      = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_UDP;
+var JSJAC_JINGLE_SDP_CANDIDATE_PRIORITY_DEFAULT      = '1';
+
+
+
+/**
+ * JSJSAC JINGLE CONSTANTS MAPPING
+ */
+
+var JSJAC_JINGLE_SDP_CANDIDATE_TYPES  = {};
+JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST]   = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE;
+JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX]  = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE;
+JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_PRFLX]  = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE;
+JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_RELAY]  = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_RAW;
+
+var JSJAC_JINGLE_BROWSERS             = {};
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_FIREFOX]                      = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_CHROME]                       = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_SAFARI]                       = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_OPERA]                        = 1;
+JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_IE]                           = 1;
+
+var JSJAC_JINGLE_SENDERS              = {};
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_BOTH.jingle]                   = JSJAC_JINGLE_SENDERS_BOTH.sdp;
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_INITIATOR.jingle]              = JSJAC_JINGLE_SENDERS_INITIATOR.sdp;
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_NONE.jingle]                   = JSJAC_JINGLE_SENDERS_NONE.sdp;
+JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_RESPONDER.jingle]              = JSJAC_JINGLE_SENDERS_RESPONDER.sdp;
+
+var JSJAC_JINGLE_CREATORS             = {};
+JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_INITIATOR]                    = 1;
+JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_RESPONDER]                    = 1;
+
+var JSJAC_JINGLE_STATUSES             = {};
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INACTIVE]                      = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INITIATING]                    = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INITIATED]                     = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_ACCEPTING]                     = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_ACCEPTED]                      = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATING]                   = 1;
+JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATED]                    = 1;
+
+var JSJAC_JINGLE_ACTIONS              = {};
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_ACCEPT]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_ADD]                    = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_MODIFY]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_REJECT]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_REMOVE]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_DESCRIPTION_INFO]               = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SECURITY_INFO]                  = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_ACCEPT]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_INFO]                   = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_INITIATE]               = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_TERMINATE]              = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT]               = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_INFO]                 = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REJECT]               = 1;
+JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE]              = 1;
+
+var JSJAC_JINGLE_ERRORS               = {};
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_OUT_OF_ORDER.jingle]              = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_TIE_BREAK.jingle]                 = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNKNOWN_SESSION.jingle]           = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.jingle]          = 1;
+JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_SECURITY_REQUIRED.jingle]         = 1;
+
+var XMPP_ERRORS                       = {};
+XMPP_ERRORS[XMPP_ERROR_UNEXPECTED_REQUEST.xmpp]                          = 1;
+XMPP_ERRORS[XMPP_ERROR_CONFLICT.xmpp]                                    = 1;
+XMPP_ERRORS[XMPP_ERROR_ITEM_NOT_FOUND.xmpp]                              = 1;
+XMPP_ERRORS[XMPP_ERROR_NOT_ACCEPTABLE.xmpp]                              = 1;
+XMPP_ERRORS[XMPP_ERROR_FEATURE_NOT_IMPLEMENTED.xmpp]                     = 1;
+XMPP_ERRORS[XMPP_ERROR_SERVICE_UNAVAILABLE.xmpp]                         = 1;
+XMPP_ERRORS[XMPP_ERROR_REDIRECT.xmpp]                                    = 1;
+XMPP_ERRORS[XMPP_ERROR_RESOURCE_CONSTRAINT.xmpp]                         = 1;
+XMPP_ERRORS[XMPP_ERROR_BAD_REQUEST.xmpp]                                 = 1;
+
+var JSJAC_JINGLE_REASONS              = {};
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION]            = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_BUSY]                           = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_CANCEL]                         = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR]             = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_DECLINE]                        = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_EXPIRED]                        = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_FAILED_APPLICATION]             = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_FAILED_TRANSPORT]               = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_GENERAL_ERROR]                  = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_GONE]                           = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS]        = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_MEDIA_ERROR]                    = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_SECURITY_ERROR]                 = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_SUCCESS]                        = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_TIMEOUT]                        = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS]       = 1;
+JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS]         = 1;
+
+var JSJAC_JINGLE_SESSION_INFOS        = {};
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_ACTIVE]             = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_HOLD]               = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_MUTE]               = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_RINGING]            = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNHOLD]             = 1;
+JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]             = 1;
+
+var JSJAC_JINGLE_MEDIAS               = {};
+JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                            = { label: '0' };
+JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                            = { label: '1' };
+
+var JSJAC_JINGLE_VIDEO_SOURCES        = {};
+JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_CAMERA]             = 1;
+JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_SCREEN]             = 1;
+
+var JSJAC_JINGLE_STANZAS              = {};
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_ALL]                       = 1;
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_RESULT]                    = 1;
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_SET]                       = 1;
+JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_GET]                       = 1;
+
+
+
+/**
+ * JSJAC JINGLE STORAGE
+ */
+
+var JSJAC_JINGLE_STORE_CONNECTION = null;
+var JSJAC_JINGLE_STORE_SESSIONS   = {};
+var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
+
+var JSJAC_JINGLE_STORE_DEBUG      = {
+  log : function() {}
+};
+
+var JSJAC_JINGLE_STORE_EXTDISCO   = {
+  stun : {},
+  turn : {}
+};
+
+var JSJAC_JINGLE_STORE_FALLBACK   = {
+  stun : {},
+  turn : {}
+};
+
+var JSJAC_JINGLE_STORE_RELAYNODES = {
+  stun  : {}
+};
+
+var JSJAC_JINGLE_STORE_DEFER      = {
+  deferred : false,
+  count    : 0,
+  fn       : []
+};
+
+var R_JSJAC_JINGLE_SERVICE_URI    = /^(\w+):([^:\?]+)(?::(\d+))?(?:\?transport=(\w+))?/i;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="__JSJaCJingleBase.html">__JSJaCJingleBase</a></li><li><a href="JSJaCJingleMuji.html">JSJaCJingleMuji</a></li><li><a href="JSJaCJingleSingle.html">JSJaCJingleSingle</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_add_remote_view">_add_remote_view</a></li><li><a href="global.html#_bandwidth">_bandwidth</a></li><li><a href="global.html#_candidates_local">_candidates_local</a></li><li><a href="global.html#_candidates_queue_local">_candidates_queue_local</a></li><li><a href="global.html#_candidates_queue_remote">_candidates_queue_remote</a></li><li><a href="global.html#_candidates_remote">_candidates_remote</a></li><li><a href="global.html#_content_local">_content_local</a></li><li><a href="global.html#_content_remote">_content_remote</a></li><li><a href="global.html#_creator">_creator</a></li><li><a href="global.html#_debug">_debug</a></li><li><a href="global.html#_fps">_fps</a></li><li><a href="global.html#_group_local">_group_local</a></li><li><a href="global.html#_group_remote">_group_remote</a></li><li><a href="global.html#_handlers">_handlers</a></li><li><a href="global.html#_id">_id</a></li><li><a href="global.html#_initiator">_initiator</a></li><li><a href="global.html#_local_stream">_local_stream</a></li><li><a href="global.html#_local_view">_local_view</a></li><li><a href="global.html#_lock">_lock</a></li><li><a href="global.html#_media">_media</a></li><li><a href="global.html#_media_busy">_media_busy</a></li><li><a href="global.html#_mute">_mute</a></li><li><a href="global.html#_name">_name</a></li><li><a href="global.html#_net_trace">_net_trace</a></li><li><a href="global.html#_payloads_local">_payloads_local</a></li><li><a href="global.html#_payloads_remote">_payloads_remote</a></li><li><a href="global.html#_peer_connection">_peer_connection</a></li><li><a href="global.html#_reason">_reason</a></li><li><a href="global.html#_received_id">_received_id</a></li><li><a href="global.html#_remote_stream">_remote_stream</a></li><li><a href="global.html#_remote_view">_remote_view</a></li><li><a href="global.html#_remove_remote_view">_remove_remote_view</a></li><li><a href="global.html#_resolution">_resolution</a></li><li><a href="global.html#_responder">_responder</a></li><li><a href="global.html#_sdp_trace">_sdp_trace</a></li><li><a href="global.html#_senders">_senders</a></li><li><a href="global.html#_sent_id">_sent_id</a></li><li><a href="global.html#_session_accept_error">_session_accept_error</a></li><li><a href="global.html#_session_accept_pending">_session_accept_pending</a></li><li><a href="global.html#_session_accept_request">_session_accept_request</a></li><li><a href="global.html#_session_accept_success">_session_accept_success</a></li><li><a href="global.html#_session_info_error">_session_info_error</a></li><li><a href="global.html#_session_info_request">_session_info_request</a></li><li><a href="global.html#_session_info_success">_session_info_success</a></li><li><a href="global.html#_session_initiate_error">_session_initiate_error</a></li><li><a href="global.html#_session_initiate_pending">_session_initiate_pending</a></li><li><a href="global.html#_session_initiate_request">_session_initiate_request</a></li><li><a href="global.html#_session_initiate_success">_session_initiate_success</a></li><li><a href="global.html#_session_terminate_error">_session_terminate_error</a></li><li><a href="global.html#_session_terminate_pending">_session_terminate_pending</a></li><li><a href="global.html#_session_terminate_request">_session_terminate_request</a></li><li><a href="global.html#_session_terminate_success">_session_terminate_success</a></li><li><a href="global.html#_sid">_sid</a></li><li><a href="global.html#_status">_status</a></li><li><a href="global.html#_stun">_stun</a></li><li><a href="global.html#_to">_to</a></li><li><a href="global.html#_turn">_turn</a></li><li><a href="global.html#_video_source">_video_source</a></li><li><a href="global.html#accept">accept</a></li><li><a href="global.html#add">add</a></li><li><a href="global.html#array_remove_value">array_remove_value</a></li><li><a href="global.html#browser">browser</a></li><li><a href="global.html#build_content_local">build_content_local</a></li><li><a href="global.html#build_content_remote">build_content_remote</a></li><li><a href="global.html#config_ice">config_ice</a></li><li><a href="global.html#connection_create">connection_create</a></li><li><a href="global.html#connection_jid">connection_jid</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#defer">defer</a></li><li><a href="global.html#disco">disco</a></li><li><a href="global.html#extdisco">extdisco</a></li><li><a href="global.html#fail_description">fail_description</a></li><li><a href="global.html#fallback">fallback</a></li><li><a href="global.html#generate">generate</a></li><li><a href="global.html#generate_candidates">generate_candidates</a></li><li><a href="global.html#generate_constraints">generate_constraints</a></li><li><a href="global.html#generate_content">generate_content</a></li><li><a href="global.html#generate_credentials">generate_credentials</a></li><li><a href="global.html#generate_description">generate_description</a></li><li><a href="global.html#generate_description_media">generate_description_media</a></li><li><a href="global.html#generate_hash_md5">generate_hash_md5</a></li><li><a href="global.html#generate_id">generate_id</a></li><li><a href="global.html#generate_origin">generate_origin</a></li><li><a href="global.html#generate_protocol_version">generate_protocol_version</a></li><li><a href="global.html#generate_session_name">generate_session_name</a></li><li><a href="global.html#generate_sid">generate_sid</a></li><li><a href="global.html#generate_timing">generate_timing</a></li><li><a href="global.html#generate_transport">generate_transport</a></li><li><a href="global.html#get_add_remote_view">get_add_remote_view</a></li><li><a href="global.html#get_bandwidth">get_bandwidth</a></li><li><a href="global.html#get_candidates_local">get_candidates_local</a></li><li><a href="global.html#get_candidates_queue_local">get_candidates_queue_local</a></li><li><a href="global.html#get_candidates_queue_remote">get_candidates_queue_remote</a></li><li><a href="global.html#get_candidates_remote">get_candidates_remote</a></li><li><a href="global.html#get_content_local">get_content_local</a></li><li><a href="global.html#get_content_remote">get_content_remote</a></li><li><a href="global.html#get_creator">get_creator</a></li><li><a href="global.html#get_creator_this">get_creator_this</a></li><li><a href="global.html#get_debug">get_debug</a></li><li><a href="global.html#get_fps">get_fps</a></li><li><a href="global.html#get_group_local">get_group_local</a></li><li><a href="global.html#get_group_remote">get_group_remote</a></li><li><a href="global.html#get_handlers">get_handlers</a></li><li><a href="global.html#get_id">get_id</a></li><li><a href="global.html#get_id_new">get_id_new</a></li><li><a href="global.html#get_id_pre">get_id_pre</a></li><li><a href="global.html#get_initiator">get_initiator</a></li><li><a href="global.html#get_local_stream">get_local_stream</a></li><li><a href="global.html#get_local_view">get_local_view</a></li><li><a href="global.html#get_lock">get_lock</a></li><li><a href="global.html#get_media">get_media</a></li><li><a href="global.html#get_media_all">get_media_all</a></li><li><a href="global.html#get_media_busy">get_media_busy</a></li><li><a href="global.html#get_mute">get_mute</a></li><li><a href="global.html#get_name">get_name</a></li><li><a href="global.html#get_net_trace">get_net_trace</a></li><li><a href="global.html#get_payloads_local">get_payloads_local</a></li><li><a href="global.html#get_payloads_remote">get_payloads_remote</a></li><li><a href="global.html#get_peer_connection">get_peer_connection</a></li><li><a href="global.html#get_reason">get_reason</a></li><li><a href="global.html#get_received_id">get_received_id</a></li><li><a href="global.html#get_remote_stream">get_remote_stream</a></li><li><a href="global.html#get_remote_view">get_remote_view</a></li><li><a href="global.html#get_remove_remote_view">get_remove_remote_view</a></li><li><a href="global.html#get_resolution">get_resolution</a></li><li><a href="global.html#get_responder">get_responder</a></li><li><a href="global.html#get_sdp_trace">get_sdp_trace</a></li><li><a href="global.html#get_senders">get_senders</a></li><li><a href="global.html#get_sent_id">get_sent_id</a></li><li><a href="global.html#get_session_accept_error">get_session_accept_error</a></li><li><a href="global.html#get_session_accept_pending">get_session_accept_pending</a></li><li><a href="global.html#get_session_accept_request">get_session_accept_request</a></li><li><a href="global.html#get_session_accept_success">get_session_accept_success</a></li><li><a href="global.html#get_session_info_error">get_session_info_error</a></li><li><a href="global.html#get_session_info_request">get_session_info_request</a></li><li><a href="global.html#get_session_info_success">get_session_info_success</a></li><li><a href="global.html#get_session_initiate_error">get_session_initiate_error</a></li><li><a href="global.html#get_session_initiate_pending">get_session_initiate_pending</a></li><li><a href="global.html#get_session_initiate_request">get_session_initiate_request</a></li><li><a href="global.html#get_session_initiate_success">get_session_initiate_success</a></li><li><a href="global.html#get_session_terminate_error">get_session_terminate_error</a></li><li><a href="global.html#get_session_terminate_pending">get_session_terminate_pending</a></li><li><a href="global.html#get_session_terminate_request">get_session_terminate_request</a></li><li><a href="global.html#get_session_terminate_success">get_session_terminate_success</a></li><li><a href="global.html#get_sid">get_sid</a></li><li><a href="global.html#get_status">get_status</a></li><li><a href="global.html#get_stun">get_stun</a></li><li><a href="global.html#get_to">get_to</a></li><li><a href="global.html#get_turn">get_turn</a></li><li><a href="global.html#get_user_media">get_user_media</a></li><li><a href="global.html#get_video_source">get_video_source</a></li><li><a href="global.html#got_description">got_description</a></li><li><a href="global.html#got_user_media_error">got_user_media_error</a></li><li><a href="global.html#got_user_media_success">got_user_media_success</a></li><li><a href="global.html#handle">handle</a></li><li><a href="global.html#handle_content_accept">handle_content_accept</a></li><li><a href="global.html#handle_content_add">handle_content_add</a></li><li><a href="global.html#handle_content_modify">handle_content_modify</a></li><li><a href="global.html#handle_content_reject">handle_content_reject</a></li><li><a href="global.html#handle_content_remove">handle_content_remove</a></li><li><a href="global.html#handle_description_info">handle_description_info</a></li><li><a href="global.html#handle_security_info">handle_security_info</a></li><li><a href="global.html#handle_session_accept">handle_session_accept</a></li><li><a href="global.html#handle_session_accept_error">handle_session_accept_error</a></li><li><a href="global.html#handle_session_accept_request">handle_session_accept_request</a></li><li><a href="global.html#handle_session_accept_success">handle_session_accept_success</a></li><li><a href="global.html#handle_session_info">handle_session_info</a></li><li><a href="global.html#handle_session_info_error">handle_session_info_error</a></li><li><a href="global.html#handle_session_info_request">handle_session_info_request</a></li><li><a href="global.html#handle_session_info_success">handle_session_info_success</a></li><li><a href="global.html#handle_session_initiate">handle_session_initiate</a></li><li><a href="global.html#handle_session_initiate_error">handle_session_initiate_error</a></li><li><a href="global.html#handle_session_initiate_request">handle_session_initiate_request</a></li><li><a href="global.html#handle_session_initiate_success">handle_session_initiate_success</a></li><li><a href="global.html#handle_session_terminate">handle_session_terminate</a></li><li><a href="global.html#handle_session_terminate_error">handle_session_terminate_error</a></li><li><a href="global.html#handle_session_terminate_request">handle_session_terminate_request</a></li><li><a href="global.html#handle_session_terminate_success">handle_session_terminate_success</a></li><li><a href="global.html#handle_transport_accept">handle_transport_accept</a></li><li><a href="global.html#handle_transport_info">handle_transport_info</a></li><li><a href="global.html#handle_transport_info_error">handle_transport_info_error</a></li><li><a href="global.html#handle_transport_info_success">handle_transport_info_success</a></li><li><a href="global.html#handle_transport_reject">handle_transport_reject</a></li><li><a href="global.html#handle_transport_replace">handle_transport_replace</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#initiate">initiate</a></li><li><a href="global.html#is_initiator">is_initiator</a></li><li><a href="global.html#is_responder">is_responder</a></li><li><a href="global.html#is_sdp_common_credentials">is_sdp_common_credentials</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#JSJAC_JINGLE_AVAILABLE">JSJAC_JINGLE_AVAILABLE</a></li><li><a href="global.html#JSJAC_JINGLE_SDP_CANDIDATE_TYPES">JSJAC_JINGLE_SDP_CANDIDATE_TYPES</a></li><li><a href="global.html#JSJAC_JINGLE_STORE_CONNECTION">JSJAC_JINGLE_STORE_CONNECTION</a></li><li><a href="global.html#listen">listen</a></li><li><a href="global.html#map_register_view">map_register_view</a></li><li><a href="global.html#map_unregister_view">map_unregister_view</a></li><li><a href="global.html#media">media</a></li><li><a href="global.html#media_generate">media_generate</a></li><li><a href="global.html#mute">mute</a></li><li><a href="global.html#name_generate">name_generate</a></li><li><a href="global.html#negotiation_status">negotiation_status</a></li><li><a href="global.html#network_extract_main">network_extract_main</a></li><li><a href="global.html#NS_JINGLE">NS_JINGLE</a></li><li><a href="global.html#object_clone">object_clone</a></li><li><a href="global.html#object_collect">object_collect</a></li><li><a href="global.html#object_length">object_length</a></li><li><a href="global.html#parse_candidate">parse_candidate</a></li><li><a href="global.html#parse_candidate_store">parse_candidate_store</a></li><li><a href="global.html#parse_group">parse_group</a></li><li><a href="global.html#parse_payload">parse_payload</a></li><li><a href="global.html#read">read</a></li><li><a href="global.html#register_handler">register_handler</a></li><li><a href="global.html#register_view">register_view</a></li><li><a href="global.html#relaynodes">relaynodes</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#resolution_payload">resolution_payload</a></li><li><a href="global.html#route">route</a></li><li><a href="global.html#send">send</a></li><li><a href="global.html#send_content_accept">send_content_accept</a></li><li><a href="global.html#send_content_add">send_content_add</a></li><li><a href="global.html#send_content_modify">send_content_modify</a></li><li><a href="global.html#send_content_reject">send_content_reject</a></li><li><a href="global.html#send_content_remove">send_content_remove</a></li><li><a href="global.html#send_description_info">send_description_info</a></li><li><a href="global.html#send_error">send_error</a></li><li><a href="global.html#send_security_info">send_security_info</a></li><li><a href="global.html#send_session_accept">send_session_accept</a></li><li><a href="global.html#send_session_info">send_session_info</a></li><li><a href="global.html#send_session_initiate">send_session_initiate</a></li><li><a href="global.html#send_session_terminate">send_session_terminate</a></li><li><a href="global.html#send_transport_accept">send_transport_accept</a></li><li><a href="global.html#send_transport_info">send_transport_info</a></li><li><a href="global.html#send_transport_reject">send_transport_reject</a></li><li><a href="global.html#send_transport_replace">send_transport_replace</a></li><li><a href="global.html#session">session</a></li><li><a href="global.html#set_accept_error">set_accept_error</a></li><li><a href="global.html#set_accept_pending">set_accept_pending</a></li><li><a href="global.html#set_accept_request">set_accept_request</a></li><li><a href="global.html#set_accept_success">set_accept_success</a></li><li><a href="global.html#set_bandwidth">set_bandwidth</a></li><li><a href="global.html#set_candidates_local">set_candidates_local</a></li><li><a href="global.html#set_candidates_queue_local">set_candidates_queue_local</a></li><li><a href="global.html#set_candidates_queue_remote">set_candidates_queue_remote</a></li><li><a href="global.html#set_candidates_remote">set_candidates_remote</a></li><li><a href="global.html#set_candidates_remote_add">set_candidates_remote_add</a></li><li><a href="global.html#set_content_local">set_content_local</a></li><li><a href="global.html#set_content_remote">set_content_remote</a></li><li><a href="global.html#set_creator">set_creator</a></li><li><a href="global.html#set_debug">set_debug</a></li><li><a href="global.html#set_fps">set_fps</a></li><li><a href="global.html#set_group_local">set_group_local</a></li><li><a href="global.html#set_group_remote">set_group_remote</a></li><li><a href="global.html#set_handlers">set_handlers</a></li><li><a href="global.html#set_id">set_id</a></li><li><a href="global.html#set_info_error">set_info_error</a></li><li><a href="global.html#set_info_request">set_info_request</a></li><li><a href="global.html#set_info_success">set_info_success</a></li><li><a href="global.html#set_initiate_error">set_initiate_error</a></li><li><a href="global.html#set_initiate_request">set_initiate_request</a></li><li><a href="global.html#set_initiate_success">set_initiate_success</a></li><li><a href="global.html#set_initiator">set_initiator</a></li><li><a href="global.html#set_local_stream">set_local_stream</a></li><li><a href="global.html#set_local_view">set_local_view</a></li><li><a href="global.html#set_lock">set_lock</a></li><li><a href="global.html#set_media">set_media</a></li><li><a href="global.html#set_media_busy">set_media_busy</a></li><li><a href="global.html#set_mute">set_mute</a></li><li><a href="global.html#set_name">set_name</a></li><li><a href="global.html#set_net_trace">set_net_trace</a></li><li><a href="global.html#set_payloads_local">set_payloads_local</a></li><li><a href="global.html#set_payloads_remote">set_payloads_remote</a></li><li><a href="global.html#set_payloads_remote_add">set_payloads_remote_add</a></li><li><a href="global.html#set_peer_connection">set_peer_connection</a></li><li><a href="global.html#set_reason">set_reason</a></li><li><a href="global.html#set_received_id">set_received_id</a></li><li><a href="global.html#set_remote_stream">set_remote_stream</a></li><li><a href="global.html#set_remote_view">set_remote_view</a></li><li><a href="global.html#set_resolution">set_resolution</a></li><li><a href="global.html#set_responder">set_responder</a></li><li><a href="global.html#set_sdp_trace">set_sdp_trace</a></li><li><a href="global.html#set_senders">set_senders</a></li><li><a href="global.html#set_sent_id">set_sent_id</a></li><li><a href="global.html#set_session_initiate_pending">set_session_initiate_pending</a></li><li><a href="global.html#set_sid">set_sid</a></li><li><a href="global.html#set_status">set_status</a></li><li><a href="global.html#set_stun">set_stun</a></li><li><a href="global.html#set_terminate_error">set_terminate_error</a></li><li><a href="global.html#set_terminate_pending">set_terminate_pending</a></li><li><a href="global.html#set_terminate_request">set_terminate_request</a></li><li><a href="global.html#set_terminate_success">set_terminate_success</a></li><li><a href="global.html#set_to">set_to</a></li><li><a href="global.html#set_turn">set_turn</a></li><li><a href="global.html#set_video_source">set_video_source</a></li><li><a href="global.html#sound">sound</a></li><li><a href="global.html#stanza_from">stanza_from</a></li><li><a href="global.html#stanza_generate_content_local">stanza_generate_content_local</a></li><li><a href="global.html#stanza_generate_group_local">stanza_generate_group_local</a></li><li><a href="global.html#stanza_generate_jingle">stanza_generate_jingle</a></li><li><a href="global.html#stanza_generate_session_info">stanza_generate_session_info</a></li><li><a href="global.html#stanza_get_attribute">stanza_get_attribute</a></li><li><a href="global.html#stanza_get_element">stanza_get_element</a></li><li><a href="global.html#stanza_get_value">stanza_get_value</a></li><li><a href="global.html#stanza_jingle">stanza_jingle</a></li><li><a href="global.html#stanza_parse_candidate">stanza_parse_candidate</a></li><li><a href="global.html#stanza_parse_content">stanza_parse_content</a></li><li><a href="global.html#stanza_parse_group">stanza_parse_group</a></li><li><a href="global.html#stanza_parse_node">stanza_parse_node</a></li><li><a href="global.html#stanza_parse_payload">stanza_parse_payload</a></li><li><a href="global.html#stanza_safe">stanza_safe</a></li><li><a href="global.html#stanza_session_info">stanza_session_info</a></li><li><a href="global.html#stanza_set_attribute">stanza_set_attribute</a></li><li><a href="global.html#stanza_sid">stanza_sid</a></li><li><a href="global.html#stanza_terminate_reason">stanza_terminate_reason</a></li><li><a href="global.html#stanza_timeout">stanza_timeout</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#stream_attach">stream_attach</a></li><li><a href="global.html#stream_detach">stream_detach</a></li><li><a href="global.html#terminate">terminate</a></li><li><a href="global.html#timeout">timeout</a></li><li><a href="global.html#unmute">unmute</a></li><li><a href="global.html#unregister_handler">unregister_handler</a></li><li><a href="global.html#unregister_view">unregister_view</a></li><li><a href="global.html#WEBRTC_GET_MEDIA">WEBRTC_GET_MEDIA</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Jun 11 2014 18:02:03 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

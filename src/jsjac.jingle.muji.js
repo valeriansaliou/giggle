@@ -93,8 +93,6 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       JSJaCJingle.add(this.get_sid(), this);
 
       // Initialize WebRTC
-      var _this = this;
-
       this.peer.get_user_media(function() {
         _this.peer.connection_create(function() {
           _this.get_debug().log('[JSJaCJingle:single] initiate > Ready to begin Jingle negotiation.', 2);
