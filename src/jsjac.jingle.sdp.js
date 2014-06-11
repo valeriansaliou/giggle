@@ -18,7 +18,7 @@ var JSJaCJingleSDP = ring.create({
 
 
   /**
-   * @private
+   * Parses SDP payload
    */
   parse_payload: function(sdp_payload) {
     var payload = {};
@@ -527,7 +527,7 @@ var JSJaCJingleSDP = ring.create({
   },
 
   /**
-   * @private
+   * Parses SDP group
    */
   parse_group: function(sdp_payload) {
     var group = {};
@@ -568,7 +568,7 @@ var JSJaCJingleSDP = ring.create({
   },
 
   /**
-   * @private
+   * Obtain video resolution from payload
    */
   resolution_payload: function(payload) {
     try {
@@ -647,7 +647,7 @@ var JSJaCJingleSDP = ring.create({
   },
 
   /**
-   * @private
+   * Parses SDP candidate
    */
   parse_candidate: function(sdp_candidate) {
     var candidate = {};
@@ -684,7 +684,7 @@ var JSJaCJingleSDP = ring.create({
   },
 
   /**
-   * @private
+   * Parses SDP candidate & store it
    */
   parse_candidate_store: function(sdp_candidate) {
     // Store received candidate
@@ -713,7 +713,7 @@ var JSJaCJingleSDP = ring.create({
   },
 
   /**
-   * @private
+   * Generates SDP description
    */
   generate: function(type, group, payloads, candidates) {    
     try {
@@ -731,7 +731,7 @@ var JSJaCJingleSDP = ring.create({
   },
 
   /**
-   * @private
+   * Generate SDP candidates
    */
   generate_candidates: function(candidates) {    
     var candidates_arr = [];
@@ -807,7 +807,7 @@ var JSJaCJingleSDP = ring.create({
   },
 
   /**
-   * @private
+   * Generates SDP description
    */
   generate_description: function(type, group, payloads, sdp_candidates) {    
     var payloads_obj = {};
@@ -1153,14 +1153,14 @@ var JSJaCJingleSDP = ring.create({
   },
 
   /**
-   * @private
+   * Generates SDP protocol version
    */
   generate_protocol_version: function() {
     return 'v=0';
   },
 
   /**
-   * @private
+   * Generates SDP origin
    */
   generate_origin: function() {    
     var sdp_origin = '';
@@ -1192,21 +1192,21 @@ var JSJaCJingleSDP = ring.create({
   },
 
   /**
-   * @private
+   * Generates SDP session name
    */
   generate_session_name: function() {
     return 's=' + (this.parent.get_sid() || '-');
   },
 
   /**
-   * @private
+   * Generates SDP timing
    */
   generate_timing: function() {
     return 't=0 0';
   },
 
   /**
-   * @private
+   * Generates SDP credentials
    */
   generate_credentials: function(ufrag, pwd, fingerprint) {    
     var sdp = '';
@@ -1227,7 +1227,7 @@ var JSJaCJingleSDP = ring.create({
   },
 
   /**
-   * @private
+   * Generates SDP media description
    */
   generate_description_media: function(media, port, crypto, fingerprint, payload) {    
     var sdp_media = '';

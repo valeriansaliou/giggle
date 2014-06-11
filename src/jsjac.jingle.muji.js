@@ -18,7 +18,12 @@
  * @param {function} args.remove_remote_view The remote view media removal (audio/video) custom handler.
  */
 var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
+  /**
+   * Constructor
+   */
   constructor: function(args) {
+    this.$super(args);
+
     if(args && args.add_remote_view)
       /**
        * @private
@@ -47,7 +52,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle.defer(function() { this.join(); })) {
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.join(); })) {
         this.get_debug().log('[JSJaCJingle:muji] join > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -59,6 +66,42 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       }
 
       this.get_debug().log('[JSJaCJingle:muji] join > New Jingle Muji session with media: ' + this.get_media(), 2);
+
+      // Common vars
+      var i, cur_name;
+
+      // Trigger init pending custom callback
+      (this.get_session_initiate_pending())(this);
+
+      // Change session status
+      this.set_status(JSJAC_JINGLE_STATUS_INITIATING);
+
+      // Set session values
+      this.set_sid(
+        this.utils.generate_hash_md5(this.get_to())
+      );
+
+      for(i in this.get_media_all()) {
+        cur_name = this.utils.name_generate(
+          this.get_media_all()[i]
+        );
+
+        this.set_name(cur_name);
+      }
+
+      // Register session to common router
+      JSJaCJingle.add(this.get_sid(), this);
+
+      // Initialize WebRTC
+      var _this = this;
+
+      this.peer.get_user_media(function() {
+        _this.peer.connection_create(function() {
+          _this.get_debug().log('[JSJaCJingle:single] initiate > Ready to begin Jingle negotiation.', 2);
+
+          _this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
+        });
+      });
     } catch(e) {
       this.get_debug().log('[JSJaCJingle:muji] join > ' + e, 1);
     }
@@ -71,7 +114,34 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
    */
 
   /**
-   * @private
+   * Gets the creator value
+   * @return creator value
+   * @type string
+   */
+  get_creator: function() {
+    return this.get_to();
+  },
+
+  /**
+   * Gets the initiator value
+   * @return initiator value
+   * @type string
+   */
+  get_initiator: function() {
+    return this.get_to();
+  },
+
+  /**
+   * Gets the responder value
+   * @return responder value
+   * @type string
+   */
+  get_responder: function() {
+    return this.get_to();
+  },
+
+  /**
+   * Gets the remote view add callback function
    */
   get_add_remote_view: function() {
     if(typeof this._add_remote_view == 'function')
@@ -81,7 +151,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
   },
 
   /**
-   * @private
+   * Gets the remote view removal callback function
    */
   get_remove_remote_view: function() {
     if(typeof this._remove_remote_view == 'function')

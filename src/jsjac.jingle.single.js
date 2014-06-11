@@ -17,6 +17,14 @@
  */
 var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
   /**
+   * Constructor
+   */
+  constructor: function(args) {
+    this.$super(args);
+  },
+
+
+  /**
    * Initiates a new Jingle session.
    */
   initiate: function() {
@@ -30,7 +38,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle.defer(function() { this.initiate(); })) {
+      var _this = this;
+      
+      if(JSJaCJingle.defer(function() { _this.initiate(); })) {
         this.get_debug().log('[JSJaCJingle:single] initiate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -107,7 +117,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle.defer(function() { this.accept(); })) {
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.accept(); })) {
         this.get_debug().log('[JSJaCJingle:single] accept > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -156,7 +168,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle.defer(function() { this.info(name, args); })) {
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.info(name, args); })) {
         this.get_debug().log('[JSJaCJingle:single] info > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -194,7 +208,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle.defer(function() { this.terminate(reason); })) {
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.terminate(reason); })) {
         this.get_debug().log('[JSJaCJingle:single] terminate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -232,7 +248,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle.defer(function() { this.send(type, args); })) {
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.send(type, args); })) {
         this.get_debug().log('[JSJaCJingle:single] send > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -343,7 +361,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle.defer(function() { this.handle(stanza); })) {
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.handle(stanza); })) {
         this.get_debug().log('[JSJaCJingle:single] handle > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -439,7 +459,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle.defer(function() { this.mute(name); })) {
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.mute(name); })) {
         this.get_debug().log('[JSJaCJingle:single] mute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -473,7 +495,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle.defer(function() { this.unmute(name); })) {
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.unmute(name); })) {
         this.get_debug().log('[JSJaCJingle:single] unmute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -509,7 +533,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle.defer(function() { this.media(media); })) {
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.media(media); })) {
         this.get_debug().log('[JSJaCJingle:single] media > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }

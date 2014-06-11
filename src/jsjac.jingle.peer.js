@@ -17,7 +17,7 @@ var JSJaCJinglePeer = ring.create({
   },
 
   /**
-   * @private
+   * Creates a new peer connection
    */
   connection_create: function(sdp_message_callback) {
     this.parent.get_debug().log('[JSJaCJingle:peer] connection_create', 4);
@@ -188,7 +188,7 @@ var JSJaCJinglePeer = ring.create({
   },
 
   /**
-   * @private
+   * Requests the user media (audio/video)
    */
   get_user_media: function(callback) {
     this.parent.get_debug().log('[JSJaCJingle:peer] get_user_media', 4);
@@ -207,7 +207,7 @@ var JSJaCJinglePeer = ring.create({
   },
 
   /**
-   * @private
+   * Triggers the media obtained success event
    */
   got_user_media_success: function(callback, stream) {
     this.parent.get_debug().log('[JSJaCJingle:peer] got_user_media_success', 4);
@@ -241,7 +241,7 @@ var JSJaCJinglePeer = ring.create({
   },
 
   /**
-   * @private
+   * Triggers the media not obtained error event
    */
   got_user_media_error: function(error) {
     this.parent.get_debug().log('[JSJaCJingle:peer] got_user_media_error', 4);
@@ -262,7 +262,7 @@ var JSJaCJinglePeer = ring.create({
   },
 
   /**
-   * @private
+   * Triggers the SDP description retrieval success event
    */
   got_description: function(sdp_local) {
     this.parent.get_debug().log('[JSJaCJingle:peer] got_description', 4);
@@ -330,7 +330,7 @@ var JSJaCJinglePeer = ring.create({
   },
 
   /**
-   * @private
+   * Triggers the SDP description not retrieved error event
    */
   fail_description: function() {
     this.parent.get_debug().log('[JSJaCJingle:peer] fail_description', 4);
@@ -343,7 +343,7 @@ var JSJaCJinglePeer = ring.create({
   },
 
   /**
-   * @private
+   * Enables/disables the local stream sound
    */
   sound: function(enable) {
     this.parent.get_debug().log('[JSJaCJingle:peer] sound', 4);
@@ -388,7 +388,7 @@ var JSJaCJinglePeer = ring.create({
   },
 
   /**
-   * @private
+   * Stops ongoing peer connections
    */
   stop: function() {
     this.parent.get_debug().log('[JSJaCJingle:peer] stop', 4);
@@ -406,7 +406,7 @@ var JSJaCJinglePeer = ring.create({
   },
 
   /**
-   * @private
+   * Attaches given stream to given DOM element
    */
   stream_attach: function(element, stream, mute) {
     try {
@@ -429,7 +429,7 @@ var JSJaCJinglePeer = ring.create({
   },
 
   /**
-   * @private
+   * Detaches stream from given DOM element
    */
   stream_detach: function(element) {
     try {
