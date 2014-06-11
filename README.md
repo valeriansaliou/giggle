@@ -22,11 +22,11 @@ The call should then be initiated, and after a while the video will come.
 
 ## Notes About Security
 
-Jingle could have be implemented in a dirty-way there, so that "It just works". But it's **NOT** the case. JSJaCJingle.js has been thought as secure on its basis.
+Jingle could have been implemented in a dirty-way there, so that "It just works". But it's **NOT** the case. JSJaCJingle.js has been thought as secure on its basis.
 
 We wanted to avoid such possible security exploits: _imagine a friend of you wants to disturb your call, and send you a session-terminate with a wrong SID. In a quick-and-dirty implementation, the request would have been dropped because the call is already ongoing, but the client-side handlers would still have been fired, thus modifying the UI._
 
-JSJaCJingle.js simply **DOES NOT** fire the custom event handlers that you may have defined, so that you don't have to check yourself that each incoming packet is safe, thus to ensure your client implementation of Jingle is rock-solid (safe: session is authorized **AND** stanza sender is authorized **AND** the Jingle session flow is respected). It's all mind-free for you guys!
+JSJaCJingle.js simply **DOES NOT** fire the custom event handlers that you may have defined, so that you don't have to check yourself that each incoming packet is safe, thus to ensure your client implementation of Jingle is rock-solid (safe: session is authorized **AND** stanza sender is authorized **AND** the Jingle session flow is respected).
 
 ## Commercial Support
 
@@ -36,7 +36,9 @@ We are running a **commercial support service** for Jappix, that you can also us
 
 *We provide a quality service where customer satisfaction is our goal.*
 
-## How To Use?
+## Usage
+
+API documentation: https://demo.frenchtouch.pro/valerian.saliou/jsjac-jingle/doc/
 
 We assume your XMPP Web client is using JSJaC and has an active connection, stored in the _con_ object.
 
