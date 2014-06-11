@@ -220,7 +220,7 @@ $(document).ready(function() {
                         con.send(new JSJaCPresence());
 
                         // Initialize JSJaCJingle router
-                        JSJaCJingle_listen({
+                        JSJaCJingle.listen({
                             connection: con,
                             debug: (new JSJaCConsoleLogger(4)),
                             

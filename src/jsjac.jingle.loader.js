@@ -8,46 +8,47 @@
  */
 
 
-var JSJAC_JINGLE_INCLUDE_LIB = [
-  'underscore',
-  'ring'
-];
+var JSJaCJingleLoader = {
+  includes: {
+    lib: [
+      'underscore',
+      'ring'
+    ],
 
-var JSJAC_JINGLE_INCLUDE_SRC = [
-  'jsjac.jingle.header',
-  'jsjac.jingle.constants',
-  'jsjac.jingle.utils',
-  'jsjac.jingle.sdp',
-  'jsjac.jingle.peer',
-  'jsjac.jingle.base',
-  'jsjac.jingle.single',
-  'jsjac.jingle.muji',
-  'jsjac.jingle.commons',
-  'jsjac.jingle.init'
-];
+    src: [
+      'jsjac.jingle.header',
+      'jsjac.jingle.constants',
+      'jsjac.jingle.utils',
+      'jsjac.jingle.sdp',
+      'jsjac.jingle.peer',
+      'jsjac.jingle.base',
+      'jsjac.jingle.single',
+      'jsjac.jingle.muji',
+      'jsjac.jingle.init',
+      'jsjac.jingle.main'
+    ]
+  },
 
-
-var JSJaCJingle = {
   require: function(library_name) {
     document.write(
       '<script type="text/javascript" src="' + library_name + '"></script>'
     );
   },
 
-  load: function() {
+  go: function() {
     var includes = [], c;
 
-    for(c in JSJAC_JINGLE_INCLUDE_LIB) {
-      includes.push('../lib/' + JSJAC_JINGLE_INCLUDE_LIB[c]);
+    for(c in this.includes.lib) {
+      includes.push('../lib/' + this.includes.lib[c]);
     }
-    includes = includes.concat(JSJAC_JINGLE_INCLUDE_SRC);
+    includes = includes.concat(this.includes.src);
 
     var scripts = document.getElementsByTagName('script');
     var path = './', i, j;
 
     for(i = 0; i < scripts.length; i++) {
-      if(scripts.item(i).src && scripts.item(i).src.match(/jsjac\.jingle\.js$/)) {
-        path = scripts.item(i).src.replace(/jsjac\.jingle\.js$/, '');
+      if(scripts.item(i).src && scripts.item(i).src.match(/jsjac\.jingle\.loader\.js$/)) {
+        path = scripts.item(i).src.replace(/jsjac\.jingle\.loader\.js$/, '');
         break;
       }
     }
@@ -67,6 +68,6 @@ var JSJaCJingle = {
   }
 };
 
-if(typeof JSJAC_JINGLE_AVAILABLE == 'undefined') {
-  JSJaCJingle.load();
+if(typeof JSJaCJingle == 'undefined') {
+  JSJaCJingleLoader.go();
 }

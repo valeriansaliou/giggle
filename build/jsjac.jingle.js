@@ -2303,19 +2303,20 @@ var R_JSJAC_JINGLE_SERVICE_URI    = /^(\w+):([^:\?]+)(?::(\d+))?(?:\?transport=(
  */
 
 
-/**
- * JSJSAC JINGLE UTILITIES
- */
-
-function __JSJaCJingleUtils(args) {
-  var self = this;
+var JSJaCJingleUtils = ring.create({
+  /**
+   * Constructor
+   */
+  constructor: function(parent) {
+    this.parent = parent;
+  },
 
   /**
    * Removes a given array value
    * @return new array
    * @type object
    */
-  self.util_array_remove_value = function(array, value) {
+  array_remove_value: function(array, value) {
     try {
       var i;
 
@@ -2325,18 +2326,18 @@ function __JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_array_remove_value > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] array_remove_value > ' + e, 1);
     }
 
     return array;
-  };
+  },
 
   /**
    * Returns whether an object is empty or not
    * @return Empty value
    * @type boolean
    */
-  self.util_object_length = function(object) {
+  object_length: function(object) {    
     var key;
     var l = 0;
 
@@ -2345,18 +2346,18 @@ function __JSJaCJingleUtils(args) {
         if(object.hasOwnProperty(key))  l++;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_object_length > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] object_length > ' + e, 1);
     }
 
     return l;
-  };
+  },
 
   /**
    * Collects given objects
    * @return Empty value
    * @type object
    */
-  self.util_object_collect = function() {
+  object_collect: function() {    
     var i, p;
 
     var collect_obj = {};
@@ -2370,14 +2371,14 @@ function __JSJaCJingleUtils(args) {
     }
 
     return collect_obj;
-  };
+  },
 
   /**
    * Clones a given object
    * @return Cloned object
    * @type object
    */
-  self.util_object_clone = function(object) {
+  object_clone: function(object) {    
     try {
       var copy, i, attr;
 
@@ -2397,7 +2398,7 @@ function __JSJaCJingleUtils(args) {
           copy = [];
 
           for(i = 0, len = object.length; i < len; i++)
-            copy[i] = self.util_object_clone(object[i]);
+            copy[i] = this.object_clone(object[i]);
 
           return copy;
       }
@@ -2408,24 +2409,24 @@ function __JSJaCJingleUtils(args) {
 
           for(attr in object) {
               if(object.hasOwnProperty(attr))
-                copy[attr] = self.util_object_clone(object[attr]);
+                copy[attr] = this.object_clone(object[attr]);
           }
 
           return copy;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_object_clone > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] object_clone > ' + e, 1);
     }
 
-    self.get_debug().log('[JSJaCJingle:utils] util_object_clone > Cannot clone this object.', 1);
-  };
+    this.parent.get_debug().log('[JSJaCJingle:utils] object_clone > Cannot clone this object.', 1);
+  },
 
   /**
    * Gets the browser info
    * @return browser info
    * @type object
    */
-  self._util_browser = function() {
+  browser: function() {    
     var browser_info = {
       name    : 'Generic'
     };
@@ -2450,36 +2451,36 @@ function __JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_browser > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] browser > ' + e, 1);
     }
 
     return browser_info;
-  };
+  },
 
   /**
    * Gets the ICE config
    * @return ICE config
    * @type object
    */
-  self._util_config_ice = function() {
+  config_ice: function() {    
     try {
       // Collect data (user + server)
-      var stun_config = self.util_object_collect(
-        self.get_stun(),
+      var stun_config = this.object_collect(
+        this.parent.get_stun(),
         JSJAC_JINGLE_STORE_EXTDISCO.stun,
         JSJAC_JINGLE_STORE_RELAYNODES.stun,
         JSJAC_JINGLE_STORE_FALLBACK.stun
       );
 
-      var turn_config = self.util_object_collect(
-        self.get_turn(),
+      var turn_config = this.object_collect(
+        this.parent.get_turn(),
         JSJAC_JINGLE_STORE_EXTDISCO.turn,
         JSJAC_JINGLE_STORE_FALLBACK.turn
       );
 
       // Can proceed?
-      if(stun_config && self.util_object_length(stun_config)  || 
-         turn_config && self.util_object_length(turn_config)  ) {
+      if(stun_config && this.object_length(stun_config)  || 
+         turn_config && this.object_length(turn_config)  ) {
         var config = {
           iceServers : []
         };
@@ -2497,7 +2498,7 @@ function __JSJaCJingleUtils(args) {
             if(cur_stun_obj.port)
               cur_stun_config.url += ':' + cur_stun_obj.port;
 
-            if(cur_stun_obj.transport && self._util_browser().name != JSJAC_JINGLE_BROWSER_FIREFOX)
+            if(cur_stun_obj.transport && this.browser().name != JSJAC_JINGLE_BROWSER_FIREFOX)
               cur_stun_config.url += '?transport=' + cur_stun_obj.transport;
 
             (config.iceServers).push(cur_stun_config);
@@ -2549,37 +2550,37 @@ function __JSJaCJingleUtils(args) {
         return config;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_config_ice > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] config_ice > ' + e, 1);
     }
 
     return WEBRTC_CONFIGURATION.peer_connection.config;
-  };
+  },
 
   /**
    * Gets the node value from a stanza element
    * @return Node value
    * @type string
    */
-  self.util_stanza_get_value = function(stanza) {
+  stanza_get_value: function(stanza) {    
     try {
       return stanza.firstChild.nodeValue || null;
     } catch(e) {
       try {
         return (stanza[0]).firstChild.nodeValue || null;
       } catch(_e) {
-        self.get_debug().log('[JSJaCJingle:utils] util_stanza_get_value > ' + _e, 1);
+        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_get_value > ' + _e, 1);
       }
     }
 
     return null;
-  };
+  },
 
   /**
    * Gets the attribute value from a stanza element
    * @return Attribute value
    * @type string
    */
-  self.util_stanza_get_attribute = function(stanza, name) {
+  stanza_get_attribute: function(stanza, name) {    
     if(!name) return null;
 
     try {
@@ -2588,17 +2589,17 @@ function __JSJaCJingleUtils(args) {
       try {
         return (stanza[0]).getAttribute(name) || null;
       } catch(_e) {
-        self.get_debug().log('[JSJaCJingle:utils] util_stanza_get_attribute > ' + _e, 1);
+        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_get_attribute > ' + _e, 1);
       }
     }
 
     return null;
-  };
+  },
 
   /**
    * Sets the attribute value to a stanza element
    */
-  self.util_stanza_set_attribute = function(stanza, name, value) {
+  stanza_set_attribute: function(stanza, name, value) {    
     if(!(name && value && stanza)) return;
 
     try {
@@ -2607,17 +2608,17 @@ function __JSJaCJingleUtils(args) {
       try {
         (stanza[0]).setAttribute(name, value);
       } catch(_e) {
-        self.get_debug().log('[JSJaCJingle:utils] util_stanza_set_attribute > ' + _e, 1);
+        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_set_attribute > ' + _e, 1);
       }
     }
-  };
+  },
 
   /**
    * Gets the Jingle node from a stanza
    * @return Jingle node
    * @type DOM
    */
-  self.util_stanza_get_element = function(stanza, name, ns) {
+  stanza_get_element: function(stanza, name, ns) {    
     var matches_result = [];
 
     // Assert
@@ -2639,165 +2640,167 @@ function __JSJaCJingleUtils(args) {
 
       return matches_result;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_stanza_get_element > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_get_element > ' + e, 1);
     }
 
     return matches_result;
-  };
+  },
 
   /**
    * Gets the Jingle node from a stanza
    * @return Jingle node
    * @type DOM
    */
-  self.util_stanza_jingle = function(stanza) {
+  stanza_jingle: function(stanza) {    
     try {
       return stanza.getChild('jingle', NS_JINGLE);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_stanza_jingle > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_jingle > ' + e, 1);
     }
 
     return null;
-  };
+  },
 
   /**
    * Gets the from value from a stanza
    * @return from value
    * @type string
    */
-  self.util_stanza_from = function(stanza) {
+  stanza_from: function(stanza) {    
     try {
       return stanza.getFrom() || null;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_stanza_from > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_from > ' + e, 1);
     }
 
     return null;
-  };
+  },
 
   /**
    * Gets the SID value from a stanza
    * @return SID value
    * @type string
    */
-  self.util_stanza_sid = function(stanza) {
+  stanza_sid: function(stanza) {    
     try {
-      return self.util_stanza_get_attribute(
-        self.util_stanza_jingle(stanza),
+      return this.stanza_get_attribute(
+        this.stanza_jingle(stanza),
         'sid'
       );
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_stanza_sid > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_sid > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Checks if a stanza is safe (known SID + sender)
    * @return safety state
    * @type boolean
    */
-  self.util_stanza_safe = function(stanza) {
+  stanza_safe: function(stanza) {    
     try {
-      return !((stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && self.util_stanza_sid(stanza) != self.get_sid()) || self.util_stanza_from(stanza) != self.get_to());
+      return !((stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && this.stanza_sid(stanza) != this.parent.get_sid()) || this.stanza_from(stanza) != this.parent.get_to());
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_stanza_safe > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_safe > ' + e, 1);
     }
 
     return false;
-  };
+  },
 
   /**
    * Gets a stanza terminate reason
    * @return reason code
    * @type string
    */
-  self.util_stanza_terminate_reason = function(stanza) {
+  stanza_terminate_reason: function(stanza) {    
     try {
-      var jingle = self.util_stanza_jingle(stanza);
+      var jingle = this.stanza_jingle(stanza);
 
       if(jingle) {
-        var reason = self.util_stanza_get_element(jingle, 'reason', NS_JINGLE);
+        var reason = this.stanza_get_element(jingle, 'reason', NS_JINGLE);
 
         if(reason.length) {
           var cur_reason;
 
           for(cur_reason in JSJAC_JINGLE_REASONS) {
-            if(self.util_stanza_get_element(reason[0], cur_reason, NS_JINGLE).length)
+            if(this.stanza_get_element(reason[0], cur_reason, NS_JINGLE).length)
               return cur_reason;
           }
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_stanza_terminate_reason > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_terminate_reason > ' + e, 1);
     }
 
     return null;
-  };
+  },
 
   /**
    * Gets a stanza session info
    * @return info code
    * @type string
    */
-  self.util_stanza_session_info = function(stanza) {
+  stanza_session_info: function(stanza) {    
     try {
-      var jingle = self.util_stanza_jingle(stanza);
+      var jingle = this.stanza_jingle(stanza);
 
       if(jingle) {
         var cur_info;
 
         for(cur_info in JSJAC_JINGLE_SESSION_INFOS) {
-          if(self.util_stanza_get_element(jingle, cur_info, NS_JINGLE_APPS_RTP_INFO).length)
+          if(this.stanza_get_element(jingle, cur_info, NS_JINGLE_APPS_RTP_INFO).length)
             return cur_info;
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_stanza_session_info > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_session_info > ' + e, 1);
     }
 
     return null;
-  };
+  },
 
   /**
    * Set a timeout limit to a stanza
    */
-  self.util_stanza_timeout = function(t_type, t_id, handlers) {
+  stanza_timeout: function(t_type, t_id, handlers) {    
     try {
       t_type = t_type || JSJAC_JINGLE_STANZA_TYPE_ALL;
 
-      var t_sid = self.get_sid();
-      var t_status = self.get_status();
+      var t_sid = this.parent.get_sid();
+      var t_status = this.parent.get_status();
 
-      self.get_debug().log('[JSJaCJingle:utils] util_stanza_timeout > Registered (id: ' + t_id + ', status: ' + t_status + ').', 4);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Registered (id: ' + t_id + ', status: ' + t_status + ').', 4);
 
+      var _this = this;
+      
       setTimeout(function() {
-        self.get_debug().log('[JSJaCJingle:utils] util_stanza_timeout > Cheking (id: ' + t_id + ', status: ' + t_status + '-' + self.get_status() + ').', 4);
+        _this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Cheking (id: ' + t_id + ', status: ' + t_status + '-' + _this.parent.get_status() + ').', 4);
 
         // State did not change?
-        if(self.get_sid() == t_sid && self.get_status() == t_status && !(t_id in self._get_received_id())) {
-          self.get_debug().log('[JSJaCJingle:utils] util_stanza_timeout > Stanza timeout.', 2);
+        if(_this.parent.get_sid() == t_sid && _this.parent.get_status() == t_status && !(t_id in _this.parent.get_received_id())) {
+          _this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Stanza timeout.', 2);
 
-          self.unregister_handler(t_type, t_id);
+          _this.parent.unregister_handler(t_type, t_id);
 
-          if(handlers.external)  (handlers.external)(self);
+          if(handlers.external)  (handlers.external)(_this);
           if(handlers.internal)  (handlers.internal)();
         } else {
-          self.get_debug().log('[JSJaCJingle:utils] util_stanza_timeout > Stanza successful.', 4);
+          _this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Stanza successful.', 4);
         }
       }, (JSJAC_JINGLE_STANZA_TIMEOUT * 1000));
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_stanza_timeout > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._util_stanza_parse_node = function(parent, name, ns, obj, attrs, value) {
+  stanza_parse_node: function(parent, name, ns, obj, attrs, value) {    
     try {
       var i, j,
           error, child, child_arr;
-      var children = self.util_stanza_get_element(parent, name, ns);
+      var children = this.stanza_get_element(parent, name, ns);
 
       if(children.length) {
         for(i = 0; i < children.length; i++) {
@@ -2808,7 +2811,7 @@ function __JSJaCJingleUtils(args) {
 
           // Parse attributes
           for(j in attrs) {
-            child_arr[attrs[j].n] = self.util_stanza_get_attribute(child, attrs[j].n);
+            child_arr[attrs[j].n] = this.stanza_get_attribute(child, attrs[j].n);
 
             if(attrs[j].r && !child_arr[attrs[j].n]) {
               error++; break;
@@ -2817,7 +2820,7 @@ function __JSJaCJingleUtils(args) {
 
           // Parse value
           if(value) {
-            child_arr[value.n] = self.util_stanza_get_value(child);
+            child_arr[value.n] = this.stanza_get_value(child);
             if(value.r && !child_arr[value.n])  error++;
           }
 
@@ -2828,14 +2831,14 @@ function __JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_parse_node > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_node > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._util_stanza_parse_content = function(stanza) {
+  stanza_parse_content: function(stanza) {    
     try {
       var i,
           jingle, content, cur_content,
@@ -2843,40 +2846,40 @@ function __JSJaCJingleUtils(args) {
           cur_candidates;
 
       // Parse initiate stanza
-      jingle = self.util_stanza_jingle(stanza);
+      jingle = this.stanza_jingle(stanza);
 
       if(jingle) {
         // Childs
-        content = self.util_stanza_get_element(jingle, 'content', NS_JINGLE);
+        content = this.stanza_get_element(jingle, 'content', NS_JINGLE);
 
         if(content && content.length) {
           for(i = 0; i < content.length; i++) {
             cur_content = content[i];
 
             // Attrs (avoids senders & creators to be changed later in the flow)
-            content_name    = self.util_stanza_get_attribute(cur_content, 'name');
-            content_senders = self.get_senders(content_name) || self.util_stanza_get_attribute(cur_content, 'senders');
-            content_creator = self.get_creator(content_name) || self.util_stanza_get_attribute(cur_content, 'creator');
+            content_name    = this.stanza_get_attribute(cur_content, 'name');
+            content_senders = this.parent.get_senders(content_name) || this.stanza_get_attribute(cur_content, 'senders');
+            content_creator = this.parent.get_creator(content_name) || this.stanza_get_attribute(cur_content, 'creator');
 
-            self._set_name(content_name);
-            self._set_senders(content_name, content_senders);
-            self._set_creator(content_name, content_creator);
+            this.parent.set_name(content_name);
+            this.parent.set_senders(content_name, content_senders);
+            this.parent.set_creator(content_name, content_creator);
 
             // Payloads (non-destructive setters / cumulative)
-            self._set_payloads_remote_add(
+            this.parent.set_payloads_remote_add(
               content_name,
-              self._util_stanza_parse_payload(cur_content)
+              this.stanza_parse_payload(cur_content)
             );
 
             // Candidates (enqueue them for ICE processing, too)
-            cur_candidate = self._util_stanza_parse_candidate(cur_content);
+            cur_candidate = this.stanza_parse_candidate(cur_content);
 
-            self._set_candidates_remote_add(
+            this.parent.set_candidates_remote_add(
               content_name,
               cur_candidate
             );
 
-            self._set_candidates_queue_remote(
+            this.parent.set_candidates_queue_remote(
               content_name,
               cur_candidate
             );
@@ -2886,16 +2889,16 @@ function __JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_parse_content > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_content > ' + e, 1);
     }
 
     return false;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_stanza_parse_group = function(stanza) {
+  stanza_parse_group: function(stanza) {    
     try {
       var i, j,
           jingle,
@@ -2903,11 +2906,11 @@ function __JSJaCJingleUtils(args) {
           content, cur_content, group_content_names;
 
       // Parse initiate stanza
-      jingle = self.util_stanza_jingle(stanza);
+      jingle = this.stanza_jingle(stanza);
 
       if(jingle) {
         // Childs
-        group = self.util_stanza_get_element(jingle, 'group', NS_JINGLE_APPS_GROUPING);
+        group = this.stanza_get_element(jingle, 'group', NS_JINGLE_APPS_GROUPING);
 
         if(group && group.length) {
           for(i = 0; i < group.length; i++) {
@@ -2915,22 +2918,22 @@ function __JSJaCJingleUtils(args) {
             group_content_names = [];
 
             // Attrs
-            group_semantics = self.util_stanza_get_attribute(cur_group, 'semantics');
+            group_semantics = this.stanza_get_attribute(cur_group, 'semantics');
 
             // Contents
-            content = self.util_stanza_get_element(cur_group, 'content', NS_JINGLE_APPS_GROUPING);
+            content = this.stanza_get_element(cur_group, 'content', NS_JINGLE_APPS_GROUPING);
 
             for(j = 0; j < content.length; j++) {
               cur_content = content[j];
 
               // Content attrs
               group_content_names.push(
-                self.util_stanza_get_attribute(cur_content, 'name')
+                this.stanza_get_attribute(cur_content, 'name')
               );
             }
 
             // Payloads (non-destructive setters / cumulative)
-            self._set_group_remote(
+            this.parent.set_group_remote(
               group_semantics,
               group_content_names
             );
@@ -2940,16 +2943,16 @@ function __JSJaCJingleUtils(args) {
 
       return true;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_parse_group > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_group > ' + e, 1);
     }
 
     return false;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_stanza_parse_payload = function(stanza_content) {
+  stanza_parse_payload: function(stanza_content) {    
     var payload_obj = {
       descriptions : {},
       transports   : {}
@@ -3008,16 +3011,16 @@ function __JSJaCJingleUtils(args) {
       };
 
       // Parse session description
-      var description = self.util_stanza_get_element(stanza_content, 'description', NS_JINGLE_APPS_RTP);
+      var description = this.stanza_get_element(stanza_content, 'description', NS_JINGLE_APPS_RTP);
 
       if(description.length) {
         description = description[0];
 
-        var cd_media = self.util_stanza_get_attribute(description, 'media');
-        var cd_ssrc  = self.util_stanza_get_attribute(description, 'ssrc');
+        var cd_media = this.stanza_get_attribute(description, 'media');
+        var cd_ssrc  = this.stanza_get_attribute(description, 'ssrc');
 
         if(!cd_media)
-          self.get_debug().log('[JSJaCJingle:utils] util_stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
+          this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
 
         // Initialize current description
         init_content();
@@ -3026,7 +3029,7 @@ function __JSJaCJingleUtils(args) {
         payload_obj.descriptions.attrs.ssrc  = cd_ssrc;
 
         // Loop on multiple payloads
-        var payload = self.util_stanza_get_element(description, 'payload-type', NS_JINGLE_APPS_RTP);
+        var payload = this.stanza_get_element(description, 'payload-type', NS_JINGLE_APPS_RTP);
 
         if(payload.length) {
           for(j = 0; j < payload.length; j++) {
@@ -3034,13 +3037,13 @@ function __JSJaCJingleUtils(args) {
             cur_payload     = payload[j];
             cur_payload_arr = {};
 
-            cur_payload_arr.channels  = self.util_stanza_get_attribute(cur_payload, 'channels');
-            cur_payload_arr.clockrate = self.util_stanza_get_attribute(cur_payload, 'clockrate');
-            cur_payload_arr.id        = self.util_stanza_get_attribute(cur_payload, 'id') || error++;
-            cur_payload_arr.name      = self.util_stanza_get_attribute(cur_payload, 'name');
+            cur_payload_arr.channels  = this.stanza_get_attribute(cur_payload, 'channels');
+            cur_payload_arr.clockrate = this.stanza_get_attribute(cur_payload, 'clockrate');
+            cur_payload_arr.id        = this.stanza_get_attribute(cur_payload, 'id') || error++;
+            cur_payload_arr.name      = this.stanza_get_attribute(cur_payload, 'name');
 
-            payload_obj.descriptions.attrs.ptime     = self.util_stanza_get_attribute(cur_payload, 'ptime');
-            payload_obj.descriptions.attrs.maxptime  = self.util_stanza_get_attribute(cur_payload, 'maxptime');
+            payload_obj.descriptions.attrs.ptime     = this.stanza_get_attribute(cur_payload, 'ptime');
+            payload_obj.descriptions.attrs.maxptime  = this.stanza_get_attribute(cur_payload, 'maxptime');
 
             if(error !== 0) continue;
 
@@ -3052,7 +3055,7 @@ function __JSJaCJingleUtils(args) {
             payload_obj.descriptions.payload[cur_payload_id].attrs = cur_payload_arr;
 
             // Loop on multiple parameters
-            self._util_stanza_parse_node(
+            this.stanza_parse_node(
               cur_payload,
               'parameter',
               NS_JINGLE_APPS_RTP,
@@ -3061,7 +3064,7 @@ function __JSJaCJingleUtils(args) {
             );
 
             // Loop on multiple RTCP-FB
-            self._util_stanza_parse_node(
+            this.stanza_parse_node(
               cur_payload,
               'rtcp-fb',
               NS_JINGLE_APPS_RTP_RTCP_FB,
@@ -3070,7 +3073,7 @@ function __JSJaCJingleUtils(args) {
             );
 
             // Loop on multiple RTCP-FB-TRR-INT
-            self._util_stanza_parse_node(
+            this.stanza_parse_node(
               cur_payload,
               'rtcp-fb-trr-int',
               NS_JINGLE_APPS_RTP_RTCP_FB,
@@ -3081,15 +3084,15 @@ function __JSJaCJingleUtils(args) {
         }
 
         // Parse the encryption element
-        var encryption = self.util_stanza_get_element(description, 'encryption', NS_JINGLE_APPS_RTP);
+        var encryption = this.stanza_get_element(description, 'encryption', NS_JINGLE_APPS_RTP);
 
         if(encryption.length) {
           encryption = encryption[0];
 
-          payload_obj.descriptions.encryption.attrs.required = self.util_stanza_get_attribute(encryption, 'required') || '0';
+          payload_obj.descriptions.encryption.attrs.required = this.stanza_get_attribute(encryption, 'required') || '0';
 
           // Loop on multiple cryptos
-          self._util_stanza_parse_node(
+          this.stanza_parse_node(
             encryption,
             'crypto',
             NS_JINGLE_APPS_RTP,
@@ -3098,7 +3101,7 @@ function __JSJaCJingleUtils(args) {
           );
 
           // Loop on multiple zrtp-hash
-          self._util_stanza_parse_node(
+          this.stanza_parse_node(
             encryption,
             'zrtp-hash',
             NS_JINGLE_APPS_RTP_ZRTP,
@@ -3109,12 +3112,12 @@ function __JSJaCJingleUtils(args) {
         }
 
         // Parse the SSRC-GROUP elements
-        var ssrc_group = self.util_stanza_get_element(description, 'ssrc-group', NS_JINGLE_APPS_RTP_SSMA);
+        var ssrc_group = this.stanza_get_element(description, 'ssrc-group', NS_JINGLE_APPS_RTP_SSMA);
 
         if(ssrc_group && ssrc_group.length) {
           for(k = 0; k < ssrc_group.length; k++) {
             cur_ssrc_group = ssrc_group[k];
-            cur_ssrc_group_semantics = self.util_stanza_get_attribute(cur_ssrc_group, 'semantics') || null;
+            cur_ssrc_group_semantics = this.stanza_get_attribute(cur_ssrc_group, 'semantics') || null;
 
             if(cur_ssrc_group_semantics !== null) {
               cur_ssrc_group_semantics_obj = {
@@ -3123,7 +3126,7 @@ function __JSJaCJingleUtils(args) {
 
               init_ssrc_group_semantics(cur_ssrc_group_semantics);
 
-              self._util_stanza_parse_node(
+              this.stanza_parse_node(
                 cur_ssrc_group,
                 'source',
                 NS_JINGLE_APPS_RTP_SSMA,
@@ -3137,17 +3140,17 @@ function __JSJaCJingleUtils(args) {
         }
 
         // Parse the SSRC (source) elements
-        var ssrc = self.util_stanza_get_element(description, 'source', NS_JINGLE_APPS_RTP_SSMA);
+        var ssrc = this.stanza_get_element(description, 'source', NS_JINGLE_APPS_RTP_SSMA);
 
         if(ssrc && ssrc.length) {
           for(l = 0; l < ssrc.length; l++) {
             cur_ssrc = ssrc[l];
-            cur_ssrc_id = self.util_stanza_get_attribute(cur_ssrc, 'ssrc') || null;
+            cur_ssrc_id = this.stanza_get_attribute(cur_ssrc, 'ssrc') || null;
 
             if(cur_ssrc_id !== null) {
               payload_obj.descriptions.ssrc[cur_ssrc_id] = [];
 
-              self._util_stanza_parse_node(
+              this.stanza_parse_node(
                 cur_ssrc,
                 'parameter',
                 NS_JINGLE_APPS_RTP_SSMA,
@@ -3159,7 +3162,7 @@ function __JSJaCJingleUtils(args) {
         }
 
         // Loop on common RTCP-FB
-        self._util_stanza_parse_node(
+        this.stanza_parse_node(
           description,
           'rtcp-fb',
           NS_JINGLE_APPS_RTP_RTCP_FB,
@@ -3168,7 +3171,7 @@ function __JSJaCJingleUtils(args) {
         );
 
         // Loop on bandwidth
-        self._util_stanza_parse_node(
+        this.stanza_parse_node(
           description,
           'bandwidth',
           NS_JINGLE_APPS_RTP,
@@ -3178,7 +3181,7 @@ function __JSJaCJingleUtils(args) {
         );
 
         // Parse the RTP-HDREXT element
-        self._util_stanza_parse_node(
+        this.stanza_parse_node(
           description,
           'rtp-hdrext',
           NS_JINGLE_APPS_RTP_RTP_HDREXT,
@@ -3187,7 +3190,7 @@ function __JSJaCJingleUtils(args) {
         );
 
         // Parse the RTCP-MUX element
-        var rtcp_mux = self.util_stanza_get_element(description, 'rtcp-mux', NS_JINGLE_APPS_RTP);
+        var rtcp_mux = this.stanza_get_element(description, 'rtcp-mux', NS_JINGLE_APPS_RTP);
 
         if(rtcp_mux.length) {
           payload_obj.descriptions['rtcp-mux'] = 1;
@@ -3195,40 +3198,42 @@ function __JSJaCJingleUtils(args) {
       }
 
       // Parse transport (need to get 'ufrag' and 'pwd' there)
-      var transport = self.util_stanza_get_element(stanza_content, 'transport', NS_JINGLE_TRANSPORTS_ICEUDP);
+      var transport = this.stanza_get_element(stanza_content, 'transport', NS_JINGLE_TRANSPORTS_ICEUDP);
 
       if(transport.length) {
-        payload_obj.transports.pwd          = self.util_stanza_get_attribute(transport, 'pwd');
-        payload_obj.transports.ufrag        = self.util_stanza_get_attribute(transport, 'ufrag');
+        payload_obj.transports.pwd          = this.stanza_get_attribute(transport, 'pwd');
+        payload_obj.transports.ufrag        = this.stanza_get_attribute(transport, 'ufrag');
 
-        var fingerprint = self.util_stanza_get_element(transport, 'fingerprint', NS_JINGLE_APPS_DTLS);
+        var fingerprint = this.stanza_get_element(transport, 'fingerprint', NS_JINGLE_APPS_DTLS);
 
         if(fingerprint.length) {
           payload_obj.transports.fingerprint       = {};
-          payload_obj.transports.fingerprint.setup = self.util_stanza_get_attribute(fingerprint, 'setup');
-          payload_obj.transports.fingerprint.hash  = self.util_stanza_get_attribute(fingerprint, 'hash');
-          payload_obj.transports.fingerprint.value = self.util_stanza_get_value(fingerprint);
+          payload_obj.transports.fingerprint.setup = this.stanza_get_attribute(fingerprint, 'setup');
+          payload_obj.transports.fingerprint.hash  = this.stanza_get_attribute(fingerprint, 'hash');
+          payload_obj.transports.fingerprint.value = this.stanza_get_value(fingerprint);
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_parse_payload > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_payload > ' + e, 1);
     }
 
     return payload_obj;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_stanza_parse_candidate = function(stanza_content) {
+  stanza_parse_candidate: function(stanza_content) {    
     var candidate_arr = [];
 
     try {
+      var _this = this;
+
       var fn_parse_transport = function(namespace, parse_obj) {
-        var transport = self.util_stanza_get_element(stanza_content, 'transport', namespace);
+        var transport = _this.stanza_get_element(stanza_content, 'transport', namespace);
         
         if(transport.length) {
-          self._util_stanza_parse_node(
+          _this.stanza_parse_node(
             transport,
             'candidate',
             namespace,
@@ -3250,16 +3255,16 @@ function __JSJaCJingleUtils(args) {
         JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP
       );
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_parse_candidate > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_candidate > ' + e, 1);
     }
 
     return candidate_arr;
-  };
+  },
 
   /*
    * @private
    */
-  self._util_stanza_build_node = function(doc, parent, children, name, ns, value) {
+  stanza_build_node: function(doc, parent, children, name, ns, value) {    
     var node = null;
 
     try {
@@ -3278,20 +3283,20 @@ function __JSJaCJingleUtils(args) {
           ));
 
           for(attr in child)
-            if(attr != value)  self.util_stanza_set_attribute(node, attr, child[attr]);
+            if(attr != value)  this.stanza_set_attribute(node, attr, child[attr]);
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_build_node > name: ' + name + ' > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_build_node > name: ' + name + ' > ' + e, 1);
     }
 
     return node;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_stanza_generate_jingle = function(stanza, attrs) {
+  stanza_generate_jingle: function(stanza, attrs) {    
     var jingle = null;
 
     try {
@@ -3299,20 +3304,20 @@ function __JSJaCJingleUtils(args) {
 
       jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', { 'xmlns': NS_JINGLE }));
 
-      if(!attrs.sid) attrs.sid = self.get_sid();
+      if(!attrs.sid) attrs.sid = this.parent.get_sid();
 
-      for(cur_attr in attrs) self.util_stanza_set_attribute(jingle, cur_attr, attrs[cur_attr]);
+      for(cur_attr in attrs) this.stanza_set_attribute(jingle, cur_attr, attrs[cur_attr]);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_generate_jingle > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_jingle > ' + e, 1);
     }
 
     return jingle;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_stanza_generate_session_info = function(stanza, jingle, args) {
+  stanza_generate_session_info: function(stanza, jingle, args) {    
     try {
       var info = jingle.appendChild(stanza.buildNode(args.info, { 'xmlns': NS_JINGLE_APPS_RTP_INFO }));
 
@@ -3320,26 +3325,28 @@ function __JSJaCJingleUtils(args) {
       switch(args.info) {
         case JSJAC_JINGLE_SESSION_INFO_MUTE:
         case JSJAC_JINGLE_SESSION_INFO_UNMUTE:
-          self.util_stanza_set_attribute(info, 'creator', self.get_creator_this());
-          self.util_stanza_set_attribute(info, 'name',    args.name);
+          this.stanza_set_attribute(info, 'creator', this.parent.get_creator_this());
+          this.stanza_set_attribute(info, 'name',    args.name);
 
           break;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_generate_session_info > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_session_info > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._util_stanza_generate_content_local = function(stanza, jingle, override_content) {
+  stanza_generate_content_local: function(stanza, jingle, override_content) {    
     try {
       var cur_media;
-      var content_local = override_content ? override_content : self._get_content_local();
+      var content_local = override_content ? override_content : this.parent.get_content_local();
+
+      var _this = this;
 
       var fn_build_transport = function(content, transport_obj, namespace) {
-        var transport = self._util_stanza_build_node(
+        var transport = _this.stanza_build_node(
           stanza,
           content,
           [transport_obj.attrs],
@@ -3348,7 +3355,7 @@ function __JSJaCJingleUtils(args) {
         );
 
         // Fingerprint
-        self._util_stanza_build_node(
+        _this.stanza_build_node(
           stanza,
           transport,
           [transport_obj.fingerprint],
@@ -3358,7 +3365,7 @@ function __JSJaCJingleUtils(args) {
         );
 
         // Candidates
-        self._util_stanza_build_node(
+        _this.stanza_build_node(
           stanza,
           transport,
           transport_obj.candidate,
@@ -3372,12 +3379,12 @@ function __JSJaCJingleUtils(args) {
 
         var content = jingle.appendChild(stanza.buildNode('content', { 'xmlns': NS_JINGLE }));
 
-        self.util_stanza_set_attribute(content, 'creator', cur_content.creator);
-        self.util_stanza_set_attribute(content, 'name',    cur_content.name);
-        self.util_stanza_set_attribute(content, 'senders', cur_content.senders);
+        this.stanza_set_attribute(content, 'creator', cur_content.creator);
+        this.stanza_set_attribute(content, 'name',    cur_content.name);
+        this.stanza_set_attribute(content, 'senders', cur_content.senders);
 
         // Build description (if action type allows that element)
-        if(self.util_stanza_get_attribute(jingle, 'action') != JSJAC_JINGLE_ACTION_TRANSPORT_INFO) {
+        if(this.stanza_get_attribute(jingle, 'action') != JSJAC_JINGLE_ACTION_TRANSPORT_INFO) {
           var cs_description  = cur_content.description;
           var cs_d_attrs      = cs_description.attrs;
           var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
@@ -3389,7 +3396,7 @@ function __JSJaCJingleUtils(args) {
           var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
           var cs_d_rtcp_mux   = cs_description['rtcp-mux'];
 
-          var description = self._util_stanza_build_node(
+          var description = this.stanza_build_node(
                               stanza, content,
                               [cs_d_attrs],
                               'description',
@@ -3405,16 +3412,16 @@ function __JSJaCJingleUtils(args) {
             for(i in cs_d_payload) {
               cs_d_p = cs_d_payload[i];
 
-              payload_type = self._util_stanza_build_node(
-                               stanza,
-                               description,
-                               [cs_d_p.attrs],
-                               'payload-type',
-                               NS_JINGLE_APPS_RTP
-                             );
+              payload_type = this.stanza_build_node(
+                stanza,
+                description,
+                [cs_d_p.attrs],
+                'payload-type',
+                NS_JINGLE_APPS_RTP
+              );
 
               // Parameter
-              self._util_stanza_build_node(
+              this.stanza_build_node(
                 stanza,
                 payload_type,
                 cs_d_p.parameter,
@@ -3423,7 +3430,7 @@ function __JSJaCJingleUtils(args) {
               );
 
               // RTCP-FB (sub)
-              self._util_stanza_build_node(
+              this.stanza_build_node(
                 stanza,
                 payload_type,
                 cs_d_p['rtcp-fb'],
@@ -3432,7 +3439,7 @@ function __JSJaCJingleUtils(args) {
               );
 
               // RTCP-FB-TRR-INT
-              self._util_stanza_build_node(
+              this.stanza_build_node(
                 stanza,
                 payload_type,
                 cs_d_p['rtcp-fb-trr-int'],
@@ -3450,7 +3457,7 @@ function __JSJaCJingleUtils(args) {
                     'xmlns': NS_JINGLE_APPS_RTP_SSMA
                   }));
 
-                  self._util_stanza_build_node(
+                  this.stanza_build_node(
                     stanza,
                     ssrc_group,
                     cs_d_ssrc_group[cur_cs_d_ssrc_group_semantics][j].sources,
@@ -3469,7 +3476,7 @@ function __JSJaCJingleUtils(args) {
                   'xmlns': NS_JINGLE_APPS_RTP_SSMA
                 }));
 
-                self._util_stanza_build_node(
+                this.stanza_build_node(
                   stanza,
                   ssrc,
                   cs_d_ssrc[cur_ssrc_id],
@@ -3485,10 +3492,10 @@ function __JSJaCJingleUtils(args) {
                 cs_d_encryption['zrtp-hash'] && cs_d_encryption['zrtp-hash'].length)) {
               var encryption = description.appendChild(stanza.buildNode('encryption', { 'xmlns': NS_JINGLE_APPS_RTP }));
 
-              self.util_stanza_set_attribute(encryption, 'required', (cs_d_encryption.attrs.required || '0'));
+              this.stanza_set_attribute(encryption, 'required', (cs_d_encryption.attrs.required || '0'));
 
               // Crypto
-              self._util_stanza_build_node(
+              this.stanza_build_node(
                 stanza,
                 encryption,
                 cs_d_encryption.crypto,
@@ -3497,7 +3504,7 @@ function __JSJaCJingleUtils(args) {
               );
 
               // ZRTP-HASH
-              self._util_stanza_build_node(
+              this.stanza_build_node(
                 stanza,
                 encryption,
                 cs_d_encryption['zrtp-hash'],
@@ -3508,7 +3515,7 @@ function __JSJaCJingleUtils(args) {
             }
 
             // RTCP-FB (common)
-            self._util_stanza_build_node(
+            this.stanza_build_node(
               stanza,
               description,
               cs_d_rtcp_fb,
@@ -3517,7 +3524,7 @@ function __JSJaCJingleUtils(args) {
             );
 
             // Bandwidth
-            self._util_stanza_build_node(
+            this.stanza_build_node(
               stanza,
               description,
               cs_d_bandwidth,
@@ -3527,7 +3534,7 @@ function __JSJaCJingleUtils(args) {
             );
 
             // RTP-HDREXT
-            self._util_stanza_build_node(
+            this.stanza_build_node(
               stanza,
               description,
               cs_d_rtp_hdrext,
@@ -3542,7 +3549,7 @@ function __JSJaCJingleUtils(args) {
         }
 
         // Build transport
-        var cs_transport = self._util_generate_transport(cur_content.transport);
+        var cs_transport = this.generate_transport(cur_content.transport);
 
         // Transport candidates: ICE-UDP
         if((cs_transport.ice.candidate).length > 0) {
@@ -3563,20 +3570,20 @@ function __JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_generate_content_local > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_content_local > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._util_stanza_generate_group_local = function(stanza, jingle) {
+  stanza_generate_group_local: function(stanza, jingle) {    
     try {
       var i,
           cur_semantics, cur_group, cur_group_name,
           group;
 
-      var group_local = self._get_group_local();
+      var group_local = this.parent.get_group_local();
 
       for(cur_semantics in group_local) {
         cur_group = group_local[cur_semantics];
@@ -3596,14 +3603,14 @@ function __JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_stanza_generate_group_local > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_group_local > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._util_generate_content = function(creator, name, senders, payloads, transports) {
+  generate_content: function(creator, name, senders, payloads, transports) {    
     var content_obj = {};
 
     try {
@@ -3616,7 +3623,7 @@ function __JSJaCJingleUtils(args) {
 
       // Generate description
       var i;
-      var description_cpy      = self.util_object_clone(payloads.descriptions);
+      var description_cpy      = this.object_clone(payloads.descriptions);
       var description_ptime    = description_cpy.attrs.ptime;
       var description_maxptime = description_cpy.attrs.maxptime;
 
@@ -3642,16 +3649,16 @@ function __JSJaCJingleUtils(args) {
       if(payloads.transports && payloads.transports.fingerprint)
         content_obj.transport.fingerprint  = payloads.transports.fingerprint;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_generate_content > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] generate_content > ' + e, 1);
     }
 
     return content_obj;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_generate_transport = function(transport_init_obj) {
+  generate_transport: function(transport_init_obj) {    
     var transport_obj = {
       'ice': {},
       'raw': {}
@@ -3679,7 +3686,7 @@ function __JSJaCJingleUtils(args) {
 
       // Nest candidates in their category
       for(k = 0; k < (transport_init_obj.candidate).length; k++) {
-        cur_candidate = self.util_object_clone(transport_init_obj.candidate[k]);
+        cur_candidate = this.object_clone(transport_init_obj.candidate[k]);
 
         if(cur_candidate.type in JSJAC_JINGLE_SDP_CANDIDATE_TYPES) {
           // Remove attributes that are not required by RAW-UDP (XEP-0177 compliance)
@@ -3695,74 +3702,74 @@ function __JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_generate_transport > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] generate_transport > ' + e, 1);
     }
 
     return transport_obj;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_build_content_local = function() {
+  build_content_local: function() {    
     try {
       var cur_name;
 
-      for(cur_name in self.get_name()) {
-        self._set_content_local(
+      for(cur_name in this.parent.get_name()) {
+        this.parent.set_content_local(
           cur_name,
 
-          self._util_generate_content(
+          this.generate_content(
             JSJAC_JINGLE_SENDERS_INITIATOR.jingle,
             cur_name,
-            self.get_senders(cur_name),
-            self._get_payloads_local(cur_name),
-            self._get_candidates_local(cur_name)
+            this.parent.get_senders(cur_name),
+            this.parent.get_payloads_local(cur_name),
+            this.parent.get_candidates_local(cur_name)
           )
         );
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_build_content_local > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] build_content_local > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._util_build_content_remote = function() {
+  build_content_remote: function() {    
     try {
       var cur_name;
 
-      for(cur_name in self.get_name()) {
-        self._set_content_remote(
+      for(cur_name in this.parent.get_name()) {
+        this.parent.set_content_remote(
           cur_name,
 
-          self._util_generate_content(
-            self.get_creator(cur_name),
+          this.generate_content(
+            this.parent.get_creator(cur_name),
             cur_name,
-            self.get_senders(cur_name),
-            self._get_payloads_remote(cur_name),
-            self._get_candidates_remote(cur_name)
+            this.parent.get_senders(cur_name),
+            this.parent.get_payloads_remote(cur_name),
+            this.parent.get_candidates_remote(cur_name)
           )
         );
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_build_content_remote > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] build_content_remote > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._util_name_generate = function(media) {
+  name_generate: function(media) {    
     var name = null;
 
     try {
       var i, cur_name;
 
       var content_all = [
-        self._get_content_remote(),
-        self._get_content_local()
+        this.parent.get_content_remote(),
+        this.parent.get_content_local()
       ];
 
       for(i in content_all) {
@@ -3779,16 +3786,16 @@ function __JSJaCJingleUtils(args) {
 
       if(!name) name = media;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_name_generate > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] name_generate > ' + e, 1);
     }
 
     return name;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_media_generate = function(name) {
+  media_generate: function(name) {    
     var cur_media;
     var media = null;
 
@@ -3801,7 +3808,7 @@ function __JSJaCJingleUtils(args) {
         }
       } else {
         for(cur_media in JSJAC_JINGLE_MEDIAS) {
-          if(name == self._util_name_generate(cur_media)) {
+          if(name == this.name_generate(cur_media)) {
             media = cur_media; break;
           }
         }
@@ -3809,579 +3816,36 @@ function __JSJaCJingleUtils(args) {
 
       if(!media)  media = name;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_media_generate > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] media_generate > ' + e, 1);
     }
 
     return media;
-  };
-
-  /**
-   * @private
-   */
-  self._util_sdp_generate = function(type, group, payloads, candidates) {
-    try {
-      var sdp_obj = {};
-
-      sdp_obj.candidates  = self._util_sdp_generate_candidates(candidates);
-      sdp_obj.description = self._util_sdp_generate_description(type, group, payloads, sdp_obj.candidates);
-
-      return sdp_obj;
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_generate > ' + e, 1);
-    }
-
-    return {};
-  };
-
-  /**
-   * @private
-   */
-  self._util_sdp_generate_candidates = function(candidates) {
-    var candidates_arr = [];
-
-    try {
-      // Parse candidates
-      var i,
-          cur_media, cur_name, cur_c_name, cur_candidate, cur_label, cur_id, cur_candidate_str;
-
-      for(cur_name in candidates) {
-        cur_c_name = candidates[cur_name];
-        cur_media   = self._util_media_generate(cur_name);
-
-        for(i in cur_c_name) {
-          cur_candidate = cur_c_name[i];
-
-          cur_label         = JSJAC_JINGLE_MEDIAS[cur_media].label;
-          cur_id            = cur_label;
-          cur_candidate_str = '';
-
-          cur_candidate_str += 'a=candidate:';
-          cur_candidate_str += (cur_candidate.foundation || cur_candidate.id);
-          cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate.component;
-          cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate.protocol || JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT;
-          cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate.priority || JSJAC_JINGLE_SDP_CANDIDATE_PRIORITY_DEFAULT;
-          cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate.ip;
-          cur_candidate_str += ' ';
-          cur_candidate_str += cur_candidate.port;
-
-          if(cur_candidate.type) {
-            cur_candidate_str += ' ';
-            cur_candidate_str += 'typ';
-            cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate.type;
-          }
-
-          if(cur_candidate['rel-addr'] && cur_candidate['rel-port']) {
-            cur_candidate_str += ' ';
-            cur_candidate_str += 'raddr';
-            cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate['rel-addr'];
-            cur_candidate_str += ' ';
-            cur_candidate_str += 'rport';
-            cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate['rel-port'];
-          }
-
-          if(cur_candidate.generation) {
-            cur_candidate_str += ' ';
-            cur_candidate_str += 'generation';
-            cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate.generation;
-          }
-
-          cur_candidate_str   += WEBRTC_SDP_LINE_BREAK;
-
-          candidates_arr.push({
-            label     : cur_label,
-            id        : cur_id,
-            candidate : cur_candidate_str
-          });
-        }
-      }
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_generate_candidates > ' + e, 1);
-    }
-
-    return candidates_arr;
-  };
-
-  /**
-   * @private
-   */
-  self._util_sdp_generate_description = function(type, group, payloads, sdp_candidates) {
-    var payloads_obj = {};
-
-    try {
-      var payloads_str = '';
-      var is_common_credentials = self._util_is_sdp_common_credentials(payloads);
-
-      // Common vars
-      var i, c, j, k, l, m, n, o, p, q, r, s, t, u,
-          cur_name, cur_name_first, cur_name_obj,
-          cur_media, cur_senders,
-          cur_group_semantics, cur_group_names, cur_group_name,
-          cur_network_obj, cur_transports_obj, cur_transports_obj_first, cur_description_obj,
-          cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
-          cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption,
-          cur_d_ssrc, cur_d_ssrc_id, cur_d_ssrc_obj, cur_d_ssrc_group, cur_d_ssrc_group_semantics, cur_d_ssrc_group_obj,
-          cur_d_rtcp_fb_obj,
-          cur_d_payload, cur_d_payload_obj, cur_d_payload_obj_attrs, cur_d_payload_obj_id,
-          cur_d_payload_obj_parameter, cur_d_payload_obj_parameter_obj, cur_d_payload_obj_parameter_str,
-          cur_d_payload_obj_rtcp_fb, cur_d_payload_obj_rtcp_fb_obj,
-          cur_d_payload_obj_rtcp_fb_ttr_int, cur_d_payload_obj_rtcp_fb_ttr_int_obj,
-          cur_d_crypto_obj, cur_d_zrtp_hash_obj,
-          cur_d_rtp_hdrext, cur_d_rtp_hdrext_obj,
-          cur_d_rtcp_mux;
-
-      // Payloads headers
-      payloads_str += self._util_sdp_generate_protocol_version();
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
-      payloads_str += self._util_sdp_generate_origin();
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
-      payloads_str += self._util_sdp_generate_session_name();
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
-      payloads_str += self._util_sdp_generate_timing();
-      payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-      // Add groups
-      for(cur_group_semantics in group) {
-        cur_group_names = group[cur_group_semantics];
-
-        payloads_str += 'a=group:' + cur_group_semantics;
-
-        for(s in cur_group_names) {
-          cur_group_name = cur_group_names[s];
-          payloads_str += ' ' + cur_group_name;
-        }
-
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-      }
-
-      // Common credentials?
-      if(is_common_credentials === true) {
-        for(cur_name_first in payloads) {
-          cur_transports_obj_first = payloads[cur_name_first].transports || {};
-
-          payloads_str += self._util_sdp_generate_credentials(
-            cur_transports_obj_first.ufrag,
-            cur_transports_obj_first.pwd,
-            cur_transports_obj_first.fingerprint
-          );
-
-          break;
-        }
-      }
-
-      // Add media groups
-      for(cur_name in payloads) {
-        cur_name_obj          = payloads[cur_name];
-        cur_senders           = self.get_senders(cur_name);
-        cur_media             = self.get_name(cur_name) ? self._util_media_generate(cur_name) : null;
-
-        // No media?
-        if(!cur_media) continue;
-
-        // Network
-        cur_network_obj       = self._util_network_extract_main(cur_name, sdp_candidates);
-
-        // Transports
-        cur_transports_obj    = cur_name_obj.transports || {};
-        cur_d_pwd             = cur_transports_obj.pwd;
-        cur_d_ufrag           = cur_transports_obj.ufrag;
-        cur_d_fingerprint     = cur_transports_obj.fingerprint;
-
-        // Descriptions
-        cur_description_obj   = cur_name_obj.descriptions;
-        cur_d_attrs           = cur_description_obj.attrs;
-        cur_d_rtcp_fb         = cur_description_obj['rtcp-fb'];
-        cur_d_bandwidth       = cur_description_obj.bandwidth;
-        cur_d_payload         = cur_description_obj.payload;
-        cur_d_encryption      = cur_description_obj.encryption;
-        cur_d_ssrc            = cur_description_obj.ssrc;
-        cur_d_ssrc_group      = cur_description_obj['ssrc-group'];
-        cur_d_rtp_hdrext      = cur_description_obj['rtp-hdrext'];
-        cur_d_rtcp_mux        = cur_description_obj['rtcp-mux'];
-
-        // Current media
-        payloads_str += self._util_sdp_generate_description_media(
-          cur_media,
-          cur_network_obj.port,
-          cur_d_encryption,
-          cur_d_fingerprint,
-          cur_d_payload
-        );
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-        payloads_str += 'c=' + 
-                        cur_network_obj.scope + ' ' + 
-                        cur_network_obj.protocol + ' ' + 
-                        cur_network_obj.ip;
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-        payloads_str += 'a=rtcp:' + 
-                        cur_network_obj.port + ' ' + 
-                        cur_network_obj.scope + ' ' + 
-                        cur_network_obj.protocol + ' ' + 
-                        cur_network_obj.ip;
-        payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-        // Specific credentials?
-        if(is_common_credentials === false) {
-          payloads_str += self._util_sdp_generate_credentials(
-            cur_d_ufrag,
-            cur_d_pwd,
-            cur_d_fingerprint
-          );
-        }
-
-        // Fingerprint
-        if(cur_d_fingerprint && cur_d_fingerprint.setup) {
-          payloads_str += 'a=setup:' + cur_d_fingerprint.setup;
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
-        }
-
-        // RTP-HDREXT
-        if(cur_d_rtp_hdrext && cur_d_rtp_hdrext.length) {
-          for(i in cur_d_rtp_hdrext) {
-            cur_d_rtp_hdrext_obj = cur_d_rtp_hdrext[i];
-
-            payloads_str += 'a=extmap:' + cur_d_rtp_hdrext_obj.id;
-
-            if(cur_d_rtp_hdrext_obj.senders)
-              payloads_str += '/' + cur_d_rtp_hdrext_obj.senders;
-
-            payloads_str += ' ' + cur_d_rtp_hdrext_obj.uri;
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-        }
-
-        // Senders
-        if(cur_senders) {
-          payloads_str += 'a=' + JSJAC_JINGLE_SENDERS[cur_senders];
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
-        }
-
-        // Name
-        if(cur_media && JSJAC_JINGLE_MEDIAS[cur_media]) {
-          payloads_str += 'a=mid:' + (JSJAC_JINGLE_MEDIAS[cur_media]).label;
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
-        }
-
-        // RTCP-MUX
-        // WARNING: no spec!
-        // See: http://code.google.com/p/libjingle/issues/detail?id=309
-        //      http://mail.jabber.org/pipermail/jingle/2011-December/001761.html
-        if(cur_d_rtcp_mux) {
-          payloads_str += 'a=rtcp-mux';
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
-        }
-
-        // 'encryption'
-        if(cur_d_encryption) {
-          // 'crypto'
-          for(j in cur_d_encryption.crypto) {
-            cur_d_crypto_obj = cur_d_encryption.crypto[j];
-
-            payloads_str += 'a=crypto:'                       + 
-                            cur_d_crypto_obj.tag           + ' ' + 
-                            cur_d_crypto_obj['crypto-suite']  + ' ' + 
-                            cur_d_crypto_obj['key-params']    + 
-                            (cur_d_crypto_obj['session-params'] ? (' ' + cur_d_crypto_obj['session-params']) : '');
-
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-
-          // 'zrtp-hash'
-          for(p in cur_d_encryption['zrtp-hash']) {
-            cur_d_zrtp_hash_obj = cur_d_encryption['zrtp-hash'][p];
-
-            payloads_str += 'a=zrtp-hash:'                  + 
-                            cur_d_zrtp_hash_obj.version  + ' ' + 
-                            cur_d_zrtp_hash_obj.value;
-
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-        }
-
-        // 'rtcp-fb' (common)
-        for(n in cur_d_rtcp_fb) {
-          cur_d_rtcp_fb_obj = cur_d_rtcp_fb[n];
-
-          payloads_str += 'a=rtcp-fb:*';
-          payloads_str += ' ' + cur_d_rtcp_fb_obj.type;
-
-          if(cur_d_rtcp_fb_obj.subtype)
-            payloads_str += ' ' + cur_d_rtcp_fb_obj.subtype;
-
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
-        }
-
-        // 'bandwidth' (common)
-        for(q in cur_d_bandwidth) {
-          cur_d_bandwidth_obj = cur_d_bandwidth[q];
-
-          payloads_str += 'b=' + cur_d_bandwidth_obj.type;
-          payloads_str += ':'  + cur_d_bandwidth_obj.value;
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
-        }
-
-        // 'payload-type'
-        for(k in cur_d_payload) {
-          cur_d_payload_obj                 = cur_d_payload[k];
-          cur_d_payload_obj_attrs           = cur_d_payload_obj.attrs;
-          cur_d_payload_obj_parameter       = cur_d_payload_obj.parameter;
-          cur_d_payload_obj_rtcp_fb         = cur_d_payload_obj['rtcp-fb'];
-          cur_d_payload_obj_rtcp_fb_ttr_int = cur_d_payload_obj['rtcp-fb-trr-int'];
-
-          cur_d_payload_obj_id              = cur_d_payload_obj_attrs.id;
-
-          payloads_str += 'a=rtpmap:' + cur_d_payload_obj_id;
-
-          // 'rtpmap'
-          if(cur_d_payload_obj_attrs.name) {
-            payloads_str += ' ' + cur_d_payload_obj_attrs.name;
-
-            if(cur_d_payload_obj_attrs.clockrate) {
-              payloads_str += '/' + cur_d_payload_obj_attrs.clockrate;
-
-              if(cur_d_payload_obj_attrs.channels)
-                payloads_str += '/' + cur_d_payload_obj_attrs.channels;
-            }
-          }
-
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-          // 'parameter'
-          if(cur_d_payload_obj_parameter.length) {
-            payloads_str += 'a=fmtp:' + cur_d_payload_obj_id + ' ';
-            cur_d_payload_obj_parameter_str = '';
-
-            for(o in cur_d_payload_obj_parameter) {
-              cur_d_payload_obj_parameter_obj = cur_d_payload_obj_parameter[o];
-
-              if(cur_d_payload_obj_parameter_str)  cur_d_payload_obj_parameter_str += ';';
-
-              cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj.name;
-
-              if(cur_d_payload_obj_parameter_obj.value !== null) {
-                cur_d_payload_obj_parameter_str += '=';
-                cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj.value;
-              }
-            }
-
-            payloads_str += cur_d_payload_obj_parameter_str;
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-
-          // 'rtcp-fb' (sub)
-          for(l in cur_d_payload_obj_rtcp_fb) {
-            cur_d_payload_obj_rtcp_fb_obj = cur_d_payload_obj_rtcp_fb[l];
-
-            payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
-            payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj.type;
-
-            if(cur_d_payload_obj_rtcp_fb_obj.subtype)
-              payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj.subtype;
-
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-
-          // 'rtcp-fb-ttr-int'
-          for(m in cur_d_payload_obj_rtcp_fb_ttr_int) {
-            cur_d_payload_obj_rtcp_fb_ttr_int_obj = cur_d_payload_obj_rtcp_fb_ttr_int[m];
-
-            payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
-            payloads_str += ' ' + 'trr-int';
-            payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_ttr_int_obj.value;
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-        }
-
-        if(cur_d_attrs.ptime)     payloads_str += 'a=ptime:'    + cur_d_attrs.ptime + WEBRTC_SDP_LINE_BREAK;
-        if(cur_d_attrs.maxptime)  payloads_str += 'a=maxptime:' + cur_d_attrs.maxptime + WEBRTC_SDP_LINE_BREAK;
-
-        // 'ssrc-group'
-        for(cur_d_ssrc_group_semantics in cur_d_ssrc_group) {
-          for(t in cur_d_ssrc_group[cur_d_ssrc_group_semantics]) {
-            cur_d_ssrc_group_obj = cur_d_ssrc_group[cur_d_ssrc_group_semantics][t];
-
-            payloads_str += 'a=ssrc-group';
-            payloads_str += ':' + cur_d_ssrc_group_semantics;
-
-            for(u in cur_d_ssrc_group_obj.sources) {
-              payloads_str += ' ' + cur_d_ssrc_group_obj.sources[u].ssrc;
-            }
-
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-        }
-
-        // 'ssrc'
-        for(cur_d_ssrc_id in cur_d_ssrc) {
-          for(r in cur_d_ssrc[cur_d_ssrc_id]) {
-            cur_d_ssrc_obj = cur_d_ssrc[cur_d_ssrc_id][r];
-
-            payloads_str += 'a=ssrc';
-            payloads_str += ':' + cur_d_ssrc_id;
-            payloads_str += ' ' + cur_d_ssrc_obj.name;
-
-            if(cur_d_ssrc_obj.value)
-              payloads_str += ':' + cur_d_ssrc_obj.value;
-
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-        }
-
-        // Candidates (some browsers require them there, too)
-        if(typeof sdp_candidates == 'object') {
-          for(c in sdp_candidates) {
-            if((sdp_candidates[c]).label == JSJAC_JINGLE_MEDIAS[cur_media].label)
-              payloads_str += (sdp_candidates[c]).candidate;
-          }
-        }
-      }
-
-      // Push to object
-      payloads_obj.type = type;
-      payloads_obj.sdp  = payloads_str;
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_generate_description > ' + e, 1);
-    }
-
-    return payloads_obj;
-  };
-
-  /**
-   * @private
-   */
-  self._util_sdp_generate_protocol_version = function() {
-    return 'v=0';
-  };
-
-  /**
-   * @private
-   */
-  self._util_sdp_generate_origin = function() {
-    var sdp_origin = '';
-
-    try {
-      // Values
-      var jid = new JSJaCJID(self.get_initiator());
-
-      var username        = jid.getNode()   ? jid.getNode()   : '-';
-      var session_id      = '1';
-      var session_version = '1';
-      var nettype         = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT;
-      var addrtype        = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT;
-      var unicast_address = JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT;
-
-      // Line content
-      sdp_origin += 'o=';
-      sdp_origin += username + ' ';
-      sdp_origin += session_id + ' ';
-      sdp_origin += session_version + ' ';
-      sdp_origin += nettype + ' ';
-      sdp_origin += addrtype + ' ';
-      sdp_origin += unicast_address;
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_generate_origin > ' + e, 1);
-    }
-
-    return sdp_origin;
-  };
-
-  /**
-   * @private
-   */
-  self._util_sdp_generate_session_name = function() {
-    return 's=' + (self.get_sid() || '-');
-  };
-
-  /**
-   * @private
-   */
-  self._util_sdp_generate_timing = function() {
-    return 't=0 0';
-  };
-
-  /**
-   * @private
-   */
-  self._util_sdp_generate_credentials = function(ufrag, pwd, fingerprint) {
-    var sdp = '';
-
-    // ICE credentials
-    if(ufrag)  sdp += 'a=ice-ufrag:' + ufrag + WEBRTC_SDP_LINE_BREAK;
-    if(pwd)    sdp += 'a=ice-pwd:' + pwd + WEBRTC_SDP_LINE_BREAK;
-
-    // Fingerprint
-    if(fingerprint) {
-      if(fingerprint.hash && fingerprint.value) {
-        sdp += 'a=fingerprint:' + fingerprint.hash + ' ' + fingerprint.value;
-        sdp += WEBRTC_SDP_LINE_BREAK;
-      }
-    }
-
-    return sdp;
-  };
-
-  /**
-   * @private
-   */
-  self._util_sdp_generate_description_media = function(media, port, crypto, fingerprint, payload) {
-    var sdp_media = '';
-
-    try {
-      var i;
-      var type_ids = [];
-
-      sdp_media += 'm=' + media + ' ' + port + ' ';
-
-      // Protocol
-      if((crypto && crypto.length) || (fingerprint && fingerprint.hash && fingerprint.value))
-        sdp_media += 'RTP/SAVPF';
-      else
-        sdp_media += 'RTP/AVPF';
-
-      // Payload type IDs
-      for(i in payload)  type_ids.push(payload[i].attrs.id);
-
-      sdp_media += ' ' + type_ids.join(' ');
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_generate_description_media > ' + e, 1);
-    }
-
-    return sdp_media;
-  };
+  },
 
   /**
    * Generates a random SID value
    * @return SID value
    * @type string
    */
-  self.util_generate_sid = function() {
-    return cnonce(16);
-  };
+  generate_sid: function() {
+    return JSJaCUtils.cnonce(16);
+  },
 
   /**
    * Generates a random ID value
    * @return ID value
    * @type string
    */
-  self.util_generate_id = function() {
-    return cnonce(10);
-  };
+  generate_id: function() {
+    return JSJaCUtils.cnonce(10);
+  },
 
   /**
    * Generates the constraints object
    * @return constraints object
    * @type object
    */
-  self.util_generate_constraints = function() {
+  generate_constraints: function() {    
     var constraints = {
       audio : false,
       video : false
@@ -4390,12 +3854,12 @@ function __JSJaCJingleUtils(args) {
     try {
       // Medias?
       constraints.audio = true;
-      constraints.video = (self.get_media() == JSJAC_JINGLE_MEDIA_VIDEO);
+      constraints.video = (this.parent.get_media() == JSJAC_JINGLE_MEDIA_VIDEO);
 
       // Video configuration
       if(constraints.video === true) {
         // Resolution?
-        switch(self.get_resolution()) {
+        switch(this.parent.get_resolution()) {
           // 16:9
           case '720':
           case 'hd':
@@ -4461,44 +3925,44 @@ function __JSJaCJingleUtils(args) {
         }
 
         // Bandwidth?
-        if(self.get_bandwidth())
-          constraints.video.optional = [{ bandwidth: self.get_bandwidth() }];
+        if(this.parent.get_bandwidth())
+          constraints.video.optional = [{ bandwidth: this.parent.get_bandwidth() }];
 
         // FPS?
-        if(self.get_fps())
-          constraints.video.mandatory.minFrameRate = self.get_fps();
+        if(this.parent.get_fps())
+          constraints.video.mandatory.minFrameRate = this.parent.get_fps();
 
         // Custom video source? (screenshare)
-        if(self.get_media()        == JSJAC_JINGLE_MEDIA_VIDEO         && 
-           self.get_video_source() != JSJAC_JINGLE_VIDEO_SOURCE_CAMERA ) {
+        if(this.parent.get_media()        == JSJAC_JINGLE_MEDIA_VIDEO         && 
+           this.parent.get_video_source() != JSJAC_JINGLE_VIDEO_SOURCE_CAMERA ) {
           if(document.location.protocol !== 'https:')
-            self.get_debug().log('[JSJaCJingle:utils] util_generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
+            this.parent.get_debug().log('[JSJaCJingle:utils] generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
 
           // Unsupported browser? (for that feature)
-          if(self._util_browser().name != JSJAC_JINGLE_BROWSER_CHROME) {
-            self.get_debug().log('[JSJaCJingle:utils] util_generate_constraints > Video source not supported by ' + self._util_browser().name + ' (source: ' + self.get_video_source() + ').', 1);
+          if(this.browser().name != JSJAC_JINGLE_BROWSER_CHROME) {
+            this.parent.get_debug().log('[JSJaCJingle:utils] generate_constraints > Video source not supported by ' + this.browser().name + ' (source: ' + this.parent.get_video_source() + ').', 1);
             
-            self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
+            this.parent.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
             return;
           }
 
           constraints.audio           = false;
           constraints.video.mandatory = {
-            'chromeMediaSource': self.get_video_source()
+            'chromeMediaSource': this.parent.get_video_source()
           };
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] util_generate_constraints > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] generate_constraints > ' + e, 1);
     }
 
     return constraints;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_is_sdp_common_credentials = function(payloads) {
+  is_sdp_common_credentials: function(payloads) {    
     var is_same = true;
 
     try {
@@ -4521,16 +3985,16 @@ function __JSJaCJingleUtils(args) {
         prev_credentials = cur_credentials;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_is_sdp_common_credentials > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] is_sdp_common_credentials > ' + e, 1);
     }
 
     return is_same;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_network_extract_main = function(media, candidates) {
+  network_extract_main: function(media, candidates) {    
     var network_obj = {
       'ip': JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT,
       'port': JSJAC_JINGLE_SDP_CANDIDATE_PORT_DEFAULT,
@@ -4580,7 +4044,7 @@ function __JSJaCJingleUtils(args) {
         cur_candidate = candidates[i];
 
         if(cur_candidate.id == media || cur_candidate.label == media) {
-          cur_candidate_parse = self._util_sdp_parse_candidate(cur_candidate.candidate);
+          cur_candidate_parse = this.parent.sdp.parse_candidate(cur_candidate.candidate);
 
           if(cur_candidate_parse.type === JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST) {
             // Only proceed if no local network yet
@@ -4602,36 +4066,36 @@ function __JSJaCJingleUtils(args) {
         network_obj = local_obj;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_network_extract_main > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] network_extract_main > ' + e, 1);
     }
 
     return network_obj;
-  };
+  },
 
   /**
    * Returns our negotiation status
    * @return Negotiation status
    * @type string
    */
-  self.util_negotiation_status = function() {
-    return (self.get_initiator() == self.util_connection_jid()) ? JSJAC_JINGLE_SENDERS_INITIATOR.jingle : JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
-  };
+  negotiation_status: function() {
+    return (this.parent.get_initiator() == this.connection_jid()) ? JSJAC_JINGLE_SENDERS_INITIATOR.jingle : JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
+  },
 
   /**
    * Get my connection JID
    * @return JID value
    * @type string
    */
-  self.util_connection_jid = function() {
+  connection_jid: function() {
     return JSJAC_JINGLE_STORE_CONNECTION.username + '@' + 
            JSJAC_JINGLE_STORE_CONNECTION.domain   + '/' + 
            JSJAC_JINGLE_STORE_CONNECTION.resource;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_map_register_view = function(type) {
+  map_register_view: function(type) {    
     var fn = {
       type   : null,
       mute   : false,
@@ -4652,77 +4116,58 @@ function __JSJaCJingleUtils(args) {
         case 'local':
           fn.type       = type;
           fn.mute       = true;
-          fn.view.get   = self.get_local_view;
-          fn.view.set   = self._set_local_view;
-          fn.stream.get = self._get_local_stream;
-          fn.stream.set = self._set_local_stream;
+          fn.view.get   = this.parent.get_local_view;
+          fn.view.set   = this.parent.set_local_view;
+          fn.stream.get = this.parent.get_local_stream;
+          fn.stream.set = this.parent.set_local_stream;
           break;
 
         case 'remote':
           fn.type       = type;
-          fn.view.get   = self.get_remote_view;
-          fn.view.set   = self._set_remote_view;
-          fn.stream.get = self._get_remote_stream;
-          fn.stream.set = self._set_remote_stream;
+          fn.view.get   = this.parent.get_remote_view;
+          fn.view.set   = this.parent.set_remote_view;
+          fn.stream.get = this.parent.get_remote_stream;
+          fn.stream.set = this.parent.set_remote_stream;
           break;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_map_register_view > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:utils] map_register_view > ' + e, 1);
     }
 
     return fn;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_map_unregister_view = function(type) {
-    return self._util_map_register_view(type);
-  };
+  map_unregister_view: function(type) {    
+    return this.map_register_view(type);
+  },
+});
+
+/**
+ * @fileoverview JSJaC Jingle library - SDP tools
+ *
+ * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @depends https://github.com/sstrigler/JSJaC
+ * @author Valérian Saliou https://valeriansaliou.name/
+ * @license Mozilla Public License v2.0 (MPL v2.0)
+ */
+
+
+var JSJaCJingleSDP = ring.create({
+  /**
+   * Constructor
+   */
+  constructor: function(parent) {
+    this.parent = parent;
+  },
+
 
   /**
    * @private
    */
-  self._util_peer_stream_attach = function(element, stream, mute) {
-    try {
-      var i;
-      var stream_src = stream ? URL.createObjectURL(stream) : '';
-
-      for(i in element) {
-        element[i].src = stream_src;
-
-        if(navigator.mozGetUserMedia)
-          element[i].play();
-        else
-          element[i].autoplay = true;
-
-        if(typeof mute == 'boolean') element[i].muted = mute;
-      }
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_peer_stream_attach > ' + e, 1);
-    }
-  };
-
-  /**
-   * @private
-   */
-  self._util_peer_stream_detach = function(element) {
-    try {
-      var i;
-
-      for(i in element) {
-        element[i].pause();
-        element[i].src = '';
-      }
-    } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_peer_stream_detach > ' + e, 1);
-    }
-  };
-
-  /**
-   * @private
-   */
-  self._util_sdp_parse_payload = function(sdp_payload) {
+  parse_payload: function(sdp_payload) {
     var payload = {};
 
     try {
@@ -4815,7 +4260,7 @@ function __JSJaCJingleUtils(args) {
         // 'audio/video' line?
         if(m_media) {
           cur_media = m_media[1];
-          cur_name  = self._util_name_generate(cur_media);
+          cur_name  = this.parent.utils.name_generate(cur_media);
 
           // Push it to parent array
           init_descriptions(cur_name, 'attrs', {});
@@ -5196,7 +4641,7 @@ function __JSJaCJingleUtils(args) {
         m_candidate = R_WEBRTC_SDP_CANDIDATE.exec(cur_line);
 
         if(m_candidate) {
-          self._util_sdp_parse_candidate_store({
+          this.parse_candidate_store({
             media     : cur_media,
             candidate : cur_line
           });
@@ -5208,7 +4653,7 @@ function __JSJaCJingleUtils(args) {
       // Filter medias
       for(cur_check_name in payload) {
         // Undesired media?
-        if(!self.get_name()[cur_check_name]) {
+        if(!this.parent.get_name()[cur_check_name]) {
           delete payload[cur_check_name]; continue;
         }
 
@@ -5222,16 +4667,16 @@ function __JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_parse_payload > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] parse_payload > ' + e, 1);
     }
 
     return payload;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_sdp_parse_group = function(sdp_payload) {
+  parse_group: function(sdp_payload) {
     var group = {};
 
     try {
@@ -5263,21 +4708,21 @@ function __JSJaCJingleUtils(args) {
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_parse_group > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] parse_group > ' + e, 1);
     }
 
     return group;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_sdp_resolution_payload = function(payload) {
+  resolution_payload: function(payload) {
     try {
       if(!payload || typeof payload !== 'object') return {};
 
       // No video?
-      if(self.get_media_all().indexOf(JSJAC_JINGLE_MEDIA_VIDEO) === -1) return payload;
+      if(this.parent.get_media_all().indexOf(JSJAC_JINGLE_MEDIA_VIDEO) === -1) return payload;
 
       var i, j, k, cur_media;
       var cur_payload, res_arr, constraints;
@@ -5285,11 +4730,11 @@ function __JSJaCJingleUtils(args) {
       var res_width  = null;
 
       // Try local view? (more reliable)
-      for(i in self.get_local_view()) {
-        if(typeof self.get_local_view()[i].videoWidth  == 'number'  &&
-           typeof self.get_local_view()[i].videoHeight == 'number'  ) {
-          res_height = self.get_local_view()[i].videoHeight;
-          res_width  = self.get_local_view()[i].videoWidth;
+      for(i in this.parent.get_local_view()) {
+        if(typeof this.parent.get_local_view()[i].videoWidth  == 'number'  &&
+           typeof this.parent.get_local_view()[i].videoHeight == 'number'  ) {
+          res_height = this.parent.get_local_view()[i].videoHeight;
+          res_width  = this.parent.get_local_view()[i].videoWidth;
 
           if(res_height && res_width)  break;
         }
@@ -5297,16 +4742,16 @@ function __JSJaCJingleUtils(args) {
 
       // Try media constraints? (less reliable)
       if(!res_height || !res_width) {
-        self.get_debug().log('[JSJaCJingle:utils] _util_sdp_resolution_payload > Could not get local video resolution, falling back on constraints (local video may not be ready).', 0);
+        this.parent.get_debug().log('[JSJaCJingle:sdp] resolution_payload > Could not get local video resolution, falling back on constraints (local video may not be ready).', 0);
 
-        constraints = self.util_generate_constraints();
+        constraints = this.generate_constraints();
 
         // Still nothing?!
         if(typeof constraints.video                     !== 'object'  || 
            typeof constraints.video.mandatory           !== 'object'  || 
            typeof constraints.video.mandatory.minWidth  !== 'number'  || 
            typeof constraints.video.mandatory.minHeight !== 'number'  ) {
-          self.get_debug().log('[JSJaCJingle:utils] _util_sdp_resolution_payload > Could not get local video resolution (not sending it).', 1);
+          this.parent.get_debug().log('[JSJaCJingle:sdp] resolution_payload > Could not get local video resolution (not sending it).', 1);
           return payload;
         }
 
@@ -5340,18 +4785,18 @@ function __JSJaCJingleUtils(args) {
         }
       }
 
-      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_resolution_payload > Got local video resolution (' + res_width + 'x' + res_height + ').', 2);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] resolution_payload > Got local video resolution (' + res_width + 'x' + res_height + ').', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_resolution_payload > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] resolution_payload > ' + e, 1);
     }
 
     return payload;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_sdp_parse_candidate = function(sdp_candidate) {
+  parse_candidate: function(sdp_candidate) {
     var candidate = {};
 
     try {
@@ -5365,7 +4810,7 @@ function __JSJaCJingleUtils(args) {
         candidate.component     = matches[2]  || error++;
         candidate.foundation    = matches[1]  || error++;
         candidate.generation    = matches[16] || JSJAC_JINGLE_GENERATION;
-        candidate.id            = self.util_generate_id();
+        candidate.id            = this.parent.utils.generate_id();
         candidate.ip            = matches[5]  || error++;
         candidate.network       = JSJAC_JINGLE_NETWORK;
         candidate.port          = matches[6]  || error++;
@@ -5379,25 +4824,25 @@ function __JSJaCJingleUtils(args) {
       // Incomplete?
       if(error !== 0) return {};
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:utils] _util_sdp_parse_candidate > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] parse_candidate > ' + e, 1);
     }
 
     return candidate;
-  };
+  },
 
   /**
    * @private
    */
-  self._util_sdp_parse_candidate_store = function(sdp_candidate) {
+  parse_candidate_store: function(sdp_candidate) {
     // Store received candidate
     var candidate_media = sdp_candidate.media;
     var candidate_data  = sdp_candidate.candidate;
 
     // Convert SDP raw data to an object
-    var candidate_obj   = self._util_sdp_parse_candidate(candidate_data);
+    var candidate_obj   = this.parse_candidate(candidate_data);
 
-    self._set_candidates_local(
-      self._util_name_generate(
+    this.parent.set_candidates_local(
+      this.parent.utils.name_generate(
         candidate_media
       ),
 
@@ -5405,15 +4850,558 @@ function __JSJaCJingleUtils(args) {
     );
 
     // Enqueue candidate
-    self._set_candidates_queue_local(
-      self._util_name_generate(
+    this.parent.set_candidates_queue_local(
+      this.parent.utils.name_generate(
         candidate_media
       ),
 
       candidate_obj
     );
-  };
-}
+  },
+
+  /**
+   * @private
+   */
+  generate: function(type, group, payloads, candidates) {    
+    try {
+      var sdp_obj = {};
+
+      sdp_obj.candidates  = this.generate_candidates(candidates);
+      sdp_obj.description = this.generate_description(type, group, payloads, sdp_obj.candidates);
+
+      return sdp_obj;
+    } catch(e) {
+      this.parent.get_debug().log('[JSJaCJingle:sdp] generate > ' + e, 1);
+    }
+
+    return {};
+  },
+
+  /**
+   * @private
+   */
+  generate_candidates: function(candidates) {    
+    var candidates_arr = [];
+
+    try {
+      // Parse candidates
+      var i,
+          cur_media, cur_name, cur_c_name, cur_candidate, cur_label, cur_id, cur_candidate_str;
+
+      for(cur_name in candidates) {
+        cur_c_name = candidates[cur_name];
+        cur_media   = this.parent.utils.media_generate(cur_name);
+
+        for(i in cur_c_name) {
+          cur_candidate = cur_c_name[i];
+
+          cur_label         = JSJAC_JINGLE_MEDIAS[cur_media].label;
+          cur_id            = cur_label;
+          cur_candidate_str = '';
+
+          cur_candidate_str += 'a=candidate:';
+          cur_candidate_str += (cur_candidate.foundation || cur_candidate.id);
+          cur_candidate_str += ' ';
+          cur_candidate_str += cur_candidate.component;
+          cur_candidate_str += ' ';
+          cur_candidate_str += cur_candidate.protocol || JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT;
+          cur_candidate_str += ' ';
+          cur_candidate_str += cur_candidate.priority || JSJAC_JINGLE_SDP_CANDIDATE_PRIORITY_DEFAULT;
+          cur_candidate_str += ' ';
+          cur_candidate_str += cur_candidate.ip;
+          cur_candidate_str += ' ';
+          cur_candidate_str += cur_candidate.port;
+
+          if(cur_candidate.type) {
+            cur_candidate_str += ' ';
+            cur_candidate_str += 'typ';
+            cur_candidate_str += ' ';
+            cur_candidate_str += cur_candidate.type;
+          }
+
+          if(cur_candidate['rel-addr'] && cur_candidate['rel-port']) {
+            cur_candidate_str += ' ';
+            cur_candidate_str += 'raddr';
+            cur_candidate_str += ' ';
+            cur_candidate_str += cur_candidate['rel-addr'];
+            cur_candidate_str += ' ';
+            cur_candidate_str += 'rport';
+            cur_candidate_str += ' ';
+            cur_candidate_str += cur_candidate['rel-port'];
+          }
+
+          if(cur_candidate.generation) {
+            cur_candidate_str += ' ';
+            cur_candidate_str += 'generation';
+            cur_candidate_str += ' ';
+            cur_candidate_str += cur_candidate.generation;
+          }
+
+          cur_candidate_str   += WEBRTC_SDP_LINE_BREAK;
+
+          candidates_arr.push({
+            label     : cur_label,
+            id        : cur_id,
+            candidate : cur_candidate_str
+          });
+        }
+      }
+    } catch(e) {
+      this.parent.get_debug().log('[JSJaCJingle:sdp] generate_candidates > ' + e, 1);
+    }
+
+    return candidates_arr;
+  },
+
+  /**
+   * @private
+   */
+  generate_description: function(type, group, payloads, sdp_candidates) {    
+    var payloads_obj = {};
+
+    try {
+      var payloads_str = '';
+      var is_common_credentials = this.parent.utils.is_sdp_common_credentials(payloads);
+
+      // Common vars
+      var i, c, j, k, l, m, n, o, p, q, r, s, t, u,
+          cur_name, cur_name_first, cur_name_obj,
+          cur_media, cur_senders,
+          cur_group_semantics, cur_group_names, cur_group_name,
+          cur_network_obj, cur_transports_obj, cur_transports_obj_first, cur_description_obj,
+          cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
+          cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption,
+          cur_d_ssrc, cur_d_ssrc_id, cur_d_ssrc_obj, cur_d_ssrc_group, cur_d_ssrc_group_semantics, cur_d_ssrc_group_obj,
+          cur_d_rtcp_fb_obj,
+          cur_d_payload, cur_d_payload_obj, cur_d_payload_obj_attrs, cur_d_payload_obj_id,
+          cur_d_payload_obj_parameter, cur_d_payload_obj_parameter_obj, cur_d_payload_obj_parameter_str,
+          cur_d_payload_obj_rtcp_fb, cur_d_payload_obj_rtcp_fb_obj,
+          cur_d_payload_obj_rtcp_fb_ttr_int, cur_d_payload_obj_rtcp_fb_ttr_int_obj,
+          cur_d_crypto_obj, cur_d_zrtp_hash_obj,
+          cur_d_rtp_hdrext, cur_d_rtp_hdrext_obj,
+          cur_d_rtcp_mux;
+
+      // Payloads headers
+      payloads_str += this.generate_protocol_version();
+      payloads_str += WEBRTC_SDP_LINE_BREAK;
+      payloads_str += this.generate_origin();
+      payloads_str += WEBRTC_SDP_LINE_BREAK;
+      payloads_str += this.generate_session_name();
+      payloads_str += WEBRTC_SDP_LINE_BREAK;
+      payloads_str += this.generate_timing();
+      payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+      // Add groups
+      for(cur_group_semantics in group) {
+        cur_group_names = group[cur_group_semantics];
+
+        payloads_str += 'a=group:' + cur_group_semantics;
+
+        for(s in cur_group_names) {
+          cur_group_name = cur_group_names[s];
+          payloads_str += ' ' + cur_group_name;
+        }
+
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+      }
+
+      // Common credentials?
+      if(is_common_credentials === true) {
+        for(cur_name_first in payloads) {
+          cur_transports_obj_first = payloads[cur_name_first].transports || {};
+
+          payloads_str += this.generate_credentials(
+            cur_transports_obj_first.ufrag,
+            cur_transports_obj_first.pwd,
+            cur_transports_obj_first.fingerprint
+          );
+
+          break;
+        }
+      }
+
+      // Add media groups
+      for(cur_name in payloads) {
+        cur_name_obj          = payloads[cur_name];
+        cur_senders           = this.parent.get_senders(cur_name);
+        cur_media             = this.parent.get_name(cur_name) ? this.parent.utils.media_generate(cur_name) : null;
+
+        // No media?
+        if(!cur_media) continue;
+
+        // Network
+        cur_network_obj       = this.parent.utils.network_extract_main(cur_name, sdp_candidates);
+
+        // Transports
+        cur_transports_obj    = cur_name_obj.transports || {};
+        cur_d_pwd             = cur_transports_obj.pwd;
+        cur_d_ufrag           = cur_transports_obj.ufrag;
+        cur_d_fingerprint     = cur_transports_obj.fingerprint;
+
+        // Descriptions
+        cur_description_obj   = cur_name_obj.descriptions;
+        cur_d_attrs           = cur_description_obj.attrs;
+        cur_d_rtcp_fb         = cur_description_obj['rtcp-fb'];
+        cur_d_bandwidth       = cur_description_obj.bandwidth;
+        cur_d_payload         = cur_description_obj.payload;
+        cur_d_encryption      = cur_description_obj.encryption;
+        cur_d_ssrc            = cur_description_obj.ssrc;
+        cur_d_ssrc_group      = cur_description_obj['ssrc-group'];
+        cur_d_rtp_hdrext      = cur_description_obj['rtp-hdrext'];
+        cur_d_rtcp_mux        = cur_description_obj['rtcp-mux'];
+
+        // Current media
+        payloads_str += this.generate_description_media(
+          cur_media,
+          cur_network_obj.port,
+          cur_d_encryption,
+          cur_d_fingerprint,
+          cur_d_payload
+        );
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+        payloads_str += 'c=' + 
+                        cur_network_obj.scope + ' ' + 
+                        cur_network_obj.protocol + ' ' + 
+                        cur_network_obj.ip;
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+        payloads_str += 'a=rtcp:' + 
+                        cur_network_obj.port + ' ' + 
+                        cur_network_obj.scope + ' ' + 
+                        cur_network_obj.protocol + ' ' + 
+                        cur_network_obj.ip;
+        payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+        // Specific credentials?
+        if(is_common_credentials === false) {
+          payloads_str += this.generate_credentials(
+            cur_d_ufrag,
+            cur_d_pwd,
+            cur_d_fingerprint
+          );
+        }
+
+        // Fingerprint
+        if(cur_d_fingerprint && cur_d_fingerprint.setup) {
+          payloads_str += 'a=setup:' + cur_d_fingerprint.setup;
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
+
+        // RTP-HDREXT
+        if(cur_d_rtp_hdrext && cur_d_rtp_hdrext.length) {
+          for(i in cur_d_rtp_hdrext) {
+            cur_d_rtp_hdrext_obj = cur_d_rtp_hdrext[i];
+
+            payloads_str += 'a=extmap:' + cur_d_rtp_hdrext_obj.id;
+
+            if(cur_d_rtp_hdrext_obj.senders)
+              payloads_str += '/' + cur_d_rtp_hdrext_obj.senders;
+
+            payloads_str += ' ' + cur_d_rtp_hdrext_obj.uri;
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+        }
+
+        // Senders
+        if(cur_senders) {
+          payloads_str += 'a=' + JSJAC_JINGLE_SENDERS[cur_senders];
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
+
+        // Name
+        if(cur_media && JSJAC_JINGLE_MEDIAS[cur_media]) {
+          payloads_str += 'a=mid:' + (JSJAC_JINGLE_MEDIAS[cur_media]).label;
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
+
+        // RTCP-MUX
+        // WARNING: no spec!
+        // See: http://code.google.com/p/libjingle/issues/detail?id=309
+        //      http://mail.jabber.org/pipermail/jingle/2011-December/001761.html
+        if(cur_d_rtcp_mux) {
+          payloads_str += 'a=rtcp-mux';
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
+
+        // 'encryption'
+        if(cur_d_encryption) {
+          // 'crypto'
+          for(j in cur_d_encryption.crypto) {
+            cur_d_crypto_obj = cur_d_encryption.crypto[j];
+
+            payloads_str += 'a=crypto:'                       + 
+                            cur_d_crypto_obj.tag           + ' ' + 
+                            cur_d_crypto_obj['crypto-suite']  + ' ' + 
+                            cur_d_crypto_obj['key-params']    + 
+                            (cur_d_crypto_obj['session-params'] ? (' ' + cur_d_crypto_obj['session-params']) : '');
+
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+
+          // 'zrtp-hash'
+          for(p in cur_d_encryption['zrtp-hash']) {
+            cur_d_zrtp_hash_obj = cur_d_encryption['zrtp-hash'][p];
+
+            payloads_str += 'a=zrtp-hash:'                  + 
+                            cur_d_zrtp_hash_obj.version  + ' ' + 
+                            cur_d_zrtp_hash_obj.value;
+
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+        }
+
+        // 'rtcp-fb' (common)
+        for(n in cur_d_rtcp_fb) {
+          cur_d_rtcp_fb_obj = cur_d_rtcp_fb[n];
+
+          payloads_str += 'a=rtcp-fb:*';
+          payloads_str += ' ' + cur_d_rtcp_fb_obj.type;
+
+          if(cur_d_rtcp_fb_obj.subtype)
+            payloads_str += ' ' + cur_d_rtcp_fb_obj.subtype;
+
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
+
+        // 'bandwidth' (common)
+        for(q in cur_d_bandwidth) {
+          cur_d_bandwidth_obj = cur_d_bandwidth[q];
+
+          payloads_str += 'b=' + cur_d_bandwidth_obj.type;
+          payloads_str += ':'  + cur_d_bandwidth_obj.value;
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+        }
+
+        // 'payload-type'
+        for(k in cur_d_payload) {
+          cur_d_payload_obj                 = cur_d_payload[k];
+          cur_d_payload_obj_attrs           = cur_d_payload_obj.attrs;
+          cur_d_payload_obj_parameter       = cur_d_payload_obj.parameter;
+          cur_d_payload_obj_rtcp_fb         = cur_d_payload_obj['rtcp-fb'];
+          cur_d_payload_obj_rtcp_fb_ttr_int = cur_d_payload_obj['rtcp-fb-trr-int'];
+
+          cur_d_payload_obj_id              = cur_d_payload_obj_attrs.id;
+
+          payloads_str += 'a=rtpmap:' + cur_d_payload_obj_id;
+
+          // 'rtpmap'
+          if(cur_d_payload_obj_attrs.name) {
+            payloads_str += ' ' + cur_d_payload_obj_attrs.name;
+
+            if(cur_d_payload_obj_attrs.clockrate) {
+              payloads_str += '/' + cur_d_payload_obj_attrs.clockrate;
+
+              if(cur_d_payload_obj_attrs.channels)
+                payloads_str += '/' + cur_d_payload_obj_attrs.channels;
+            }
+          }
+
+          payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+          // 'parameter'
+          if(cur_d_payload_obj_parameter.length) {
+            payloads_str += 'a=fmtp:' + cur_d_payload_obj_id + ' ';
+            cur_d_payload_obj_parameter_str = '';
+
+            for(o in cur_d_payload_obj_parameter) {
+              cur_d_payload_obj_parameter_obj = cur_d_payload_obj_parameter[o];
+
+              if(cur_d_payload_obj_parameter_str)  cur_d_payload_obj_parameter_str += ';';
+
+              cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj.name;
+
+              if(cur_d_payload_obj_parameter_obj.value !== null) {
+                cur_d_payload_obj_parameter_str += '=';
+                cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj.value;
+              }
+            }
+
+            payloads_str += cur_d_payload_obj_parameter_str;
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+
+          // 'rtcp-fb' (sub)
+          for(l in cur_d_payload_obj_rtcp_fb) {
+            cur_d_payload_obj_rtcp_fb_obj = cur_d_payload_obj_rtcp_fb[l];
+
+            payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
+            payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj.type;
+
+            if(cur_d_payload_obj_rtcp_fb_obj.subtype)
+              payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj.subtype;
+
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+
+          // 'rtcp-fb-ttr-int'
+          for(m in cur_d_payload_obj_rtcp_fb_ttr_int) {
+            cur_d_payload_obj_rtcp_fb_ttr_int_obj = cur_d_payload_obj_rtcp_fb_ttr_int[m];
+
+            payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
+            payloads_str += ' ' + 'trr-int';
+            payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_ttr_int_obj.value;
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+        }
+
+        if(cur_d_attrs.ptime)     payloads_str += 'a=ptime:'    + cur_d_attrs.ptime + WEBRTC_SDP_LINE_BREAK;
+        if(cur_d_attrs.maxptime)  payloads_str += 'a=maxptime:' + cur_d_attrs.maxptime + WEBRTC_SDP_LINE_BREAK;
+
+        // 'ssrc-group'
+        for(cur_d_ssrc_group_semantics in cur_d_ssrc_group) {
+          for(t in cur_d_ssrc_group[cur_d_ssrc_group_semantics]) {
+            cur_d_ssrc_group_obj = cur_d_ssrc_group[cur_d_ssrc_group_semantics][t];
+
+            payloads_str += 'a=ssrc-group';
+            payloads_str += ':' + cur_d_ssrc_group_semantics;
+
+            for(u in cur_d_ssrc_group_obj.sources) {
+              payloads_str += ' ' + cur_d_ssrc_group_obj.sources[u].ssrc;
+            }
+
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+        }
+
+        // 'ssrc'
+        for(cur_d_ssrc_id in cur_d_ssrc) {
+          for(r in cur_d_ssrc[cur_d_ssrc_id]) {
+            cur_d_ssrc_obj = cur_d_ssrc[cur_d_ssrc_id][r];
+
+            payloads_str += 'a=ssrc';
+            payloads_str += ':' + cur_d_ssrc_id;
+            payloads_str += ' ' + cur_d_ssrc_obj.name;
+
+            if(cur_d_ssrc_obj.value)
+              payloads_str += ':' + cur_d_ssrc_obj.value;
+
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
+          }
+        }
+
+        // Candidates (some browsers require them there, too)
+        if(typeof sdp_candidates == 'object') {
+          for(c in sdp_candidates) {
+            if((sdp_candidates[c]).label == JSJAC_JINGLE_MEDIAS[cur_media].label)
+              payloads_str += (sdp_candidates[c]).candidate;
+          }
+        }
+      }
+
+      // Push to object
+      payloads_obj.type = type;
+      payloads_obj.sdp  = payloads_str;
+    } catch(e) {
+      this.parent.get_debug().log('[JSJaCJingle:sdp] generate_description > ' + e, 1);
+    }
+
+    return payloads_obj;
+  },
+
+  /**
+   * @private
+   */
+  generate_protocol_version: function() {
+    return 'v=0';
+  },
+
+  /**
+   * @private
+   */
+  generate_origin: function() {    
+    var sdp_origin = '';
+
+    try {
+      // Values
+      var jid = new JSJaCJID(this.parent.get_initiator());
+
+      var username        = jid.getNode()   ? jid.getNode()   : '-';
+      var session_id      = '1';
+      var session_version = '1';
+      var nettype         = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT;
+      var addrtype        = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT;
+      var unicast_address = JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT;
+
+      // Line content
+      sdp_origin += 'o=';
+      sdp_origin += username + ' ';
+      sdp_origin += session_id + ' ';
+      sdp_origin += session_version + ' ';
+      sdp_origin += nettype + ' ';
+      sdp_origin += addrtype + ' ';
+      sdp_origin += unicast_address;
+    } catch(e) {
+      this.parent.get_debug().log('[JSJaCJingle:sdp] generate_origin > ' + e, 1);
+    }
+
+    return sdp_origin;
+  },
+
+  /**
+   * @private
+   */
+  generate_session_name: function() {
+    return 's=' + (this.parent.get_sid() || '-');
+  },
+
+  /**
+   * @private
+   */
+  generate_timing: function() {
+    return 't=0 0';
+  },
+
+  /**
+   * @private
+   */
+  generate_credentials: function(ufrag, pwd, fingerprint) {    
+    var sdp = '';
+
+    // ICE credentials
+    if(ufrag)  sdp += 'a=ice-ufrag:' + ufrag + WEBRTC_SDP_LINE_BREAK;
+    if(pwd)    sdp += 'a=ice-pwd:' + pwd + WEBRTC_SDP_LINE_BREAK;
+
+    // Fingerprint
+    if(fingerprint) {
+      if(fingerprint.hash && fingerprint.value) {
+        sdp += 'a=fingerprint:' + fingerprint.hash + ' ' + fingerprint.value;
+        sdp += WEBRTC_SDP_LINE_BREAK;
+      }
+    }
+
+    return sdp;
+  },
+
+  /**
+   * @private
+   */
+  generate_description_media: function(media, port, crypto, fingerprint, payload) {    
+    var sdp_media = '';
+
+    try {
+      var i;
+      var type_ids = [];
+
+      sdp_media += 'm=' + media + ' ' + port + ' ';
+
+      // Protocol
+      if((crypto && crypto.length) || (fingerprint && fingerprint.hash && fingerprint.value))
+        sdp_media += 'RTP/SAVPF';
+      else
+        sdp_media += 'RTP/AVPF';
+
+      // Payload type IDs
+      for(i in payload)  type_ids.push(payload[i].attrs.id);
+
+      sdp_media += ' ' + type_ids.join(' ');
+    } catch(e) {
+      this.parent.get_debug().log('[JSJaCJingle:sdp] generate_description_media > ' + e, 1);
+    }
+
+    return sdp_media;
+  },
+});
 
 /**
  * @fileoverview JSJaC Jingle library - Peer API lib
@@ -5425,34 +5413,34 @@ function __JSJaCJingleUtils(args) {
  */
 
 
-/**
- * JSJSAC JINGLE PEER API
- */
-
-function __JSJaCJinglePeer() {
-  var self = this;
-
+var JSJaCJinglePeer = ring.create({
+  /**
+   * Constructor
+   */
+  constructor: function(parent) {
+    this.parent = parent;
+  },
 
   /**
    * @private
    */
-  self._peer_connection_create = function(sdp_message_callback) {
-    self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create', 4);
+  connection_create: function(sdp_message_callback) {
+    this.parent.get_debug().log('[JSJaCJingle:peer] connection_create', 4);
 
     try {
       // Log STUN servers in use
       var i;
-      var ice_config = self._util_config_ice();
+      var ice_config = this.parent.utils.config_ice();
 
       if(typeof ice_config.iceServers == 'object') {
         for(i = 0; i < (ice_config.iceServers).length; i++)
-          self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > Using ICE server at: ' + ice_config.iceServers[i].url + ' (' + (i + 1) + ').', 2);
+          this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > Using ICE server at: ' + ice_config.iceServers[i].url + ' (' + (i + 1) + ').', 2);
       } else {
-        self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > No ICE server configured. Network may not work properly.', 0);
+        this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > No ICE server configured. Network may not work properly.', 0);
       }
 
       // Create the RTCPeerConnection object
-      self._set_peer_connection(
+      this.parent.set_peer_connection(
         new WEBRTC_PEER_CONNECTION(
           ice_config,
           WEBRTC_CONFIGURATION.peer_connection.constraints
@@ -5460,100 +5448,106 @@ function __JSJaCJinglePeer() {
       );
 
       // Event: onicecandidate
-      self._get_peer_connection().onicecandidate = function(e) {
+      var _this = this;
+
+      this.parent.get_peer_connection().onicecandidate = function(e) {
         if(e.candidate) {
-          self._util_sdp_parse_candidate_store({
-            media     : (isNaN(e.candidate.sdpMid) ? e.candidate.sdpMid : self._util_media_generate(parseInt(e.candidate.sdpMid, 10))),
+          _this.parent.sdp.parse_candidate_store({
+            media     : (isNaN(e.candidate.sdpMid) ? e.candidate.sdpMid : _this.parent.utils.media_generate(parseInt(e.candidate.sdpMid, 10))),
             candidate : e.candidate.candidate
           });
         } else {
           // Build or re-build content (local)
-          self._util_build_content_local();
+          _this.parent.utils.build_content_local();
 
           // In which action stanza should candidates be sent?
-          if((self.is_initiator() && self.get_status() == JSJAC_JINGLE_STATUS_INITIATING)  ||
-             (self.is_responder() && self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING)) {
-            self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > onicecandidate > Got initial candidates.', 2);
+          if((_this.parent.is_initiator() && _this.parent.get_status() == JSJAC_JINGLE_STATUS_INITIATING)  ||
+             (_this.parent.is_responder() && _this.parent.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING)) {
+            _this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > onicecandidate > Got initial candidates.', 2);
 
             // Execute what's next (initiate/accept session)
             sdp_message_callback();
           } else {
-            self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > onicecandidate > Got more candidates (on the go).', 2);
+            _this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > onicecandidate > Got more candidates (on the go).', 2);
 
             // Send unsent candidates
-            var candidates_queue_local = self._get_candidates_queue_local();
+            var candidates_queue_local = _this.parent.get_candidates_queue_local();
 
-            if(self.util_object_length(candidates_queue_local) > 0)
-              self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_TRANSPORT_INFO, candidates: candidates_queue_local });
+            if(_this.parent.utils.object_length(candidates_queue_local) > 0)
+              _this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_TRANSPORT_INFO, candidates: candidates_queue_local });
           }
 
           // Empty the unsent candidates queue
-          self._set_candidates_queue_local(null);
+          _this.parent.set_candidates_queue_local(null);
         }
       };
 
       // Event: oniceconnectionstatechange
-      self._get_peer_connection().oniceconnectionstatechange = function(e) {
-        self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > oniceconnectionstatechange', 2);
+      this.parent.get_peer_connection().oniceconnectionstatechange = function(e) {
+        _this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > oniceconnectionstatechange', 2);
 
         // Connection errors?
         switch(this.iceConnectionState) {
           case 'disconnected':
-            self._peer_timeout(this.iceConnectionState, {
+            _this.timeout(this.iceConnectionState, {
               timer  : JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT,
               reason : JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR
             });
             break;
 
           case 'checking':
-            self._peer_timeout(this.iceConnectionState); break;
+            _this.timeout(this.iceConnectionState); break;
         }
 
-        self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > oniceconnectionstatechange > (state: ' + this.iceConnectionState + ').', 2);
+        _this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > oniceconnectionstatechange > (state: ' + this.iceConnectionState + ').', 2);
       };
 
       // Event: onaddstream
-      self._get_peer_connection().onaddstream = function(e) {
+      this.parent.get_peer_connection().onaddstream = function(e) {
         if (!e) return;
 
-        self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > onaddstream', 2);
+        _this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > onaddstream', 2);
 
         // Attach remote stream to DOM view
-        self._set_remote_stream(e.stream);
+        _this.parent.set_remote_stream(e.stream);
       };
 
       // Event: onremovestream
-      self._get_peer_connection().onremovestream = function(e) {
-        self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > onremovestream', 2);
+      this.parent.get_peer_connection().onremovestream = function(e) {
+        _this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > onremovestream', 2);
 
         // Detach remote stream from DOM view
-        self._set_remote_stream(null);
+        _this.parent.set_remote_stream(null);
       };
 
       // Add local stream
-      self._get_peer_connection().addStream(self._get_local_stream()); 
+      this.parent.get_peer_connection().addStream(this.parent.get_local_stream()); 
 
       // Create offer
-      self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > Getting local description...', 2);
+      this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > Getting local description...', 2);
 
-      if(self.is_initiator()) {
+      if(this.parent.is_initiator()) {
         // Local description
-        self._get_peer_connection().createOffer(self._peer_got_description, self._peer_fail_description, WEBRTC_CONFIGURATION.create_offer);
+        this.parent.get_peer_connection().createOffer(
+          this.got_description.bind(this),
+          this.fail_description.bind(this),
+          WEBRTC_CONFIGURATION.create_offer
+        );
 
         // Then, wait for responder to send back its remote description
       } else {
         // Apply SDP data
-        sdp_remote = self._util_sdp_generate(
+        sdp_remote = this.parent.sdp.generate(
           WEBRTC_SDP_TYPE_OFFER,
-          self._get_group_remote(),
-          self._get_payloads_remote(),
-          self._get_candidates_queue_remote()
+          this.parent.get_group_remote(),
+          this.parent.get_payloads_remote(),
+          this.parent.get_candidates_queue_remote()
         );
 
-        if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
+        if(this.parent.get_sdp_trace())  this.parent.get_debug().log('[JSJaCJingle:peer] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
 
         // Remote description
-        self._get_peer_connection().setRemoteDescription(
+        this.parent.get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
 
           function() {
@@ -5561,15 +5555,19 @@ function __JSJaCJinglePeer() {
           },
 
           function(e) {
-            if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+            if(_this.parent.get_sdp_trace())  _this.parent.get_debug().log('[JSJaCJingle:peer] SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
 
             // Error (descriptions are incompatible)
-            self.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
+            _this.parent.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
           }
         );
 
         // Local description
-        self._get_peer_connection().createAnswer(self._peer_got_description, self._peer_fail_description, WEBRTC_CONFIGURATION.create_answer);
+        this.parent.get_peer_connection().createAnswer(
+          this.got_description.bind(this),
+          this.fail_description.bind(this),
+          WEBRTC_CONFIGURATION.create_answer
+        );
 
         // ICE candidates
         var c;
@@ -5578,7 +5576,7 @@ function __JSJaCJinglePeer() {
         for(c in sdp_remote.candidates) {
           cur_candidate_obj = sdp_remote.candidates[c];
 
-          self._get_peer_connection().addIceCandidate(
+          this.parent.get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
               sdpMLineIndex : cur_candidate_obj.id,
               candidate     : cur_candidate_obj.candidate
@@ -5587,132 +5585,136 @@ function __JSJaCJinglePeer() {
         }
 
         // Empty the unapplied candidates queue
-        self._set_candidates_queue_remote(null);
+        this.parent.set_candidates_queue_remote(null);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_connection_create > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._peer_get_user_media = function(callback) {
-    self.get_debug().log('[JSJaCJingle:peer] _peer_get_user_media', 4);
+  get_user_media: function(callback) {
+    this.parent.get_debug().log('[JSJaCJingle:peer] get_user_media', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_get_user_media > Getting user media...', 2);
+      this.parent.get_debug().log('[JSJaCJingle:peer] get_user_media > Getting user media...', 2);
 
       (WEBRTC_GET_MEDIA.bind(navigator))(
-        self.util_generate_constraints(),
-        self._peer_got_user_media_success.bind(this, callback),
-        self._peer_got_user_media_error.bind(this)
+        this.parent.utils.generate_constraints(),
+        this.got_user_media_success.bind(this, callback),
+        this.got_user_media_error.bind(this)
       );
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_get_user_media > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] get_user_media > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._peer_got_user_media_success = function(callback, stream) {
-    self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_success', 4);
+  got_user_media_success: function(callback, stream) {
+    this.parent.get_debug().log('[JSJaCJingle:peer] got_user_media_success', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_success > Got user media.', 2);
+      this.parent.get_debug().log('[JSJaCJingle:peer] got_user_media_success > Got user media.', 2);
 
-      self._set_local_stream(stream);
+      this.parent.set_local_stream(stream);
 
       if(callback && typeof callback == 'function') {
-        if((self.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) && self.get_local_view().length) {
-          self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
+        if((this.parent.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) && this.parent.get_local_view().length) {
+          this.parent.get_debug().log('[JSJaCJingle:peer] got_user_media_success > Waiting for local video to be loaded...', 2);
+
+          var _this = this;
 
           var fn_loaded = function() {
-            self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_success > Local video loaded.', 2);
+            _this.parent.get_debug().log('[JSJaCJingle:peer] got_user_media_success > Local video loaded.', 2);
 
             this.removeEventListener('loadeddata', fn_loaded, false);
             callback();
           };
 
-          self.get_local_view()[0].addEventListener('loadeddata', fn_loaded, false);
+          _this.parent.get_local_view()[0].addEventListener('loadeddata', fn_loaded, false);
         } else {
           callback();
         }
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_success > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] got_user_media_success > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._peer_got_user_media_error = function(error) {
-    self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_error', 4);
+  got_user_media_error: function(error) {
+    this.parent.get_debug().log('[JSJaCJingle:peer] got_user_media_error', 4);
 
     try {
-      (self._get_session_initiate_error())(self);
+      (this.parent.get_session_initiate_error())(this);
 
       // Not needed in case we are the responder (breaks termination)
-      if(self.is_initiator()) self.handle_session_initiate_error();
+      if(this.parent.is_initiator()) this.parent.handle_session_initiate_error();
 
       // Not needed in case we are the initiator (no packet sent, ever)
-      if(self.is_responder()) self.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
+      if(this.parent.is_responder()) this.parent.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
 
-      self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_error > Failed (' + (error.PERMISSION_DENIED ? 'permission denied' : 'unknown' ) + ').', 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] got_user_media_error > Failed (' + (error.PERMISSION_DENIED ? 'permission denied' : 'unknown' ) + ').', 1);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_got_user_media_error > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] got_user_media_error > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._peer_got_description = function(sdp_local) {
-    self.get_debug().log('[JSJaCJingle:peer] _peer_got_description', 4);
+  got_description: function(sdp_local) {
+    this.parent.get_debug().log('[JSJaCJingle:peer] got_description', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_got_description > Got local description.', 2);
+      this.parent.get_debug().log('[JSJaCJingle:peer] got_description > Got local description.', 2);
 
-      if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (local:raw)' + '\n\n' + sdp_local.sdp, 4);
+      if(this.parent.get_sdp_trace())  this.parent.get_debug().log('[JSJaCJingle:peer] SDP (local:raw)' + '\n\n' + sdp_local.sdp, 4);
 
       // Convert SDP raw data to an object
       var cur_name;
-      var payload_parsed = self._util_sdp_parse_payload(sdp_local.sdp);
-      self._util_sdp_resolution_payload(payload_parsed);
+      var payload_parsed = this.parent.sdp.parse_payload(sdp_local.sdp);
+      this.parent.sdp.resolution_payload(payload_parsed);
 
       for(cur_name in payload_parsed) {
-        self._set_payloads_local(
+        this.parent.set_payloads_local(
           cur_name,
           payload_parsed[cur_name]
         );
       }
 
       var cur_semantics;
-      var group_parsed = self._util_sdp_parse_group(sdp_local.sdp);
+      var group_parsed = this.parent.sdp.parse_group(sdp_local.sdp);
 
       for(cur_semantics in group_parsed) {
-        self._set_group_local(
+        this.parent.set_group_local(
           cur_semantics,
           group_parsed[cur_semantics]
         );
       }
 
       // Filter our local description (remove unused medias)
-      var sdp_local_desc = self._util_sdp_generate_description(
+      var sdp_local_desc = this.parent.sdp.generate_description(
         sdp_local.type,
-        self._get_group_local(),
-        self._get_payloads_local(),
+        this.parent.get_group_local(),
+        this.parent.get_payloads_local(),
 
-        self._util_sdp_generate_candidates(
-          self._get_candidates_local()
+        this.parent.sdp.generate_candidates(
+          this.parent.get_candidates_local()
         )
       );
 
-      if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
+      if(this.parent.get_sdp_trace())  this.parent.get_debug().log('[JSJaCJingle:peer] SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
 
-      self._get_peer_connection().setLocalDescription(
+      var _this = this;
+
+      this.parent.get_peer_connection().setLocalDescription(
         (new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)),
 
         function() {
@@ -5720,92 +5722,133 @@ function __JSJaCJinglePeer() {
         },
 
         function(e) {
-          if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (local:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+          if(_this.parent.get_sdp_trace())  _this.parent.get_debug().log('[JSJaCJingle:peer] SDP (local:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
 
           // Error (descriptions are incompatible)
         }
       );
 
-      self.get_debug().log('[JSJaCJingle:peer] _peer_got_description > Waiting for local candidates...', 2);
+      this.parent.get_debug().log('[JSJaCJingle:peer] got_description > Waiting for local candidates...', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_got_description > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] got_description > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._peer_fail_description = function() {
-    self.get_debug().log('[JSJaCJingle:peer] _peer_fail_description', 4);
+  fail_description: function() {
+    this.parent.get_debug().log('[JSJaCJingle:peer] fail_description', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_fail_description > Could not get local description!', 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] fail_description > Could not get local description!', 1);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_fail_description > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] fail_description > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._peer_sound = function(enable) {
-    self.get_debug().log('[JSJaCJingle:peer] _peer_sound', 4);
+  sound: function(enable) {
+    this.parent.get_debug().log('[JSJaCJingle:peer] sound', 4);
 
     try {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_sound > Enable: ' + enable + ' (current: ' + self.get_mute(JSJAC_JINGLE_MEDIA_AUDIO) + ').', 2);
+      this.parent.get_debug().log('[JSJaCJingle:peer] sound > Enable: ' + enable + ' (current: ' + this.parent.get_mute(JSJAC_JINGLE_MEDIA_AUDIO) + ').', 2);
 
       var i;
-      var audio_tracks = self._get_local_stream().getAudioTracks();
+      var audio_tracks = this.parent.get_local_stream().getAudioTracks();
 
       for(i = 0; i < audio_tracks.length; i++)
         audio_tracks[i].enabled = enable;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_sound > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] sound > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Set a timeout limit to peer connection
    */
-  self._peer_timeout = function(state, args) {
+  timeout: function(state, args) {
     try {
       // Assert
       if(typeof args !== 'object') args = {};
 
-      var t_sid = self.get_sid();
-   
+      var t_sid = this.parent.get_sid();
+
+      var _this = this;
+
       setTimeout(function() {
         // State did not change?
-        if(self.get_sid() == t_sid && self._get_peer_connection().iceConnectionState == state) {
-          self.get_debug().log('[JSJaCJingle:peer] util_stanza_timeout > Peer timeout.', 2);
+        if(_this.parent.get_sid() == t_sid && _this.parent.get_peer_connection().iceConnectionState == state) {
+          _this.parent.get_debug().log('[JSJaCJingle:peer] stanza_timeout > Peer timeout.', 2);
 
           // Error (transports are incompatible)
-          self.terminate(args.reason || JSJAC_JINGLE_REASON_FAILED_TRANSPORT);
+          _this.parent.terminate(args.reason || JSJAC_JINGLE_REASON_FAILED_TRANSPORT);
         }
       }, ((args.timer || JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT) * 1000));
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] _peer_timeout > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:peer] timeout > ' + e, 1);
     }
-  };
+  },
 
   /**
    * @private
    */
-  self._peer_stop = function() {
-    self.get_debug().log('[JSJaCJingle:peer] _peer_stop', 4);
+  stop: function() {
+    this.parent.get_debug().log('[JSJaCJingle:peer] stop', 4);
 
     // Detach media streams from DOM view
-    self._set_local_stream(null);
-    self._set_remote_stream(null);
+    this.parent.set_local_stream(null);
+    this.parent.set_remote_stream(null);
 
     // Close the media stream
-    if(self._get_peer_connection())
-      self._get_peer_connection().close();
+    if(this.parent.get_peer_connection())
+      this.parent.get_peer_connection().close();
 
     // Remove this session from router
-    JSJaCJingle_remove(self.get_sid());
-  };
-}
+    JSJaCJingle_remove(this.parent.get_sid());
+  },
+
+  /**
+   * @private
+   */
+  stream_attach: function(element, stream, mute) {
+    try {
+      var i;
+      var stream_src = stream ? URL.createObjectURL(stream) : '';
+
+      for(i in element) {
+        element[i].src = stream_src;
+
+        if(navigator.mozGetUserMedia)
+          element[i].play();
+        else
+          element[i].autoplay = true;
+
+        if(typeof mute == 'boolean') element[i].muted = mute;
+      }
+    } catch(e) {
+      this.parent.get_debug().log('[JSJaCJingle:utils] _peer_stream_attach > ' + e, 1);
+    }
+  },
+
+  /**
+   * @private
+   */
+  stream_detach: function(element) {
+    try {
+      var i;
+
+      for(i in element) {
+        element[i].pause();
+        element[i].src = '';
+      }
+    } catch(e) {
+      this.parent.get_debug().log('[JSJaCJingle:utils] _peer_stream_detach > ' + e, 1);
+    }
+  },
+});
 
 /**
  * @fileoverview JSJaC Jingle library - Base call lib
@@ -5816,10 +5859,6 @@ function __JSJaCJinglePeer() {
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
-
-/**
- * JSJSAC JINGLE METHODS
- */
 
 /**
  * Creates a new XMPP Jingle session.
@@ -5858,8 +5897,15 @@ function __JSJaCJinglePeer() {
  * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
  */
 
-var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
+var __JSJaCJingleBase = ring.create({
+  /**
+   * Constructor
+   */
   constructor: function(args) {
+    this.utils  = new JSJaCJingleUtils(this);
+    this.sdp    = new JSJaCJingleSDP(this);
+    this.peer   = new JSJaCJinglePeer(this);
+    
     if(args && args.session_initiate_pending)
       /**
        * @private
@@ -6201,7 +6247,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_initiate_pending: function() {
+  get_session_initiate_pending: function() {
     if(typeof this._session_initiate_pending == 'function')
       return this._session_initiate_pending;
 
@@ -6211,7 +6257,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_initiate_success: function() {
+  get_session_initiate_success: function() {
     if(typeof this._session_initiate_success == 'function')
       return this._session_initiate_success;
 
@@ -6221,7 +6267,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_initiate_error: function() {
+  get_session_initiate_error: function() {
     if(typeof this._session_initiate_error == 'function')
       return this._session_initiate_error;
 
@@ -6231,7 +6277,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_initiate_request: function() {
+  get_session_initiate_request: function() {
     if(typeof this._session_initiate_request == 'function')
       return this._session_initiate_request;
 
@@ -6241,7 +6287,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_accept_pending: function() {
+  get_session_accept_pending: function() {
     if(typeof this._session_accept_pending == 'function')
       return this._session_accept_pending;
 
@@ -6251,7 +6297,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_accept_success: function() {
+  get_session_accept_success: function() {
     if(typeof this._session_accept_success == 'function')
       return this._session_accept_success;
 
@@ -6261,7 +6307,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_accept_error: function() {
+  get_session_accept_error: function() {
     if(typeof this._session_accept_error == 'function')
       return this._session_accept_error;
 
@@ -6271,7 +6317,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_accept_request: function() {
+  get_session_accept_request: function() {
     if(typeof this._session_accept_request == 'function')
       return this._session_accept_request;
 
@@ -6281,7 +6327,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_info_success: function() {
+  get_session_info_success: function() {
     if(typeof this._session_info_success == 'function')
       return this._session_info_success;
 
@@ -6291,7 +6337,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_info_error: function() {
+  get_session_info_error: function() {
     if(typeof this._session_info_error == 'function')
       return this._session_info_error;
 
@@ -6301,7 +6347,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_info_request: function() {
+  get_session_info_request: function() {
     if(typeof this._session_info_request == 'function')
       return this._session_info_request;
 
@@ -6311,7 +6357,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_terminate_pending: function() {
+  get_session_terminate_pending: function() {
     if(typeof this._session_terminate_pending == 'function')
       return this._session_terminate_pending;
 
@@ -6321,7 +6367,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_terminate_success: function() {
+  get_session_terminate_success: function() {
     if(typeof this._session_terminate_success == 'function')
       return this._session_terminate_success;
 
@@ -6331,7 +6377,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_terminate_error: function() {
+  get_session_terminate_error: function() {
     if(typeof this._session_terminate_error == 'function')
       return this._session_terminate_error;
 
@@ -6341,7 +6387,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_session_terminate_request: function() {
+  get_session_terminate_request: function() {
     if(typeof this._session_terminate_request == 'function')
       return this._session_terminate_request;
 
@@ -6351,7 +6397,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_add_remote_view: function() {
+  get_add_remote_view: function() {
     if(typeof this._add_remote_view == 'function')
       return this._add_remote_view;
 
@@ -6361,7 +6407,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_remove_remote_view: function() {
+  get_remove_remote_view: function() {
     if(typeof this._remove_remote_view == 'function')
       return this._remove_remote_view;
 
@@ -6371,21 +6417,21 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_local_stream: function() {
+  get_local_stream: function() {
     return this._local_stream;
   },
 
   /**
    * @private
    */
-  _get_remote_stream: function() {
+  get_remote_stream: function() {
     return this._remote_stream;
   },
 
   /**
    * @private
    */
-  _get_payloads_local: function(name) {
+  get_payloads_local: function(name) {
     if(name)
       return (name in this._payloads_local) ? this._payloads_local[name] : {};
 
@@ -6395,7 +6441,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_group_local: function(semantics) {
+  get_group_local: function(semantics) {
     if(semantics)
       return (semantics in this._group_local) ? this._group_local[semantics] : {};
 
@@ -6405,7 +6451,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_candidates_local: function(name) {
+  get_candidates_local: function(name) {
     if(name)
       return (name in this._candidates_local) ? this._candidates_local[name] : {};
 
@@ -6415,7 +6461,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_candidates_queue_local: function(name) {
+  get_candidates_queue_local: function(name) {
     if(name)
       return (name in this._candidates_queue_local) ? this._candidates_queue_local[name] : {};
 
@@ -6425,7 +6471,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_payloads_remote: function(name) {
+  get_payloads_remote: function(name) {
     if(name)
       return (name in this._payloads_remote) ? this._payloads_remote[name] : {};
 
@@ -6435,7 +6481,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_group_remote: function(semantics) {
+  get_group_remote: function(semantics) {
     if(semantics)
       return (semantics in this._group_remote) ? this._group_remote[semantics] : {};
 
@@ -6445,7 +6491,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_candidates_remote: function(name) {
+  get_candidates_remote: function(name) {
     if(name)
       return (name in this._candidates_remote) ? this._candidates_remote[name] : [];
 
@@ -6455,7 +6501,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_candidates_queue_remote: function(name) {
+  get_candidates_queue_remote: function(name) {
     if(name)
       return (name in this._candidates_queue_remote) ? this._candidates_queue_remote[name] : {};
 
@@ -6465,7 +6511,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_content_local: function(name) {
+  get_content_local: function(name) {
     if(name)
       return (name in this._content_local) ? this._content_local[name] : {};
 
@@ -6475,7 +6521,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_content_remote: function(name) {
+  get_content_remote: function(name) {
     if(name)
       return (name in this._content_remote) ? this._content_remote[name] : {};
 
@@ -6485,7 +6531,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_handlers: function(type, id) {
+  get_handlers: function(type, id) {
     type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
 
     if(id) {
@@ -6502,45 +6548,45 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _get_peer_connection: function() {
+  get_peer_connection: function() {
     return this._peer_connection;
   },
 
   /**
    * @private
    */
-  _get_id: function() {
+  get_id: function() {
     return this._id;
   },
 
   /**
    * @private
    */
-  _get_id_pre: function() {
+  get_id_pre: function() {
     return JSJAC_JINGLE_STANZA_ID_PRE + '_' + (this.get_sid() || '0') + '_';
   },
 
   /**
    * @private
    */
-  _get_id_new: function() {
-    var trans_id = this._get_id() + 1;
-    this._set_id(trans_id);
+  get_id_new: function() {
+    var trans_id = this.get_id() + 1;
+    this.set_id(trans_id);
 
-    return this._get_id_pre() + trans_id;
+    return this.get_id_pre() + trans_id;
   },
 
   /**
    * @private
    */
-  _get_sent_id: function() {
+  get_sent_id: function() {
     return this._sent_id;
   },
 
   /**
    * @private
    */
-  _get_received_id: function() {
+  get_received_id: function() {
     return this._received_id;
   },
 
@@ -6810,117 +6856,117 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _set_session_initiate_pending: function(session_initiate_pending) {
+  set_session_initiate_pending: function(session_initiate_pending) {
     this._session_initiate_pending = session_initiate_pending;
   },
 
   /**
    * @private
    */
-  _set_initiate_success: function(initiate_success) {
+  set_initiate_success: function(initiate_success) {
     this._session_initiate_success = initiate_success;
   },
 
   /**
    * @private
    */
-  _set_initiate_error: function(initiate_error) {
+  set_initiate_error: function(initiate_error) {
     this._session_initiate_error = initiate_error;
   },
 
   /**
    * @private
    */
-  _set_initiate_request: function(initiate_request) {
+  set_initiate_request: function(initiate_request) {
     this._session_initiate_request = initiate_request;
   },
 
   /**
    * @private
    */
-  _set_accept_pending: function(accept_pending) {
+  set_accept_pending: function(accept_pending) {
     this._session_accept_pending = accept_pending;
   },
 
   /**
    * @private
    */
-  _set_accept_success: function(accept_success) {
+  set_accept_success: function(accept_success) {
     this._session_accept_success = accept_success;
   },
 
   /**
    * @private
    */
-  _set_accept_error: function(accept_error) {
+  set_accept_error: function(accept_error) {
     this._session_accept_error = accept_error;
   },
 
   /**
    * @private
    */
-  _set_accept_request: function(accept_request) {
+  set_accept_request: function(accept_request) {
     this._session_accept_request = accept_request;
   },
 
   /**
    * @private
    */
-  _set_info_success: function(info_success) {
+  set_info_success: function(info_success) {
     this._session_info_success = info_success;
   },
 
   /**
    * @private
    */
-  _set_info_error: function(info_error) {
+  set_info_error: function(info_error) {
     this._session_info_error = info_error;
   },
 
   /**
    * @private
    */
-  _set_info_request: function(info_request) {
+  set_info_request: function(info_request) {
     this._session_info_request = info_request;
   },
 
   /**
    * @private
    */
-  _set_terminate_pending: function(terminate_pending) {
+  set_terminate_pending: function(terminate_pending) {
     this._session_terminate_pending = terminate_pending;
   },
 
   /**
    * @private
    */
-  _set_terminate_success: function(terminate_success) {
+  set_terminate_success: function(terminate_success) {
     this._session_terminate_success = terminate_success;
   },
 
   /**
    * @private
    */
-  _set_terminate_error: function(terminate_error) {
+  set_terminate_error: function(terminate_error) {
     this._session_terminate_error = terminate_error;
   },
 
   /**
    * @private
    */
-  _set_terminate_request: function(terminate_request) {
+  set_terminate_request: function(terminate_request) {
     this._session_terminate_request = terminate_request;
   },
 
   /**
    * @private
    */
-  _set_local_stream: function(local_stream) {
+  set_local_stream: function(local_stream) {
     try {
       if(!local_stream && this._local_stream) {
         (this._local_stream).stop();
 
-        this._util_peer_stream_detach(
+        this.peer.stream_detach(
           this.get_local_view()
         );
       }
@@ -6928,28 +6974,28 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
       this._local_stream = local_stream;
 
       if(local_stream) {
-        this._util_peer_stream_attach(
+        this.peer.stream_attach(
           this.get_local_view(),
-          this._get_local_stream(),
+          this.get_local_stream(),
           true
         );
       } else {
-        this._util_peer_stream_detach(
+        this.peer.stream_detach(
           this.get_local_view()
         );
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:base] _set_local_stream > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] set_local_stream > ' + e, 1);
     }
   },
 
   /**
    * @private
    */
-  _set_remote_stream: function(remote_stream) {
+  set_remote_stream: function(remote_stream) {
     try {
       if(!remote_stream && this._remote_stream) {
-        this._util_peer_stream_detach(
+        this.peer.stream_detach(
           this.get_remote_view()
         );
       }
@@ -6957,25 +7003,25 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
       this._remote_stream = remote_stream;
 
       if(remote_stream) {
-        this._util_peer_stream_attach(
+        this.peer.stream_attach(
           this.get_remote_view(),
-          this._get_remote_stream(),
+          this.get_remote_stream(),
           false
         );
       } else {
-        this._util_peer_stream_detach(
+        this.peer.stream_detach(
           this.get_remote_view()
         );
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:base] _set_remote_stream > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] set_remote_stream > ' + e, 1);
     }
   },
 
   /**
    * @private
    */
-  _set_local_view: function(local_view) {
+  set_local_view: function(local_view) {
     if(typeof this._local_view !== 'object')
       this._local_view = [];
 
@@ -6985,7 +7031,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _set_remote_view: function(remote_view) {
+  set_remote_view: function(remote_view) {
     if(typeof this._remote_view !== 'object')
       this._remote_view = [];
 
@@ -6995,21 +7041,21 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _set_payloads_local: function(name, payload_data) {
+  set_payloads_local: function(name, payload_data) {
     this._payloads_local[name] = payload_data;
   },
 
   /**
    * @private
    */
-  _set_group_local: function(semantics, group_data) {
+  set_group_local: function(semantics, group_data) {
     this._group_local[semantics] = group_data;
   },
 
   /**
    * @private
    */
-  _set_candidates_local: function(name, candidate_data) {
+  set_candidates_local: function(name, candidate_data) {
     if(!(name in this._candidates_local))  this._candidates_local[name] = [];
 
     (this._candidates_local[name]).push(candidate_data);
@@ -7018,7 +7064,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _set_candidates_queue_local: function(name, candidate_data) {
+  set_candidates_queue_local: function(name, candidate_data) {
     try {
       if(name === null) {
         this._candidates_queue_local = {};
@@ -7028,24 +7074,24 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
         (this._candidates_queue_local[name]).push(candidate_data);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:base] _set_candidates_queue_local > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] set_candidates_queue_local > ' + e, 1);
     }
   },
 
   /**
    * @private
    */
-  _set_payloads_remote: function(name, payload_data) {
+  set_payloads_remote: function(name, payload_data) {
     this._payloads_remote[name] = payload_data;
   },
 
   /**
    * @private
    */
-  _set_payloads_remote_add: function(name, payload_data) {
+  set_payloads_remote_add: function(name, payload_data) {
     try {
       if(!(name in this._payloads_remote)) {
-        this._set_payloads_remote(name, payload_data);
+        this.set_payloads_remote(name, payload_data);
       } else {
         var key;
         var payloads_store = this._payloads_remote[name].descriptions.payload;
@@ -7057,28 +7103,28 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
         }
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:base] _set_payloads_remote_add > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] set_payloads_remote_add > ' + e, 1);
     }
   },
 
   /**
    * @private
    */
-  _set_group_remote: function(semantics, group_data) {
+  set_group_remote: function(semantics, group_data) {
     this._group_remote[semantics] = group_data;
   },
 
   /**
    * @private
    */
-  _set_candidates_remote: function(name, candidate_data) {
+  set_candidates_remote: function(name, candidate_data) {
     this._candidates_remote[name] = candidate_data;
   },
 
   /**
    * @private
    */
-  _set_candidates_queue_remote: function(name, candidate_data) {
+  set_candidates_queue_remote: function(name, candidate_data) {
     if(name === null)
       this._candidates_queue_remote = {};
     else
@@ -7088,46 +7134,46 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _set_candidates_remote_add: function(name, candidate_data) {
+  set_candidates_remote_add: function(name, candidate_data) {
     try {
       if(!name) return;
 
       if(!(name in this._candidates_remote))
-        this._set_candidates_remote(name, []);
+        this.set_candidates_remote(name, []);
    
       var c, i;
       var candidate_ids = [];
 
-      for(c in this._get_candidates_remote(name))
-        candidate_ids.push(this._get_candidates_remote(name)[c].id);
+      for(c in this.get_candidates_remote(name))
+        candidate_ids.push(this.get_candidates_remote(name)[c].id);
 
       for(i in candidate_data) {
         if((candidate_data[i].id).indexOf(candidate_ids) !== -1)
-          this._get_candidates_remote(name).push(candidate_data[i]);
+          this.get_candidates_remote(name).push(candidate_data[i]);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:base] _set_candidates_remote_add > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] set_candidates_remote_add > ' + e, 1);
     }
   },
 
   /**
    * @private
    */
-  _set_content_local: function(name, content_local) {
+  set_content_local: function(name, content_local) {
     this._content_local[name] = content_local;
   },
 
   /**
    * @private
    */
-  _set_content_remote: function(name, content_remote) {
+  set_content_remote: function(name, content_remote) {
     this._content_remote[name] = content_remote;
   },
 
   /**
    * @private
    */
-  _set_handlers: function(type, id, handler) {
+  set_handlers: function(type, id, handler) {
     if(!(type in this._handlers))  this._handlers[type] = {};
 
     this._handlers[type][id] = handler;
@@ -7136,35 +7182,35 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _set_peer_connection: function(peer_connection) {
+  set_peer_connection: function(peer_connection) {
     this._peer_connection = peer_connection;
   },
 
   /**
    * @private
    */
-  _set_id: function(id) {
+  set_id: function(id) {
     this._id = id;
   },
 
   /**
    * @private
    */
-  _set_sent_id: function(sent_id) {
+  set_sent_id: function(sent_id) {
     this._sent_id[sent_id] = 1;
   },
 
   /**
    * @private
    */
-  _set_received_id: function(received_id) {
+  set_received_id: function(received_id) {
     this._received_id[received_id] = 1;
   },
 
   /**
    * @private
    */
-  _set_mute: function(name, mute) {
+  set_mute: function(name, mute) {
     if(!name || name == '*') {
       this._mute = {};
       name = '*';
@@ -7176,7 +7222,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _set_lock: function(lock) {
+  set_lock: function(lock) {
     this._lock = lock;
   },
 
@@ -7185,91 +7231,91 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
    * @return media busy value
    * @type boolean
    */
-  _set_media_busy: function(busy) {
+  set_media_busy: function(busy) {
     this._media_busy = busy;
   },
 
   /**
    * @private
    */
-  _set_sid: function(sid) {
+  set_sid: function(sid) {
     this._sid = sid;
   },
 
   /**
    * @private
    */
-  _set_status: function(status) {
+  set_status: function(status) {
     this._status = status;
   },
 
   /**
    * @private
    */
-  _set_reason: function(reason) {
+  set_reason: function(reason) {
     this._reason = reason || JSJAC_JINGLE_REASON_CANCEL;
   },
 
   /**
    * @private
    */
-  _set_is_muji: function(is_muji) {
+  set_is_muji: function(is_muji) {
     this._is_muji = is_muji;
   },
 
   /**
    * @private
    */
-  _set_to: function(to) {
+  set_to: function(to) {
     this._to = to;
   },
 
   /**
    * @private
    */
-  _set_media: function(media) {
+  set_media: function(media) {
     this._media = media;
   },
 
   /**
    * @private
    */
-  _set_video_source: function() {
+  set_video_source: function() {
     this._video_source = video_source;
   },
 
   /**
    * @private
    */
-  _set_resolution: function(resolution) {
+  set_resolution: function(resolution) {
     this._resolution = resolution;
   },
 
   /**
    * @private
    */
-  _set_bandwidth: function(bandwidth) {
+  set_bandwidth: function(bandwidth) {
     this._bandwidth = bandwidth;
   },
 
   /**
    * @private
    */
-  _set_fps: function(fps) {
+  set_fps: function(fps) {
     this._fps = fps;
   },
 
   /**
    * @private
    */
-  _set_name: function(name) {
+  set_name: function(name) {
     this._name[name] = 1;
   },
 
   /**
    * @private
    */
-  _set_senders: function(name, senders) {
+  set_senders: function(name, senders) {
     if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
 
     this._senders[name] = senders;
@@ -7278,7 +7324,7 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _set_creator: function(name, creator) {
+  set_creator: function(name, creator) {
     if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
 
     this._creator[name] = creator;
@@ -7287,50 +7333,74 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
   /**
    * @private
    */
-  _set_initiator: function(initiator) {
+  set_initiator: function(initiator) {
     this._initiator = initiator;
   },
 
   /**
    * @private
    */
-  _set_responder: function(responder) {
+  set_responder: function(responder) {
     this._responder = responder;
   },
 
   /**
    * @private
    */
-  _set_stun: function(stun_host, stun_data) {
+  set_stun: function(stun_host, stun_data) {
     this._stun[stun_server] = stun_data;
   },
 
   /**
    * @private
    */
-  _set_turn: function(turn_host, turn_data) {
+  set_turn: function(turn_host, turn_data) {
     this._turn[turn_server] = turn_data;
   },
 
   /**
    * @private
    */
-  _set_sdp_trace: function(sdp_trace) {
+  set_sdp_trace: function(sdp_trace) {
     this._sdp_trace = sdp_trace;
   },
 
   /**
    * @private
    */
-  _set_net_trace: function(net_trace) {
+  set_net_trace: function(net_trace) {
     this._net_trace = net_trace;
   },
 
   /**
    * @private
    */
-  _set_debug: function(debug) {
+  set_debug: function(debug) {
     this._debug = debug;
+  },
+
+
+
+  /**
+   * JSJSAC JINGLE SHORTCUTS
+   */
+
+  /**
+   * Am I responder?
+   * @return Receiver state
+   * @type boolean
+   */
+  is_responder: function() {
+    return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
+  },
+
+  /**
+   * Am I initiator?
+   * @return Initiator state
+   * @type boolean
+   */
+  is_initiator: function() {
+    return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
   },
 });
 
@@ -7345,163 +7415,161 @@ var __JSJaCJingleBase = ring.create([__JSJaCJingleUtils, __JSJaCJinglePeer], {
 
 
 /**
- * JSJSAC JINGLE METHODS
- */
-
-/**
  * Creates a new XMPP Jingle session.
  * @class Somewhat abstract base class for XMPP Jingle sessions. Contains all
  * of the code in common for all Jingle sessions
  * @constructor
  * @param {Object} args Jingle session arguments.
  */
-function JSJaCJingleSingle(args) {
-  var self = this;
-
+var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
   /**
    * Initiates a new Jingle session.
    */
-  self.initiate = function() {
-    self.get_debug().log('[JSJaCJingle:peer] initiate', 4);
+  initiate: function() {
+    this.get_debug().log('[JSJaCJingle:single] initiate', 4);
 
     try {
       // Locked?
-      if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle:peer] initiate > Cannot initiate, resource locked. Please open another session or check WebRTC support.', 0);
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:single] initiate > Cannot initiate, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { self.initiate(); })) {
-        self.get_debug().log('[JSJaCJingle:peer] initiate > Deferred (waiting for the library components to be initiated).', 0);
+      if(JSJaCJingle_defer(function() { this.initiate(); })) {
+        this.get_debug().log('[JSJaCJingle:single] initiate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
-      if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
-        self.get_debug().log('[JSJaCJingle:peer] initiate > Cannot initiate, resource not inactive (status: ' + self.get_status() + ').', 0);
+      if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
+        this.get_debug().log('[JSJaCJingle:single] initiate > Cannot initiate, resource not inactive (status: ' + this.get_status() + ').', 0);
         return;
       }
 
-      self.get_debug().log('[JSJaCJingle:peer] initiate > New Jingle session with media: ' + self.get_media(), 2);
+      this.get_debug().log('[JSJaCJingle:single] initiate > New Jingle session with media: ' + this.get_media(), 2);
 
       // Common vars
       var i, cur_name;
 
       // Trigger init pending custom callback
-      (self._get_session_initiate_pending())(self);
+      (this.get_session_initiate_pending())(this);
 
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
+      this.set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
       // Set session values
-      self._set_sid(self.util_generate_sid());
-      self._set_initiator(self.util_connection_jid());
-      self._set_responder(self.get_to());
+      this.set_sid(this.utils.generate_sid());
+      this.set_initiator(this.utils.connection_jid());
+      this.set_responder(this.get_to());
 
-      for(i in self.get_media_all()) {
-        cur_name = self._util_name_generate(
-          self.get_media_all()[i]
+      for(i in this.get_media_all()) {
+        cur_name = this.utils.name_generate(
+          this.get_media_all()[i]
         );
 
-        self._set_name(cur_name);
+        this.set_name(cur_name);
 
-        self._set_senders(
+        this.set_senders(
           cur_name,
           JSJAC_JINGLE_SENDERS_BOTH.jingle
         );
 
-        self._set_creator(
+        this.set_creator(
           cur_name,
           JSJAC_JINGLE_CREATOR_INITIATOR
         );
       }
 
       // Register session to common router
-      JSJaCJingle_add(self.get_sid(), self);
+      JSJaCJingle_add(this.get_sid(), this);
 
       // Initialize WebRTC
-      self._peer_get_user_media(function() {
-        self._peer_connection_create(function() {
-          self.get_debug().log('[JSJaCJingle:peer] initiate > Ready to begin Jingle negotiation.', 2);
+      var _this = this;
 
-          self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
+      this.peer.get_user_media(function() {
+        _this.peer.connection_create(function() {
+          _this.get_debug().log('[JSJaCJingle:single] initiate > Ready to begin Jingle negotiation.', 2);
+
+          _this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INITIATE });
         });
       });
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] initiate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] initiate > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Accepts the Jingle session.
    */
-  self.accept = function() {
-    self.get_debug().log('[JSJaCJingle:peer] accept', 4);
+  accept: function() {
+    this.get_debug().log('[JSJaCJingle:single] accept', 4);
 
     try {
       // Locked?
-      if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle:peer] accept > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:single] accept > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { self.accept(); })) {
-        self.get_debug().log('[JSJaCJingle:peer] accept > Deferred (waiting for the library components to be initiated).', 0);
+      if(JSJaCJingle_defer(function() { this.accept(); })) {
+        this.get_debug().log('[JSJaCJingle:single] accept > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
-      if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
-        self.get_debug().log('[JSJaCJingle:peer] accept > Cannot accept, resource not initiated (status: ' + self.get_status() + ').', 0);
+      if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
+        this.get_debug().log('[JSJaCJingle:single] accept > Cannot accept, resource not initiated (status: ' + this.get_status() + ').', 0);
         return;
       }
 
-      self.get_debug().log('[JSJaCJingle:peer] accept > New Jingle session with media: ' + self.get_media(), 2);
+      this.get_debug().log('[JSJaCJingle:single] accept > New Jingle session with media: ' + this.get_media(), 2);
 
       // Trigger accept pending custom callback
-      (self._get_session_accept_pending())(self);
+      (this.get_session_accept_pending())(this);
 
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_ACCEPTING);
+      this.set_status(JSJAC_JINGLE_STATUS_ACCEPTING);
 
       // Initialize WebRTC
-      self._peer_get_user_media(function() {
-        self._peer_connection_create(function() {
-          self.get_debug().log('[JSJaCJingle:peer] accept > Ready to complete Jingle negotiation.', 2);
+      var _this = this;
+
+      this.peer.get_user_media(function() {
+        _this.peer.connection_create(function() {
+          _this.get_debug().log('[JSJaCJingle:single] accept > Ready to complete Jingle negotiation.', 2);
 
           // Process accept actions
-          self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_ACCEPT });
+          _this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_ACCEPT });
         });
       });
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] accept > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends a Jingle session info.
    */
-  self.info = function(name, args) {
-    self.get_debug().log('[JSJaCJingle:peer] info', 4);
+  info: function(name, args) {
+    this.get_debug().log('[JSJaCJingle:single] info', 4);
 
     try {
       // Locked?
-      if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle:peer] info > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:single] info > Cannot accept, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { self.info(name, args); })) {
-        self.get_debug().log('[JSJaCJingle:peer] info > Deferred (waiting for the library components to be initiated).', 0);
+      if(JSJaCJingle_defer(function() { this.info(name, args); })) {
+        this.get_debug().log('[JSJaCJingle:single] info > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
-      if(!(self.get_status() == JSJAC_JINGLE_STATUS_INITIATED || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING || self.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED)) {
-        self.get_debug().log('[JSJaCJingle:peer] info > Cannot send info, resource not active (status: ' + self.get_status() + ').', 0);
+      if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING || this.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED)) {
+        this.get_debug().log('[JSJaCJingle:single] info > Cannot send info, resource not active (status: ' + this.get_status() + ').', 0);
         return;
       }
 
@@ -7512,66 +7580,66 @@ function JSJaCJingleSingle(args) {
       args.action = JSJAC_JINGLE_ACTION_SESSION_INFO;
       if(name) args.info = name;
 
-      self.send(JSJAC_JINGLE_STANZA_TYPE_SET, args);
+      this.send(JSJAC_JINGLE_STANZA_TYPE_SET, args);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] info > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Terminates the Jingle session.
    */
-  self.terminate = function(reason) {
-    self.get_debug().log('[JSJaCJingle:peer] terminate', 4);
+  terminate: function(reason) {
+    this.get_debug().log('[JSJaCJingle:single] terminate', 4);
 
     try {
       // Locked?
-      if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle:peer] terminate > Cannot terminate, resource locked. Please open another session or check WebRTC support.', 0);
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:single] terminate > Cannot terminate, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { self.terminate(reason); })) {
-        self.get_debug().log('[JSJaCJingle:peer] terminate > Deferred (waiting for the library components to be initiated).', 0);
+      if(JSJaCJingle_defer(function() { this.terminate(reason); })) {
+        this.get_debug().log('[JSJaCJingle:single] terminate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
-      if(self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
-        self.get_debug().log('[JSJaCJingle:peer] terminate > Cannot terminate, resource already terminated (status: ' + self.get_status() + ').', 0);
+      if(this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
+        this.get_debug().log('[JSJaCJingle:single] terminate > Cannot terminate, resource already terminated (status: ' + this.get_status() + ').', 0);
         return;
       }
 
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_TERMINATING);
+      this.set_status(JSJAC_JINGLE_STATUS_TERMINATING);
 
       // Trigger terminate pending custom callback
-      (self._get_session_terminate_pending())(self);
+      (this.get_session_terminate_pending())(this);
 
       // Process terminate actions
-      self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_TERMINATE, reason: reason });
+      this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_TERMINATE, reason: reason });
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] terminate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] terminate > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends a given Jingle stanza packet
    */
-  self.send = function(type, args) {
-    self.get_debug().log('[JSJaCJingle:peer] send', 4);
+  send: function(type, args) {
+    this.get_debug().log('[JSJaCJingle:single] send', 4);
 
     try {
       // Locked?
-      if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle:peer] send > Cannot send, resource locked. Please open another session or check WebRTC support.', 0);
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:single] send > Cannot send, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { self.send(type, args); })) {
-        self.get_debug().log('[JSJaCJingle:peer] send > Deferred (waiting for the library components to be initiated).', 0);
+      if(JSJaCJingle_defer(function() { this.send(type, args); })) {
+        this.get_debug().log('[JSJaCJingle:single] send > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
@@ -7580,133 +7648,133 @@ function JSJaCJingleSingle(args) {
 
       // Build stanza
       var stanza = new JSJaCIQ();
-      stanza.setTo(self.get_to());
+      stanza.setTo(this.get_to());
 
       if(type) stanza.setType(type);
 
-      if(!args.id) args.id = self._get_id_new();
+      if(!args.id) args.id = this.get_id_new();
       stanza.setID(args.id);
 
       if(type == JSJAC_JINGLE_STANZA_TYPE_SET) {
         if(!(args.action && args.action in JSJAC_JINGLE_ACTIONS)) {
-          self.get_debug().log('[JSJaCJingle:peer] send > Stanza action unknown: ' + (args.action || 'undefined'), 1);
+          this.get_debug().log('[JSJaCJingle:single] send > Stanza action unknown: ' + (args.action || 'undefined'), 1);
           return;
         }
 
-        self._set_sent_id(args.id);
+        this.set_sent_id(args.id);
 
         // Submit to registered handler
         switch(args.action) {
           case JSJAC_JINGLE_ACTION_CONTENT_ACCEPT:
-            self.send_content_accept(stanza); break;
+            this.send_content_accept(stanza); break;
 
           case JSJAC_JINGLE_ACTION_CONTENT_ADD:
-            self.send_content_add(stanza); break;
+            this.send_content_add(stanza); break;
 
           case JSJAC_JINGLE_ACTION_CONTENT_MODIFY:
-            self.send_content_modify(stanza); break;
+            this.send_content_modify(stanza); break;
 
           case JSJAC_JINGLE_ACTION_CONTENT_REJECT:
-            self.send_content_reject(stanza); break;
+            this.send_content_reject(stanza); break;
 
           case JSJAC_JINGLE_ACTION_CONTENT_REMOVE:
-            self.send_content_remove(stanza); break;
+            this.send_content_remove(stanza); break;
 
           case JSJAC_JINGLE_ACTION_DESCRIPTION_INFO:
-            self.send_description_info(stanza); break;
+            this.send_description_info(stanza); break;
 
           case JSJAC_JINGLE_ACTION_SECURITY_INFO:
-            self.send_security_info(stanza); break;
+            this.send_security_info(stanza); break;
 
           case JSJAC_JINGLE_ACTION_SESSION_ACCEPT:
-            self.send_session_accept(stanza, args); break;
+            this.send_session_accept(stanza, args); break;
 
           case JSJAC_JINGLE_ACTION_SESSION_INFO:
-            self.send_session_info(stanza, args); break;
+            this.send_session_info(stanza, args); break;
 
           case JSJAC_JINGLE_ACTION_SESSION_INITIATE:
-            self.send_session_initiate(stanza, args); break;
+            this.send_session_initiate(stanza, args); break;
 
           case JSJAC_JINGLE_ACTION_SESSION_TERMINATE:
-            self.send_session_terminate(stanza, args); break;
+            this.send_session_terminate(stanza, args); break;
 
           case JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT:
-            self.send_transport_accept(stanza); break;
+            this.send_transport_accept(stanza); break;
 
           case JSJAC_JINGLE_ACTION_TRANSPORT_INFO:
-            self.send_transport_info(stanza, args); break;
+            this.send_transport_info(stanza, args); break;
 
           case JSJAC_JINGLE_ACTION_TRANSPORT_REJECT:
-            self.send_transport_reject(stanza); break;
+            this.send_transport_reject(stanza); break;
 
           case JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE:
-            self.send_transport_replace(stanza); break;
+            this.send_transport_replace(stanza); break;
 
           default:
-            self.get_debug().log('[JSJaCJingle:peer] send > Unexpected error.', 1);
+            this.get_debug().log('[JSJaCJingle:single] send > Unexpected error.', 1);
 
             return false;
         }
       } else if(type != JSJAC_JINGLE_STANZA_TYPE_RESULT) {
-        self.get_debug().log('[JSJaCJingle:peer] send > Stanza type must either be set or result.', 1);
+        this.get_debug().log('[JSJaCJingle:single] send > Stanza type must either be set or result.', 1);
 
         return false;
       }
 
       JSJAC_JINGLE_STORE_CONNECTION.send(stanza);
 
-      if(self.get_net_trace())  self.get_debug().log('[JSJaCJingle:peer] Outgoing packet sent' + '\n\n' + stanza.xml());
+      if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:single] Outgoing packet sent' + '\n\n' + stanza.xml());
 
       return true;
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send > ' + e, 1);
     }
 
     return false;
-  };
+  },
 
   /**
    * Handles a given Jingle stanza response
    */
-  self.handle = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle', 4);
+  handle: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle', 4);
 
     try {
-      if(self.get_net_trace())  self.get_debug().log('[JSJaCJingle:peer] Incoming packet received' + '\n\n' + stanza.xml());
+      if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:single] Incoming packet received' + '\n\n' + stanza.xml());
 
       // Locked?
-      if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle:peer] handle > Cannot handle, resource locked. Please open another session or check WebRTC support.', 0);
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:single] handle > Cannot handle, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { self.handle(stanza); })) {
-        self.get_debug().log('[JSJaCJingle:peer] handle > Deferred (waiting for the library components to be initiated).', 0);
+      if(JSJaCJingle_defer(function() { this.handle(stanza); })) {
+        this.get_debug().log('[JSJaCJingle:single] handle > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       var id   = stanza.getID();
       var type = stanza.getType();
 
-      if(id && type == JSJAC_JINGLE_STANZA_TYPE_RESULT)  self._set_received_id(id);
+      if(id && type == JSJAC_JINGLE_STANZA_TYPE_RESULT)  this.set_received_id(id);
 
       // Submit to custom handler
-      if(typeof self._get_handlers(type, id) == 'function') {
-        self.get_debug().log('[JSJaCJingle:peer] handle > Submitted to custom handler.', 2);
+      if(typeof this.get_handlers(type, id) == 'function') {
+        this.get_debug().log('[JSJaCJingle:single] handle > Submitted to custom handler.', 2);
 
-        (self._get_handlers(type, id))(stanza);
-        self.unregister_handler(type, id);
+        (this.get_handlers(type, id))(stanza);
+        this.unregister_handler(type, id);
 
         return;
       }
 
-      var jingle = self.util_stanza_jingle(stanza);
+      var jingle = this.utils.stanza_jingle(stanza);
 
       // Don't handle non-Jingle stanzas there...
       if(!jingle) return;
 
-      var action = self.util_stanza_get_attribute(jingle, 'action');
+      var action = this.utils.stanza_get_attribute(jingle, 'action');
 
       // Don't handle action-less Jingle stanzas there...
       if(!action) return;
@@ -7714,192 +7782,192 @@ function JSJaCJingleSingle(args) {
       // Submit to registered handler
       switch(action) {
         case JSJAC_JINGLE_ACTION_CONTENT_ACCEPT:
-          self.handle_content_accept(stanza); break;
+          this.handle_content_accept(stanza); break;
 
         case JSJAC_JINGLE_ACTION_CONTENT_ADD:
-          self.handle_content_add(stanza); break;
+          this.handle_content_add(stanza); break;
 
         case JSJAC_JINGLE_ACTION_CONTENT_MODIFY:
-          self.handle_content_modify(stanza); break;
+          this.handle_content_modify(stanza); break;
 
         case JSJAC_JINGLE_ACTION_CONTENT_REJECT:
-          self.handle_content_reject(stanza); break;
+          this.handle_content_reject(stanza); break;
 
         case JSJAC_JINGLE_ACTION_CONTENT_REMOVE:
-          self.handle_content_remove(stanza); break;
+          this.handle_content_remove(stanza); break;
 
         case JSJAC_JINGLE_ACTION_DESCRIPTION_INFO:
-          self.handle_description_info(stanza); break;
+          this.handle_description_info(stanza); break;
 
         case JSJAC_JINGLE_ACTION_SECURITY_INFO:
-          self.handle_security_info(stanza); break;
+          this.handle_security_info(stanza); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_ACCEPT:
-          self.handle_session_accept(stanza); break;
+          this.handle_session_accept(stanza); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_INFO:
-          self.handle_session_info(stanza); break;
+          this.handle_session_info(stanza); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_INITIATE:
-          self.handle_session_initiate(stanza); break;
+          this.handle_session_initiate(stanza); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_TERMINATE:
-          self.handle_session_terminate(stanza); break;
+          this.handle_session_terminate(stanza); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT:
-          self.handle_transport_accept(stanza); break;
+          this.handle_transport_accept(stanza); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_INFO:
-          self.handle_transport_info(stanza); break;
+          this.handle_transport_info(stanza); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_REJECT:
-          self.handle_transport_reject(stanza); break;
+          this.handle_transport_reject(stanza); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE:
-          self.handle_transport_replace(stanza); break;
+          this.handle_transport_replace(stanza); break;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Mutes a Jingle session (local)
    */
-  self.mute = function(name) {
-    self.get_debug().log('[JSJaCJingle:peer] mute', 4);
+  mute: function(name) {
+    this.get_debug().log('[JSJaCJingle:single] mute', 4);
 
     try {
       // Locked?
-      if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle:peer] mute > Cannot mute, resource locked. Please open another session or check WebRTC support.', 0);
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:single] mute > Cannot mute, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { self.mute(name); })) {
-        self.get_debug().log('[JSJaCJingle:peer] mute > Deferred (waiting for the library components to be initiated).', 0);
+      if(JSJaCJingle_defer(function() { this.mute(name); })) {
+        this.get_debug().log('[JSJaCJingle:single] mute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Already muted?
-      if(self.get_mute(name)) {
-        self.get_debug().log('[JSJaCJingle:peer] mute > Resource already muted.', 0);
+      if(this.get_mute(name)) {
+        this.get_debug().log('[JSJaCJingle:single] mute > Resource already muted.', 0);
         return;
       }
 
-      self._peer_sound(false);
-      self._set_mute(name, true);
+      this.peer.sound(false);
+      this.set_mute(name, true);
 
-      self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_MUTE, name: name });
+      this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_MUTE, name: name });
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] mute > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] mute > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Unmutes a Jingle session (local)
    */
-  self.unmute = function(name) {
-    self.get_debug().log('[JSJaCJingle:peer] unmute', 4);
+  unmute: function(name) {
+    this.get_debug().log('[JSJaCJingle:single] unmute', 4);
 
     try {
       // Locked?
-      if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle:peer] unmute > Cannot unmute, resource locked. Please open another session or check WebRTC support.', 0);
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:single] unmute > Cannot unmute, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { self.unmute(name); })) {
-        self.get_debug().log('[JSJaCJingle:peer] unmute > Deferred (waiting for the library components to be initiated).', 0);
+      if(JSJaCJingle_defer(function() { this.unmute(name); })) {
+        this.get_debug().log('[JSJaCJingle:single] unmute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Already unmute?
-      if(!self.get_mute(name)) {
-        self.get_debug().log('[JSJaCJingle:peer] unmute > Resource already unmuted.', 0);
+      if(!this.get_mute(name)) {
+        this.get_debug().log('[JSJaCJingle:single] unmute > Resource already unmuted.', 0);
         return;
       }
 
-      self._peer_sound(true);
-      self._set_mute(name, false);
+      this.peer.sound(true);
+      this.set_mute(name, false);
 
-      self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE, name: name });
+      this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE, name: name });
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] unmute > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] unmute > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Toggles media type in a Jingle session
    */
-  self.media = function(media) {
+  media: function(media) {
     /* DEV: don't expect this to work as of now! */
 
-    self.get_debug().log('[JSJaCJingle:peer] media', 4);
+    this.get_debug().log('[JSJaCJingle:single] media', 4);
 
     try {
       // Locked?
-      if(self.get_lock()) {
-        self.get_debug().log('[JSJaCJingle:peer] media > Cannot change media, resource locked. Please open another session or check WebRTC support.', 0);
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:single] media > Cannot change media, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { self.media(media); })) {
-        self.get_debug().log('[JSJaCJingle:peer] media > Deferred (waiting for the library components to be initiated).', 0);
+      if(JSJaCJingle_defer(function() { this.media(media); })) {
+        this.get_debug().log('[JSJaCJingle:single] media > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Toggle media?
       if(!media)
-        media = (self.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
+        media = (this.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
 
       // Media unknown?
       if(!(media in JSJAC_JINGLE_MEDIAS)) {
-        self.get_debug().log('[JSJaCJingle:peer] media > No media provided or media unsupported (media: ' + media + ').', 0);
+        this.get_debug().log('[JSJaCJingle:single] media > No media provided or media unsupported (media: ' + media + ').', 0);
         return;
       }
 
       // Already using provided media?
-      if(self.get_media() == media) {
-        self.get_debug().log('[JSJaCJingle:peer] media > Resource already using this media (media: ' + media + ').', 0);
+      if(this.get_media() == media) {
+        this.get_debug().log('[JSJaCJingle:single] media > Resource already using this media (media: ' + media + ').', 0);
         return;
       }
 
       // Switch locked for now? (another one is being processed)
-      if(self.get_media_busy()) {
-        self.get_debug().log('[JSJaCJingle:peer] media > Resource already busy switching media (busy: ' + self.get_media() + ', media: ' + media + ').', 0);
+      if(this.get_media_busy()) {
+        this.get_debug().log('[JSJaCJingle:single] media > Resource already busy switching media (busy: ' + this.get_media() + ', media: ' + media + ').', 0);
         return;
       }
 
-      self.get_debug().log('[JSJaCJingle:peer] media > Changing media to: ' + media + '...', 2);
+      this.get_debug().log('[JSJaCJingle:single] media > Changing media to: ' + media + '...', 2);
 
       // Store new media
-      self._set_media(media);
-      self._set_media_busy(true);
+      this.set_media(media);
+      this.set_media_busy(true);
 
       // Toggle video mode (add/remove)
       if(media == JSJAC_JINGLE_MEDIA_VIDEO) {
         // TODO: the flow is something like that...
-        /*self._peer_get_user_media(function() {
-          self._peer_connection_create(function() {
-            self.get_debug().log('[JSJaCJingle:peer] media > Ready to change media (to: ' + media + ').', 2);
+        /*this.peer.get_user_media(function() {
+          this.peer.connection_create(function() {
+            this.get_debug().log('[JSJaCJingle:single] media > Ready to change media (to: ' + media + ').', 2);
 
             // 'content-add' >> video
             // TODO: restart video stream configuration
 
             // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
 
-            self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_CONTENT_ADD, name: JSJAC_JINGLE_MEDIA_VIDEO });
+            this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_CONTENT_ADD, name: JSJAC_JINGLE_MEDIA_VIDEO });
           })
         });*/
       } else {
         // TODO: the flow is something like that...
-        /*self._peer_get_user_media(function() {
-          self._peer_connection_create(function() {
-            self.get_debug().log('[JSJaCJingle:peer] media > Ready to change media (to: ' + media + ').', 2);
+        /*this.peer.get_user_media(function() {
+          this.peer.connection_create(function() {
+            this.get_debug().log('[JSJaCJingle:single] media > Ready to change media (to: ' + media + ').', 2);
 
             // 'content-remove' >> video
             // TODO: remove video stream configuration
@@ -7907,79 +7975,79 @@ function JSJaCJingleSingle(args) {
             // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
             //          here, only stop the video stream, do not touch the audio stream
 
-            self.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_CONTENT_REMOVE, name: JSJAC_JINGLE_MEDIA_VIDEO });
+            this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_CONTENT_REMOVE, name: JSJAC_JINGLE_MEDIA_VIDEO });
           })
         });*/
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] media > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] media > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Registers a given handler on a given Jingle stanza
    */
-  self.register_handler = function(type, id, fn) {
-    self.get_debug().log('[JSJaCJingle:peer] register_handler', 4);
+  register_handler: function(type, id, fn) {
+    this.get_debug().log('[JSJaCJingle:single] register_handler', 4);
 
     try {
       type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
 
       if(typeof fn !== 'function') {
-        self.get_debug().log('[JSJaCJingle:peer] register_handler > fn parameter not passed or not a function!', 1);
+        this.get_debug().log('[JSJaCJingle:single] register_handler > fn parameter not passed or not a function!', 1);
         return false;
       }
 
       if(id) {
-        self._set_handlers(type, id, fn);
+        this.set_handlers(type, id, fn);
 
-        self.get_debug().log('[JSJaCJingle:peer] register_handler > Registered handler for id: ' + id + ' and type: ' + type, 3);
+        this.get_debug().log('[JSJaCJingle:single] register_handler > Registered handler for id: ' + id + ' and type: ' + type, 3);
         return true;
       } else {
-        self.get_debug().log('[JSJaCJingle:peer] register_handler > Could not register handler (no ID).', 1);
+        this.get_debug().log('[JSJaCJingle:single] register_handler > Could not register handler (no ID).', 1);
         return false;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] register_handler > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] register_handler > ' + e, 1);
     }
 
     return false;
-  };
+  },
 
   /**
    * Unregisters the given handler on a given Jingle stanza
    */
-  self.unregister_handler = function(type, id) {
-    self.get_debug().log('[JSJaCJingle:peer] unregister_handler', 4);
+  unregister_handler: function(type, id) {
+    this.get_debug().log('[JSJaCJingle:single] unregister_handler', 4);
 
     try {
       type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
 
-      if(type in self._handlers && id in self._handlers[type]) {
-        delete self._handlers[type][id];
+      if(type in this._handlers && id in this._handlers[type]) {
+        delete this._handlers[type][id];
 
-        self.get_debug().log('[JSJaCJingle:peer] unregister_handler > Unregistered handler for id: ' + id + ' and type: ' + type, 3);
+        this.get_debug().log('[JSJaCJingle:single] unregister_handler > Unregistered handler for id: ' + id + ' and type: ' + type, 3);
         return true;
       } else {
-        self.get_debug().log('[JSJaCJingle:peer] unregister_handler > Could not unregister handler with id: ' + id + ' and type: ' + type + ' (not found).', 2);
+        this.get_debug().log('[JSJaCJingle:single] unregister_handler > Could not unregister handler with id: ' + id + ' and type: ' + type + ' (not found).', 2);
         return false;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] unregister_handler > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] unregister_handler > ' + e, 1);
     }
 
     return false;
-  };
+  },
 
   /**
    * Registers a view element
    */
-  self.register_view = function(type, view) {
-    self.get_debug().log('[JSJaCJingle:peer] register_view', 4);
+  register_view: function(type, view) {
+    this.get_debug().log('[JSJaCJingle:single] register_view', 4);
 
     try {
       // Get view functions
-      var fn = self._util_map_register_view(type);
+      var fn = this.utils.map_register_view(type);
 
       if(fn.type == type) {
         var i;
@@ -7987,7 +8055,7 @@ function JSJaCJingleSingle(args) {
         // Check view is not already registered
         for(i in (fn.view.get)()) {
           if((fn.view.get)()[i] == view) {
-            self.get_debug().log('[JSJaCJingle:peer] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
+            this.get_debug().log('[JSJaCJingle:single] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
             return true;
           }
         }
@@ -7995,35 +8063,35 @@ function JSJaCJingleSingle(args) {
         // Proceeds registration
         (fn.view.set)(view);
 
-        self._util_peer_stream_attach(
+        this.utils.peer_stream_attach(
           [view],
           (fn.stream.get)(),
           fn.mute
         );
 
-        self.get_debug().log('[JSJaCJingle:peer] register_view > Registered view of type: ' + type, 3);
+        this.get_debug().log('[JSJaCJingle:single] register_view > Registered view of type: ' + type, 3);
 
         return true;
       } else {
-        self.get_debug().log('[JSJaCJingle:peer] register_view > Could not register view of type: ' + type + ' (type unknown).', 1);
+        this.get_debug().log('[JSJaCJingle:single] register_view > Could not register view of type: ' + type + ' (type unknown).', 1);
         return false;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] register_view > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] register_view > ' + e, 1);
     }
 
     return false;
-  };
+  },
 
   /**
    * Unregisters a view element
    */
-  self.unregister_view = function(type, view) {
-    self.get_debug().log('[JSJaCJingle:peer] unregister_view', 4);
+  unregister_view: function(type, view) {
+    this.get_debug().log('[JSJaCJingle:single] unregister_view', 4);
 
     try {
       // Get view functions
-      var fn = self._util_map_unregister_view(type);
+      var fn = this.utils.map_unregister_view(type);
 
       if(fn.type == type) {
         var i;
@@ -8032,32 +8100,32 @@ function JSJaCJingleSingle(args) {
         for(i in (fn.view.get)()) {
           if((fn.view.get)()[i] == view) {
             // Proceeds un-registration
-            self._util_peer_stream_detach(
+            this.utils.peer_stream_detach(
               [view]
             );
 
-            self.util_array_remove_value(
+            this.utils.array_remove_value(
               (fn.view.get)(),
               view
             );
 
-            self.get_debug().log('[JSJaCJingle:peer] unregister_view > Unregistered view of type: ' + type, 3);
+            this.get_debug().log('[JSJaCJingle:single] unregister_view > Unregistered view of type: ' + type, 3);
             return true;
           }
         }
 
-        self.get_debug().log('[JSJaCJingle:peer] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
+        this.get_debug().log('[JSJaCJingle:single] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
         return true;
       } else {
-        self.get_debug().log('[JSJaCJingle:peer] unregister_view > Could not unregister view of type: ' + type + ' (type unknown).', 1);
+        this.get_debug().log('[JSJaCJingle:single] unregister_view > Could not unregister view of type: ' + type + ' (type unknown).', 1);
         return false;
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] unregister_view > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] unregister_view > ' + e, 1);
     }
 
     return false;
-  };
+  },
 
 
   /**
@@ -8067,166 +8135,168 @@ function JSJaCJingleSingle(args) {
   /**
    * Sends the Jingle content accept
    */
-  self.send_content_accept = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] send_content_accept', 4);
+  send_content_accept: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] send_content_accept', 4);
 
     try {
       // TODO: remove from remote 'content-add' queue
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle:peer] send_content_accept > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] send_content_accept > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_content_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_content_accept > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle content add
    */
-  self.send_content_add = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] send_content_add', 4);
+  send_content_add: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] send_content_add', 4);
 
     try {
       // TODO: push to local 'content-add' queue
 
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle:peer] send_content_add > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] send_content_add > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_content_add > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_content_add > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle content modify
    */
-  self.send_content_modify = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] send_content_modify', 4);
+  send_content_modify: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] send_content_modify', 4);
 
     try {
       // TODO: push to local 'content-modify' queue
 
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle:peer] send_content_modify > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] send_content_modify > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_content_modify > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_content_modify > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle content reject
    */
-  self.send_content_reject = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] send_content_reject', 4);
+  send_content_reject: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] send_content_reject', 4);
 
     try {
       // TODO: remove from remote 'content-add' queue
 
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle:peer] send_content_reject > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] send_content_reject > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_content_reject > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_content_reject > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle content remove
    */
-  self.send_content_remove = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] send_content_remove', 4);
+  send_content_remove: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] send_content_remove', 4);
 
     try {
       // TODO: add to local 'content-remove' queue
 
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle:peer] send_content_remove > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] send_content_remove > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_content_remove > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_content_remove > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle description info
    */
-  self.send_description_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] send_description_info', 4);
+  send_description_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] send_description_info', 4);
 
     try {
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle:peer] send_description_info > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] send_description_info > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_description_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_description_info > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle security info
    */
-  self.send_security_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] send_security_info', 4);
+  send_security_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] send_security_info', 4);
 
     try {
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle:peer] send_security_info > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] send_security_info > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_security_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_security_info > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle session accept
    */
-  self.send_session_accept = function(stanza, args) {
-    self.get_debug().log('[JSJaCJingle:peer] send_session_accept', 4);
+  send_session_accept: function(stanza, args) {
+    this.get_debug().log('[JSJaCJingle:single] send_session_accept', 4);
 
     try {
-      if(self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING) {
-        self.get_debug().log('[JSJaCJingle:peer] send_session_accept > Cannot send accept stanza, resource not accepting (status: ' + self.get_status() + ').', 0);
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
+      if(this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING) {
+        this.get_debug().log('[JSJaCJingle:single] send_session_accept > Cannot send accept stanza, resource not accepting (status: ' + this.get_status() + ').', 0);
+        this.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
       if(!args) {
-          self.get_debug().log('[JSJaCJingle:peer] send_session_accept > Argument not provided.', 1);
+          this.get_debug().log('[JSJaCJingle:single] send_session_accept > Argument not provided.', 1);
           return;
       }
 
       // Build Jingle stanza
-      var jingle = self._util_stanza_generate_jingle(stanza, {
+      var jingle = this.utils.stanza_generate_jingle(stanza, {
         'action'    : JSJAC_JINGLE_ACTION_SESSION_ACCEPT,
-        'responder' : self.get_responder()
+        'responder' : this.get_responder()
       });
 
-      self._util_stanza_generate_content_local(stanza, jingle);
-      self._util_stanza_generate_group_local(stanza, jingle);
+      this.utils.stanza_generate_content_local(stanza, jingle);
+      this.utils.stanza_generate_group_local(stanza, jingle);
 
       // Schedule success
-      self.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
-        (self._get_session_accept_success())(self, stanza);
-        self.handle_session_accept_success(stanza);
+      var _this = this;
+
+      this.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
+        (_this.get_session_accept_success())(_this, stanza);
+        _this.handle_session_accept_success(stanza);
       });
 
       // Schedule error timeout
-      self.util_stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
-        external:   self._get_session_accept_error(),
-        internal:   self.handle_session_accept_error
+      this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
+        external:   this.get_session_accept_error(),
+        internal:   this.handle_session_accept_error
       });
 
-      self.get_debug().log('[JSJaCJingle:peer] send_session_accept > Sent.', 4);
+      this.get_debug().log('[JSJaCJingle:single] send_session_accept > Sent.', 4);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_session_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_session_accept > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle session info
    */
-  self.send_session_info = function(stanza, args) {
-    self.get_debug().log('[JSJaCJingle:peer] send_session_info', 4);
+  send_session_info: function(stanza, args) {
+    this.get_debug().log('[JSJaCJingle:single] send_session_info', 4);
 
     try {
       if(!args) {
-        self.get_debug().log('[JSJaCJingle:peer] send_session_info > Argument not provided.', 1);
+        this.get_debug().log('[JSJaCJingle:single] send_session_info > Argument not provided.', 1);
         return;
       }
 
@@ -8234,89 +8304,93 @@ function JSJaCJingleSingle(args) {
       args.info = args.info || JSJAC_JINGLE_SESSION_INFO_ACTIVE;
 
       // Build Jingle stanza
-      var jingle = self._util_stanza_generate_jingle(stanza, {
+      var jingle = this.utils.stanza_generate_jingle(stanza, {
         'action'    : JSJAC_JINGLE_ACTION_SESSION_INFO,
-        'initiator' : self.get_initiator()
+        'initiator' : this.get_initiator()
       });
 
-      self._util_stanza_generate_session_info(stanza, jingle, args);
+      this.utils.stanza_generate_session_info(stanza, jingle, args);
 
       // Schedule success
-      self.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
-        (self._get_session_info_success())(self, stanza);
-        self.handle_session_info_success(stanza);
+      var _this = this;
+
+      this.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
+        (_this.get_session_info_success())(this, stanza);
+        _this.handle_session_info_success(stanza);
       });
 
       // Schedule error timeout
-      self.util_stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
-        external:   self._get_session_info_error(),
-        internal:   self.handle_session_info_error
+      this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
+        external:   this.get_session_info_error(),
+        internal:   this.handle_session_info_error
       });
 
-      self.get_debug().log('[JSJaCJingle:peer] send_session_info > Sent (name: ' + args.info + ').', 2);
+      this.get_debug().log('[JSJaCJingle:single] send_session_info > Sent (name: ' + args.info + ').', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_session_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_session_info > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle session initiate
    */
-  self.send_session_initiate = function(stanza, args) {
-    self.get_debug().log('[JSJaCJingle:peer] send_session_initiate', 4);
+  send_session_initiate: function(stanza, args) {
+    this.get_debug().log('[JSJaCJingle:single] send_session_initiate', 4);
 
     try {
-      if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATING) {
-        self.get_debug().log('[JSJaCJingle:peer] send_session_initiate > Cannot send initiate stanza, resource not initiating (status: ' + self.get_status() + ').', 0);
+      if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATING) {
+        this.get_debug().log('[JSJaCJingle:single] send_session_initiate > Cannot send initiate stanza, resource not initiating (status: ' + this.get_status() + ').', 0);
         return;
       }
 
       if(!args) {
-        self.get_debug().log('[JSJaCJingle:peer] send_session_initiate > Argument not provided.', 1);
+        this.get_debug().log('[JSJaCJingle:single] send_session_initiate > Argument not provided.', 1);
         return;
       }
 
       // Build Jingle stanza
-      var jingle = self._util_stanza_generate_jingle(stanza, {
+      var jingle = this.utils.stanza_generate_jingle(stanza, {
         'action'    : JSJAC_JINGLE_ACTION_SESSION_INITIATE,
-        'initiator' : self.get_initiator()
+        'initiator' : this.get_initiator()
       });
 
-      self._util_stanza_generate_content_local(stanza, jingle);
-      self._util_stanza_generate_group_local(stanza, jingle);
+      this.utils.stanza_generate_content_local(stanza, jingle);
+      this.utils.stanza_generate_group_local(stanza, jingle);
 
       // Schedule success
-      self.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
-        (self._get_session_initiate_success())(self, stanza);
-        self.handle_session_initiate_success(stanza);
+      var _this = this;
+      
+      this.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
+        (_this.get_session_initiate_success())(_this, stanza);
+        _this.handle_session_initiate_success(stanza);
       });
 
       // Schedule error timeout
-      self.util_stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
-        external:   self._get_session_initiate_error(),
-        internal:   self.handle_session_initiate_error
+      this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
+        external:   this.get_session_initiate_error(),
+        internal:   this.handle_session_initiate_error
       });
 
-      self.get_debug().log('[JSJaCJingle:peer] send_session_initiate > Sent.', 2);
+      this.get_debug().log('[JSJaCJingle:single] send_session_initiate > Sent.', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_session_initiate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_session_initiate > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle session terminate
    */
-  self.send_session_terminate = function(stanza, args) {
-    self.get_debug().log('[JSJaCJingle:peer] send_session_terminate', 4);
+  send_session_terminate: function(stanza, args) {
+    this.get_debug().log('[JSJaCJingle:single] send_session_terminate', 4);
 
     try {
-      if(self.get_status() != JSJAC_JINGLE_STATUS_TERMINATING) {
-        self.get_debug().log('[JSJaCJingle:peer] send_session_terminate > Cannot send terminate stanza, resource not terminating (status: ' + self.get_status() + ').', 0);
+      if(this.get_status() != JSJAC_JINGLE_STATUS_TERMINATING) {
+        this.get_debug().log('[JSJaCJingle:single] send_session_terminate > Cannot send terminate stanza, resource not terminating (status: ' + this.get_status() + ').', 0);
         return;
       }
 
       if(!args) {
-        self.get_debug().log('[JSJaCJingle:peer] send_session_terminate > Argument not provided.', 1);
+        this.get_debug().log('[JSJaCJingle:single] send_session_terminate > Argument not provided.', 1);
         return;
       }
 
@@ -8324,10 +8398,10 @@ function JSJaCJingleSingle(args) {
       args.reason = args.reason || JSJAC_JINGLE_REASON_SUCCESS;
 
       // Store terminate reason
-      self._set_reason(args.reason);
+      this.set_reason(args.reason);
 
       // Build terminate stanza
-      var jingle = self._util_stanza_generate_jingle(stanza, {
+      var jingle = this.utils.stanza_generate_jingle(stanza, {
         'action': JSJAC_JINGLE_ACTION_SESSION_TERMINATE
       });
 
@@ -8335,146 +8409,150 @@ function JSJaCJingleSingle(args) {
       jingle_reason.appendChild(stanza.buildNode(args.reason, {'xmlns': NS_JINGLE}));
 
       // Schedule success
-      self.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
-        (self._get_session_terminate_success())(self, stanza);
-        self.handle_session_terminate_success(stanza);
+      var _this = this;
+      
+      this.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
+        (_this.get_session_terminate_success())(_this, stanza);
+        _this.handle_session_terminate_success(stanza);
       });
 
       // Schedule error timeout
-      self.util_stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
-        external:   self._get_session_terminate_error(),
-        internal:   self.handle_session_terminate_error
+      this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
+        external:   this.get_session_terminate_error(),
+        internal:   this.handle_session_terminate_error
       });
 
-      self.get_debug().log('[JSJaCJingle:peer] send_session_terminate > Sent (reason: ' + args.reason + ').', 2);
+      this.get_debug().log('[JSJaCJingle:single] send_session_terminate > Sent (reason: ' + args.reason + ').', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_session_terminate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_session_terminate > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle transport accept
    */
-  self.send_transport_accept = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] send_transport_accept', 4);
+  send_transport_accept: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] send_transport_accept', 4);
 
     try {
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle:peer] send_transport_accept > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] send_transport_accept > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_transport_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_transport_accept > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle transport info
    */
-  self.send_transport_info = function(stanza, args) {
-    self.get_debug().log('[JSJaCJingle:peer] send_transport_info', 4);
+  send_transport_info: function(stanza, args) {
+    this.get_debug().log('[JSJaCJingle:single] send_transport_info', 4);
 
     try {
-      if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
-        self.get_debug().log('[JSJaCJingle:peer] send_transport_info > Cannot send transport info, resource not initiated, nor accepting, nor accepted (status: ' + self.get_status() + ').', 0);
+      if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
+        this.get_debug().log('[JSJaCJingle:single] send_transport_info > Cannot send transport info, resource not initiated, nor accepting, nor accepted (status: ' + this.get_status() + ').', 0);
         return;
       }
 
       if(!args) {
-        self.get_debug().log('[JSJaCJingle:peer] send_transport_info > Argument not provided.', 1);
+        this.get_debug().log('[JSJaCJingle:single] send_transport_info > Argument not provided.', 1);
         return;
       }
 
-      if(self.util_object_length(self._get_candidates_queue_local()) === 0) {
-        self.get_debug().log('[JSJaCJingle:peer] send_transport_info > No local candidate in queue.', 1);
+      if(this.utils.object_length(this.get_candidates_queue_local()) === 0) {
+        this.get_debug().log('[JSJaCJingle:single] send_transport_info > No local candidate in queue.', 1);
         return;
       }
 
       // Build Jingle stanza
-      var jingle = self._util_stanza_generate_jingle(stanza, {
+      var jingle = this.utils.stanza_generate_jingle(stanza, {
         'action'    : JSJAC_JINGLE_ACTION_TRANSPORT_INFO,
-        'initiator' : self.get_initiator()
+        'initiator' : this.get_initiator()
       });
 
       // Build queue content
       var cur_name;
       var content_queue_local = {};
 
-      for(cur_name in self.get_name()) {
-        content_queue_local[cur_name] = self._util_generate_content(
-            self.get_creator(cur_name),
+      for(cur_name in this.get_name()) {
+        content_queue_local[cur_name] = this.utils.generate_content(
+            this.get_creator(cur_name),
             cur_name,
-            self.get_senders(cur_name),
-            self._get_payloads_local(cur_name),
-            self._get_candidates_queue_local(cur_name)
+            this.get_senders(cur_name),
+            this.get_payloads_local(cur_name),
+            this.get_candidates_queue_local(cur_name)
         );
       }
 
-      self._util_stanza_generate_content_local(stanza, jingle, content_queue_local);
-      self._util_stanza_generate_group_local(stanza, jingle);
+      this.utils.stanza_generate_content_local(stanza, jingle, content_queue_local);
+      this.utils.stanza_generate_group_local(stanza, jingle);
 
       // Schedule success
-      self.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
-        self.handle_transport_info_success(stanza);
+      var _this = this;
+      
+      this.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
+        _this.handle_transport_info_success(stanza);
       });
 
       // Schedule error timeout
-      self.util_stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
-        internal: self.handle_transport_info_error
+      this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
+        internal: this.handle_transport_info_error
       });
 
-      self.get_debug().log('[JSJaCJingle:peer] send_transport_info > Sent.', 2);
+      this.get_debug().log('[JSJaCJingle:single] send_transport_info > Sent.', 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_transport_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_transport_info > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle transport reject
    */
-  self.send_transport_reject = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] send_transport_reject', 4);
+  send_transport_reject: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] send_transport_reject', 4);
 
     try {
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle:peer] send_transport_reject > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] send_transport_reject > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_transport_reject > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_transport_reject > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle transport replace
    */
-  self.send_transport_replace = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] send_transport_replace', 4);
+  send_transport_replace: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] send_transport_replace', 4);
 
     try {
       // Not implemented for now
-      self.get_debug().log('[JSJaCJingle:peer] send_transport_replace > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] send_transport_replace > Feature not implemented!', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_transport_replace > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_transport_replace > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Sends the Jingle transport replace
    */
-  self.send_error = function(stanza, error) {
-    self.get_debug().log('[JSJaCJingle:peer] send_error', 4);
+  send_error: function(stanza, error) {
+    this.get_debug().log('[JSJaCJingle:single] send_error', 4);
 
     try {
       // Assert
       if(!('type' in error)) {
-        self.get_debug().log('[JSJaCJingle:peer] send_error > Type unknown.', 1);
+        this.get_debug().log('[JSJaCJingle:single] send_error > Type unknown.', 1);
         return;
       }
 
       if('jingle' in error && !(error.jingle in JSJAC_JINGLE_ERRORS)) {
-        self.get_debug().log('[JSJaCJingle:peer] send_error > Jingle condition unknown (' + error.jingle + ').', 1);
+        this.get_debug().log('[JSJaCJingle:single] send_error > Jingle condition unknown (' + error.jingle + ').', 1);
         return;
       }
 
       if('xmpp' in error && !(error.xmpp in XMPP_ERRORS)) {
-        self.get_debug().log('[JSJaCJingle:peer] send_error > XMPP condition unknown (' + error.xmpp + ').', 1);
+        this.get_debug().log('[JSJaCJingle:single] send_error > XMPP condition unknown (' + error.xmpp + ').', 1);
         return;
       }
 
@@ -8482,7 +8560,7 @@ function JSJaCJingleSingle(args) {
 
       stanza_error.setType('error');
       stanza_error.setID(stanza.getID());
-      stanza_error.setTo(self.get_to());
+      stanza_error.setTo(this.get_to());
 
       var error_node = stanza_error.getNode().appendChild(stanza_error.buildNode('error', {'xmlns': NS_CLIENT, 'type': error.type}));
 
@@ -8491,11 +8569,11 @@ function JSJaCJingleSingle(args) {
 
       JSJAC_JINGLE_STORE_CONNECTION.send(stanza_error);
 
-      self.get_debug().log('[JSJaCJingle:peer] send_error > Sent: ' + (error.jingle || error.xmpp), 2);
+      this.get_debug().log('[JSJaCJingle:single] send_error > Sent: ' + (error.jingle || error.xmpp), 2);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] send_error > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] send_error > ' + e, 1);
     }
-  };
+  },
 
 
 
@@ -8507,8 +8585,8 @@ function JSJaCJingleSingle(args) {
    * Handles the Jingle content accept
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_content_accept = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_content_accept', 4);
+  handle_content_accept: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_content_accept', 4);
 
     try {
       // TODO: start to flow accepted stream
@@ -8516,18 +8594,18 @@ function JSJaCJingleSingle(args) {
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_content_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_content_accept > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle content add
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_content_add = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_content_add', 4);
+  handle_content_add: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_content_add', 4);
 
     try {
       // TODO: request the user to start this content (need a custom handler)
@@ -8536,18 +8614,18 @@ function JSJaCJingleSingle(args) {
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_content_add > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_content_add > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle content modify
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_content_modify = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_content_modify', 4);
+  handle_content_modify: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_content_modify', 4);
 
     try {
       // TODO: change 'senders' value (direction of the stream)
@@ -8557,164 +8635,164 @@ function JSJaCJingleSingle(args) {
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_content_modify > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_content_modify > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle content reject
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_content_reject = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_content_reject', 4);
+  handle_content_reject: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_content_reject', 4);
 
     try {
       // TODO: remove rejected content from local 'content-add' queue
 
       // Not implemented for now
-      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_content_reject > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_content_reject > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle content remove
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_content_remove = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_content_remove', 4);
+  handle_content_remove: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_content_remove', 4);
 
     try {
       // TODO: stop flowing removed stream
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_content_remove > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_content_remove > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle description info
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_description_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_description_info', 4);
+  handle_description_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_description_info', 4);
 
     try {
       // Not implemented for now
-      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_description_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_description_info > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle security info
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_security_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_security_info', 4);
+  handle_security_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_security_info', 4);
 
     try {
       // Not implemented for now
-      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_security_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_security_info > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session accept
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_accept = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_accept', 4);
+  handle_session_accept: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_accept', 4);
 
     try {
       // Security preconditions
-      if(!self.util_stanza_safe(stanza)) {
-        self.get_debug().log('[JSJaCJingle:peer] handle_session_accept > Dropped unsafe stanza.', 0);
+      if(!this.utils.stanza_safe(stanza)) {
+        this.get_debug().log('[JSJaCJingle:single] handle_session_accept > Dropped unsafe stanza.', 0);
 
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+        this.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
         return;
       }
 
       // Can now safely dispatch the stanza
       switch(stanza.getType()) {
         case JSJAC_JINGLE_STANZA_TYPE_RESULT:
-          (self._get_session_accept_success())(self, stanza);
-          self.handle_session_accept_success(stanza);
+          (this.get_session_accept_success())(this, stanza);
+          this.handle_session_accept_success(stanza);
 
           break;
 
         case 'error':
-          (self._get_session_accept_error())(self, stanza);
-          self.handle_session_accept_error(stanza);
+          (this.get_session_accept_error())(this, stanza);
+          this.handle_session_accept_error(stanza);
 
           break;
 
         case JSJAC_JINGLE_STANZA_TYPE_SET:
           // External handler must be set before internal one here...
-          (self._get_session_accept_request())(self, stanza);
-          self.handle_session_accept_request(stanza);
+          (this.get_session_accept_request())(this, stanza);
+          this.handle_session_accept_request(stanza);
 
           break;
 
         default:
-          self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+          this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_accept > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session accept success
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_accept_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_success', 4);
+  handle_session_accept_success: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_accept_success', 4);
 
     try {
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_ACCEPTED);
+      this.set_status(JSJAC_JINGLE_STATUS_ACCEPTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_success > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_accept_success > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session accept error
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_accept_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_error', 4);
+  handle_session_accept_error: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_accept_error', 4);
 
     try {
       // Terminate the session (timeout)
-      self.terminate(JSJAC_JINGLE_REASON_TIMEOUT);
+      this.terminate(JSJAC_JINGLE_REASON_TIMEOUT);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_error > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_accept_error > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session accept request
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_accept_request = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_request', 4);
+  handle_session_accept_request: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_accept_request', 4);
 
     try {
       // Slot unavailable?
-      if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
-        self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_request > Cannot handle, resource already accepted (status: ' + self.get_status() + ').', 0);
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
+      if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
+        this.get_debug().log('[JSJaCJingle:single] handle_session_accept_request > Cannot handle, resource already accepted (status: ' + this.get_status() + ').', 0);
+        this.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
@@ -8722,33 +8800,35 @@ function JSJaCJingleSingle(args) {
       var i, cur_candidate_obj;
 
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_ACCEPTING);
+      this.set_status(JSJAC_JINGLE_STATUS_ACCEPTING);
 
-      var rd_sid = self.util_stanza_sid(stanza);
+      var rd_sid = this.utils.stanza_sid(stanza);
 
       // Request is valid?
-      if(rd_sid && self.is_initiator() && self._util_stanza_parse_content(stanza)) {
+      if(rd_sid && this.is_initiator() && this.utils.stanza_parse_content(stanza)) {
         // Handle additional data (optional)
-        self._util_stanza_parse_group(stanza);
+        this.utils.stanza_parse_group(stanza);
 
         // Generate and store content data
-        self._util_build_content_remote();
+        this.utils.build_content_remote();
 
         // Trigger accept success callback
-        (self._get_session_accept_success())(self, stanza);
-        self.handle_session_accept_success(stanza);
+        (this.get_session_accept_success())(this, stanza);
+        this.handle_session_accept_success(stanza);
 
-        var sdp_remote = self._util_sdp_generate(
+        var sdp_remote = this.sdp.generate(
           WEBRTC_SDP_TYPE_ANSWER,
-          self._get_group_remote(),
-          self._get_payloads_remote(),
-          self._get_candidates_queue_remote()
+          this.get_group_remote(),
+          this.get_payloads_remote(),
+          this.get_candidates_queue_remote()
         );
 
-        if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
+        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:single] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
 
         // Remote description
-        self._get_peer_connection().setRemoteDescription(
+        var _this = this;
+        
+        this.get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
 
           function() {
@@ -8756,10 +8836,10 @@ function JSJaCJingleSingle(args) {
           },
 
           function(e) {
-            if(self.get_sdp_trace())  self.get_debug().log('[JSJaCJingle:peer] SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+            if(_this.get_sdp_trace())  _this.get_debug().log('[JSJaCJingle:single] SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
 
             // Error (descriptions are incompatible)
-            self.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
+            _this.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
           }
         );
 
@@ -8767,7 +8847,7 @@ function JSJaCJingleSingle(args) {
         for(i in sdp_remote.candidates) {
           cur_candidate_obj = sdp_remote.candidates[i];
 
-          self._get_peer_connection().addIceCandidate(
+          this.get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
               sdpMLineIndex : cur_candidate_obj.id,
               candidate     : cur_candidate_obj.candidate
@@ -8776,95 +8856,95 @@ function JSJaCJingleSingle(args) {
         }
 
         // Empty the unapplied candidates queue
-        self._set_candidates_queue_remote(null);
+        this.set_candidates_queue_remote(null);
 
         // Success reply
-        self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
+        this.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
       } else {
         // Trigger accept error callback
-        (self._get_session_accept_error())(self, stanza);
-        self.handle_session_accept_error(stanza);
+        (this.get_session_accept_error())(this, stanza);
+        this.handle_session_accept_error(stanza);
 
         // Send error reply
-        self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
+        this.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
 
-        self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_request > Error.', 1);
+        this.get_debug().log('[JSJaCJingle:single] handle_session_accept_request > Error.', 1);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_accept_request > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_accept_request > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session info
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_info', 4);
+  handle_session_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_info', 4);
 
     try {
       // Security preconditions
-      if(!self.util_stanza_safe(stanza)) {
-        self.get_debug().log('[JSJaCJingle:peer] handle_session_info > Dropped unsafe stanza.', 0);
+      if(!this.utils.stanza_safe(stanza)) {
+        this.get_debug().log('[JSJaCJingle:single] handle_session_info > Dropped unsafe stanza.', 0);
 
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+        this.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
         return;
       }
 
       // Can now safely dispatch the stanza
       switch(stanza.getType()) {
         case JSJAC_JINGLE_STANZA_TYPE_RESULT:
-          (self._get_session_info_success())(self, stanza);
-          self.handle_session_info_success(stanza);
+          (this.get_session_info_success())(this, stanza);
+          this.handle_session_info_success(stanza);
 
           break;
 
         case 'error':
-          (self._get_session_info_error())(self, stanza);
-          self.handle_session_info_error(stanza);
+          (this.get_session_info_error())(this, stanza);
+          this.handle_session_info_error(stanza);
 
           break;
 
         case JSJAC_JINGLE_STANZA_TYPE_SET:
-          (self._get_session_info_request())(self, stanza);
-          self.handle_session_info_request(stanza);
+          (this.get_session_info_request())(this, stanza);
+          this.handle_session_info_request(stanza);
 
           break;
 
         default:
-          self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+          this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_info > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session info success
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_info_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_info_success', 4);
-  };
+  handle_session_info_success: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_info_success', 4);
+  },
 
   /**
    * Handles the Jingle session info error
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_info_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_info_error', 4);
-  };
+  handle_session_info_error: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_info_error', 4);
+  },
 
   /**
    * Handles the Jingle session info request
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_info_request = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_info_request', 4);
+  handle_session_info_request: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_info_request', 4);
 
     try {
       // Parse stanza
-      var info_name = self.util_stanza_session_info(stanza);
+      var info_name = this.utils.stanza_session_info(stanza);
       var info_result = false;
 
       switch(info_name) {
@@ -8876,324 +8956,324 @@ function JSJaCJingleSingle(args) {
       }
 
       if(info_result) {
-        self.get_debug().log('[JSJaCJingle:peer] handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
+        this.get_debug().log('[JSJaCJingle:single] handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
 
         // Process info actions
-        self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
+        this.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
 
         // Trigger info success custom callback
-        (self._get_session_info_success())(self, stanza);
-        self.handle_session_info_success(stanza);
+        (this.get_session_info_success())(this, stanza);
+        this.handle_session_info_success(stanza);
       } else {
-        self.get_debug().log('[JSJaCJingle:peer] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ').', 1);
+        this.get_debug().log('[JSJaCJingle:single] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ').', 1);
 
         // Send error reply
-        self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+        this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
         // Trigger info error custom callback
-        (self._get_session_info_error())(self, stanza);
-        self.handle_session_info_error(stanza);
+        (this.get_session_info_error())(this, stanza);
+        this.handle_session_info_error(stanza);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_info_request > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_info_request > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session initiate
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_initiate = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate', 4);
+  handle_session_initiate: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_initiate', 4);
 
     try {
       switch(stanza.getType()) {
         case JSJAC_JINGLE_STANZA_TYPE_RESULT:
-          (self._get_session_initiate_success())(self, stanza);
-          self.handle_session_initiate_success(stanza);
+          (this.get_session_initiate_success())(this, stanza);
+          this.handle_session_initiate_success(stanza);
 
           break;
 
         case 'error':
-          (self._get_session_initiate_error())(self, stanza);
-          self.handle_session_initiate_error(stanza);
+          (this.get_session_initiate_error())(this, stanza);
+          this.handle_session_initiate_error(stanza);
 
           break;
 
         case JSJAC_JINGLE_STANZA_TYPE_SET:
-          (self._get_session_initiate_request())(self, stanza);
-          self.handle_session_initiate_request(stanza);
+          (this.get_session_initiate_request())(this, stanza);
+          this.handle_session_initiate_request(stanza);
 
           break;
 
         default:
-          self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+          this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_initiate > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session initiate success
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_initiate_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_success', 4);
+  handle_session_initiate_success: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_success', 4);
 
     try {
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_INITIATED);
+      this.set_status(JSJAC_JINGLE_STATUS_INITIATED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_success > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_success > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session initiate error
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_initiate_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_error', 4);
+  handle_session_initiate_error: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_error', 4);
 
     try {
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
+      this.set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
       // Stop WebRTC
-      self._peer_stop();
+      this.peer.stop();
 
       // Lock session (cannot be used later)
-      self._set_lock(true);
+      this.set_lock(true);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_error > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_error > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session initiate request
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_initiate_request = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_request', 4);
+  handle_session_initiate_request: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_request', 4);
 
     try {
       // Slot unavailable?
-      if(self.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
-        self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_request > Cannot handle, resource already initiated (status: ' + self.get_status() + ').', 0);
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
+      if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
+        this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_request > Cannot handle, resource already initiated (status: ' + this.get_status() + ').', 0);
+        this.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_INITIATING);
+      this.set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
       // Common vars
-      var rd_from = self.util_stanza_from(stanza);
-      var rd_sid  = self.util_stanza_sid(stanza);
+      var rd_from = this.utils.stanza_from(stanza);
+      var rd_sid  = this.utils.stanza_sid(stanza);
 
       // Request is valid?
-      if(rd_sid && self._util_stanza_parse_content(stanza)) {
+      if(rd_sid && this.utils.stanza_parse_content(stanza)) {
         // Handle additional data (optional)
-        self._util_stanza_parse_group(stanza);
+        this.utils.stanza_parse_group(stanza);
 
         // Set session values
-        self._set_sid(rd_sid);
-        self._set_to(rd_from);
-        self._set_initiator(rd_from);
-        self._set_responder(self.util_connection_jid());
+        this.set_sid(rd_sid);
+        this.set_to(rd_from);
+        this.set_initiator(rd_from);
+        this.set_responder(this.utils.connection_jid());
 
         // Register session to common router
-        JSJaCJingle_add(rd_sid, self);
+        JSJaCJingle_add(rd_sid, this);
 
         // Generate and store content data
-        self._util_build_content_remote();
+        this.utils.build_content_remote();
 
         // Video or audio-only session?
-        if(JSJAC_JINGLE_MEDIA_VIDEO in self._get_content_remote()) {
-          self._set_media(JSJAC_JINGLE_MEDIA_VIDEO);
-        } else if(JSJAC_JINGLE_MEDIA_AUDIO in self._get_content_remote()) {
-          self._set_media(JSJAC_JINGLE_MEDIA_AUDIO);
+        if(JSJAC_JINGLE_MEDIA_VIDEO in this.get_content_remote()) {
+          this.set_media(JSJAC_JINGLE_MEDIA_VIDEO);
+        } else if(JSJAC_JINGLE_MEDIA_AUDIO in this.get_content_remote()) {
+          this.set_media(JSJAC_JINGLE_MEDIA_AUDIO);
         } else {
           // Session initiation not done
-          (self._get_session_initiate_error())(self, stanza);
-          self.handle_session_initiate_error(stanza);
+          (this.get_session_initiate_error())(this, stanza);
+          this.handle_session_initiate_error(stanza);
 
           // Error (no media is supported)
-          self.terminate(JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS);
+          this.terminate(JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS);
 
-          self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_request > Error (unsupported media).', 1);
+          this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_request > Error (unsupported media).', 1);
           return;
         }
 
         // Session initiate done
-        (self._get_session_initiate_success())(self, stanza);
-        self.handle_session_initiate_success(stanza);
+        (this.get_session_initiate_success())(this, stanza);
+        this.handle_session_initiate_success(stanza);
 
-        self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
+        this.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
       } else {
         // Session initiation not done
-        (self._get_session_initiate_error())(self, stanza);
-        self.handle_session_initiate_error(stanza);
+        (this.get_session_initiate_error())(this, stanza);
+        this.handle_session_initiate_error(stanza);
 
         // Send error reply
-        self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
+        this.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
 
-        self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_request > Error (bad request).', 1);
+        this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_request > Error (bad request).', 1);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_initiate_request > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_request > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session terminate
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_terminate = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate', 4);
+  handle_session_terminate: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_terminate', 4);
 
     try {
       var type = stanza.getType();
 
       // Security preconditions
-      if(!self.util_stanza_safe(stanza)) {
-        self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate > Dropped unsafe stanza.', 0);
+      if(!this.utils.stanza_safe(stanza)) {
+        this.get_debug().log('[JSJaCJingle:single] handle_session_terminate > Dropped unsafe stanza.', 0);
 
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+        this.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
         return;
       }
 
       // Can now safely dispatch the stanza
       switch(stanza.getType()) {
         case JSJAC_JINGLE_STANZA_TYPE_RESULT:
-          (self._get_session_terminate_success())(self, stanza);
-          self.handle_session_terminate_success(stanza);
+          (this.get_session_terminate_success())(this, stanza);
+          this.handle_session_terminate_success(stanza);
 
           break;
 
         case 'error':
-          (self._get_session_terminate_error())(self, stanza);
-          self.handle_session_terminate_error(stanza);
+          (this.get_session_terminate_error())(this, stanza);
+          this.handle_session_terminate_error(stanza);
 
           break;
 
         case JSJAC_JINGLE_STANZA_TYPE_SET:
-          (self._get_session_terminate_request())(self, stanza);
-          self.handle_session_terminate_request(stanza);
+          (this.get_session_terminate_request())(this, stanza);
+          this.handle_session_terminate_request(stanza);
 
           break;
 
         default:
-          self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+          this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session terminate success
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_terminate_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_success', 4);
+  handle_session_terminate_success: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_success', 4);
 
     try {
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
+      this.set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
       // Stop WebRTC
-      self._peer_stop();
+      this.peer.stop();
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_success > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_success > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session terminate error
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_terminate_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_error', 4);
+  handle_session_terminate_error: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_error', 4);
 
     try {
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
+      this.set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
       // Stop WebRTC
-      self._peer_stop();
+      this.peer.stop();
 
       // Lock session (cannot be used later)
-      self._set_lock(true);
+      this.set_lock(true);
 
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_error > Forced session termination locally.', 0);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_error > Forced session termination locally.', 0);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_error > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_error > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle session terminate request
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_session_terminate_request = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_request', 4);
+  handle_session_terminate_request: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_request', 4);
 
     try {
       // Slot unavailable?
-      if(self.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || self.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
-        self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_request > Cannot handle, resource not active (status: ' + self.get_status() + ').', 0);
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
+      if(this.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
+        this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_request > Cannot handle, resource not active (status: ' + this.get_status() + ').', 0);
+        this.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
       // Change session status
-      self._set_status(JSJAC_JINGLE_STATUS_TERMINATING);
+      this.set_status(JSJAC_JINGLE_STATUS_TERMINATING);
 
       // Store termination reason
-      self._set_reason(self.util_stanza_terminate_reason(stanza));
+      this.set_reason(this.utils.stanza_terminate_reason(stanza));
 
       // Trigger terminate success callbacks
-      (self._get_session_terminate_success())(self, stanza);
-      self.handle_session_terminate_success(stanza);
+      (this.get_session_terminate_success())(this, stanza);
+      this.handle_session_terminate_success(stanza);
 
       // Process terminate actions
-      self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
+      this.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
 
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_request > (reason: ' + self.get_reason() + ').', 3);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_request > (reason: ' + this.get_reason() + ').', 3);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_session_terminate_request > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_request > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle transport accept
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_transport_accept = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_transport_accept', 4);
+  handle_transport_accept: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_transport_accept', 4);
 
     try {
       // Not implemented for now
-      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_content_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_content_accept > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle transport info
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_transport_info = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_transport_info', 4);
+  handle_transport_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_transport_info', 4);
 
     try {
       // Slot unavailable?
-      if(self.get_status() != JSJAC_JINGLE_STATUS_INITIATED && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && self.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
-        self.get_debug().log('[JSJaCJingle:peer] handle_transport_info > Cannot handle, resource not initiated, nor accepting, nor accepted (status: ' + self.get_status() + ').', 0);
-        self.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
+      if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
+        this.get_debug().log('[JSJaCJingle:single] handle_transport_info > Cannot handle, resource not initiated, nor accepting, nor accepted (status: ' + this.get_status() + ').', 0);
+        this.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
@@ -9201,26 +9281,26 @@ function JSJaCJingleSingle(args) {
       var i, cur_candidate_obj;
 
       // Parse the incoming transport
-      var rd_sid = self.util_stanza_sid(stanza);
+      var rd_sid = this.utils.stanza_sid(stanza);
 
       // Request is valid?
-      if(rd_sid && self._util_stanza_parse_content(stanza)) {
+      if(rd_sid && this.utils.stanza_parse_content(stanza)) {
         // Handle additional data (optional)
         // Still unsure if it is relevant to parse groups there... (are they allowed in such stanza?)
-        //self._util_stanza_parse_group(stanza);
+        //this.utils.stanza_parse_group(stanza);
 
         // Re-generate and store new content data
-        self._util_build_content_remote();
+        this.utils.build_content_remote();
 
-        var sdp_candidates_remote = self._util_sdp_generate_candidates(
-          self._get_candidates_queue_remote()
+        var sdp_candidates_remote = this.utils.sdp_generate_candidates(
+          this.get_candidates_queue_remote()
         );
 
         // ICE candidates
         for(i in sdp_candidates_remote) {
           cur_candidate_obj = sdp_candidates_remote[i];
 
-          self._get_peer_connection().addIceCandidate(
+          this.get_peer_connection().addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
               sdpMLineIndex : cur_candidate_obj.id,
               candidate     : cur_candidate_obj.candidate
@@ -9229,91 +9309,67 @@ function JSJaCJingleSingle(args) {
         }
 
         // Empty the unapplied candidates queue
-        self._set_candidates_queue_remote(null);
+        this.set_candidates_queue_remote(null);
 
         // Success reply
-        self.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
+        this.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
       } else {
         // Send error reply
-        self.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
+        this.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
 
-        self.get_debug().log('[JSJaCJingle:peer] handle_transport_info > Error.', 1);
+        this.get_debug().log('[JSJaCJingle:single] handle_transport_info > Error.', 1);
       }
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_transport_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_transport_info > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle transport info success
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_transport_info_success = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_transport_info_success', 4);
-  };
+  handle_transport_info_success: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_transport_info_success', 4);
+  },
 
   /**
    * Handles the Jingle transport info error
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_transport_info_error = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_transport_info_error', 4);
-  };
+  handle_transport_info_error: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_transport_info_error', 4);
+  },
 
   /**
    * Handles the Jingle transport reject
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_transport_reject = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_transport_reject', 4);
+  handle_transport_reject: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_transport_reject', 4);
 
     try {
       // Not implemented for now
-      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_transport_reject > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_transport_reject > ' + e, 1);
     }
-  };
+  },
 
   /**
    * Handles the Jingle transport replace
    * @param {JSJaCPacket} stanza Jingle handled stanza
    */
-  self.handle_transport_replace = function(stanza) {
-    self.get_debug().log('[JSJaCJingle:peer] handle_transport_replace', 4);
+  handle_transport_replace: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] handle_transport_replace', 4);
 
     try {
       // Not implemented for now
-      self.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      self.get_debug().log('[JSJaCJingle:peer] handle_transport_replace > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] handle_transport_replace > ' + e, 1);
     }
-  };
-
-
-
-  /**
-   * JSJSAC JINGLE SHORTCUTS
-   */
-
-  /**
-   * Am I responder?
-   * @return Receiver state
-   * @type boolean
-   */
-  self.is_responder = function() {
-    return self.util_negotiation_status() == JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
-  };
-
-  /**
-   * Am I initiator?
-   * @return Initiator state
-   * @type boolean
-   */
-  self.is_initiator = function() {
-    return self.util_negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
-  };
-}
+  },
+});
 
 /**
  * @fileoverview JSJaC Jingle library - Multi-user call lib
@@ -9332,180 +9388,11 @@ function JSJaCJingleSingle(args) {
  * @param {Object} args Jingle session arguments.
  * @param {*} args.* Herits of JSJaCJingle() prototype
  */
-function JSJaCJingleMuji(args) {
-  if(typeof args != 'object')  args = {};
-  args.is_muji = true;
-
-  return (new JSJaCJingle(args));
-}
-
-/**
- * @fileoverview JSJaC Jingle library - Common components
- *
- * @url https://github.com/valeriansaliou/jsjac-jingle
- * @depends https://github.com/sstrigler/JSJaC
- * @author Valérian Saliou https://valeriansaliou.name/
- * @license Mozilla Public License v2.0 (MPL v2.0)
- */
-
-
-/**
- * Listens for Jingle events
- */
-function JSJaCJingle_listen(args) {
-  try {
-    if(args && args.connection)
-      JSJAC_JINGLE_STORE_CONNECTION = args.connection;
-
-    if(args && args.initiate)
-      JSJAC_JINGLE_STORE_INITIATE = args.initiate;
-
-    if(args && args.debug)
-      JSJAC_JINGLE_STORE_DEBUG = args.debug;
-
-    // Incoming IQs handler
-    JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', JSJaCJingle_route);
-
-    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:listen > Listening.', 2);
-
-    // Discover available network services
-    if(!args || args.extdisco !== false)
-      JSJaCJingle_extdisco();
-    if(!args || args.relaynodes !== false)
-      JSJaCJingle_relaynodes();
-    if(args.fallback && typeof args.fallback === 'string')
-      JSJaCJingle_fallback(args.fallback);
-  } catch(e) {
-    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:listen > ' + e, 1);
-  }
-}
-
-/**
- * Routes Jingle stanzas
- */
-function JSJaCJingle_route(stanza) {
-  try {
-    var action = null;
-    var sid    = null;
-
-    // Route the incoming stanza
-    var jingle = stanza.getChild('jingle', NS_JINGLE);
-
-    if(jingle) {
-      sid = jingle.getAttribute('sid');
-      action = jingle.getAttribute('action');
-    } else {
-      var stanza_id = stanza.getID();
-
-      if(stanza_id) {
-        var is_jingle = stanza_id.indexOf(JSJAC_JINGLE_STANZA_ID_PRE + '_') !== -1;
-
-        if(is_jingle) {
-          var stanza_id_split = stanza_id.split('_');
-          sid = stanza_id_split[1];
-        }
-      }
-    }
-
-    // WebRTC not available ATM?
-    if(jingle && !JSJAC_JINGLE_AVAILABLE) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Dropped Jingle packet (WebRTC not available).', 0);
-
-      (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
-    } else {
-      // New session? Or registered one?
-      var session_route = JSJaCJingle_read(sid);
-
-      if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route === null) {
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > New Jingle session (sid: ' + sid + ').', 2);
-
-        JSJAC_JINGLE_STORE_INITIATE(stanza);
-      } else if(sid) {
-        if(session_route !== null) {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Routed to Jingle session (sid: ' + sid + ').', 2);
-
-          session_route.handle(stanza);
-        } else if(stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && stanza.getFrom()) {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Unknown Jingle session (sid: ' + sid + ').', 0);
-
-          (new JSJaCJingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
-        }
-      }
-    }
-  } catch(e) {
-    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > ' + e, 1);
-  }
-}
-
-/**
- * Adds a new Jingle session
- */
-function JSJaCJingle_add(sid, obj) {
-  JSJAC_JINGLE_STORE_SESSIONS[sid] = obj;
-}
-
-/**
- * Reads a new Jingle session
- * @return Session
- * @type object
- */
-function JSJaCJingle_read(sid) {
-  return (sid in JSJAC_JINGLE_STORE_SESSIONS) ? JSJAC_JINGLE_STORE_SESSIONS[sid] : null;
-}
-
-/**
- * Removes a new Jingle session
- */
-function JSJaCJingle_remove(sid) {
-  delete JSJAC_JINGLE_STORE_SESSIONS[sid];
-}
-
-/**
- * Defer given task/execute deferred tasks
- */
-function JSJaCJingle_defer(arg) {
-  try {
-    if(typeof arg == 'function') {
-      // Deferring?
-      if(JSJAC_JINGLE_STORE_DEFER.deferred) {
-        (JSJAC_JINGLE_STORE_DEFER.fn).push(arg);
-
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Registered a function to be executed once ready.', 2);
-      }
-
-      return JSJAC_JINGLE_STORE_DEFER.deferred;
-    } else if(!arg || typeof arg == 'boolean') {
-      JSJAC_JINGLE_STORE_DEFER.deferred = (arg === true);
-
-      if(JSJAC_JINGLE_STORE_DEFER.deferred === false) {
-        // Execute deferred tasks?
-        if((--JSJAC_JINGLE_STORE_DEFER.count) <= 0) {
-          JSJAC_JINGLE_STORE_DEFER.count = 0;
-
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Executing ' + JSJAC_JINGLE_STORE_DEFER.fn.length + ' deferred functions...', 2);
-
-          while(JSJAC_JINGLE_STORE_DEFER.fn.length)
-            ((JSJAC_JINGLE_STORE_DEFER.fn).shift())();
-
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Done executing deferred functions.', 2);
-        }
-      } else {
-        ++JSJAC_JINGLE_STORE_DEFER.count;
-      }
-    }
-  } catch(e) {
-    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > ' + e, 1);
-  }
-}
-
-/**
- * Maps the Jingle disco features
- * @return Feature namespaces
- * @type array
- */
-function JSJaCJingle_disco() {
-  return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];
-}
+var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
+  constructor: function() {
+    this.is_muji = true;
+  },
+});
 
 /**
  * @fileoverview JSJaC Jingle library - Initialization components
@@ -9517,256 +9404,428 @@ function JSJaCJingle_disco() {
  */
 
 
-/**
- * Query the server for external services
- */
-function JSJaCJingle_extdisco() {
-  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > Discovering available services...', 2);
+var JSJaCJingleInit = (new ring.create({
+  /**
+   * Query the server for external services
+   */
+  extdisco: function() {
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > Discovering available services...', 2);
 
-  try {
-    // Pending state (defer other requests)
-    JSJaCJingle_defer(true);
+    try {
+      // Pending state (defer other requests)
+      JSJaCJingle_defer(true);
 
-    // Build request
-    var request = new JSJaCIQ();
+      // Build request
+      var request = new JSJaCIQ();
 
-    request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
-    request.setType(JSJAC_JINGLE_STANZA_TYPE_GET);
+      request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
+      request.setType(JSJAC_JINGLE_STANZA_TYPE_GET);
 
-    request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_EXTDISCO }));
+      request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_EXTDISCO }));
 
-    JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
-      try {
-        // Parse response
-        if(response.getType() == JSJAC_JINGLE_STANZA_TYPE_RESULT) {
-          var i,
-              service_arr, cur_service,
-              cur_host, cur_password, cur_port, cur_transport, cur_type, cur_username;
+      JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
+        try {
+          // Parse response
+          if(response.getType() == JSJAC_JINGLE_STANZA_TYPE_RESULT) {
+            var i,
+                service_arr, cur_service,
+                cur_host, cur_password, cur_port, cur_transport, cur_type, cur_username;
 
-          var services = response.getChild('services', NS_EXTDISCO);
+            var services = response.getChild('services', NS_EXTDISCO);
 
-          if(services) {
-            service_arr = services.getElementsByTagNameNS(NS_EXTDISCO, 'service');
+            if(services) {
+              service_arr = services.getElementsByTagNameNS(NS_EXTDISCO, 'service');
 
-            for(i = 0; i < service_arr.length; i++) {
-              cur_service = service_arr[i];
+              for(i = 0; i < service_arr.length; i++) {
+                cur_service = service_arr[i];
 
-              cur_host      = cur_service.getAttribute('host')       || null;
-              cur_port      = cur_service.getAttribute('port')       || null;
-              cur_transport = cur_service.getAttribute('transport')  || null;
-              cur_type      = cur_service.getAttribute('type')       || null;
+                cur_host      = cur_service.getAttribute('host')       || null;
+                cur_port      = cur_service.getAttribute('port')       || null;
+                cur_transport = cur_service.getAttribute('transport')  || null;
+                cur_type      = cur_service.getAttribute('type')       || null;
 
-              cur_username  = cur_service.getAttribute('username')   || null;
-              cur_password  = cur_service.getAttribute('password')   || null;
+                cur_username  = cur_service.getAttribute('username')   || null;
+                cur_password  = cur_service.getAttribute('password')   || null;
 
-              if(!cur_host || !cur_type)  continue;
+                if(!cur_host || !cur_type)  continue;
 
-              if(!(cur_type in JSJAC_JINGLE_STORE_EXTDISCO)) {
-                JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
-                continue;
-              }
-
-              JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host] = {
-                'port'      : cur_port,
-                'transport' : cur_transport,
-                'type'      : cur_type
-              };
-
-              if(cur_type == 'turn') {
-                JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host].username = cur_username;
-                JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host].password = cur_password;
-              }
-
-              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > handle > Service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
-            }
-          }
-
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > handle > Discovered available services.', 2);
-        } else {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > handle > Could not discover services (server might not support XEP-0215).', 0);
-        }
-      } catch(e) {
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > handle > ' + e, 1);
-      }
-
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > Ready.', 2);
-
-      // Execute deferred requests
-      JSJaCJingle_defer(false);
-    });
-  } catch(e) {
-    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:extdisco > ' + e, 1);
-    
-    // Execute deferred requests
-    JSJaCJingle_defer(false);
-  }
-}
-
-/**
- * Query the server for Jingle Relay Nodes services
- */
-function JSJaCJingle_relaynodes() {
-  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > Discovering available Jingle Relay Nodes services...', 2);
-
-  try {
-    // Pending state (defer other requests)
-    JSJaCJingle_defer(true);
-
-    // Build request
-    var request = new JSJaCIQ();
-
-    request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
-    request.setType(JSJAC_JINGLE_STANZA_TYPE_GET);
-
-    request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_JABBER_JINGLENODES }));
-
-    JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
-      try {
-        // Parse response
-        if(response.getType() == JSJAC_JINGLE_STANZA_TYPE_RESULT) {
-          var i,
-              stun_arr, cur_stun,
-              cur_policy, cur_address, cur_protocol;
-
-          var services = response.getChild('services', NS_JABBER_JINGLENODES);
-
-          if(services) {
-            // Parse STUN servers
-            stun_arr = services.getElementsByTagNameNS(NS_JABBER_JINGLENODES, 'stun');
-
-            for(i = 0; i < stun_arr.length; i++) {
-              cur_stun = stun_arr[i];
-
-              cur_policy    = cur_stun.getAttribute('policy')    || null;
-              cur_address   = cur_stun.getAttribute('address')   || null;
-              cur_port      = cur_stun.getAttribute('port')      || null;
-              cur_protocol  = cur_stun.getAttribute('protocol')  || null;
-
-              if(!cur_address || !cur_protocol || !cur_policy || (cur_policy && cur_policy != 'public'))  continue;
-
-              JSJAC_JINGLE_STORE_RELAYNODES.stun[cur_address] = {
-                'port'      : cur_port,
-                'transport' : cur_protocol,
-                'type'      : 'stun'
-              };
-
-              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > handle > STUN service stored (address: ' + cur_address + ', port: ' + cur_port + ', policy: ' + cur_policy + ', protocol: ' + cur_protocol + ').', 4);
-            }
-          }
-
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > handle > Discovered available Jingle Relay Nodes services.', 2);
-        } else {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > handle > Could not discover Jingle Relay Nodes services (server might not support XEP-0278).', 0);
-        }
-      } catch(e) {
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > handle > ' + e, 1);
-      }
-
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > Ready.', 2);
-
-      // Execute deferred requests
-      JSJaCJingle_defer(false);
-    });
-  } catch(e) {
-    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:relaynodes > ' + e, 1);
-    
-    // Execute deferred requests
-    JSJaCJingle_defer(false);
-  }
-}
-
-/**
- * Query some external APIs for fallback STUN/TURN (must be configured)
- */
-function JSJaCJingle_fallback(fallback_url) {
-  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > Discovering fallback services...', 2);
-
-  try {
-    // Pending state (defer other requests)
-    JSJaCJingle_defer(true);
-
-    // Generate fallback API URL
-    fallback_url += '?username=' + 
-                    encodeURIComponent(JSJAC_JINGLE_STORE_CONNECTION.username + '@' + JSJAC_JINGLE_STORE_CONNECTION.domain);
-
-    // Proceed request
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', fallback_url, true);
-
-    xhr.onreadystatechange = function() {
-      if(xhr.readyState === 4) {
-        // Success?
-        if(xhr.status === 200) {
-          var data = JSON.parse(xhr.responseText);
-
-          var cur_parse,
-              i, cur_url,
-              cur_type, cur_host, cur_port, cur_transport,
-              cur_username, cur_password;
-
-          if(data.uris && data.uris.length) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Parsing ' + data.uris.length + ' URIs...', 2);
-
-            for(i in data.uris) {
-              cur_url = data.uris[i];
-
-              if(cur_url) {
-                // Parse current URL
-                cur_parse = R_JSJAC_JINGLE_SERVICE_URI.exec(cur_url);
-
-                if(cur_parse) {
-                  cur_type = cur_parse[1]        || null;
-                  cur_host = cur_parse[2]        || null;
-                  cur_port = cur_parse[3]        || null;
-                  cur_transport = cur_parse[4]   || null;
-
-                  cur_username  = data.username  || null;
-                  cur_password  = data.password  || null;
-
-                  if(!cur_host || !cur_type)  continue;
-
-                  if(!(cur_type in JSJAC_JINGLE_STORE_FALLBACK)) {
-                    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
-                    continue;
-                  }
-
-                  JSJAC_JINGLE_STORE_FALLBACK[cur_type][cur_host] = {
-                    'port'      : cur_port,
-                    'transport' : cur_transport,
-                    'type'      : cur_type
-                  };
-
-                  if(cur_type == 'turn') {
-                    JSJAC_JINGLE_STORE_FALLBACK[cur_type][cur_host].username = cur_username;
-                    JSJAC_JINGLE_STORE_FALLBACK[cur_type][cur_host].password = cur_password;
-                  }
-
-                  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Fallback service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
-                } else {
-                  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Fallback service not stored, weird URI (' + cur_url + ').', 0);
+                if(!(cur_type in JSJAC_JINGLE_STORE_EXTDISCO)) {
+                  JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
+                  continue;
                 }
+
+                JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host] = {
+                  'port'      : cur_port,
+                  'transport' : cur_transport,
+                  'type'      : cur_type
+                };
+
+                if(cur_type == 'turn') {
+                  JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host].username = cur_username;
+                  JSJAC_JINGLE_STORE_EXTDISCO[cur_type][cur_host].password = cur_password;
+                }
+
+                JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > handle > Service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
               }
             }
 
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Finished parsing URIs.', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > handle > Discovered available services.', 2);
           } else {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > No URI to parse.', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > handle > Could not discover services (server might not support XEP-0215).', 0);
           }
-
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Discovered fallback services.', 2);
-        } else {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > handle > Could not discover fallback services (API malfunction).', 0);
+        } catch(e) {
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > handle > ' + e, 1);
         }
 
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > Ready.', 2);
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > Ready.', 2);
 
         // Execute deferred requests
         JSJaCJingle_defer(false);
-      }
-    };
+      });
+    } catch(e) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > ' + e, 1);
+      
+      // Execute deferred requests
+      JSJaCJingle_defer(false);
+    }
+  },
 
-    xhr.send();
-  } catch(e) {
-    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:fallback > ' + e, 1);
-  }
-}
+  /**
+   * Query the server for Jingle Relay Nodes services
+   */
+  relaynodes: function() {
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > Discovering available Jingle Relay Nodes services...', 2);
+
+    try {
+      // Pending state (defer other requests)
+      JSJaCJingle_defer(true);
+
+      // Build request
+      var request = new JSJaCIQ();
+
+      request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
+      request.setType(JSJAC_JINGLE_STANZA_TYPE_GET);
+
+      request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_JABBER_JINGLENODES }));
+
+      JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
+        try {
+          // Parse response
+          if(response.getType() == JSJAC_JINGLE_STANZA_TYPE_RESULT) {
+            var i,
+                stun_arr, cur_stun,
+                cur_policy, cur_address, cur_protocol;
+
+            var services = response.getChild('services', NS_JABBER_JINGLENODES);
+
+            if(services) {
+              // Parse STUN servers
+              stun_arr = services.getElementsByTagNameNS(NS_JABBER_JINGLENODES, 'stun');
+
+              for(i = 0; i < stun_arr.length; i++) {
+                cur_stun = stun_arr[i];
+
+                cur_policy    = cur_stun.getAttribute('policy')    || null;
+                cur_address   = cur_stun.getAttribute('address')   || null;
+                cur_port      = cur_stun.getAttribute('port')      || null;
+                cur_protocol  = cur_stun.getAttribute('protocol')  || null;
+
+                if(!cur_address || !cur_protocol || !cur_policy || (cur_policy && cur_policy != 'public'))  continue;
+
+                JSJAC_JINGLE_STORE_RELAYNODES.stun[cur_address] = {
+                  'port'      : cur_port,
+                  'transport' : cur_protocol,
+                  'type'      : 'stun'
+                };
+
+                JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > handle > STUN service stored (address: ' + cur_address + ', port: ' + cur_port + ', policy: ' + cur_policy + ', protocol: ' + cur_protocol + ').', 4);
+              }
+            }
+
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > handle > Discovered available Jingle Relay Nodes services.', 2);
+          } else {
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > handle > Could not discover Jingle Relay Nodes services (server might not support XEP-0278).', 0);
+          }
+        } catch(e) {
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > handle > ' + e, 1);
+        }
+
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > Ready.', 2);
+
+        // Execute deferred requests
+        JSJaCJingle_defer(false);
+      });
+    } catch(e) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > ' + e, 1);
+      
+      // Execute deferred requests
+      JSJaCJingle_defer(false);
+    }
+  },
+
+  /**
+   * Query some external APIs for fallback STUN/TURN (must be configured)
+   */
+  fallback: function(fallback_url) {
+    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > Discovering fallback services...', 2);
+
+    try {
+      // Pending state (defer other requests)
+      JSJaCJingle_defer(true);
+
+      // Generate fallback API URL
+      fallback_url += '?username=' + 
+                      encodeURIComponent(JSJAC_JINGLE_STORE_CONNECTION.username + '@' + JSJAC_JINGLE_STORE_CONNECTION.domain);
+
+      // Proceed request
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', fallback_url, true);
+
+      xhr.onreadystatechange = function() {
+        if(xhr.readyState === 4) {
+          // Success?
+          if(xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+
+            var cur_parse,
+                i, cur_url,
+                cur_type, cur_host, cur_port, cur_transport,
+                cur_username, cur_password;
+
+            if(data.uris && data.uris.length) {
+              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Parsing ' + data.uris.length + ' URIs...', 2);
+
+              for(i in data.uris) {
+                cur_url = data.uris[i];
+
+                if(cur_url) {
+                  // Parse current URL
+                  cur_parse = R_JSJAC_JINGLE_SERVICE_URI.exec(cur_url);
+
+                  if(cur_parse) {
+                    cur_type = cur_parse[1]        || null;
+                    cur_host = cur_parse[2]        || null;
+                    cur_port = cur_parse[3]        || null;
+                    cur_transport = cur_parse[4]   || null;
+
+                    cur_username  = data.username  || null;
+                    cur_password  = data.password  || null;
+
+                    if(!cur_host || !cur_type)  continue;
+
+                    if(!(cur_type in JSJAC_JINGLE_STORE_FALLBACK)) {
+                      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
+                      continue;
+                    }
+
+                    JSJAC_JINGLE_STORE_FALLBACK[cur_type][cur_host] = {
+                      'port'      : cur_port,
+                      'transport' : cur_transport,
+                      'type'      : cur_type
+                    };
+
+                    if(cur_type == 'turn') {
+                      JSJAC_JINGLE_STORE_FALLBACK[cur_type][cur_host].username = cur_username;
+                      JSJAC_JINGLE_STORE_FALLBACK[cur_type][cur_host].password = cur_password;
+                    }
+
+                    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Fallback service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
+                  } else {
+                    JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Fallback service not stored, weird URI (' + cur_url + ').', 0);
+                  }
+                }
+              }
+
+              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Finished parsing URIs.', 2);
+            } else {
+              JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > No URI to parse.', 2);
+            }
+
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Discovered fallback services.', 2);
+          } else {
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > handle > Could not discover fallback services (API malfunction).', 0);
+          }
+
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > Ready.', 2);
+
+          // Execute deferred requests
+          JSJaCJingle_defer(false);
+        }
+      };
+
+      xhr.send();
+    } catch(e) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > ' + e, 1);
+    }
+  },
+}));
+
+/**
+ * @fileoverview JSJaC Jingle library - Common components
+ *
+ * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @depends https://github.com/sstrigler/JSJaC
+ * @author Valérian Saliou https://valeriansaliou.name/
+ * @license Mozilla Public License v2.0 (MPL v2.0)
+ */
+
+
+var JSJaCJingle = (new ring.create({
+  /**
+   * Listens for Jingle events
+   */
+  listen: function(args) {
+    try {
+      if(args && args.connection)
+        JSJAC_JINGLE_STORE_CONNECTION = args.connection;
+
+      if(args && args.initiate)
+        JSJAC_JINGLE_STORE_INITIATE = args.initiate;
+
+      if(args && args.debug)
+        JSJAC_JINGLE_STORE_DEBUG = args.debug;
+
+      // Incoming IQs handler
+      JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', this.route);
+
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:listen > Listening.', 2);
+
+      // Discover available network services
+      if(!args || args.extdisco !== false)
+        JSJaCJingle_extdisco();
+      if(!args || args.relaynodes !== false)
+        JSJaCJingle_relaynodes();
+      if(args.fallback && typeof args.fallback === 'string')
+        JSJaCJingle_fallback(args.fallback);
+    } catch(e) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:listen > ' + e, 1);
+    }
+  },
+
+  /**
+   * Routes Jingle stanzas
+   */
+  route: function(stanza) {
+    try {
+      var action = null;
+      var sid    = null;
+
+      // Route the incoming stanza
+      var jingle = stanza.getChild('jingle', NS_JINGLE);
+
+      if(jingle) {
+        sid = jingle.getAttribute('sid');
+        action = jingle.getAttribute('action');
+      } else {
+        var stanza_id = stanza.getID();
+
+        if(stanza_id) {
+          var is_jingle = stanza_id.indexOf(JSJAC_JINGLE_STANZA_ID_PRE + '_') !== -1;
+
+          if(is_jingle) {
+            var stanza_id_split = stanza_id.split('_');
+            sid = stanza_id_split[1];
+          }
+        }
+      }
+
+      // WebRTC not available ATM?
+      if(jingle && !JSJAC_JINGLE_AVAILABLE) {
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Dropped Jingle packet (WebRTC not available).', 0);
+
+        (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
+      } else {
+        // New session? Or registered one?
+        var session_route = this.read(sid);
+
+        if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route === null) {
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > New Jingle session (sid: ' + sid + ').', 2);
+
+          JSJAC_JINGLE_STORE_INITIATE(stanza);
+        } else if(sid) {
+          if(session_route !== null) {
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Routed to Jingle session (sid: ' + sid + ').', 2);
+
+            session_route.handle(stanza);
+          } else if(stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && stanza.getFrom()) {
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Unknown Jingle session (sid: ' + sid + ').', 0);
+
+            (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+          }
+        }
+      }
+    } catch(e) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > ' + e, 1);
+    }
+  },
+
+  /**
+   * Adds a new Jingle session
+   */
+  add: function(sid, obj) {
+    JSJAC_JINGLE_STORE_SESSIONS[sid] = obj;
+  },
+
+  /**
+   * Reads a new Jingle session
+   * @return Session
+   * @type object
+   */
+  read: function(sid) {
+    return (sid in JSJAC_JINGLE_STORE_SESSIONS) ? JSJAC_JINGLE_STORE_SESSIONS[sid] : null;
+  },
+
+  /**
+   * Removes a new Jingle session
+   */
+  remove: function(sid) {
+    delete JSJAC_JINGLE_STORE_SESSIONS[sid];
+  },
+
+  /**
+   * Defer given task/execute deferred tasks
+   */
+  defer: function(arg) {
+    try {
+      if(typeof arg == 'function') {
+        // Deferring?
+        if(JSJAC_JINGLE_STORE_DEFER.deferred) {
+          (JSJAC_JINGLE_STORE_DEFER.fn).push(arg);
+
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Registered a function to be executed once ready.', 2);
+        }
+
+        return JSJAC_JINGLE_STORE_DEFER.deferred;
+      } else if(!arg || typeof arg == 'boolean') {
+        JSJAC_JINGLE_STORE_DEFER.deferred = (arg === true);
+
+        if(JSJAC_JINGLE_STORE_DEFER.deferred === false) {
+          // Execute deferred tasks?
+          if((--JSJAC_JINGLE_STORE_DEFER.count) <= 0) {
+            JSJAC_JINGLE_STORE_DEFER.count = 0;
+
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Executing ' + JSJAC_JINGLE_STORE_DEFER.fn.length + ' deferred functions...', 2);
+
+            while(JSJAC_JINGLE_STORE_DEFER.fn.length)
+              ((JSJAC_JINGLE_STORE_DEFER.fn).shift())();
+
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Done executing deferred functions.', 2);
+          }
+        } else {
+          ++JSJAC_JINGLE_STORE_DEFER.count;
+        }
+      }
+    } catch(e) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > ' + e, 1);
+    }
+  },
+
+  /**
+   * Maps the Jingle disco features
+   * @return Feature namespaces
+   * @type array
+   */
+  disco: function() {
+    return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];
+  },
+}));

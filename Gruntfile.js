@@ -39,11 +39,12 @@ module.exports = function(grunt) {
     'src/jsjac.jingle.base.js',
     'src/jsjac.jingle.single.js',
     'src/jsjac.jingle.muji.js',
-    'src/jsjac.jingle.commons.js',
-    'src/jsjac.jingle.init.js'
+    'src/jsjac.jingle.init.js',
+    'src/jsjac.jingle.main.js'
   ];
 
-  var GRUNT_FILES = GRUNT_LIB_FILES.concat(GRUNT_SRC_FILES);
+  var GRUNT_CONCAT_FILES = GRUNT_LIB_FILES.concat(GRUNT_SRC_FILES);
+  var GRUNT_LINT_FILES = GRUNT_SRC_FILES;
 
 
   // Map functions
@@ -91,7 +92,7 @@ module.exports = function(grunt) {
 
     // Task: JSHint
     jshint: {
-      files: ['./build/jsjac.jingle.js']
+      files: GRUNT_LINT_FILES
     },
 
 
@@ -103,7 +104,7 @@ module.exports = function(grunt) {
 
       all: {
         files: [{
-          src: GRUNT_FILES,
+          src: GRUNT_CONCAT_FILES,
           dest: 'tmp/jsjac.jingle.js',
         }]
       }
