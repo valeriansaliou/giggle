@@ -38,6 +38,24 @@ module.exports = function(grunt) {
   ];
 
 
+  // Map functions
+  var fn_generate_banner = function(type) {
+    return '/**\n' + 
+           ' * <%= pkg.name %> [' + type + ']\n' + 
+           ' * @fileoverview <%= pkg.description %>\n' + 
+           ' *\n' + 
+           ' * @version <%= pkg.version %>\n' + 
+           ' * @date <%= grunt.template.today("yyyy-mm-dd") %>\n' + 
+           ' * @author <%= pkg.author.name %> <%= pkg.author.url %>\n' + 
+           ' * @license <%= pkg.license %>\n' + 
+           ' *\n' + 
+           ' * @url <%= pkg.homepage %>\n' + 
+           ' * @repository <%= pkg.repository.type %>+<%= pkg.repository.url %>\n' + 
+           ' * @depends https://github.com/sstrigler/JSJaC\n' + 
+           ' */\n\n';
+  };
+
+
   // Project configuration
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -72,7 +90,7 @@ module.exports = function(grunt) {
     // Task: Concat
     concat: {
       options: {
-        banner: '/*! <%= pkg.name %> (full) - <%= grunt.template.today("yyyy-mm-dd") %> */\n\n'
+        banner: fn_generate_banner('uncompressed')
       },
 
       all: {
@@ -99,7 +117,7 @@ module.exports = function(grunt) {
     uglify: {
       options: {
         report: 'min',
-        banner: '/*! <%= pkg.name %> (minified) - <%= grunt.template.today("yyyy-mm-dd") %> */\n\n'
+        banner: fn_generate_banner('compressed')
       },
 
       javascripts: {

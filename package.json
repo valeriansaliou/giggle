@@ -1,8 +1,9 @@
 {
   "name": "jsjac-jingle",
-  "description": "JSJaCJingle.js",
+  "description": "JSJaC Jingle library, implementation of XEP-0166.",
   "version": "0.7.0",
   "homepage": "https://github.com/valeriansaliou/jsjac-jingle",
+  "license": "MPL 2.0",
 
   "repository": {
     "type": "git",

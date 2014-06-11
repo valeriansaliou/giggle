@@ -1,10 +1,21 @@
-/*! jsjac-jingle (full) - 2014-06-11 */
+/**
+ * jsjac-jingle [uncompressed]
+ * @fileoverview JSJaC Jingle library, implementation of XEP-0166.
+ *
+ * @version 0.7.0
+ * @date 2014-06-11
+ * @author Valérian Saliou https://valeriansaliou.name/
+ * @license MPL 2.0
+ *
+ * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @repository git+https://github.com/valeriansaliou/jsjac-jingle.git
+ * @depends https://github.com/sstrigler/JSJaC
+ */
 
 /**
  * @fileoverview JSJaC Jingle library, implementation of XEP-0166.
  * Written originally for Uno.im service requirements
  *
- * @version v0.7 (dev)
  * @url https://github.com/valeriansaliou/jsjac-jingle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
