@@ -17,6 +17,8 @@
  */
 var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
   constructor: function() {
-    this.is_muji = true;
+    // TODO
   },
+
+  // TODO
 });

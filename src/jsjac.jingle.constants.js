@@ -191,6 +191,9 @@ var MAP_DISCO_JINGLE                                = [
 
 var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true : false;
 
+var JSJAC_JINGLE_SESSION_SINGLE                      = 'single';
+var JSJAC_JINGLE_SESSION_MUJI                        = 'muji';
+
 var JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT                = 15;
 var JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT             = 5;
 var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;

@@ -231,7 +231,7 @@ $(document).ready(function() {
                                 ARGS.remote_view = document.getElementById('video_remote');
 
                                 // Let's go!
-                                JINGLE = new JSJaCJingleSingle(ARGS);
+                                JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
                                 JINGLE.handle(stanza);
                             }
                         });
@@ -386,7 +386,7 @@ $(document).ready(function() {
                     ARGS.remote_view  = document.getElementById('video_remote');
 
                     // Let's go!
-                    JINGLE = new JSJaCJingleSingle(ARGS);
+                    JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
                     JINGLE.initiate();
                 } catch(e) {
                     alert('jingle > ' + e);

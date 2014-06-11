@@ -208,7 +208,10 @@ con.registerHandler('onconnect', function() {
             ARGS.remote_view = document.getElementById('video_remote');
 
             // Let's go!
-            JINGLE = new JSJaCJingleSingle(ARGS);
+            JINGLE = new JSJaCJingle.session(
+                JSJAC_JINGLE_SESSION_SINGLE,
+                ARGS
+            );
             JINGLE.handle(stanza);
         }
     });
@@ -225,7 +228,10 @@ $('button').click(function() {
     ARGS.remote_view = document.getElementById('video_remote');
 
     // Create the JSJaCJingle object
-    var jingle = new JSJaCJingleSingle(ARGS);
+    var jingle = new JSJaCJingle.session(
+        JSJAC_JINGLE_SESSION_SINGLE,
+        ARGS
+    );
 
     // Initialize the Jingle session
     // See: http://xmpp.org/extensions/xep-0166.html#protocol-initiate
@@ -250,7 +256,10 @@ $('button').click(function() {
     };
 
     // Create the JSJaCJingle object
-    var jingle_muji = new JSJaCJingleMuji(ARGS);
+    var jingle_muji = new JSJaCJingle.session(
+        JSJAC_JINGLE_SESSION_MUJI,
+        ARGS
+    );
 
     // Join the Jingle session
     // See: http://xmpp.org/extensions/xep-0272.html#joining

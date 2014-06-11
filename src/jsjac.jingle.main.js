@@ -10,6 +10,32 @@
 
 var JSJaCJingle = new (ring.create({
   /**
+   * Starts a new Jingle session
+   */
+  session: function(type, args) {
+    var jingle;
+
+    try {
+      switch(type) {
+        case JSJAC_JINGLE_SESSION_SINGLE:
+          jingle = new JSJaCJingleSingle(args);
+          break;
+
+        case JSJAC_JINGLE_SESSION_MUJI:
+          jingle = new JSJaCJingleMuji(args);
+          break;
+
+        default:
+          throw ('Unknown session type: ' + type);
+      }
+    } catch(e) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] session > ' + e, 1);
+    } finally {
+      return jingle;
+    }
+  },
+
+  /**
    * Listens for Jingle events
    */
   listen: function(args) {
@@ -26,7 +52,7 @@ var JSJaCJingle = new (ring.create({
       // Incoming IQs handler
       JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', this.route.bind(this));
 
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:listen > Listening.', 2);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] listen > Listening.', 2);
 
       // Discover available network services
       if(!args || args.extdisco !== false)
@@ -36,7 +62,7 @@ var JSJaCJingle = new (ring.create({
       if(args.fallback && typeof args.fallback === 'string')
         JSJaCJingleInit.fallback(args.fallback);
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:listen > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] listen > ' + e, 1);
     }
   },
 
@@ -69,7 +95,7 @@ var JSJaCJingle = new (ring.create({
 
       // WebRTC not available ATM?
       if(jingle && !JSJAC_JINGLE_AVAILABLE) {
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:route > Dropped Jingle packet (WebRTC not available).', 0);
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > Dropped Jingle packet (WebRTC not available).', 0);
 
         (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
       } else {
@@ -77,23 +103,23 @@ var JSJaCJingle = new (ring.create({
         var session_route = this.read(sid);
 
         if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route === null) {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:route > New Jingle session (sid: ' + sid + ').', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > New Jingle session (sid: ' + sid + ').', 2);
 
           JSJAC_JINGLE_STORE_INITIATE(stanza);
         } else if(sid) {
           if(session_route !== null) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:route > Routed to Jingle session (sid: ' + sid + ').', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > Routed to Jingle session (sid: ' + sid + ').', 2);
 
             session_route.handle(stanza);
           } else if(stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && stanza.getFrom()) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:route > Unknown Jingle session (sid: ' + sid + ').', 0);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > Unknown Jingle session (sid: ' + sid + ').', 0);
 
             (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
           }
         }
       }
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:route > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > ' + e, 1);
     }
   },
 
@@ -130,7 +156,7 @@ var JSJaCJingle = new (ring.create({
         if(JSJAC_JINGLE_STORE_DEFER.deferred) {
           (JSJAC_JINGLE_STORE_DEFER.fn).push(arg);
 
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:defer > Registered a function to be executed once ready.', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] defer > Registered a function to be executed once ready.', 2);
         }
 
         return JSJAC_JINGLE_STORE_DEFER.deferred;
@@ -142,19 +168,19 @@ var JSJaCJingle = new (ring.create({
           if((--JSJAC_JINGLE_STORE_DEFER.count) <= 0) {
             JSJAC_JINGLE_STORE_DEFER.count = 0;
 
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:defer > Executing ' + JSJAC_JINGLE_STORE_DEFER.fn.length + ' deferred functions...', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] defer > Executing ' + JSJAC_JINGLE_STORE_DEFER.fn.length + ' deferred functions...', 2);
 
             while(JSJAC_JINGLE_STORE_DEFER.fn.length)
               ((JSJAC_JINGLE_STORE_DEFER.fn).shift())();
 
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:defer > Done executing deferred functions.', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] defer > Done executing deferred functions.', 2);
           }
         } else {
           ++JSJAC_JINGLE_STORE_DEFER.count;
         }
       }
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:defer > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] defer > ' + e, 1);
     }
   },
 
