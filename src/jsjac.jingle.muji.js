@@ -113,8 +113,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the creator value
-   * @return creator value
-   * @type string
+   * @returns {string} creator value
    */
   get_creator: function() {
     return this.get_to();
@@ -122,8 +121,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the initiator value
-   * @return initiator value
-   * @type string
+   * @returns {string} initiator value
    */
   get_initiator: function() {
     return this.get_to();
@@ -131,8 +129,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the responder value
-   * @return responder value
-   * @type string
+   * @returns {string} responder value
    */
   get_responder: function() {
     return this.get_to();
@@ -140,8 +137,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the remote view add callback function
-   * @return remote view add callback function
-   * @type function
+   * @returns {function} remote view add callback function
    */
   get_add_remote_view: function() {
     if(typeof this._add_remote_view == 'function')
@@ -152,8 +148,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the remote view removal callback function
-   * @return remote view removal callback function
-   * @type function
+   * @returns {function} remote view removal callback function
    */
   get_remove_remote_view: function() {
     if(typeof this._remove_remote_view == 'function')

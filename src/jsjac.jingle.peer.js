@@ -8,6 +8,12 @@
  */
 
 
+/**
+ * Peer helpers class
+ * @class Peer helpers class
+ * @constructor
+ * @param {object} parent Parent class.
+ */
 var JSJaCJinglePeer = ring.create({
   /**
    * Constructor

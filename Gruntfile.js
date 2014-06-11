@@ -86,7 +86,7 @@ module.exports = function(grunt) {
     // Task: Clean
     clean: {
       temporary: ['tmp/'],
-      reset: ['tmp/', 'build/*']
+      reset: ['tmp/', 'build/*', 'doc/*']
     },
 
 

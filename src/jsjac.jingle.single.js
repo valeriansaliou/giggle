@@ -10,8 +10,7 @@
 
 /**
  * Creates a new XMPP Jingle session.
- * @class Somewhat abstract base class for XMPP Jingle sessions. Contains all
- * of the code in common for all Jingle sessions
+ * @class Creates a new XMPP Jingle session.
  * @constructor
  * @param {Object} args Jingle session arguments.
  */
