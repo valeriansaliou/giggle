@@ -11,6 +11,8 @@
 var JSJaCJingle = new (ring.create({
   /**
    * Starts a new Jingle session
+   * @return JSJaCJingle session instance
+   * @type object
    */
   session: function(type, args) {
     var jingle;

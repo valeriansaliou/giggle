@@ -142,6 +142,8 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the remote view add callback function
+   * @return remote view add callback function
+   * @type function
    */
   get_add_remote_view: function() {
     if(typeof this._add_remote_view == 'function')
@@ -152,6 +154,8 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the remote view removal callback function
+   * @return remote view removal callback function
+   * @type function
    */
   get_remove_remote_view: function() {
     if(typeof this._remove_remote_view == 'function')

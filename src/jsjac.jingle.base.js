@@ -380,6 +380,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session initiate pending callback function
+   * @return callback function
+   * @type function
    */
   get_session_initiate_pending: function() {
     if(typeof this._session_initiate_pending == 'function')
@@ -390,6 +392,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session initiate success callback function
+   * @return callback function
+   * @type function
    */
   get_session_initiate_success: function() {
     if(typeof this._session_initiate_success == 'function')
@@ -400,6 +404,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session initiate error callback function
+   * @return callback function
+   * @type function
    */
   get_session_initiate_error: function() {
     if(typeof this._session_initiate_error == 'function')
@@ -410,6 +416,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session initiate request callback function
+   * @return callback function
+   * @type function
    */
   get_session_initiate_request: function() {
     if(typeof this._session_initiate_request == 'function')
@@ -420,6 +428,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session accept pending callback function
+   * @return callback function
+   * @type function
    */
   get_session_accept_pending: function() {
     if(typeof this._session_accept_pending == 'function')
@@ -430,6 +440,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session accept success callback function
+   * @return callback function
+   * @type function
    */
   get_session_accept_success: function() {
     if(typeof this._session_accept_success == 'function')
@@ -440,6 +452,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session accept error callback function
+   * @return callback function
+   * @type function
    */
   get_session_accept_error: function() {
     if(typeof this._session_accept_error == 'function')
@@ -450,6 +464,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session accept request callback function
+   * @return callback function
+   * @type function
    */
   get_session_accept_request: function() {
     if(typeof this._session_accept_request == 'function')
@@ -460,6 +476,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session info success callback function
+   * @return callback function
+   * @type function
    */
   get_session_info_success: function() {
     if(typeof this._session_info_success == 'function')
@@ -470,6 +488,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session info error callback function
+   * @return callback function
+   * @type function
    */
   get_session_info_error: function() {
     if(typeof this._session_info_error == 'function')
@@ -480,6 +500,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session info request callback function
+   * @return callback function
+   * @type function
    */
   get_session_info_request: function() {
     if(typeof this._session_info_request == 'function')
@@ -490,6 +512,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session terminate pending callback function
+   * @return callback function
+   * @type function
    */
   get_session_terminate_pending: function() {
     if(typeof this._session_terminate_pending == 'function')
@@ -500,6 +524,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session terminate success callback function
+   * @return callback function
+   * @type function
    */
   get_session_terminate_success: function() {
     if(typeof this._session_terminate_success == 'function')
@@ -510,6 +536,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session terminate error callback function
+   * @return callback function
+   * @type function
    */
   get_session_terminate_error: function() {
     if(typeof this._session_terminate_error == 'function')
@@ -520,6 +548,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the session terminate request callback function
+   * @return callback function
+   * @type function
    */
   get_session_terminate_request: function() {
     if(typeof this._session_terminate_request == 'function')
@@ -530,6 +560,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the local stream
+   * @return local stream instance
+   * @type object
    */
   get_local_stream: function() {
     return this._local_stream;
@@ -537,6 +569,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the remote stream
+   * @return remote stream instance
+   * @type object
    */
   get_remote_stream: function() {
     return this._remote_stream;
@@ -544,6 +578,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the local payloads
+   * @return local payloads object
+   * @type object
    */
   get_payloads_local: function(name) {
     if(name)
@@ -554,6 +590,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the local group
+   * @return local group object
+   * @type object
    */
   get_group_local: function(semantics) {
     if(semantics)
@@ -564,6 +602,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the local candidates
+   * @return local candidates object
+   * @type object
    */
   get_candidates_local: function(name) {
     if(name)
@@ -574,6 +614,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the local candidates queue
+   * @return local candidates queue object
+   * @type object
    */
   get_candidates_queue_local: function(name) {
     if(name)
@@ -584,6 +626,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the remote payloads
+   * @return remote payloads object
+   * @type object
    */
   get_payloads_remote: function(name) {
     if(name)
@@ -594,6 +638,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the remote group
+   * @return remote group object
+   * @type object
    */
   get_group_remote: function(semantics) {
     if(semantics)
@@ -604,6 +650,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the remote candidates
+   * @return remote candidates object
+   * @type object
    */
   get_candidates_remote: function(name) {
     if(name)
@@ -614,6 +662,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the remote candidates queue
+   * @return remote candidates queue object
+   * @type object
    */
   get_candidates_queue_remote: function(name) {
     if(name)
@@ -624,6 +674,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the local content
+   * @return local content object
+   * @type object
    */
   get_content_local: function(name) {
     if(name)
@@ -634,6 +686,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the remote content
+   * @return remote content object
+   * @type object
    */
   get_content_remote: function(name) {
     if(name)
@@ -643,7 +697,9 @@ var __JSJaCJingleBase = ring.create({
   },
 
   /**
-   * Gets the stanza handlers
+   * Gets the stanza handler
+   * @return stanza handler
+   * @type function
    */
   get_handlers: function(type, id) {
     type = type || JSJAC_JINGLE_STANZA_TYPE_ALL;
@@ -668,6 +724,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the ID
+   * @return ID value
+   * @type number
    */
   get_id: function() {
     return this._id;
@@ -675,6 +733,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the prepended ID
+   * @return prepended ID value
+   * @type string
    */
   get_id_pre: function() {
     return JSJAC_JINGLE_STANZA_ID_PRE + '_' + (this.get_sid() || '0') + '_';
@@ -682,6 +742,8 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the new ID
+   * @return new ID value
+   * @type string
    */
   get_id_new: function() {
     var trans_id = this.get_id() + 1;
@@ -691,14 +753,18 @@ var __JSJaCJingleBase = ring.create({
   },
 
   /**
-   * Gets the sent ID
+   * Gets the sent IDs
+   * @return sent IDs object
+   * @type object
    */
   get_sent_id: function() {
     return this._sent_id;
   },
 
   /**
-   * Gets the last received ID
+   * Gets the received IDs
+   * @return received IDs object
+   * @type object
    */
   get_received_id: function() {
     return this._received_id;

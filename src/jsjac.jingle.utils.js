@@ -602,6 +602,8 @@ var JSJaCJingleUtils = ring.create({
 
   /**
    * Parses stanza group
+   * @return success
+   * @type boolean
    */
   stanza_parse_group: function(stanza) {    
     try {
@@ -968,6 +970,8 @@ var JSJaCJingleUtils = ring.create({
 
   /*
    * Builds stanza node
+   * @return node
+   * @type DOM
    */
   stanza_build_node: function(doc, parent, children, name, ns, value) {    
     var node = null;
@@ -1000,6 +1004,8 @@ var JSJaCJingleUtils = ring.create({
 
   /**
    * Generates stanza Jingle node
+   * @return node
+   * @type DOM
    */
   stanza_generate_jingle: function(stanza, attrs) {    
     var jingle = null;
@@ -1314,6 +1320,8 @@ var JSJaCJingleUtils = ring.create({
 
   /**
    * Generates content
+   * @return content object
+   * @type object
    */
   generate_content: function(creator, name, senders, payloads, transports) {    
     var content_obj = {};
@@ -1362,6 +1370,8 @@ var JSJaCJingleUtils = ring.create({
 
   /**
    * Generates transport
+   * @return transport object
+   * @type object
    */
   generate_transport: function(transport_init_obj) {    
     var transport_obj = {
@@ -1465,6 +1475,8 @@ var JSJaCJingleUtils = ring.create({
 
   /**
    * Generates media name
+   * @return media name
+   * @type string
    */
   name_generate: function(media) {    
     var name = null;
@@ -1498,7 +1510,9 @@ var JSJaCJingleUtils = ring.create({
   },
 
   /**
-   * Generates media name
+   * Generates media
+   * @return media
+   * @type string
    */
   media_generate: function(name) {    
     var cur_media;
@@ -1675,6 +1689,8 @@ var JSJaCJingleUtils = ring.create({
 
   /**
    * Returns whether SDP credentials are common or not (fingerprint & so)
+   * @return credientials same state
+   * @type boolean
    */
   is_sdp_common_credentials: function(payloads) {    
     var is_same = true;
@@ -1707,6 +1723,8 @@ var JSJaCJingleUtils = ring.create({
 
   /**
    * Extracts network main details
+   * @return network details
+   * @type object
    */
   network_extract_main: function(media, candidates) {    
     var network_obj = {
@@ -1808,6 +1826,8 @@ var JSJaCJingleUtils = ring.create({
 
   /**
    * Registers a view to map
+   * @return view register functions
+   * @type object
    */
   map_register_view: function(type) {    
     var fn = {
@@ -1853,6 +1873,8 @@ var JSJaCJingleUtils = ring.create({
 
   /**
    * Unregister a view from map
+   * @return view unregister functions
+   * @type object
    */
   map_unregister_view: function(type) {    
     return this.map_register_view(type);
