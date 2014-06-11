@@ -8,7 +8,7 @@
  */
 
 
-var JSJaCJingle = (new ring.create({
+var JSJaCJingle = new (ring.create({
   /**
    * Listens for Jingle events
    */
@@ -24,19 +24,19 @@ var JSJaCJingle = (new ring.create({
         JSJAC_JINGLE_STORE_DEBUG = args.debug;
 
       // Incoming IQs handler
-      JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', this.route);
+      JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', this.route.bind(this));
 
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:listen > Listening.', 2);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:listen > Listening.', 2);
 
       // Discover available network services
       if(!args || args.extdisco !== false)
-        JSJaCJingle_extdisco();
+        JSJaCJingleInit.extdisco();
       if(!args || args.relaynodes !== false)
-        JSJaCJingle_relaynodes();
+        JSJaCJingleInit.relaynodes();
       if(args.fallback && typeof args.fallback === 'string')
-        JSJaCJingle_fallback(args.fallback);
+        JSJaCJingleInit.fallback(args.fallback);
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:listen > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:listen > ' + e, 1);
     }
   },
 
@@ -69,7 +69,7 @@ var JSJaCJingle = (new ring.create({
 
       // WebRTC not available ATM?
       if(jingle && !JSJAC_JINGLE_AVAILABLE) {
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Dropped Jingle packet (WebRTC not available).', 0);
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:route > Dropped Jingle packet (WebRTC not available).', 0);
 
         (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
       } else {
@@ -77,23 +77,23 @@ var JSJaCJingle = (new ring.create({
         var session_route = this.read(sid);
 
         if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route === null) {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > New Jingle session (sid: ' + sid + ').', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:route > New Jingle session (sid: ' + sid + ').', 2);
 
           JSJAC_JINGLE_STORE_INITIATE(stanza);
         } else if(sid) {
           if(session_route !== null) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Routed to Jingle session (sid: ' + sid + ').', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:route > Routed to Jingle session (sid: ' + sid + ').', 2);
 
             session_route.handle(stanza);
           } else if(stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && stanza.getFrom()) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > Unknown Jingle session (sid: ' + sid + ').', 0);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:route > Unknown Jingle session (sid: ' + sid + ').', 0);
 
             (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
           }
         }
       }
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:route > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:route > ' + e, 1);
     }
   },
 
@@ -130,7 +130,7 @@ var JSJaCJingle = (new ring.create({
         if(JSJAC_JINGLE_STORE_DEFER.deferred) {
           (JSJAC_JINGLE_STORE_DEFER.fn).push(arg);
 
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Registered a function to be executed once ready.', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:defer > Registered a function to be executed once ready.', 2);
         }
 
         return JSJAC_JINGLE_STORE_DEFER.deferred;
@@ -142,19 +142,19 @@ var JSJaCJingle = (new ring.create({
           if((--JSJAC_JINGLE_STORE_DEFER.count) <= 0) {
             JSJAC_JINGLE_STORE_DEFER.count = 0;
 
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Executing ' + JSJAC_JINGLE_STORE_DEFER.fn.length + ' deferred functions...', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:defer > Executing ' + JSJAC_JINGLE_STORE_DEFER.fn.length + ' deferred functions...', 2);
 
             while(JSJAC_JINGLE_STORE_DEFER.fn.length)
               ((JSJAC_JINGLE_STORE_DEFER.fn).shift())();
 
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > Done executing deferred functions.', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:defer > Done executing deferred functions.', 2);
           }
         } else {
           ++JSJAC_JINGLE_STORE_DEFER.count;
         }
       }
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:commons] lib:defer > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] lib:defer > ' + e, 1);
     }
   },
 
@@ -166,4 +166,4 @@ var JSJaCJingle = (new ring.create({
   disco: function() {
     return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];
   },
-}));
+}))();

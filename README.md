@@ -198,7 +198,7 @@ var ARGS = {
 // Role: listens for incoming Jingle calls
 con.registerHandler('onconnect', function() {
     // Initialize JSJaCJingle router
-    JSJaCJingle_listen({
+    JSJaCJingle.listen({
         connection: con,
 
         initiate: function(stanza) {

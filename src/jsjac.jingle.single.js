@@ -30,7 +30,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.initiate(); })) {
+      if(JSJaCJingle.defer(function() { this.initiate(); })) {
         this.get_debug().log('[JSJaCJingle:single] initiate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -76,7 +76,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Register session to common router
-      JSJaCJingle_add(this.get_sid(), this);
+      JSJaCJingle.add(this.get_sid(), this);
 
       // Initialize WebRTC
       var _this = this;
@@ -107,7 +107,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.accept(); })) {
+      if(JSJaCJingle.defer(function() { this.accept(); })) {
         this.get_debug().log('[JSJaCJingle:single] accept > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -156,7 +156,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.info(name, args); })) {
+      if(JSJaCJingle.defer(function() { this.info(name, args); })) {
         this.get_debug().log('[JSJaCJingle:single] info > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -194,7 +194,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.terminate(reason); })) {
+      if(JSJaCJingle.defer(function() { this.terminate(reason); })) {
         this.get_debug().log('[JSJaCJingle:single] terminate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -232,7 +232,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.send(type, args); })) {
+      if(JSJaCJingle.defer(function() { this.send(type, args); })) {
         this.get_debug().log('[JSJaCJingle:single] send > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -343,7 +343,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.handle(stanza); })) {
+      if(JSJaCJingle.defer(function() { this.handle(stanza); })) {
         this.get_debug().log('[JSJaCJingle:single] handle > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -439,7 +439,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.mute(name); })) {
+      if(JSJaCJingle.defer(function() { this.mute(name); })) {
         this.get_debug().log('[JSJaCJingle:single] mute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -473,7 +473,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.unmute(name); })) {
+      if(JSJaCJingle.defer(function() { this.unmute(name); })) {
         this.get_debug().log('[JSJaCJingle:single] unmute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -509,7 +509,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       // Defer?
-      if(JSJaCJingle_defer(function() { this.media(media); })) {
+      if(JSJaCJingle.defer(function() { this.media(media); })) {
         this.get_debug().log('[JSJaCJingle:single] media > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -1678,7 +1678,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         this.set_responder(this.utils.connection_jid());
 
         // Register session to common router
-        JSJaCJingle_add(rd_sid, this);
+        JSJaCJingle.add(rd_sid, this);
 
         // Generate and store content data
         this.utils.build_content_remote();

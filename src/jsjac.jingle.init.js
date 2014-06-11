@@ -8,7 +8,7 @@
  */
 
 
-var JSJaCJingleInit = (new ring.create({
+var JSJaCJingleInit = new (ring.create({
   /**
    * Query the server for external services
    */
@@ -17,7 +17,7 @@ var JSJaCJingleInit = (new ring.create({
 
     try {
       // Pending state (defer other requests)
-      JSJaCJingle_defer(true);
+      JSJaCJingle.defer(true);
 
       // Build request
       var request = new JSJaCIQ();
@@ -84,13 +84,13 @@ var JSJaCJingleInit = (new ring.create({
         JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > Ready.', 2);
 
         // Execute deferred requests
-        JSJaCJingle_defer(false);
+        JSJaCJingle.defer(false);
       });
     } catch(e) {
       JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > ' + e, 1);
       
       // Execute deferred requests
-      JSJaCJingle_defer(false);
+      JSJaCJingle.defer(false);
     }
   },
 
@@ -102,7 +102,7 @@ var JSJaCJingleInit = (new ring.create({
 
     try {
       // Pending state (defer other requests)
-      JSJaCJingle_defer(true);
+      JSJaCJingle.defer(true);
 
       // Build request
       var request = new JSJaCIQ();
@@ -157,13 +157,13 @@ var JSJaCJingleInit = (new ring.create({
         JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > Ready.', 2);
 
         // Execute deferred requests
-        JSJaCJingle_defer(false);
+        JSJaCJingle.defer(false);
       });
     } catch(e) {
       JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > ' + e, 1);
       
       // Execute deferred requests
-      JSJaCJingle_defer(false);
+      JSJaCJingle.defer(false);
     }
   },
 
@@ -175,7 +175,7 @@ var JSJaCJingleInit = (new ring.create({
 
     try {
       // Pending state (defer other requests)
-      JSJaCJingle_defer(true);
+      JSJaCJingle.defer(true);
 
       // Generate fallback API URL
       fallback_url += '?username=' + 
@@ -253,7 +253,7 @@ var JSJaCJingleInit = (new ring.create({
           JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > Ready.', 2);
 
           // Execute deferred requests
-          JSJaCJingle_defer(false);
+          JSJaCJingle.defer(false);
         }
       };
 
@@ -262,4 +262,4 @@ var JSJaCJingleInit = (new ring.create({
       JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > ' + e, 1);
     }
   },
-}));
+}))();

@@ -402,7 +402,7 @@ var JSJaCJinglePeer = ring.create({
       this.parent.get_peer_connection().close();
 
     // Remove this session from router
-    JSJaCJingle_remove(this.parent.get_sid());
+    JSJaCJingle.remove(this.parent.get_sid());
   },
 
   /**
