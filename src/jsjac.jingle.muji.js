@@ -324,6 +324,80 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
     }
   },
 
+  /**
+   * Mutes a Jingle session (local)
+   * @public
+   */
+  mute: function(name) {
+    this.get_debug().log('[JSJaCJingle:muji] mute', 4);
+
+    try {
+      // Locked?
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:muji] mute > Cannot mute, resource locked. Please open another session or check WebRTC support.', 0);
+        return;
+      }
+
+      // Defer?
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.mute(name); })) {
+        this.get_debug().log('[JSJaCJingle:muji] mute > Deferred (waiting for the library components to be initiated).', 0);
+        return;
+      }
+
+      // Already muted?
+      if(this.get_mute(name)) {
+        this.get_debug().log('[JSJaCJingle:muji] mute > Resource already muted.', 0);
+        return;
+      }
+
+      this.peer.sound(false);
+      this.set_mute(name, true);
+
+      this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_MUTE, name: name });
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:muji] mute > ' + e, 1);
+    }
+  },
+
+  /**
+   * Unmutes a Jingle session (local)
+   * @public
+   */
+  unmute: function(name) {
+    this.get_debug().log('[JSJaCJingle:muji] unmute', 4);
+
+    try {
+      // Locked?
+      if(this.get_lock()) {
+        this.get_debug().log('[JSJaCJingle:muji] unmute > Cannot unmute, resource locked. Please open another session or check WebRTC support.', 0);
+        return;
+      }
+
+      // Defer?
+      var _this = this;
+
+      if(JSJaCJingle.defer(function() { _this.unmute(name); })) {
+        this.get_debug().log('[JSJaCJingle:muji] unmute > Deferred (waiting for the library components to be initiated).', 0);
+        return;
+      }
+
+      // Already unmute?
+      if(!this.get_mute(name)) {
+        this.get_debug().log('[JSJaCJingle:muji] unmute > Resource already unmuted.', 0);
+        return;
+      }
+
+      this.peer.sound(true);
+      this.set_mute(name, false);
+
+      this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE, name: name });
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:muji] unmute > ' + e, 1);
+    }
+  },
+
 
 
   /**

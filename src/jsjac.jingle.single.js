@@ -539,7 +539,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Handles a given Jingle stanza response
-   * @public
+   * @private
    */
   handle: function(stanza) {
     this.get_debug().log('[JSJaCJingle:single] handle', 4);
