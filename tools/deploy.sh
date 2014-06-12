@@ -8,16 +8,13 @@
 #  Author: Valérian Saliou https://valeriansaliou.name/
 ##
 
-realpath() {
-  [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
-}
-
-PROJECT_DIR=$(dirname $(realpath "$0"))"/../"
+ABSPATH=$(cd "$(dirname "$0")"; pwd)
+BASE_DIR="$ABSPATH/../"
 
 
 echo "Deploying JSJaCJingle.js..."
 
-cd $PROJECT_DIR
+cd $BASE_DIR
 
 npm install
 grunt build

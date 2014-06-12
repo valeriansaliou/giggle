@@ -28,7 +28,7 @@ Made with love by the happy folks at **Jappix** https://jappix.com/ and **French
 
 ## Online Demo
 
-You can try JSJaCJingle.js there: https://demo.frenchtouch.pro/valerian.saliou/jsjac-jingle/examples/simple_client.html
+You can try JSJaCJingle.js there: https://demo.frenchtouch.pro/valerian.saliou/jsjac-jingle/examples/single_client.html
 
 Open it on 2 separate tabs or 2 different computers, and login with 2 different XMPP accounts (Jappix.com accounts only for this online demo). Then, paste the full JID of the other connected account in the call field.
 
