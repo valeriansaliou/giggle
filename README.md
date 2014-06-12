@@ -12,7 +12,7 @@ To be used with JSJaC from Stefan Strigler, available there: https://github.com/
 
 Only JSJaCJingle.js raw sources are provided in this repository. Those are not usable out-of-the-box for production purposes. You first need to build the library components locally.
 
-Our automated build system requires that you have NodeJS, NPM, GruntJS, Bower (+ bower-installer) and Java on your machine. UNIX systems (MacOS, Linux) are recommended to proceed build.
+**Important: our automated build system requires that you have NodeJS, NPM, GruntJS, Bower (+ bower-installer) and Java on your machine. UNIX systems (MacOS, Linux) are recommended to proceed build.**
 
 If you already have NodeJS and NPM installed, you can simply install GruntJS and Bower:
 
