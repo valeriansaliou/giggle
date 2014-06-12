@@ -1,0 +1,12 @@
+{
+  "name" : "jsjac-jingle",
+
+  "dependencies" : {
+    "underscore" : "latest",
+    "ring" : "latest"
+  },
+
+  "install" : {
+    "path" : "lib/"
+  }
+}

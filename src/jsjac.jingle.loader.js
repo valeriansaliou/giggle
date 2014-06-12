@@ -11,8 +11,8 @@
 var JSJaCJingleLoader = {
   includes: {
     lib: [
-      'underscore',
-      'ring'
+      'underscore/underscore',
+      'ring/ring'
     ],
 
     src: [

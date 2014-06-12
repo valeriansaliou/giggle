@@ -8,6 +8,20 @@ To be used with JSJaC from Stefan Strigler, available there: https://github.com/
 [![build status](https://ci.frenchtouch.pro/projects/8/status.png?ref=master)](https://ci.frenchtouch.pro/projects/8?ref=master)
 
 
+## How To Build It?
+
+Only JSJaCJingle.js raw sources are provided in this repository. Those are not usable out-of-the-box for production purposes. You first need to build the library components locally.
+
+Our automated build system requires that you have NodeJS, NPM, GruntJS, Bower (+ bower-installer) and Java on your machine. UNIX systems (MacOS, Linux) are recommended to proceed build.
+
+If you already have NodeJS and NPM installed, you can simply install GruntJS and Bower:
+
+> npm install -g grunt-cli bower bower-installer
+
+Deploy the library in one simple command:
+
+> ./tools/deploy.sh
+
 ## Who's Behind It?
 
 Made with love by the happy folks at **Jappix** https://jappix.com/ and **FrenchTouch Web Agency** https://frenchtouch.pro/, originally for the awesome guys at **Uno IM** https://uno.im/ and **Virtustructure** http://www.virtustructure.com/

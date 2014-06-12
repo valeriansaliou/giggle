@@ -12,11 +12,12 @@ module.exports = function(grunt) {
 
   // Map tasks
   var GRUNT_TASKS_BUILD = {
-    all: ['clean:reset', 'concat', 'copy', 'uglify', 'jsdoc', 'clean:temporary']
+    main: ['clean:reset', 'bower:install', 'concat', 'copy', 'uglify', 'jsdoc', 'clean:temporary'],
+    test: ['clean:temporary', 'bower:install', 'concat', 'copy', 'clean:temporary']
   };
 
   var GRUNT_TASKS_TEST = {
-    all: ['build', 'lint']
+    main: ['build:test', 'lint']
   };
 
   var GRUNT_TASKS_LINT = {
@@ -26,8 +27,8 @@ module.exports = function(grunt) {
 
   // Map files
   var GRUNT_LIB_FILES = [
-    'lib/underscore.js',
-    'lib/ring.js'
+    'lib/underscore/underscore.js',
+    'lib/ring/ring.js'
   ];
 
   var GRUNT_SRC_FILES = [
@@ -64,6 +65,32 @@ module.exports = function(grunt) {
            ' */\n\n';
   };
 
+  var fn_generate_task = function(tasks_obj, t) {
+    var tasks_map = [];
+
+    if(t == null) {
+      if(typeof tasks_obj.main == 'object') {
+        tasks_map.push('main');
+      } else {
+        for(t in tasks_obj) {
+          tasks_map.push(t);
+        }
+      }
+    } else if(typeof tasks_obj[t] != 'object') {
+      return grunt.warn('Invalid lint target name.\n');
+    } else {
+      tasks_map.push(t);
+    }
+
+    for(c in tasks_map) {
+      t = tasks_map[c];
+
+      for(i in tasks_obj[t]) {
+        grunt.task.run(tasks_obj[t][i]);
+      }
+    }
+  };
+
 
   // Project configuration
   grunt.initConfig({
@@ -86,7 +113,7 @@ module.exports = function(grunt) {
     // Task: Clean
     clean: {
       temporary: ['tmp/'],
-      reset: ['tmp/', 'build/*', 'doc/*']
+      reset: ['tmp/', 'lib/*', 'build/*', 'doc/*']
     },
 
 
@@ -147,6 +174,20 @@ module.exports = function(grunt) {
           dest: 'build/jsjac.jingle.min.js'
         }]
       }
+    },
+
+
+    // Task: Bower
+    bower: {
+      install: {
+        options: {
+          install: true,
+          verbose: false,
+          cleanTargetDir: false,
+          cleanBowerDir: false,
+          bowerOptions: {}
+        }
+      }
     }
   });
 
@@ -159,6 +200,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-bower-installer');
 
 
   // Register tasks
@@ -167,41 +209,15 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('test', function() {
-    for(t in GRUNT_TASKS_TEST) {
-      for(i in GRUNT_TASKS_TEST[t]) {
-        grunt.task.run(GRUNT_TASKS_TEST[t][i]);
-      }
-    }
+    fn_generate_task(GRUNT_TASKS_TEST, t);
   });
 
-  grunt.registerTask('build', function() {
-    for(t in GRUNT_TASKS_BUILD) {
-      for(i in GRUNT_TASKS_BUILD[t]) {
-        grunt.task.run(GRUNT_TASKS_BUILD[t][i]);
-      }
-    }
+  grunt.registerTask('build', function(t) {
+    fn_generate_task(GRUNT_TASKS_BUILD, t);
   });
 
   grunt.registerTask('lint', function(t) {
-    var lint_t_all = [];
-
-    if(t == null) {
-      for(t in GRUNT_TASKS_LINT) {
-        lint_t_all.push(t);
-      }
-    } else if(typeof GRUNT_TASKS_LINT[t] != 'object') {
-      return grunt.warn('Invalid lint target name.\n');
-    } else {
-      lint_t_all.push(t);
-    }
-
-    for(c in lint_t_all) {
-      t = lint_t_all[c];
-
-      for(i in GRUNT_TASKS_LINT[t]) {
-        grunt.task.run(GRUNT_TASKS_LINT[t][i]);
-      }
-    }
+    fn_generate_task(GRUNT_TASKS_LINT, t);
   });
 
 };
