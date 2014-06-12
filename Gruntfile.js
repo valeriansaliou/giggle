@@ -210,7 +210,7 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('test', function() {
-    fn_generate_task(GRUNT_TASKS_TEST, t);
+    fn_generate_task(GRUNT_TASKS_TEST);
   });
 
   grunt.registerTask('build', function(t) {

@@ -535,30 +535,12 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
   },
 
   /**
-   * Returns whether user is preparing or not
+   * Returns whether user has content or not
    * @param {object} muji
-   * @returns {boolean} preparing state
+   * @returns {boolean} content state
    */
   stanza_has_content: function(muji) {
-    return muji.getChild('preparing', NS_TELEPATHY_MUJI) && true;
-  },
-
-  /**
-   * Returns whether user is preparing or not
-   * @param {object} muji
-   * @returns {boolean} preparing state
-   */
-  stanza_has_leaving: function(muji) {
-    return muji.getChild('preparing', NS_TELEPATHY_MUJI) && true;
-  },
-
-  /**
-   * Returns whether user is preparing or not
-   * @param {object} muji
-   * @returns {boolean} preparing state
-   */
-  stanza_has_preparing: function(muji) {
-    return muji.getChild('preparing', NS_TELEPATHY_MUJI) && true;
+    return muji.getChild('content', NS_TELEPATHY_MUJI) && true;
   },
 
 
