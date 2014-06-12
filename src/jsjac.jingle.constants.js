@@ -194,9 +194,6 @@ var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true :
 var JSJAC_JINGLE_SESSION_SINGLE                      = 'single';
 var JSJAC_JINGLE_SESSION_MUJI                        = 'muji';
 
-var JSJAC_JINGLE_PRESENCE_TYPE_AVAILABLE             = 'available';
-var JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE           = 'unavailable';
-
 var JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT                = 15;
 var JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT             = 5;
 var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
@@ -204,6 +201,9 @@ var JSJAC_JINGLE_STANZA_ID_PRE                       = 'jj';
 
 var JSJAC_JINGLE_NETWORK                             = '0';
 var JSJAC_JINGLE_GENERATION                          = '0';
+
+var JSJAC_JINGLE_DIRECTION_LOCAL                     = 'local';
+var JSJAC_JINGLE_DIRECTION_REMOTE                    = 'remote';
 
 var JSJAC_JINGLE_BROWSER_FIREFOX                     = 'Firefox';
 var JSJAC_JINGLE_BROWSER_CHROME                      = 'Chrome';
@@ -290,10 +290,27 @@ var JSJAC_JINGLE_MEDIA_VIDEO                         = 'video';
 var JSJAC_JINGLE_VIDEO_SOURCE_CAMERA                 = 'camera';
 var JSJAC_JINGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
 
-var JSJAC_JINGLE_STANZA_TYPE_ALL                     = 'all';
-var JSJAC_JINGLE_STANZA_TYPE_RESULT                  = 'result';
-var JSJAC_JINGLE_STANZA_TYPE_SET                     = 'set';
-var JSJAC_JINGLE_STANZA_TYPE_GET                     = 'get';
+var JSJAC_JINGLE_STANZA_IQ                           = 'iq';
+var JSJAC_JINGLE_STANZA_MESSAGE                      = 'message';
+var JSJAC_JINGLE_STANZA_PRESENCE                     = 'presence';
+
+var JSJAC_JINGLE_MESSAGE_TYPE_ALL                    = 'all';
+var JSJAC_JINGLE_MESSAGE_TYPE_NORMAL                 = 'normal';
+var JSJAC_JINGLE_MESSAGE_TYPE_CHAT                   = 'chat';
+var JSJAC_JINGLE_MESSAGE_TYPE_HEADLINE               = 'headline';
+var JSJAC_JINGLE_MESSAGE_TYPE_GROUPCHAT              = 'groupchat';
+var JSJAC_JINGLE_MESSAGE_TYPE_ERROR                  = 'error';
+
+var JSJAC_JINGLE_PRESENCE_TYPE_ALL                   = 'all';
+var JSJAC_JINGLE_PRESENCE_TYPE_AVAILABLE             = 'available';
+var JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE           = 'unavailable';
+var JSJAC_JINGLE_PRESENCE_TYPE_ERROR                 = 'error';
+
+var JSJAC_JINGLE_IQ_TYPE_ALL                         = 'all';
+var JSJAC_JINGLE_IQ_TYPE_RESULT                      = 'result';
+var JSJAC_JINGLE_IQ_TYPE_SET                         = 'set';
+var JSJAC_JINGLE_IQ_TYPE_GET                         = 'get';
+var JSJAC_JINGLE_IQ_TYPE_ERROR                       = 'error';
 
 var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST             = 'host';
 var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX            = 'srflx';
@@ -349,9 +366,17 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PRIORITY_DEFAULT      = '1';
  * JSJAC JINGLE MUJI CONSTANTS
  */
 
-var JSJAC_JINGLE_MUJI_STATUS_PREPARE                 = 'prepare';
-var JSJAC_JINGLE_MUJI_STATUS_INITIATE                = 'initiate';
-var JSJAC_JINGLE_MUJI_STATUS_LEAVE                   = 'leave';
+var JSJAC_JINGLE_MUJI_ACTION_PREPARE                 = 'prepare';
+var JSJAC_JINGLE_MUJI_ACTION_INITIATE                = 'initiate';
+var JSJAC_JINGLE_MUJI_ACTION_LEAVE                   = 'leave';
+
+var JSJAC_JINGLE_MUJI_STATUS_INACTIVE                = 'inactive';
+var JSJAC_JINGLE_MUJI_STATUS_PREPARING               = 'preparing';
+var JSJAC_JINGLE_MUJI_STATUS_PREPARED                = 'prepared';
+var JSJAC_JINGLE_MUJI_STATUS_INITIATING              = 'initiating';
+var JSJAC_JINGLE_MUJI_STATUS_INITIATED               = 'initiated';
+var JSJAC_JINGLE_MUJI_STATUS_LEAVING                 = 'leaving';
+var JSJAC_JINGLE_MUJI_STATUS_LEFT                    = 'left';
 
 
 
@@ -461,11 +486,26 @@ var JSJAC_JINGLE_VIDEO_SOURCES        = {};
 JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_CAMERA]             = 1;
 JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_SCREEN]             = 1;
 
-var JSJAC_JINGLE_STANZAS              = {};
-JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_ALL]                       = 1;
-JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_RESULT]                    = 1;
-JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_SET]                       = 1;
-JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_GET]                       = 1;
+var JSJAC_JINGLE_MESSAGE_TYPES        = {};
+JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_ALL]                = 1;
+JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_NORMAL]             = 1;
+JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_CHAT]               = 1;
+JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_HEADLINE]           = 1;
+JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_GROUPCHAT]          = 1;
+JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_ERROR]              = 1;
+
+var JSJAC_JINGLE_PRESENCE_TYPES       = {};
+JSJAC_JINGLE_PRESENCE_TYPES[JSJAC_JINGLE_PRESENCE_TYPE_ALL]              = 1;
+JSJAC_JINGLE_PRESENCE_TYPES[JSJAC_JINGLE_PRESENCE_TYPE_AVAILABLE]        = 1;
+JSJAC_JINGLE_PRESENCE_TYPES[JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE]      = 1;
+JSJAC_JINGLE_PRESENCE_TYPES[JSJAC_JINGLE_PRESENCE_TYPE_ERROR]            = 1;
+
+var JSJAC_JINGLE_IQ_TYPES             = {};
+JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_ALL]                          = 1;
+JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_RESULT]                       = 1;
+JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_SET]                          = 1;
+JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_GET]                          = 1;
+JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_ERROR]                        = 1;
 
 
 
@@ -473,8 +513,12 @@ JSJAC_JINGLE_STANZAS[JSJAC_JINGLE_STANZA_TYPE_GET]                       = 1;
  * JSJAC JINGLE STORAGE
  */
 
-var JSJAC_JINGLE_STORE_CONNECTION = null;
-var JSJAC_JINGLE_STORE_SESSIONS   = {};
+var JSJAC_JINGLE_STORE_CONNECTION                         = null;
+
+var JSJAC_JINGLE_STORE_SESSIONS                           = {};
+JSJAC_JINGLE_STORE_SESSIONS[JSJAC_JINGLE_SESSION_SINGLE]  = {};
+JSJAC_JINGLE_STORE_SESSIONS[JSJAC_JINGLE_SESSION_MUJI]    = {};
+
 var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
 
 var JSJAC_JINGLE_STORE_DEBUG      = {

@@ -26,7 +26,7 @@ var JSJaCJinglePeer = ring.create({
    * Creates a new peer connection
    * @public
    */
-  connection_create: function(sdp_message_callback) {
+  connection_create: function(username, sdp_message_callback) {
     this.parent.get_debug().log('[JSJaCJingle:peer] connection_create', 4);
 
     try {
@@ -43,6 +43,8 @@ var JSJaCJinglePeer = ring.create({
 
       // Create the RTCPeerConnection object
       this.parent.set_peer_connection(
+        username,
+
         new WEBRTC_PEER_CONNECTION(
           ice_config,
           WEBRTC_CONFIGURATION.peer_connection.constraints
@@ -52,7 +54,7 @@ var JSJaCJinglePeer = ring.create({
       // Event: onicecandidate
       var _this = this;
 
-      this.parent.get_peer_connection().onicecandidate = function(e) {
+      this.parent.get_peer_connection(username).onicecandidate = function(e) {
         if(e.candidate) {
           _this.parent.sdp.parse_candidate_store({
             media     : (isNaN(e.candidate.sdpMid) ? e.candidate.sdpMid : _this.parent.utils.media_generate(parseInt(e.candidate.sdpMid, 10))),
@@ -76,7 +78,7 @@ var JSJaCJinglePeer = ring.create({
             var candidates_queue_local = _this.parent.get_candidates_queue_local();
 
             if(_this.parent.utils.object_length(candidates_queue_local) > 0)
-              _this.send(JSJAC_JINGLE_STANZA_TYPE_SET, { action: JSJAC_JINGLE_ACTION_TRANSPORT_INFO, candidates: candidates_queue_local });
+              _this.send(JSJAC_JINGLE_IQ_TYPE_SET, { action: JSJAC_JINGLE_ACTION_TRANSPORT_INFO, candidates: candidates_queue_local });
           }
 
           // Empty the unsent candidates queue
@@ -85,53 +87,56 @@ var JSJaCJinglePeer = ring.create({
       };
 
       // Event: oniceconnectionstatechange
-      this.parent.get_peer_connection().oniceconnectionstatechange = function(e) {
+      this.parent.get_peer_connection(username).oniceconnectionstatechange = function(e) {
         _this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > oniceconnectionstatechange', 2);
 
         // Connection errors?
         switch(this.iceConnectionState) {
           case 'disconnected':
-            _this.timeout(this.iceConnectionState, {
+            _this.timeout(username, this.iceConnectionState, {
               timer  : JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT,
               reason : JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR
             });
             break;
 
           case 'checking':
-            _this.timeout(this.iceConnectionState); break;
+            _this.timeout(username, this.iceConnectionState); break;
         }
 
         _this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > oniceconnectionstatechange > (state: ' + this.iceConnectionState + ').', 2);
       };
 
       // Event: onaddstream
-      this.parent.get_peer_connection().onaddstream = function(e) {
+      this.parent.get_peer_connection(username).onaddstream = function(e) {
         if (!e) return;
 
         _this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > onaddstream', 2);
 
         // Attach remote stream to DOM view
-        _this.parent.set_remote_stream(e.stream);
+        _this.parent.set_remote_stream(username, e.stream);
       };
 
       // Event: onremovestream
-      this.parent.get_peer_connection().onremovestream = function(e) {
+      this.parent.get_peer_connection(username).onremovestream = function(e) {
         _this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > onremovestream', 2);
 
         // Detach remote stream from DOM view
-        _this.parent.set_remote_stream(null);
+        _this.parent.set_remote_stream(username, null);
       };
 
       // Add local stream
-      this.parent.get_peer_connection().addStream(this.parent.get_local_stream()); 
+      this.parent.get_peer_connection(username).addStream(this.parent.get_local_stream()); 
 
       // Create offer
       this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > Getting local description...', 2);
 
       if(this.parent.is_initiator()) {
         // Local description
-        this.parent.get_peer_connection().createOffer(
-          this.got_description.bind(this),
+        this.parent.get_peer_connection(username).createOffer(
+          function(sdp_local) {
+            this.got_description(username, sdp_local);
+          }.bind(this),
+
           this.fail_description.bind(this),
           WEBRTC_CONFIGURATION.create_offer
         );
@@ -141,15 +146,15 @@ var JSJaCJinglePeer = ring.create({
         // Apply SDP data
         sdp_remote = this.parent.sdp.generate(
           WEBRTC_SDP_TYPE_OFFER,
-          this.parent.get_group_remote(),
-          this.parent.get_payloads_remote(),
-          this.parent.get_candidates_queue_remote()
+          this.parent.get_group_remote(username),
+          this.parent.get_payloads_remote(username),
+          this.parent.get_candidates_queue_remote(username)
         );
 
         if(this.parent.get_sdp_trace())  this.parent.get_debug().log('[JSJaCJingle:peer] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
 
         // Remote description
-        this.parent.get_peer_connection().setRemoteDescription(
+        this.parent.get_peer_connection(username).setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
 
           function() {
@@ -165,8 +170,11 @@ var JSJaCJinglePeer = ring.create({
         );
 
         // Local description
-        this.parent.get_peer_connection().createAnswer(
-          this.got_description.bind(this),
+        this.parent.get_peer_connection(username).createAnswer(
+          function(sdp_local) {
+            this.got_description(username, sdp_local);
+          }.bind(this),
+          
           this.fail_description.bind(this),
           WEBRTC_CONFIGURATION.create_answer
         );
@@ -178,7 +186,7 @@ var JSJaCJinglePeer = ring.create({
         for(c in sdp_remote.candidates) {
           cur_candidate_obj = sdp_remote.candidates[c];
 
-          this.parent.get_peer_connection().addIceCandidate(
+          this.parent.get_peer_connection(username).addIceCandidate(
             new WEBRTC_ICE_CANDIDATE({
               sdpMLineIndex : cur_candidate_obj.id,
               candidate     : cur_candidate_obj.candidate
@@ -187,7 +195,7 @@ var JSJaCJinglePeer = ring.create({
         }
 
         // Empty the unapplied candidates queue
-        this.parent.set_candidates_queue_remote(null);
+        this.parent.set_candidates_queue_remote(username, null);
       }
     } catch(e) {
       this.parent.get_debug().log('[JSJaCJingle:peer] connection_create > ' + e, 1);
@@ -275,7 +283,7 @@ var JSJaCJinglePeer = ring.create({
    * Triggers the SDP description retrieval success event
    * @public
    */
-  got_description: function(sdp_local) {
+  got_description: function(username, sdp_local) {
     this.parent.get_debug().log('[JSJaCJingle:peer] got_description', 4);
 
     try {
@@ -320,7 +328,7 @@ var JSJaCJinglePeer = ring.create({
 
       var _this = this;
 
-      this.parent.get_peer_connection().setLocalDescription(
+      this.parent.get_peer_connection(username).setLocalDescription(
         (new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)),
 
         function() {
@@ -378,7 +386,7 @@ var JSJaCJinglePeer = ring.create({
    * Set a timeout limit to peer connection
    * @public
    */
-  timeout: function(state, args) {
+  timeout: function(username, state, args) {
     try {
       // Assert
       if(typeof args !== 'object') args = {};
@@ -389,7 +397,7 @@ var JSJaCJinglePeer = ring.create({
 
       setTimeout(function() {
         // State did not change?
-        if(_this.parent.get_sid() == t_sid && _this.parent.get_peer_connection().iceConnectionState == state) {
+        if(_this.parent.get_sid() == t_sid && _this.parent.get_peer_connection(_this.parent.get_to()).iceConnectionState == state) {
           _this.parent.get_debug().log('[JSJaCJingle:peer] stanza_timeout > Peer timeout.', 2);
 
           // Error (transports are incompatible)
@@ -405,19 +413,32 @@ var JSJaCJinglePeer = ring.create({
    * Stops ongoing peer connections
    * @public
    */
-  stop: function() {
+  stop: function(username) {
     this.parent.get_debug().log('[JSJaCJingle:peer] stop', 4);
 
     // Detach media streams from DOM view
     this.parent.set_local_stream(null);
-    this.parent.set_remote_stream(null);
 
-    // Close the media stream
-    if(this.parent.get_peer_connection())
-      this.parent.get_peer_connection().close();
+    // Stop selected remote stream, or all streams?
+    var cur_username, remote_list = [];
+
+    if(username) {
+        remote_list.push(username);
+    } else {
+        for(cur_username in this.parent.get_peer_connection())
+            remote_list.push(cur_username);
+    }
+
+    for(cur_username in remote_list) {
+        this.parent.set_remote_stream(cur_username, null);
+
+        // Close the media stream
+        if(this.parent.get_peer_connection(cur_username))
+          this.parent.get_peer_connection(cur_username).close();
+    }
 
     // Remove this session from router
-    JSJaCJingle.remove(this.parent.get_sid());
+    JSJaCJingle.remove(JSJAC_JINGLE_SESSION_SINGLE, this.parent.get_sid());
   },
 
   /**

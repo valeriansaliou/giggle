@@ -426,7 +426,7 @@ var JSJaCJingleUtils = ring.create({
    */
   stanza_safe: function(stanza) {    
     try {
-      return !((stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && this.stanza_sid(stanza) != this.parent.get_sid()) || this.stanza_from(stanza) != this.parent.get_to());
+      return !((stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && this.stanza_sid(stanza) != this.parent.get_sid()) || this.stanza_from(stanza) != this.parent.get_to());
     } catch(e) {
       this.parent.get_debug().log('[JSJaCJingle:utils] stanza_safe > ' + e, 1);
     }
@@ -492,7 +492,7 @@ var JSJaCJingleUtils = ring.create({
    */
   stanza_timeout: function(t_type, t_id, handlers) {    
     try {
-      t_type = t_type || JSJAC_JINGLE_STANZA_TYPE_ALL;
+      t_type = t_type || JSJAC_JINGLE_IQ_TYPE_ALL;
 
       var t_sid = this.parent.get_sid();
       var t_status = this.parent.get_status();
@@ -568,7 +568,7 @@ var JSJaCJingleUtils = ring.create({
    * Parses stanza content
    * @public
    */
-  stanza_parse_content: function(stanza) {    
+  stanza_parse_content: function(username, stanza) {    
     try {
       var i,
           jingle, content, cur_content,
@@ -597,6 +597,7 @@ var JSJaCJingleUtils = ring.create({
 
             // Payloads (non-destructive setters / cumulative)
             this.parent.set_payloads_remote_add(
+              username,
               content_name,
               this.stanza_parse_payload(cur_content)
             );
@@ -605,11 +606,13 @@ var JSJaCJingleUtils = ring.create({
             cur_candidate = this.stanza_parse_candidate(cur_content);
 
             this.parent.set_candidates_remote_add(
+              username,
               content_name,
               cur_candidate
             );
 
             this.parent.set_candidates_queue_remote(
+              username,
               content_name,
               cur_candidate
             );
@@ -630,7 +633,7 @@ var JSJaCJingleUtils = ring.create({
    * @public
    * @returns {boolean} success
    */
-  stanza_parse_group: function(stanza) {    
+  stanza_parse_group: function(username, stanza) {    
     try {
       var i, j,
           jingle,
@@ -666,6 +669,7 @@ var JSJaCJingleUtils = ring.create({
 
             // Payloads (non-destructive setters / cumulative)
             this.parent.set_group_remote(
+              username,
               group_semantics,
               group_content_names
             );
@@ -1499,20 +1503,21 @@ var JSJaCJingleUtils = ring.create({
    * Builds remote content
    * @public
    */
-  build_content_remote: function() {    
+  build_content_remote: function(username) {    
     try {
       var cur_name;
 
       for(cur_name in this.parent.get_name()) {
         this.parent.set_content_remote(
+          username,
           cur_name,
 
           this.generate_content(
             this.parent.get_creator(cur_name),
             cur_name,
             this.parent.get_senders(cur_name),
-            this.parent.get_payloads_remote(cur_name),
-            this.parent.get_candidates_remote(cur_name)
+            this.parent.get_payloads_remote(username, cur_name),
+            this.parent.get_candidates_remote(username, cur_name)
           )
         );
       }
@@ -1534,24 +1539,17 @@ var JSJaCJingleUtils = ring.create({
 
       var content_all = [];
 
-      if(typeof this.parent.get_content_remote == 'function') {
-        // Single conference
+      // Push remote contents
+      var content_remote = this.parent.get_content_remote();
+      var cur_participant, participants;
+
+      for(cur_participant in content_remote) {
         content_all.push(
-          this.parent.get_content_remote()
+          content_remote[cur_participant]
         );
-      } else if(typeof this.parent.get_participants == 'object') {
-        // Muji conference
-        var cur_participant, participants;
-
-        participants = this.parent.get_participants();
-
-        for(cur_participant in participants) {
-          content_all.push(
-            participants[cur_participant].content
-          );
-        }
       }
 
+      // Push local content
       content_all.push(
         this.parent.get_content_local()
       );
@@ -1892,11 +1890,38 @@ var JSJaCJingleUtils = ring.create({
   },
 
   /**
+   * Get my connection username
+   * @public
+   * @returns {string} Username value
+   */
+  connection_username: function() {
+    return JSJAC_JINGLE_STORE_CONNECTION.username;
+  },
+
+  /**
+   * Get my connection domain
+   * @public
+   * @returns {string} Domain value
+   */
+  connection_domain: function() {
+    return JSJAC_JINGLE_STORE_CONNECTION.domain;
+  },
+
+  /**
+   * Get my connection resource
+   * @public
+   * @returns {string} Resource value
+   */
+  connection_resource: function() {
+    return JSJAC_JINGLE_STORE_CONNECTION.resource;
+  },
+
+  /**
    * Registers a view to map
    * @public
    * @returns {object} view register functions
    */
-  map_register_view: function(type) {    
+  map_register_view: function(username, type) {    
     var fn = {
       type   : null,
       mute   : false,
@@ -1914,7 +1939,7 @@ var JSJaCJingleUtils = ring.create({
 
     try {
       switch(type) {
-        case 'local':
+        case JSJAC_JINGLE_DIRECTION_LOCAL:
           fn.type       = type;
           fn.mute       = true;
           fn.view.get   = this.parent.get_local_view;
@@ -1923,7 +1948,7 @@ var JSJaCJingleUtils = ring.create({
           fn.stream.set = this.parent.set_local_stream;
           break;
 
-        case 'remote':
+        case JSJAC_JINGLE_DIRECTION_REMOTE:
           fn.type       = type;
           fn.view.get   = this.parent.get_remote_view;
           fn.view.set   = this.parent.set_remote_view;
@@ -1943,7 +1968,7 @@ var JSJaCJingleUtils = ring.create({
    * @public
    * @returns {object} view unregister functions
    */
-  map_unregister_view: function(type) {    
-    return this.map_register_view(type);
+  map_unregister_view: function(username, type) {    
+    return this.map_register_view(username, type);
   },
 });

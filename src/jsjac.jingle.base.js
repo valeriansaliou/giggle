@@ -109,13 +109,17 @@ var __JSJaCJingleBase = ring.create({
       this._net_trace = args.net_trace;
 
     if(args && args.debug && args.debug.log) {
-        /**
-         * Reference to debugger interface
-         * (needs to implement method <code>log</code>)
-         * @type JSJaCDebugger
-         */
+      /**
+       * Reference to debugger interface
+       * (needs to implement method <code>log</code>)
+       * @private
+       * @type JSJaCDebugger
+       */
       this._debug = args.debug;
     } else {
+      /**
+       * @private
+       */
       this._debug = JSJAC_JINGLE_STORE_DEBUG;
     }
 
@@ -128,6 +132,26 @@ var __JSJaCJingleBase = ring.create({
      * @private
      */
     this._content_local = {};
+
+    /**
+     * @private
+     */
+    this._peer_connection = {};
+
+    /**
+     * @private
+     */
+    this._id = 0;
+
+    /**
+     * @private
+     */
+    this._sent_id = {};
+
+    /**
+     * @private
+     */
+    this._received_id = {};
 
     /**
      * @private
@@ -152,6 +176,11 @@ var __JSJaCJingleBase = ring.create({
     /**
      * @private
      */
+    this._handlers = {};
+
+    /**
+     * @private
+     */
     this._mute = {};
 
     /**
@@ -172,15 +201,198 @@ var __JSJaCJingleBase = ring.create({
     /**
      * @private
      */
-    this._status = JSJAC_JINGLE_STATUS_INACTIVE;
+    this._name = {};
 
     /**
      * @private
      */
-    this._name = {};
+    this._remote_view = {};
+
+    /**
+     * @private
+     */
+    this._remote_stream = {};
+
+    /**
+     * @private
+     */
+    this._content_remote = {};
+
+    /**
+     * @private
+     */
+    this._payloads_remote = {};
+
+    /**
+     * @private
+     */
+    this._group_remote = {};
+
+    /**
+     * @private
+     */
+    this._candidates_remote = {};
+
+    /**
+     * @private
+     */
+    this._candidates_queue_remote = {};
   },
 
-  
+
+
+  /**
+   * JSJSAC JINGLE REGISTERS
+   */
+
+  /**
+   * Registers a given handler on a given Jingle stanza
+   * @public
+   */
+  register_handler: function(type, id, fn) {
+    this.get_debug().log('[JSJaCJingle:single] register_handler', 4);
+
+    try {
+      type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
+
+      if(typeof fn !== 'function') {
+        this.get_debug().log('[JSJaCJingle:single] register_handler > fn parameter not passed or not a function!', 1);
+        return false;
+      }
+
+      if(id) {
+        this.set_handlers(type, id, fn);
+
+        this.get_debug().log('[JSJaCJingle:single] register_handler > Registered handler for id: ' + id + ' and type: ' + type, 3);
+        return true;
+      } else {
+        this.get_debug().log('[JSJaCJingle:single] register_handler > Could not register handler (no ID).', 1);
+        return false;
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:single] register_handler > ' + e, 1);
+    }
+
+    return false;
+  },
+
+  /**
+   * Unregisters the given handler on a given Jingle stanza
+   * @public
+   */
+  unregister_handler: function(type, id) {
+    this.get_debug().log('[JSJaCJingle:single] unregister_handler', 4);
+
+    try {
+      type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
+
+      if(type in this._handlers && id in this._handlers[type]) {
+        delete this._handlers[type][id];
+
+        this.get_debug().log('[JSJaCJingle:single] unregister_handler > Unregistered handler for id: ' + id + ' and type: ' + type, 3);
+        return true;
+      } else {
+        this.get_debug().log('[JSJaCJingle:single] unregister_handler > Could not unregister handler with id: ' + id + ' and type: ' + type + ' (not found).', 2);
+        return false;
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:single] unregister_handler > ' + e, 1);
+    }
+
+    return false;
+  },
+
+  /**
+   * Registers a view element
+   * @public
+   */
+  register_view: function(username, type, view) {
+    this.get_debug().log('[JSJaCJingle:single] register_view', 4);
+
+    try {
+      // Get view functions
+      var fn = this.utils.map_register_view(username, type);
+
+      if(fn.type == type) {
+        var i;
+
+        // Check view is not already registered
+        for(i in (fn.view.get)(username)) {
+          if((fn.view.get)(username)[i] == view) {
+            this.get_debug().log('[JSJaCJingle:single] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
+            return true;
+          }
+        }
+
+        // Proceeds registration
+        (fn.view.set)(username, view);
+
+        this.utils.peer_stream_attach(
+          [view],
+          (fn.stream.get)(username),
+          fn.mute
+        );
+
+        this.get_debug().log('[JSJaCJingle:single] register_view > Registered view of type: ' + type, 3);
+
+        return true;
+      } else {
+        this.get_debug().log('[JSJaCJingle:single] register_view > Could not register view of type: ' + type + ' (type unknown).', 1);
+        return false;
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:single] register_view > ' + e, 1);
+    }
+
+    return false;
+  },
+
+  /**
+   * Unregisters a view element
+   * @public
+   */
+  unregister_view: function(username, type, view) {
+    this.get_debug().log('[JSJaCJingle:single] unregister_view', 4);
+
+    try {
+      // Get view functions
+      var fn = this.utils.map_unregister_view(username, type);
+
+      if(fn.type == type) {
+        var i;
+
+        // Check view is registered
+        for(i in (fn.view.get)(username)) {
+          if((fn.view.get)(username)[i] == view) {
+            // Proceeds un-registration
+            this.utils.peer_stream_detach(
+              [view]
+            );
+
+            this.utils.array_remove_value(
+              (fn.view.get)(username),
+              view
+            );
+
+            this.get_debug().log('[JSJaCJingle:single] unregister_view > Unregistered view of type: ' + type, 3);
+            return true;
+          }
+        }
+
+        this.get_debug().log('[JSJaCJingle:single] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
+        return true;
+      } else {
+        this.get_debug().log('[JSJaCJingle:single] unregister_view > Could not unregister view of type: ' + type + ' (type unknown).', 1);
+        return false;
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:single] unregister_view > ' + e, 1);
+    }
+
+    return false;
+  },
+
+
 
   /**
    * JSJSAC JINGLE GETTERS
@@ -253,6 +465,167 @@ var __JSJaCJingleBase = ring.create({
       return (name in this._content_local) ? this._content_local[name] : {};
 
     return this._content_local;
+  },
+
+  /**
+   * Gets the remote stream
+   * @public
+   * @returns {object} Remote stream instance
+   */
+  get_remote_stream: function(username) {
+    if(username)
+        return this._remote_stream[username];
+
+    return this._remote_stream;
+  },
+
+  /**
+   * Gets the remote content
+   * @public
+   * @returns {object} Remote content object
+   */
+  get_content_remote: function(username, name) {
+    if(name)
+      return (name in this._content_remote[username]) ? this._content_remote[username][name] : {};
+    
+    if(username)
+        return this._content_remote[username];
+
+    return this._content_remote;
+  },
+
+  /**
+   * Gets the remote payloads
+   * @public
+   * @returns {object} Remote payloads object
+   */
+  get_payloads_remote: function(username, name) {
+    if(name)
+      return (username in this._payloads_remote  &&
+              name in this._payloads_remote[username]) ? this._payloads_remote[username][name] : {};
+
+    if(username)
+        return this._payloads_remote[username];
+
+    return this._payloads_remote
+  },
+
+  /**
+   * Gets the remote group
+   * @public
+   * @returns {object} Remote group object
+   */
+  get_group_remote: function(username, semantics) {
+    if(semantics)
+      return (username in this._group_remote  &&
+              semantics in this._group_remote[username]) ? this._group_remote[username][semantics] : {};
+
+    if(username)
+        return this._group_remote[username];
+
+    return this._group_remote;
+  },
+
+  /**
+   * Gets the remote candidates
+   * @public
+   * @returns {object} Remote candidates object
+   */
+  get_candidates_remote: function(username, name) {
+    if(name)
+      return (username in this._candidates_remote  &&
+              name in this._candidates_remote[username]) ? this._candidates_remote[username][name] : [];
+
+    if(username)
+        return this._candidates_remote[username];
+
+    return this._candidates_remote;
+  },
+
+  /**
+   * Gets the remote candidates queue
+   * @public
+   * @returns {object} Remote candidates queue object
+   */
+  get_candidates_queue_remote: function(username, name) {
+    if(name)
+      return (username in this._candidates_queue_remote  &&
+              name in this._candidates_queue_remote[username]) ? this._candidates_queue_remote[username][name] : {};
+
+    if(username)
+        return this._candidates_queue_remote[username];
+
+    return this._candidates_queue_remote;
+  },
+
+  /**
+   * Gets the peer connection
+   * @public
+   * @returns {object} Peer connection
+   */
+  get_peer_connection: function(username) {
+    if(username)
+        return this._peer_connection[username];
+
+    return this._peer_connection;
+  },
+
+  /**
+   * Gets the ID
+   * @public
+   * @returns {number} ID value
+   */
+  get_id: function() {
+    return this._id;
+  },
+
+  /**
+   * Gets the new ID
+   * @public
+   * @returns {string} New ID value
+   */
+  get_id_new: function() {
+    var trans_id = this.get_id() + 1;
+    this.set_id(trans_id);
+
+    return this.get_id_pre() + trans_id;
+  },
+
+  /**
+   * Gets the sent IDs
+   * @public
+   * @returns {object} Sent IDs object
+   */
+  get_sent_id: function() {
+    return this._sent_id;
+  },
+
+  /**
+   * Gets the received IDs
+   * @public
+   * @returns {object} Received IDs object
+   */
+  get_received_id: function() {
+    return this._received_id;
+  },
+
+  /**
+   * Gets the stanza handler
+   * @public
+   * @returns {function} Stanza handler
+   */
+  get_handlers: function(type, id) {
+    type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
+
+    if(id) {
+      if(type != JSJAC_JINGLE_IQ_TYPE_ALL && type in this._handlers && typeof this._handlers[type][id] == 'function')
+        return this._handlers[type][id];
+
+      if(JSJAC_JINGLE_IQ_TYPE_ALL in this._handlers && typeof this._handlers[JSJAC_JINGLE_IQ_TYPE_ALL][id] == 'function')
+        return this._handlers[type][id];
+    }
+
+    return null;
   },
 
   /**
@@ -390,6 +763,16 @@ var __JSJaCJingleBase = ring.create({
   },
 
   /**
+   * Gets the remote_view value
+   * @public
+   * @returns {DOM} remote_view value
+   */
+  get_remote_view: function(username) {
+    return (typeof this._remote_view == 'object'  &&
+            username in this._remote_view) ? this._remote_view[username] : [];
+  },
+
+  /**
    * Gets the STUN servers
    * @public
    * @returns {object} STUN servers
@@ -483,6 +866,20 @@ var __JSJaCJingleBase = ring.create({
   },
 
   /**
+   * Sets the remote view
+   * @public
+   */
+  set_remote_view: function(username, remote_view) {
+    if(typeof this._remote_view !== 'object')
+      this._remote_view = {};
+
+    if(typeof this._remote_view[username] !== 'object')
+      this._remote_view[username] = [];
+
+    this._remote_view[username].push(remote_view);
+  },
+
+  /**
    * Sets the local payload
    * @public
    */
@@ -532,6 +929,184 @@ var __JSJaCJingleBase = ring.create({
    */
   set_content_local: function(name, content_local) {
     this._content_local[name] = content_local;
+  },
+
+  /**
+   * Sets the remote stream
+   * @public
+   */
+  set_remote_stream: function(username, remote_stream) {
+    try {
+      if(!remote_stream && this._remote_stream[username]) {
+        this.peer.stream_detach(
+          this.get_remote_view(username)
+        );
+      }
+
+      this._remote_stream[username] = remote_stream;
+
+      if(remote_stream) {
+        this.peer.stream_attach(
+          this.get_remote_view(username),
+          this.get_remote_stream(username),
+          false
+        );
+      } else {
+        this.peer.stream_detach(
+          this.get_remote_view(username)
+        );
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] set_remote_stream > ' + e, 1);
+    }
+  },
+
+  /**
+   * Sets the remote content
+   * @public
+   */
+  set_content_remote: function(username, name, content_remote) {
+    if(!(username in this._content_remote))  this._content_remote[username] = {};
+
+    this._content_remote[username][name] = content_remote;
+  },
+
+  /**
+   * Sets the remote payloads
+   * @public
+   */
+  set_payloads_remote: function(username, name, payload_data) {
+    if(!(username in this._payloads_remote))  this._payloads_remote[username] = {};
+
+    this._payloads_remote[username][name] = payload_data;
+  },
+
+  /**
+   * Adds a remote payload
+   * @public
+   */
+  set_payloads_remote_add: function(username, name, payload_data) {
+    try {
+      if(!(username in this._payloads_remote))  this._payloads_remote[username] = {};
+
+      if(!(name in this._payloads_remote[username])) {
+        this.set_payloads_remote(username, name, payload_data);
+      } else {
+        var key;
+        var payloads_store = this._payloads_remote[username][name].descriptions.payload;
+        var payloads_add   = payload_data.descriptions.payload;
+
+        for(key in payloads_add) {
+          if(!(key in payloads_store))
+            payloads_store[key] = payloads_add[key];
+        }
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] set_payloads_remote_add > ' + e, 1);
+    }
+  },
+
+  /**
+   * Sets the remote group
+   * @public
+   */
+  set_group_remote: function(username, semantics, group_data) {
+    if(!(username in this._group_remote))  this._group_remote[username] = {};
+
+    this._group_remote[username][semantics] = group_data;
+  },
+
+  /**
+   * Sets the remote candidates
+   * @public
+   */
+  set_candidates_remote: function(username, name, candidate_data) {
+    if(!(username in this._candidates_remote))  this._candidates_remote[username] = {};
+
+    this._candidates_remote[username][name] = candidate_data;
+  },
+
+  /**
+   * Sets the session initiate pending callback function
+   * @public
+   */
+  set_candidates_queue_remote: function(username, name, candidate_data) {
+    if(!(username in this._candidates_queue_remote))  this._candidates_queue_remote[username] = {};
+
+    if(name === null)
+      this._candidates_queue_remote[username] = {};
+    else
+      this._candidates_queue_remote[username][name] = (candidate_data);
+  },
+
+  /**
+   * Adds a remote candidate
+   * @public
+   */
+  set_candidates_remote_add: function(username, name, candidate_data) {
+    try {
+      if(!name) return;
+
+      if(!(username in this._candidates_remote))  this._candidates_remote[username] = {};
+
+      if(!(name in this._candidates_remote[username]))
+        this.set_candidates_remote(username, name, []);
+   
+      var c, i;
+      var candidate_ids = [];
+
+      for(c in this.get_candidates_remote(username, name))
+        candidate_ids.push(this.get_candidates_remote(username, name)[c].id);
+
+      for(i in candidate_data) {
+        if((candidate_data[i].id).indexOf(candidate_ids) !== -1)
+          this.get_candidates_remote(username, name).push(candidate_data[i]);
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] set_candidates_remote_add > ' + e, 1);
+    }
+  },
+
+  /**
+   * Sets the peer connection
+   * @public
+   */
+  set_peer_connection: function(username, peer_connection) {
+    this._peer_connection[username] = peer_connection;
+  },
+
+  /**
+   * Sets the ID
+   * @public
+   */
+  set_id: function(id) {
+    this._id = id;
+  },
+
+  /**
+   * Sets the sent ID
+   * @public
+   */
+  set_sent_id: function(sent_id) {
+    this._sent_id[sent_id] = 1;
+  },
+
+  /**
+   * Sets the last received ID
+   * @public
+   */
+  set_received_id: function(received_id) {
+    this._received_id[received_id] = 1;
+  },
+
+  /**
+   * Sets the stanza handlers
+   * @public
+   */
+  set_handlers: function(type, id, handler) {
+    if(!(type in this._handlers))  this._handlers[type] = {};
+
+    this._handlers[type][id] = handler;
   },
 
   /**

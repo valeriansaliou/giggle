@@ -18,48 +18,236 @@ var ARGS = {
     connection  : null,
     to          : null,
     local_view  : null,
-    resolution  : 'md',
+    resolution  : 'sd',
     sdp_trace   : (url_param('sdp') == '1'),
     net_trace   : (url_param('net') == '1'),
     debug       : (new JSJaCConsoleLogger(4)),
 
     // Custom handlers (optional)
-    room_message: function(_this, stanza) {
-        console.log('room_message');
+    room_message_in: function(_this, stanza) {
+        console.log('room_message_in');
 
-        // TODO: handle chat message & display
+        var pr_from = stanza.getFrom();
+
+        if(!pr_from)
+            return;
+
+        var jid_obj = new JSJaCJID(pr_from);
+        var jid_bare = jid_obj.getBareJID();
+        var jid_resource = jid_obj.getResource();
+
+        // Not our chatroom!
+        if(jid_bare != $('#form_call input[name="call_room"]').val().trim())
+            return;
+
+        var body = stanza.getBody();
+
+        if(body) {
+            var chat_messages_sel = $('#chat_messages');
+
+            // Display message
+            chat_messages_sel.append(
+                '<p class="message">' + 
+                    '<b class="name">' + jid_resource.htmlEnc() + '</b>' + 
+                    '<span class="text">' + body.htmlEnc() + '</span>' + 
+                '</p>'
+            );
+
+            // Scroll to last message
+            chat_messages_sel.stop(true).animate({
+                scrollTop: chat_messages_sel[0].scrollHeight
+            }, 400);
+        }
     },
 
-    session_prepare: function(_this) {
-        console.log('session_prepare');
+    room_message_out: function(_this) {
+        console.log('room_message_out');
     },
 
-    session_initiate: function(_this) {
-        console.log('session_initiate');
+    room_presence_in: function(_this, stanza) {
+        console.log('room_presence_in');
+
+        var pr_from = stanza.getFrom();
+
+        if(!pr_from)
+            return;
+
+        var jid_obj = new JSJaCJID(pr_from);
+        var jid_bare = jid_obj.getBareJID();
+        var jid_resource = jid_obj.getResource();
+
+        if(jid_obj.toString() == con.username + '@' + con.domain + '/' + con.resource)
+            return;
+
+        // Not our chatroom!
+        if(jid_bare != $('#form_call input[name="call_room"]').val().trim())
+            return;
+
+        // Online buddy: show it!
+        if(stanza.getType() == 'unavailable') {
+            if(jid_bare in SC_PRESENCE && jid_resource in SC_PRESENCE[jid_bare]) {
+                delete (SC_PRESENCE[jid_bare])[jid_resource];
+
+                var size = 0;
+                for(i in SC_PRESENCE[jid_bare]) size++;
+
+                if(size == 0) delete SC_PRESENCE[jid_bare];
+            }
+        } else {
+            if(!(jid_bare in SC_PRESENCE)) SC_PRESENCE[jid_bare] = {};
+
+            (SC_PRESENCE[jid_bare])[jid_resource] = 1;
+        }
+
+        // Update list
+        var roster_call = '';
+        $('#roster_call').hide().empty();
+
+        for(cur_bare_jid in SC_PRESENCE) {
+            for(cur_resource in SC_PRESENCE[cur_bare_jid]) {
+                roster_call += '<li>';
+                    roster_call += '<a href="#" data-jid="' + (cur_bare_jid + '/' + cur_resource).htmlEnc() + '"><b>' + cur_bare_jid.htmlEnc() + '</b>/' + cur_resource.htmlEnc() + '</a>';
+                roster_call += '</li>';
+            }
+        }
+
+        if(roster_call) {
+            $('#roster_call').html(roster_call).show();
+
+            $('#roster_call a').click(function() {
+                alert('This is a room user.');
+                return false;
+            });
+        }
     },
 
-    session_leave: function(_this) {
-        console.log('session_leave');
+    room_presence_out: function(_this) {
+        console.log('room_presence_out');
     },
     
-    participant_join: function(_this, stanza) {
-        console.log('participant_join');
+    session_prepare_pending: function(_this, stanza) {
+        console.log('session_prepare_pending');
+
+        $('.call_notif').hide();
+        $('#call_info').text('Preparing...').show();
+
+        $('#form_call').find('input, button:not([data-lock])').attr('disabled', true);
     },
     
-    participant_initiate: function(_this, stanza) {
+    session_prepare_success: function(_this, stanza) {
+        console.log('session_prepare_success');
+
+        $('.call_notif').hide();
+        $('#call_success').text('Prepared.').show();
+
+        $('#fieldset_live').removeAttr('disabled');
+    },
+    
+    session_prepare_error: function(_this, stanza) {
+        console.log('session_prepare_error');
+
+        $('#call_error').text('Could not prepare.').show();
+
+        $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
+        $('#form_live').find('button').removeAttr('disabled');
+    },
+    
+    session_initiate_pending: function(_this) {
+        console.log('session_initiate_pending');
+
+        $('.call_notif').hide();
+        $('#call_info').text('Initiating...').show();
+    },
+    
+    session_initiate_success: function(_this) {
+        console.log('session_initiate_success');
+
+        $('.call_notif').hide();
+        $('#call_success').text('Call initiated.').show();
+
+        $('#form_live').find('button').removeAttr('disabled');
+    },
+    
+    session_initiate_error: function(_this) {
+        console.log('session_initiate_error');
+
+        $('#call_error').text('Could not initialize.').show();
+        $('#chat_messages').empty();
+
+        $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
+        $('#form_live').find('button').removeAttr('disabled');
+    },
+    
+    session_leave_pending: function(_this) {
+        console.log('session_leave_pending');
+
+        $('.call_notif').hide();
+        $('#call_info').text('Leaving...').show();
+
+        $('#form_live').find('button').attr('disabled', true);
+    },
+    
+    session_leave_success: function(_this) {
+        console.log('session_leave_success');
+
+        $('.call_notif').hide();
+        $('#call_success').text('Left call.').show();
+
+        $('#fieldset_live').attr('disabled', true);
+        $('#live_mute').show();
+        $('#live_unmute').hide();
+        $('#chat_messages').empty();
+
+        $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
+        $('#form_live').find('button').removeAttr('disabled');
+    },
+    
+    session_leave_error: function(_this) {
+        console.log('session_leave_error');
+
+        $('#call_error').text('Could not leave (forced).').show();
+
+        $('#fieldset_live').attr('disabled', true);
+        $('#live_mute').show();
+        $('#live_unmute').hide();
+        $('#chat_messages').empty();
+        
+        $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
+        $('#form_live').find('button').removeAttr('disabled');
+    },
+    
+    participant_prepare: function(_this) {
+        console.log('participant_prepare');
+
+        // TODO: add participant <video> / <audio> element with "preparing" text
+    },
+    
+    participant_initiate: function(_this) {
         console.log('participant_initiate');
+
+        // TODO: remove "preparing" text
+        // TODO: wait for video/audio stream
     },
     
-    participant_leave: function(_this, stanza) {
+    participant_leave: function(_this) {
         console.log('participant_leave');
     },
     
     add_remote_view: function(_this) {
         console.log('add_remote_view');
+
+        // TODO: generate <video> / <audio> element
+        // TODO: add to DOM
+        // TODO: animate & show
+
+        var remote_view_sel = null; // DOM selector >> $(path)[0]
+        return remote_view_sel;
     },
     
     remove_remote_view: function(_this) {
         console.log('remove_remote_view');
+
+        // TODO: animate & remove
     }
 };
 
@@ -164,83 +352,13 @@ $(document).ready(function() {
                         $('#login_disconnect').hide();
 
                         SC_PRESENCE = {};
-                        $('#roster_call').removeClass('disabled').empty();
+                        $('#roster_call').empty();
 
                         $('#fieldset_call, #fieldset_live').attr('disabled', true);
 
                         SC_CONNECTED = false;
                     } catch(e) {
                         alert('ondisconnect > ' + e);
-                    }
-                });
-
-                con.registerHandler('presence', function(presence) {
-                    try {
-                        var pr_from = presence.getFrom();
-
-                        if(!pr_from)
-                            return;
-
-                        var jid_obj = new JSJaCJID(pr_from);
-                        var jid_bare = jid_obj.getBareJID();
-                        var jid_resource = jid_obj.getResource();
-
-                        if(jid_obj.toString() == con.username + '@' + con.domain + '/' + con.resource)
-                            return;
-
-                        // Not our chatroom!
-                        if(jid_bare != $('#form_call input[name="call_room"]').val().trim())
-                            return;
-
-                        // Online buddy: show it!
-                        if(presence.getType() == 'unavailable') {
-                            if(jid_bare in SC_PRESENCE && jid_resource in SC_PRESENCE[jid_bare]) {
-                                delete (SC_PRESENCE[jid_bare])[jid_resource];
-
-                                var size = 0;
-                                for(i in SC_PRESENCE[jid_bare]) size++;
-
-                                if(size == 0) delete SC_PRESENCE[jid_bare];
-                            }
-                        } else {
-                            if(!(jid_bare in SC_PRESENCE)) SC_PRESENCE[jid_bare] = {};
-
-                            (SC_PRESENCE[jid_bare])[jid_resource] = 1;
-                        }
-
-                        // Update list
-                        var roster_call = '';
-                        $('#roster_call').hide().empty();
-
-                        for(cur_bare_jid in SC_PRESENCE) {
-                            for(cur_resource in SC_PRESENCE[cur_bare_jid]) {
-                                roster_call += '<li>';
-                                    roster_call += '<a href="#" data-jid="' + (cur_bare_jid + '/' + cur_resource).htmlEnc() + '"><b>' + cur_bare_jid.htmlEnc() + '</b>/' + cur_resource.htmlEnc() + '</a>';
-                                roster_call += '</li>';
-                            }
-                        }
-
-                        if(roster_call) {
-                            $('#roster_call').html(roster_call).show();
-
-                            $('#roster_call a').click(function() {
-                                try {
-                                    if($('#roster_call').hasClass('disabled'))
-                                        return false;
-
-                                    $('#form_call input[name="call_room"]').val($(this).attr('data-jid'));
-
-                                    if($('#form_call').find('button:not([data-lock])').size() == 1)
-                                        $('#form_call').submit();
-                                } catch(e) {
-                                    alert('roster_call > ' + e);
-                                } finally {
-                                    return false;
-                                }
-                            });
-                        }
-                    } catch(e) {
-                        alert('presence > ' + e);
                     }
                 });
                 
@@ -277,8 +395,6 @@ $(document).ready(function() {
     $('#form_call').submit(function() {
         try {
             if(!SC_CONNECTED) return false;
-
-            $('#roster_call').addClass('disabled');
 
             $('.call_notif').hide();
 
@@ -322,6 +438,23 @@ $(document).ready(function() {
             $('.live_notif').hide();
         } catch(e) {
             alert('form_live > ' + e);
+        } finally {
+            return false;
+        }
+    });
+
+    // Submit chat form
+    $('#chat_form').submit(function() {
+        try {
+            var input_sel = $(this).find('input[name="message"]');
+            var body = input_sel.val();
+
+            if(body) {
+                JINGLE.send_message(body);
+                input_sel.val('');
+            }
+        } catch(e) {
+            alert('chat_form > ' + e);
         } finally {
             return false;
         }

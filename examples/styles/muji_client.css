@@ -65,6 +65,10 @@
     padding-right: 8px;
 }
 
+#chat_messages p.message span.text {
+    word-break: break-word;
+}
+
 #chat_form {
     bottom: 0;
 }

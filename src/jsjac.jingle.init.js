@@ -24,14 +24,14 @@ var JSJaCJingleInit = new (ring.create({
       var request = new JSJaCIQ();
 
       request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
-      request.setType(JSJAC_JINGLE_STANZA_TYPE_GET);
+      request.setType(JSJAC_JINGLE_IQ_TYPE_GET);
 
       request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_EXTDISCO }));
 
       JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
         try {
           // Parse response
-          if(response.getType() == JSJAC_JINGLE_STANZA_TYPE_RESULT) {
+          if(response.getType() == JSJAC_JINGLE_IQ_TYPE_RESULT) {
             var i,
                 service_arr, cur_service,
                 cur_host, cur_password, cur_port, cur_transport, cur_type, cur_username;
@@ -110,14 +110,14 @@ var JSJaCJingleInit = new (ring.create({
       var request = new JSJaCIQ();
 
       request.setTo(JSJAC_JINGLE_STORE_CONNECTION.domain);
-      request.setType(JSJAC_JINGLE_STANZA_TYPE_GET);
+      request.setType(JSJAC_JINGLE_IQ_TYPE_GET);
 
       request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_JABBER_JINGLENODES }));
 
       JSJAC_JINGLE_STORE_CONNECTION.send(request, function(response) {
         try {
           // Parse response
-          if(response.getType() == JSJAC_JINGLE_STANZA_TYPE_RESULT) {
+          if(response.getType() == JSJAC_JINGLE_IQ_TYPE_RESULT) {
             var i,
                 stun_arr, cur_stun,
                 cur_policy, cur_address, cur_protocol;

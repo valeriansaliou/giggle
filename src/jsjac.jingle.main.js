@@ -53,7 +53,17 @@ var JSJaCJingle = new (ring.create({
         JSJAC_JINGLE_STORE_DEBUG = args.debug;
 
       // Incoming IQs handler
-      JSJAC_JINGLE_STORE_CONNECTION.registerHandler('iq', this.route.bind(this));
+      var cur_type, route_map = {}
+      route_map[JSJAC_JINGLE_STANZA_IQ]        = this.route_iq;
+      route_map[JSJAC_JINGLE_STANZA_PRESENCE]  = this.route_presence;
+      route_map[JSJAC_JINGLE_STANZA_MESSAGE]   = this.route_message;
+
+      for(cur_type in route_map) {
+        JSJAC_JINGLE_STORE_CONNECTION.registerHandler(
+          cur_type,
+          route_map[cur_type].bind(this)
+        );
+      }
 
       JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] listen > Listening.', 2);
 
@@ -70,11 +80,12 @@ var JSJaCJingle = new (ring.create({
   },
 
   /**
-   * Routes Jingle stanzas
-   * @public
+   * Routes Jingle IQ stanzas
+   * @private
    */
-  route: function(stanza) {
+  route_iq: function(stanza) {
     try {
+      // Single?
       var action = null;
       var sid    = null;
 
@@ -99,31 +110,83 @@ var JSJaCJingle = new (ring.create({
 
       // WebRTC not available ATM?
       if(jingle && !JSJAC_JINGLE_AVAILABLE) {
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > Dropped Jingle packet (WebRTC not available).', 0);
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_iq > Dropped Jingle packet (WebRTC not available).', 0);
 
         (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
       } else {
         // New session? Or registered one?
-        var session_route = this.read(sid);
+        var session_route = this.read(JSJAC_JINGLE_SESSION_SINGLE, sid);
 
         if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route === null) {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > New Jingle session (sid: ' + sid + ').', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_iq > New Jingle session (sid: ' + sid + ').', 2);
 
           JSJAC_JINGLE_STORE_INITIATE(stanza);
         } else if(sid) {
           if(session_route !== null) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > Routed to Jingle session (sid: ' + sid + ').', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_iq > Routed to Jingle session (sid: ' + sid + ').', 2);
 
             session_route.handle(stanza);
-          } else if(stanza.getType() == JSJAC_JINGLE_STANZA_TYPE_SET && stanza.getFrom()) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > Unknown Jingle session (sid: ' + sid + ').', 0);
+          } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && stanza.getFrom()) {
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_iq > Unknown Jingle session (sid: ' + sid + ').', 0);
 
             (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
           }
         }
       }
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_iq > ' + e, 1);
+    }
+  },
+
+  /**
+   * Routes Jingle message stanzas
+   * @private
+   */
+  route_message: function(stanza) {
+    try {
+      // Muji?
+      var from = stanza.getFrom();
+
+      if(from) {
+        var jid = new JSJaCJID(from);
+        var room = jid.getNode() + '@' + jid.getDomain();
+
+        var session_route = this.read(JSJAC_JINGLE_SESSION_MUJI, room);
+
+        if(session_route !== null) {
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_message > Routed to Jingle session (room: ' + room + ').', 2);
+
+          session_route.handle_message(stanza);
+        }
+      }
+    } catch(e) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_message > ' + e, 1);
+    }
+  },
+
+  /**
+   * Routes Jingle presence stanzas
+   * @private
+   */
+  route_presence: function(stanza) {
+    try {
+      // Muji?
+      var from = stanza.getFrom();
+
+      if(from) {
+        var jid = new JSJaCJID(from);
+        var room = jid.getNode() + '@' + jid.getDomain();
+
+        var session_route = this.read(JSJAC_JINGLE_SESSION_MUJI, room);
+
+        if(session_route !== null) {
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_presence > Routed to Jingle session (room: ' + room + ').', 2);
+
+          session_route.handle_presence(stanza);
+        }
+      }
+    } catch(e) {
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_presence > ' + e, 1);
     }
   },
 
@@ -131,8 +194,8 @@ var JSJaCJingle = new (ring.create({
    * Adds a new Jingle session
    * @public
    */
-  add: function(sid, obj) {
-    JSJAC_JINGLE_STORE_SESSIONS[sid] = obj;
+  add: function(type, sid, obj) {
+    JSJAC_JINGLE_STORE_SESSIONS[type][sid] = obj;
   },
 
   /**
@@ -140,16 +203,16 @@ var JSJaCJingle = new (ring.create({
    * @public
    * @return {object} Session
    */
-  read: function(sid) {
-    return (sid in JSJAC_JINGLE_STORE_SESSIONS) ? JSJAC_JINGLE_STORE_SESSIONS[sid] : null;
+  read: function(type, sid) {
+    return (sid in JSJAC_JINGLE_STORE_SESSIONS[type]) ? JSJAC_JINGLE_STORE_SESSIONS[type][sid] : null;
   },
 
   /**
    * Removes a new Jingle session
    * @public
    */
-  remove: function(sid) {
-    delete JSJAC_JINGLE_STORE_SESSIONS[sid];
+  remove: function(type, sid) {
+    delete JSJAC_JINGLE_STORE_SESSIONS[type][sid];
   },
 
   /**
