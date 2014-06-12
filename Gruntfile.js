@@ -114,7 +114,7 @@ module.exports = function(grunt) {
     // Task: Clean
     clean: {
       temporary: ['tmp/'],
-      reset: ['tmp/', 'lib/*', 'build/*', 'doc/*']
+      reset: ['tmp/', 'lib/*', 'build/*', 'doc/*', 'bower_components/']
     },
 
 

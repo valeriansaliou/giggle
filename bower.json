@@ -3,7 +3,9 @@
 
   "dependencies" : {
     "underscore" : "latest",
-    "ring" : "latest"
+    "ring" : "latest",
+    "jquery" : "latest",
+    "jsjac": "sstrigler/JSJaC"
   },
 
   "install" : {
