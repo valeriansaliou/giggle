@@ -473,6 +473,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the local view
+   * @public
    */
   set_local_view: function(local_view) {
     if(typeof this._local_view !== 'object')
@@ -483,6 +484,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the local payload
+   * @public
    */
   set_payloads_local: function(name, payload_data) {
     this._payloads_local[name] = payload_data;
@@ -490,6 +492,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the local group
+   * @public
    */
   set_group_local: function(semantics, group_data) {
     this._group_local[semantics] = group_data;
@@ -497,6 +500,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the local candidates
+   * @public
    */
   set_candidates_local: function(name, candidate_data) {
     if(!(name in this._candidates_local))  this._candidates_local[name] = [];
@@ -506,6 +510,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the local candidates queue
+   * @public
    */
   set_candidates_queue_local: function(name, candidate_data) {
     try {
@@ -523,6 +528,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the local content
+   * @public
    */
   set_content_local: function(name, content_local) {
     this._content_local[name] = content_local;
@@ -530,6 +536,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the mute state
+   * @public
    */
   set_mute: function(name, mute) {
     if(!name || name == '*') {
@@ -542,6 +549,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the lock value
+   * @public
    */
   set_lock: function(lock) {
     this._lock = lock;
@@ -549,6 +557,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Gets the media busy value
+   * @public
    */
   set_media_busy: function(busy) {
     this._media_busy = busy;
@@ -556,6 +565,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the session ID
+   * @public
    */
   set_sid: function(sid) {
     this._sid = sid;
@@ -563,6 +573,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the session status
+   * @public
    */
   set_status: function(status) {
     this._status = status;
@@ -570,6 +581,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the session to value
+   * @public
    */
   set_to: function(to) {
     this._to = to;
@@ -577,6 +589,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the session media
+   * @public
    */
   set_media: function(media) {
     this._media = media;
@@ -584,6 +597,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the video source
+   * @public
    */
   set_video_source: function() {
     this._video_source = video_source;
@@ -591,6 +605,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the video resolution
+   * @public
    */
   set_resolution: function(resolution) {
     this._resolution = resolution;
@@ -598,6 +613,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the video bandwidth
+   * @public
    */
   set_bandwidth: function(bandwidth) {
     this._bandwidth = bandwidth;
@@ -605,6 +621,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the video FPS
+   * @public
    */
   set_fps: function(fps) {
     this._fps = fps;
@@ -612,6 +629,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the source name
+   * @public
    */
   set_name: function(name) {
     this._name[name] = 1;
@@ -619,6 +637,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the STUN server address
+   * @public
    */
   set_stun: function(stun_host, stun_data) {
     this._stun[stun_server] = stun_data;
@@ -626,6 +645,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the TURN server address
+   * @public
    */
   set_turn: function(turn_host, turn_data) {
     this._turn[turn_server] = turn_data;
@@ -633,6 +653,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Enables/disables SDP traces
+   * @public
    */
   set_sdp_trace: function(sdp_trace) {
     this._sdp_trace = sdp_trace;
@@ -640,6 +661,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Enables/disables network traces
+   * @public
    */
   set_net_trace: function(net_trace) {
     this._net_trace = net_trace;
@@ -647,6 +669,7 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the debugging wrapper
+   * @public
    */
   set_debug: function(debug) {
     this._debug = debug;

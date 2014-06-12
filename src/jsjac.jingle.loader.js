@@ -9,6 +9,10 @@
 
 
 var JSJaCJingleLoader = {
+  /**
+   * Maps library components to load
+   * @public
+   */
   includes: {
     lib: [
       'underscore/underscore',
@@ -29,12 +33,21 @@ var JSJaCJingleLoader = {
     ]
   },
 
+  /**
+   * Requires library component
+   * @public
+   */
   require: function(library_name) {
     document.write(
       '<script type="text/javascript" src="' + library_name + '"></script>'
     );
   },
 
+
+  /**
+   * Engages library load process
+   * @public
+   */
   go: function() {
     var includes = [], c;
 
@@ -57,15 +70,6 @@ var JSJaCJingleLoader = {
       this.require(path + includes[j] + '.js');
     }
   },
-
-  bind: function(fn, obj, opt_arg) {
-    return function(arg) {
-      return fn.apply(
-        obj,
-        [arg, opt_arg]
-      );
-    };
-  }
 };
 
 if(typeof JSJaCJingle == 'undefined') {

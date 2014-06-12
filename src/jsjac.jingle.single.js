@@ -217,6 +217,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Initiates a new Jingle session.
+   * @public
    */
   initiate: function() {
     this.get_debug().log('[JSJaCJingle:single] initiate', 4);
@@ -294,6 +295,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Accepts the Jingle session.
+   * @public
    */
   accept: function() {
     this.get_debug().log('[JSJaCJingle:single] accept', 4);
@@ -343,6 +345,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sends a Jingle session info.
+   * @public
    */
   info: function(name, args) {
     this.get_debug().log('[JSJaCJingle:single] info', 4);
@@ -383,6 +386,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Terminates the Jingle session.
+   * @public
    */
   terminate: function(reason) {
     this.get_debug().log('[JSJaCJingle:single] terminate', 4);
@@ -423,6 +427,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sends a given Jingle stanza packet
+   * @public
    */
   send: function(type, args) {
     this.get_debug().log('[JSJaCJingle:single] send', 4);
@@ -465,49 +470,49 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         // Submit to registered handler
         switch(args.action) {
           case JSJAC_JINGLE_ACTION_CONTENT_ACCEPT:
-            this.send_content_accept(stanza); break;
+            this._send_content_accept(stanza); break;
 
           case JSJAC_JINGLE_ACTION_CONTENT_ADD:
-            this.send_content_add(stanza); break;
+            this._send_content_add(stanza); break;
 
           case JSJAC_JINGLE_ACTION_CONTENT_MODIFY:
-            this.send_content_modify(stanza); break;
+            this._send_content_modify(stanza); break;
 
           case JSJAC_JINGLE_ACTION_CONTENT_REJECT:
-            this.send_content_reject(stanza); break;
+            this._send_content_reject(stanza); break;
 
           case JSJAC_JINGLE_ACTION_CONTENT_REMOVE:
-            this.send_content_remove(stanza); break;
+            this._send_content_remove(stanza); break;
 
           case JSJAC_JINGLE_ACTION_DESCRIPTION_INFO:
-            this.send_description_info(stanza); break;
+            this._send_description_info(stanza); break;
 
           case JSJAC_JINGLE_ACTION_SECURITY_INFO:
-            this.send_security_info(stanza); break;
+            this._send_security_info(stanza); break;
 
           case JSJAC_JINGLE_ACTION_SESSION_ACCEPT:
-            this.send_session_accept(stanza, args); break;
+            this._send_session_accept(stanza, args); break;
 
           case JSJAC_JINGLE_ACTION_SESSION_INFO:
-            this.send_session_info(stanza, args); break;
+            this._send_session_info(stanza, args); break;
 
           case JSJAC_JINGLE_ACTION_SESSION_INITIATE:
-            this.send_session_initiate(stanza, args); break;
+            this._send_session_initiate(stanza, args); break;
 
           case JSJAC_JINGLE_ACTION_SESSION_TERMINATE:
-            this.send_session_terminate(stanza, args); break;
+            this._send_session_terminate(stanza, args); break;
 
           case JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT:
-            this.send_transport_accept(stanza); break;
+            this._send_transport_accept(stanza); break;
 
           case JSJAC_JINGLE_ACTION_TRANSPORT_INFO:
-            this.send_transport_info(stanza, args); break;
+            this._send_transport_info(stanza, args); break;
 
           case JSJAC_JINGLE_ACTION_TRANSPORT_REJECT:
-            this.send_transport_reject(stanza); break;
+            this._send_transport_reject(stanza); break;
 
           case JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE:
-            this.send_transport_replace(stanza); break;
+            this._send_transport_replace(stanza); break;
 
           default:
             this.get_debug().log('[JSJaCJingle:single] send > Unexpected error.', 1);
@@ -534,6 +539,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Handles a given Jingle stanza response
+   * @public
    */
   handle: function(stanza) {
     this.get_debug().log('[JSJaCJingle:single] handle', 4);
@@ -583,49 +589,49 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Submit to registered handler
       switch(action) {
         case JSJAC_JINGLE_ACTION_CONTENT_ACCEPT:
-          this.handle_content_accept(stanza); break;
+          this._handle_content_accept(stanza); break;
 
         case JSJAC_JINGLE_ACTION_CONTENT_ADD:
-          this.handle_content_add(stanza); break;
+          this._handle_content_add(stanza); break;
 
         case JSJAC_JINGLE_ACTION_CONTENT_MODIFY:
-          this.handle_content_modify(stanza); break;
+          this._handle_content_modify(stanza); break;
 
         case JSJAC_JINGLE_ACTION_CONTENT_REJECT:
-          this.handle_content_reject(stanza); break;
+          this._handle_content_reject(stanza); break;
 
         case JSJAC_JINGLE_ACTION_CONTENT_REMOVE:
-          this.handle_content_remove(stanza); break;
+          this._handle_content_remove(stanza); break;
 
         case JSJAC_JINGLE_ACTION_DESCRIPTION_INFO:
-          this.handle_description_info(stanza); break;
+          this._handle_description_info(stanza); break;
 
         case JSJAC_JINGLE_ACTION_SECURITY_INFO:
-          this.handle_security_info(stanza); break;
+          this._handle_security_info(stanza); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_ACCEPT:
-          this.handle_session_accept(stanza); break;
+          this._handle_session_accept(stanza); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_INFO:
-          this.handle_session_info(stanza); break;
+          this._handle_session_info(stanza); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_INITIATE:
-          this.handle_session_initiate(stanza); break;
+          this._handle_session_initiate(stanza); break;
 
         case JSJAC_JINGLE_ACTION_SESSION_TERMINATE:
-          this.handle_session_terminate(stanza); break;
+          this._handle_session_terminate(stanza); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT:
-          this.handle_transport_accept(stanza); break;
+          this._handle_transport_accept(stanza); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_INFO:
-          this.handle_transport_info(stanza); break;
+          this._handle_transport_info(stanza); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_REJECT:
-          this.handle_transport_reject(stanza); break;
+          this._handle_transport_reject(stanza); break;
 
         case JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE:
-          this.handle_transport_replace(stanza); break;
+          this._handle_transport_replace(stanza); break;
       }
     } catch(e) {
       this.get_debug().log('[JSJaCJingle:single] handle > ' + e, 1);
@@ -634,6 +640,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Mutes a Jingle session (local)
+   * @public
    */
   mute: function(name) {
     this.get_debug().log('[JSJaCJingle:single] mute', 4);
@@ -670,6 +677,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Unmutes a Jingle session (local)
+   * @public
    */
   unmute: function(name) {
     this.get_debug().log('[JSJaCJingle:single] unmute', 4);
@@ -706,6 +714,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Toggles media type in a Jingle session
+   * @public
    */
   media: function(media) {
     /* DEV: don't expect this to work as of now! */
@@ -793,6 +802,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Registers a given handler on a given Jingle stanza
+   * @public
    */
   register_handler: function(type, id, fn) {
     this.get_debug().log('[JSJaCJingle:single] register_handler', 4);
@@ -823,6 +833,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Unregisters the given handler on a given Jingle stanza
+   * @public
    */
   unregister_handler: function(type, id) {
     this.get_debug().log('[JSJaCJingle:single] unregister_handler', 4);
@@ -848,6 +859,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Registers a view element
+   * @public
    */
   register_view: function(type, view) {
     this.get_debug().log('[JSJaCJingle:single] register_view', 4);
@@ -892,6 +904,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Unregisters a view element
+   * @public
    */
   unregister_view: function(type, view) {
     this.get_debug().log('[JSJaCJingle:single] unregister_view', 4);
@@ -941,128 +954,136 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sends the Jingle content accept
+   * @private
    */
-  send_content_accept: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] send_content_accept', 4);
+  _send_content_accept: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _send_content_accept', 4);
 
     try {
       // TODO: remove from remote 'content-add' queue
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      this.get_debug().log('[JSJaCJingle:single] send_content_accept > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] _send_content_accept > Feature not implemented!', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_content_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_content_accept > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle content add
+   * @private
    */
-  send_content_add: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] send_content_add', 4);
+  _send_content_add: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _send_content_add', 4);
 
     try {
       // TODO: push to local 'content-add' queue
 
       // Not implemented for now
-      this.get_debug().log('[JSJaCJingle:single] send_content_add > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] _send_content_add > Feature not implemented!', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_content_add > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_content_add > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle content modify
+   * @private
    */
-  send_content_modify: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] send_content_modify', 4);
+  _send_content_modify: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _send_content_modify', 4);
 
     try {
       // TODO: push to local 'content-modify' queue
 
       // Not implemented for now
-      this.get_debug().log('[JSJaCJingle:single] send_content_modify > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] _send_content_modify > Feature not implemented!', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_content_modify > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_content_modify > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle content reject
+   * @private
    */
-  send_content_reject: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] send_content_reject', 4);
+  _send_content_reject: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _send_content_reject', 4);
 
     try {
       // TODO: remove from remote 'content-add' queue
 
       // Not implemented for now
-      this.get_debug().log('[JSJaCJingle:single] send_content_reject > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] _send_content_reject > Feature not implemented!', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_content_reject > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_content_reject > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle content remove
+   * @private
    */
-  send_content_remove: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] send_content_remove', 4);
+  _send_content_remove: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _send_content_remove', 4);
 
     try {
       // TODO: add to local 'content-remove' queue
 
       // Not implemented for now
-      this.get_debug().log('[JSJaCJingle:single] send_content_remove > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] _send_content_remove > Feature not implemented!', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_content_remove > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_content_remove > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle description info
+   * @private
    */
-  send_description_info: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] send_description_info', 4);
+  _send_description_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _send_description_info', 4);
 
     try {
       // Not implemented for now
-      this.get_debug().log('[JSJaCJingle:single] send_description_info > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] _send_description_info > Feature not implemented!', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_description_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_description_info > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle security info
+   * @private
    */
-  send_security_info: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] send_security_info', 4);
+  _send_security_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _send_security_info', 4);
 
     try {
       // Not implemented for now
-      this.get_debug().log('[JSJaCJingle:single] send_security_info > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] _send_security_info > Feature not implemented!', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_security_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_security_info > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle session accept
+   * @private
    */
-  send_session_accept: function(stanza, args) {
-    this.get_debug().log('[JSJaCJingle:single] send_session_accept', 4);
+  _send_session_accept: function(stanza, args) {
+    this.get_debug().log('[JSJaCJingle:single] _send_session_accept', 4);
 
     try {
       if(this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING) {
-        this.get_debug().log('[JSJaCJingle:single] send_session_accept > Cannot send accept stanza, resource not accepting (status: ' + this.get_status() + ').', 0);
-        this.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
+        this.get_debug().log('[JSJaCJingle:single] _send_session_accept > Cannot send accept stanza, resource not accepting (status: ' + this.get_status() + ').', 0);
+        this._send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
       if(!args) {
-          this.get_debug().log('[JSJaCJingle:single] send_session_accept > Argument not provided.', 1);
+          this.get_debug().log('[JSJaCJingle:single] _send_session_accept > Argument not provided.', 1);
           return;
       }
 
@@ -1080,30 +1101,31 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
       this.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
         (_this.get_session_accept_success())(_this, stanza);
-        _this.handle_session_accept_success(stanza);
+        _this._handle_session_accept_success(stanza);
       });
 
       // Schedule error timeout
       this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
-        external:   this.get_session_accept_error(),
-        internal:   this.handle_session_accept_error
+        external:   this.get_session_accept_error().bind(this),
+        internal:   this._handle_session_accept_error.bind(this)
       });
 
-      this.get_debug().log('[JSJaCJingle:single] send_session_accept > Sent.', 4);
+      this.get_debug().log('[JSJaCJingle:single] _send_session_accept > Sent.', 4);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_session_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_session_accept > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle session info
+   * @private
    */
-  send_session_info: function(stanza, args) {
-    this.get_debug().log('[JSJaCJingle:single] send_session_info', 4);
+  _send_session_info: function(stanza, args) {
+    this.get_debug().log('[JSJaCJingle:single] _send_session_info', 4);
 
     try {
       if(!args) {
-        this.get_debug().log('[JSJaCJingle:single] send_session_info > Argument not provided.', 1);
+        this.get_debug().log('[JSJaCJingle:single] _send_session_info > Argument not provided.', 1);
         return;
       }
 
@@ -1123,35 +1145,36 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
       this.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
         (_this.get_session_info_success())(this, stanza);
-        _this.handle_session_info_success(stanza);
+        _this._handle_session_info_success(stanza);
       });
 
       // Schedule error timeout
       this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
-        external:   this.get_session_info_error(),
-        internal:   this.handle_session_info_error
+        external:   this.get_session_info_error().bind(this),
+        internal:   this._handle_session_info_error.bind(this)
       });
 
-      this.get_debug().log('[JSJaCJingle:single] send_session_info > Sent (name: ' + args.info + ').', 2);
+      this.get_debug().log('[JSJaCJingle:single] _send_session_info > Sent (name: ' + args.info + ').', 2);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_session_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_session_info > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle session initiate
+   * @private
    */
-  send_session_initiate: function(stanza, args) {
-    this.get_debug().log('[JSJaCJingle:single] send_session_initiate', 4);
+  _send_session_initiate: function(stanza, args) {
+    this.get_debug().log('[JSJaCJingle:single] _send_session_initiate', 4);
 
     try {
       if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATING) {
-        this.get_debug().log('[JSJaCJingle:single] send_session_initiate > Cannot send initiate stanza, resource not initiating (status: ' + this.get_status() + ').', 0);
+        this.get_debug().log('[JSJaCJingle:single] _send_session_initiate > Cannot send initiate stanza, resource not initiating (status: ' + this.get_status() + ').', 0);
         return;
       }
 
       if(!args) {
-        this.get_debug().log('[JSJaCJingle:single] send_session_initiate > Argument not provided.', 1);
+        this.get_debug().log('[JSJaCJingle:single] _send_session_initiate > Argument not provided.', 1);
         return;
       }
 
@@ -1169,35 +1192,36 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       
       this.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
         (_this.get_session_initiate_success())(_this, stanza);
-        _this.handle_session_initiate_success(stanza);
+        _this._handle_session_initiate_success(stanza);
       });
 
       // Schedule error timeout
       this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
-        external:   this.get_session_initiate_error(),
-        internal:   this.handle_session_initiate_error
+        external:   this.get_session_initiate_error().bind(this),
+        internal:   this._handle_session_initiate_error.bind(this)
       });
 
-      this.get_debug().log('[JSJaCJingle:single] send_session_initiate > Sent.', 2);
+      this.get_debug().log('[JSJaCJingle:single] _send_session_initiate > Sent.', 2);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_session_initiate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_session_initiate > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle session terminate
+   * @private
    */
-  send_session_terminate: function(stanza, args) {
-    this.get_debug().log('[JSJaCJingle:single] send_session_terminate', 4);
+  _send_session_terminate: function(stanza, args) {
+    this.get_debug().log('[JSJaCJingle:single] _send_session_terminate', 4);
 
     try {
       if(this.get_status() != JSJAC_JINGLE_STATUS_TERMINATING) {
-        this.get_debug().log('[JSJaCJingle:single] send_session_terminate > Cannot send terminate stanza, resource not terminating (status: ' + this.get_status() + ').', 0);
+        this.get_debug().log('[JSJaCJingle:single] _send_session_terminate > Cannot send terminate stanza, resource not terminating (status: ' + this.get_status() + ').', 0);
         return;
       }
 
       if(!args) {
-        this.get_debug().log('[JSJaCJingle:single] send_session_terminate > Argument not provided.', 1);
+        this.get_debug().log('[JSJaCJingle:single] _send_session_terminate > Argument not provided.', 1);
         return;
       }
 
@@ -1220,54 +1244,56 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       
       this.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
         (_this.get_session_terminate_success())(_this, stanza);
-        _this.handle_session_terminate_success(stanza);
+        _this._handle_session_terminate_success(stanza);
       });
 
       // Schedule error timeout
       this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
-        external:   this.get_session_terminate_error(),
-        internal:   this.handle_session_terminate_error
+        external:   this.get_session_terminate_error().bind(this),
+        internal:   this._handle_session_terminate_error.bind(this)
       });
 
-      this.get_debug().log('[JSJaCJingle:single] send_session_terminate > Sent (reason: ' + args.reason + ').', 2);
+      this.get_debug().log('[JSJaCJingle:single] _send_session_terminate > Sent (reason: ' + args.reason + ').', 2);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_session_terminate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_session_terminate > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle transport accept
+   * @private
    */
-  send_transport_accept: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] send_transport_accept', 4);
+  _send_transport_accept: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _send_transport_accept', 4);
 
     try {
       // Not implemented for now
-      this.get_debug().log('[JSJaCJingle:single] send_transport_accept > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] _send_transport_accept > Feature not implemented!', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_transport_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_transport_accept > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle transport info
+   * @private
    */
-  send_transport_info: function(stanza, args) {
-    this.get_debug().log('[JSJaCJingle:single] send_transport_info', 4);
+  _send_transport_info: function(stanza, args) {
+    this.get_debug().log('[JSJaCJingle:single] _send_transport_info', 4);
 
     try {
       if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
-        this.get_debug().log('[JSJaCJingle:single] send_transport_info > Cannot send transport info, resource not initiated, nor accepting, nor accepted (status: ' + this.get_status() + ').', 0);
+        this.get_debug().log('[JSJaCJingle:single] _send_transport_info > Cannot send transport info, resource not initiated, nor accepting, nor accepted (status: ' + this.get_status() + ').', 0);
         return;
       }
 
       if(!args) {
-        this.get_debug().log('[JSJaCJingle:single] send_transport_info > Argument not provided.', 1);
+        this.get_debug().log('[JSJaCJingle:single] _send_transport_info > Argument not provided.', 1);
         return;
       }
 
       if(this.utils.object_length(this.get_candidates_queue_local()) === 0) {
-        this.get_debug().log('[JSJaCJingle:single] send_transport_info > No local candidate in queue.', 1);
+        this.get_debug().log('[JSJaCJingle:single] _send_transport_info > No local candidate in queue.', 1);
         return;
       }
 
@@ -1298,68 +1324,71 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       var _this = this;
       
       this.register_handler(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, function(stanza) {
-        _this.handle_transport_info_success(stanza);
+        _this._handle_transport_info_success(stanza);
       });
 
       // Schedule error timeout
       this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_TYPE_RESULT, args.id, {
-        internal: this.handle_transport_info_error
+        internal: this._handle_transport_info_error.bind(this)
       });
 
-      this.get_debug().log('[JSJaCJingle:single] send_transport_info > Sent.', 2);
+      this.get_debug().log('[JSJaCJingle:single] _send_transport_info > Sent.', 2);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_transport_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_transport_info > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle transport reject
+   * @private
    */
-  send_transport_reject: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] send_transport_reject', 4);
+  _send_transport_reject: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _send_transport_reject', 4);
 
     try {
       // Not implemented for now
-      this.get_debug().log('[JSJaCJingle:single] send_transport_reject > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] _send_transport_reject > Feature not implemented!', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_transport_reject > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_transport_reject > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle transport replace
+   * @private
    */
-  send_transport_replace: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] send_transport_replace', 4);
+  _send_transport_replace: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _send_transport_replace', 4);
 
     try {
       // Not implemented for now
-      this.get_debug().log('[JSJaCJingle:single] send_transport_replace > Feature not implemented!', 0);
+      this.get_debug().log('[JSJaCJingle:single] _send_transport_replace > Feature not implemented!', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_transport_replace > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_transport_replace > ' + e, 1);
     }
   },
 
   /**
    * Sends the Jingle transport replace
+   * @private
    */
-  send_error: function(stanza, error) {
-    this.get_debug().log('[JSJaCJingle:single] send_error', 4);
+  _send_error: function(stanza, error) {
+    this.get_debug().log('[JSJaCJingle:single] _send_error', 4);
 
     try {
       // Assert
       if(!('type' in error)) {
-        this.get_debug().log('[JSJaCJingle:single] send_error > Type unknown.', 1);
+        this.get_debug().log('[JSJaCJingle:single] _send_error > Type unknown.', 1);
         return;
       }
 
       if('jingle' in error && !(error.jingle in JSJAC_JINGLE_ERRORS)) {
-        this.get_debug().log('[JSJaCJingle:single] send_error > Jingle condition unknown (' + error.jingle + ').', 1);
+        this.get_debug().log('[JSJaCJingle:single] _send_error > Jingle condition unknown (' + error.jingle + ').', 1);
         return;
       }
 
       if('xmpp' in error && !(error.xmpp in XMPP_ERRORS)) {
-        this.get_debug().log('[JSJaCJingle:single] send_error > XMPP condition unknown (' + error.xmpp + ').', 1);
+        this.get_debug().log('[JSJaCJingle:single] _send_error > XMPP condition unknown (' + error.xmpp + ').', 1);
         return;
       }
 
@@ -1376,9 +1405,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
       JSJAC_JINGLE_STORE_CONNECTION.send(stanza_error);
 
-      this.get_debug().log('[JSJaCJingle:single] send_error > Sent: ' + (error.jingle || error.xmpp), 2);
+      this.get_debug().log('[JSJaCJingle:single] _send_error > Sent: ' + (error.jingle || error.xmpp), 2);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] send_error > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _send_error > ' + e, 1);
     }
   },
 
@@ -1391,9 +1420,10 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
   /**
    * Handles the Jingle content accept
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_content_accept: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_content_accept', 4);
+  _handle_content_accept: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_content_accept', 4);
 
     try {
       // TODO: start to flow accepted stream
@@ -1401,18 +1431,19 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_content_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_content_accept > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle content add
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_content_add: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_content_add', 4);
+  _handle_content_add: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_content_add', 4);
 
     try {
       // TODO: request the user to start this content (need a custom handler)
@@ -1421,18 +1452,19 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_content_add > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_content_add > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle content modify
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_content_modify: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_content_modify', 4);
+  _handle_content_modify: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_content_modify', 4);
 
     try {
       // TODO: change 'senders' value (direction of the stream)
@@ -1442,90 +1474,95 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_content_modify > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_content_modify > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle content reject
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_content_reject: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_content_reject', 4);
+  _handle_content_reject: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_content_reject', 4);
 
     try {
       // TODO: remove rejected content from local 'content-add' queue
 
       // Not implemented for now
-      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_content_reject > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_content_reject > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle content remove
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_content_remove: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_content_remove', 4);
+  _handle_content_remove: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_content_remove', 4);
 
     try {
       // TODO: stop flowing removed stream
       // TODO: reprocess content_local/content_remote
 
       // Not implemented for now
-      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_content_remove > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_content_remove > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle description info
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_description_info: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_description_info', 4);
+  _handle_description_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_description_info', 4);
 
     try {
       // Not implemented for now
-      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_description_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_description_info > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle security info
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_security_info: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_security_info', 4);
+  _handle_security_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_security_info', 4);
 
     try {
       // Not implemented for now
-      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_security_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_security_info > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session accept
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_accept: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_accept', 4);
+  _handle_session_accept: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_accept', 4);
 
     try {
       // Security preconditions
       if(!this.utils.stanza_safe(stanza)) {
-        this.get_debug().log('[JSJaCJingle:single] handle_session_accept > Dropped unsafe stanza.', 0);
+        this.get_debug().log('[JSJaCJingle:single] _handle_session_accept > Dropped unsafe stanza.', 0);
 
-        this.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+        this._send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
         return;
       }
 
@@ -1533,73 +1570,76 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       switch(stanza.getType()) {
         case JSJAC_JINGLE_STANZA_TYPE_RESULT:
           (this.get_session_accept_success())(this, stanza);
-          this.handle_session_accept_success(stanza);
+          this._handle_session_accept_success(stanza);
 
           break;
 
         case 'error':
           (this.get_session_accept_error())(this, stanza);
-          this.handle_session_accept_error(stanza);
+          this._handle_session_accept_error(stanza);
 
           break;
 
         case JSJAC_JINGLE_STANZA_TYPE_SET:
           // External handler must be set before internal one here...
           (this.get_session_accept_request())(this, stanza);
-          this.handle_session_accept_request(stanza);
+          this._handle_session_accept_request(stanza);
 
           break;
 
         default:
-          this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+          this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_accept > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session accept success
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_accept_success: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_accept_success', 4);
+  _handle_session_accept_success: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_accept_success', 4);
 
     try {
       // Change session status
       this.set_status(JSJAC_JINGLE_STATUS_ACCEPTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_accept_success > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_accept_success > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session accept error
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_accept_error: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_accept_error', 4);
+  _handle_session_accept_error: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_accept_error', 4);
 
     try {
       // Terminate the session (timeout)
       this.terminate(JSJAC_JINGLE_REASON_TIMEOUT);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_accept_error > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_accept_error > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session accept request
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_accept_request: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_accept_request', 4);
+  _handle_session_accept_request: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_accept_request', 4);
 
     try {
       // Slot unavailable?
       if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
-        this.get_debug().log('[JSJaCJingle:single] handle_session_accept_request > Cannot handle, resource already accepted (status: ' + this.get_status() + ').', 0);
-        this.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
+        this.get_debug().log('[JSJaCJingle:single] _handle_session_accept_request > Cannot handle, resource already accepted (status: ' + this.get_status() + ').', 0);
+        this._send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
@@ -1621,7 +1661,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
         // Trigger accept success callback
         (this.get_session_accept_success())(this, stanza);
-        this.handle_session_accept_success(stanza);
+        this._handle_session_accept_success(stanza);
 
         var sdp_remote = this.sdp.generate(
           WEBRTC_SDP_TYPE_ANSWER,
@@ -1670,31 +1710,32 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       } else {
         // Trigger accept error callback
         (this.get_session_accept_error())(this, stanza);
-        this.handle_session_accept_error(stanza);
+        this._handle_session_accept_error(stanza);
 
         // Send error reply
-        this.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
+        this._send_error(stanza, XMPP_ERROR_BAD_REQUEST);
 
-        this.get_debug().log('[JSJaCJingle:single] handle_session_accept_request > Error.', 1);
+        this.get_debug().log('[JSJaCJingle:single] _handle_session_accept_request > Error.', 1);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_accept_request > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_accept_request > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session info
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_info: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_info', 4);
+  _handle_session_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_info', 4);
 
     try {
       // Security preconditions
       if(!this.utils.stanza_safe(stanza)) {
-        this.get_debug().log('[JSJaCJingle:single] handle_session_info > Dropped unsafe stanza.', 0);
+        this.get_debug().log('[JSJaCJingle:single] _handle_session_info > Dropped unsafe stanza.', 0);
 
-        this.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+        this._send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
         return;
       }
 
@@ -1702,52 +1743,55 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       switch(stanza.getType()) {
         case JSJAC_JINGLE_STANZA_TYPE_RESULT:
           (this.get_session_info_success())(this, stanza);
-          this.handle_session_info_success(stanza);
+          this._handle_session_info_success(stanza);
 
           break;
 
         case 'error':
           (this.get_session_info_error())(this, stanza);
-          this.handle_session_info_error(stanza);
+          this._handle_session_info_error(stanza);
 
           break;
 
         case JSJAC_JINGLE_STANZA_TYPE_SET:
           (this.get_session_info_request())(this, stanza);
-          this.handle_session_info_request(stanza);
+          this._handle_session_info_request(stanza);
 
           break;
 
         default:
-          this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+          this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_info > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session info success
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_info_success: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_info_success', 4);
+  _handle_session_info_success: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_info_success', 4);
   },
 
   /**
    * Handles the Jingle session info error
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_info_error: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_info_error', 4);
+  _handle_session_info_error: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_info_error', 4);
   },
 
   /**
    * Handles the Jingle session info request
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_info_request: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_info_request', 4);
+  _handle_session_info_request: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_info_request', 4);
 
     try {
       // Parse stanza
@@ -1763,85 +1807,88 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       }
 
       if(info_result) {
-        this.get_debug().log('[JSJaCJingle:single] handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
+        this.get_debug().log('[JSJaCJingle:single] _handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
 
         // Process info actions
         this.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
 
         // Trigger info success custom callback
         (this.get_session_info_success())(this, stanza);
-        this.handle_session_info_success(stanza);
+        this._handle_session_info_success(stanza);
       } else {
-        this.get_debug().log('[JSJaCJingle:single] handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ').', 1);
+        this.get_debug().log('[JSJaCJingle:single] _handle_session_info_request > Error (name: ' + (info_name || 'undefined') + ').', 1);
 
         // Send error reply
-        this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+        this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
 
         // Trigger info error custom callback
         (this.get_session_info_error())(this, stanza);
-        this.handle_session_info_error(stanza);
+        this._handle_session_info_error(stanza);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_info_request > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_info_request > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session initiate
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_initiate: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_initiate', 4);
+  _handle_session_initiate: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate', 4);
 
     try {
       switch(stanza.getType()) {
         case JSJAC_JINGLE_STANZA_TYPE_RESULT:
           (this.get_session_initiate_success())(this, stanza);
-          this.handle_session_initiate_success(stanza);
+          this._handle_session_initiate_success(stanza);
 
           break;
 
         case 'error':
           (this.get_session_initiate_error())(this, stanza);
-          this.handle_session_initiate_error(stanza);
+          this._handle_session_initiate_error(stanza);
 
           break;
 
         case JSJAC_JINGLE_STANZA_TYPE_SET:
           (this.get_session_initiate_request())(this, stanza);
-          this.handle_session_initiate_request(stanza);
+          this._handle_session_initiate_request(stanza);
 
           break;
 
         default:
-          this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+          this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_initiate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session initiate success
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_initiate_success: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_success', 4);
+  _handle_session_initiate_success: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_success', 4);
 
     try {
       // Change session status
       this.set_status(JSJAC_JINGLE_STATUS_INITIATED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_success > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_success > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session initiate error
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_initiate_error: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_error', 4);
+  _handle_session_initiate_error: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_error', 4);
 
     try {
       // Change session status
@@ -1853,22 +1900,23 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Lock session (cannot be used later)
       this.set_lock(true);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_error > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_error > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session initiate request
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_initiate_request: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_request', 4);
+  _handle_session_initiate_request: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_request', 4);
 
     try {
       // Slot unavailable?
       if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
-        this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_request > Cannot handle, resource already initiated (status: ' + this.get_status() + ').', 0);
-        this.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
+        this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_request > Cannot handle, resource already initiated (status: ' + this.get_status() + ').', 0);
+        this._send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
@@ -1904,50 +1952,51 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         } else {
           // Session initiation not done
           (this.get_session_initiate_error())(this, stanza);
-          this.handle_session_initiate_error(stanza);
+          this._handle_session_initiate_error(stanza);
 
           // Error (no media is supported)
           this.terminate(JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS);
 
-          this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_request > Error (unsupported media).', 1);
+          this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_request > Error (unsupported media).', 1);
           return;
         }
 
         // Session initiate done
         (this.get_session_initiate_success())(this, stanza);
-        this.handle_session_initiate_success(stanza);
+        this._handle_session_initiate_success(stanza);
 
         this.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
       } else {
         // Session initiation not done
         (this.get_session_initiate_error())(this, stanza);
-        this.handle_session_initiate_error(stanza);
+        this._handle_session_initiate_error(stanza);
 
         // Send error reply
-        this.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
+        this._send_error(stanza, XMPP_ERROR_BAD_REQUEST);
 
-        this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_request > Error (bad request).', 1);
+        this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_request > Error (bad request).', 1);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_initiate_request > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_request > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session terminate
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_terminate: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_terminate', 4);
+  _handle_session_terminate: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate', 4);
 
     try {
       var type = stanza.getType();
 
       // Security preconditions
       if(!this.utils.stanza_safe(stanza)) {
-        this.get_debug().log('[JSJaCJingle:single] handle_session_terminate > Dropped unsafe stanza.', 0);
+        this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate > Dropped unsafe stanza.', 0);
 
-        this.send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+        this._send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
         return;
       }
 
@@ -1955,36 +2004,37 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       switch(stanza.getType()) {
         case JSJAC_JINGLE_STANZA_TYPE_RESULT:
           (this.get_session_terminate_success())(this, stanza);
-          this.handle_session_terminate_success(stanza);
+          this._handle_session_terminate_success(stanza);
 
           break;
 
         case 'error':
           (this.get_session_terminate_error())(this, stanza);
-          this.handle_session_terminate_error(stanza);
+          this._handle_session_terminate_error(stanza);
 
           break;
 
         case JSJAC_JINGLE_STANZA_TYPE_SET:
           (this.get_session_terminate_request())(this, stanza);
-          this.handle_session_terminate_request(stanza);
+          this._handle_session_terminate_request(stanza);
 
           break;
 
         default:
-          this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+          this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session terminate success
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_terminate_success: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_success', 4);
+  _handle_session_terminate_success: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_success', 4);
 
     try {
       // Change session status
@@ -1993,16 +2043,17 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Stop WebRTC
       this.peer.stop();
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_success > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_success > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session terminate error
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_terminate_error: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_error', 4);
+  _handle_session_terminate_error: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_error', 4);
 
     try {
       // Change session status
@@ -2014,24 +2065,25 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Lock session (cannot be used later)
       this.set_lock(true);
 
-      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_error > Forced session termination locally.', 0);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_error > Forced session termination locally.', 0);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_error > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_error > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle session terminate request
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_session_terminate_request: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_request', 4);
+  _handle_session_terminate_request: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_request', 4);
 
     try {
       // Slot unavailable?
       if(this.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
-        this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_request > Cannot handle, resource not active (status: ' + this.get_status() + ').', 0);
-        this.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
+        this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_request > Cannot handle, resource not active (status: ' + this.get_status() + ').', 0);
+        this._send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
@@ -2043,44 +2095,46 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
       // Trigger terminate success callbacks
       (this.get_session_terminate_success())(this, stanza);
-      this.handle_session_terminate_success(stanza);
+      this._handle_session_terminate_success(stanza);
 
       // Process terminate actions
       this.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
 
-      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_request > (reason: ' + this.get_reason() + ').', 3);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_request > (reason: ' + this.get_reason() + ').', 3);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_session_terminate_request > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_request > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle transport accept
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_transport_accept: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_transport_accept', 4);
+  _handle_transport_accept: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_transport_accept', 4);
 
     try {
       // Not implemented for now
-      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_content_accept > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_content_accept > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle transport info
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_transport_info: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_transport_info', 4);
+  _handle_transport_info: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_transport_info', 4);
 
     try {
       // Slot unavailable?
       if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
-        this.get_debug().log('[JSJaCJingle:single] handle_transport_info > Cannot handle, resource not initiated, nor accepting, nor accepted (status: ' + this.get_status() + ').', 0);
-        this.send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
+        this.get_debug().log('[JSJaCJingle:single] _handle_transport_info > Cannot handle, resource not initiated, nor accepting, nor accepted (status: ' + this.get_status() + ').', 0);
+        this._send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
@@ -2122,58 +2176,62 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         this.send(JSJAC_JINGLE_STANZA_TYPE_RESULT, { id: stanza.getID() });
       } else {
         // Send error reply
-        this.send_error(stanza, XMPP_ERROR_BAD_REQUEST);
+        this._send_error(stanza, XMPP_ERROR_BAD_REQUEST);
 
-        this.get_debug().log('[JSJaCJingle:single] handle_transport_info > Error.', 1);
+        this.get_debug().log('[JSJaCJingle:single] _handle_transport_info > Error.', 1);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_transport_info > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_transport_info > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle transport info success
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_transport_info_success: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_transport_info_success', 4);
+  _handle_transport_info_success: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_transport_info_success', 4);
   },
 
   /**
    * Handles the Jingle transport info error
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_transport_info_error: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_transport_info_error', 4);
+  _handle_transport_info_error: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_transport_info_error', 4);
   },
 
   /**
    * Handles the Jingle transport reject
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_transport_reject: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_transport_reject', 4);
+  _handle_transport_reject: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_transport_reject', 4);
 
     try {
       // Not implemented for now
-      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_transport_reject > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_transport_reject > ' + e, 1);
     }
   },
 
   /**
    * Handles the Jingle transport replace
    * @param {JSJaCPacket} stanza Jingle handled stanza
+   * @private
    */
-  handle_transport_replace: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:single] handle_transport_replace', 4);
+  _handle_transport_replace: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:single] _handle_transport_replace', 4);
 
     try {
       // Not implemented for now
-      this.send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+      this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] handle_transport_replace > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:single] _handle_transport_replace > ' + e, 1);
     }
   },
 
@@ -2585,6 +2643,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session initiate pending callback function
+   * @public
    */
   set_session_initiate_pending: function(session_initiate_pending) {
     this._session_initiate_pending = session_initiate_pending;
@@ -2592,6 +2651,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session initiate success callback function
+   * @public
    */
   set_initiate_success: function(initiate_success) {
     this._session_initiate_success = initiate_success;
@@ -2599,6 +2659,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session initiate error callback function
+   * @public
    */
   set_initiate_error: function(initiate_error) {
     this._session_initiate_error = initiate_error;
@@ -2606,6 +2667,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session initiate request callback function
+   * @public
    */
   set_initiate_request: function(initiate_request) {
     this._session_initiate_request = initiate_request;
@@ -2613,6 +2675,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session accept pending callback function
+   * @public
    */
   set_accept_pending: function(accept_pending) {
     this._session_accept_pending = accept_pending;
@@ -2620,6 +2683,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session accept success callback function
+   * @public
    */
   set_accept_success: function(accept_success) {
     this._session_accept_success = accept_success;
@@ -2627,6 +2691,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session accept error callback function
+   * @public
    */
   set_accept_error: function(accept_error) {
     this._session_accept_error = accept_error;
@@ -2634,6 +2699,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session accept request callback function
+   * @public
    */
   set_accept_request: function(accept_request) {
     this._session_accept_request = accept_request;
@@ -2641,6 +2707,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session info success callback function
+   * @public
    */
   set_info_success: function(info_success) {
     this._session_info_success = info_success;
@@ -2648,6 +2715,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session info error callback function
+   * @public
    */
   set_info_error: function(info_error) {
     this._session_info_error = info_error;
@@ -2655,6 +2723,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session info request callback function
+   * @public
    */
   set_info_request: function(info_request) {
     this._session_info_request = info_request;
@@ -2662,6 +2731,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session terminate pending callback function
+   * @public
    */
   set_terminate_pending: function(terminate_pending) {
     this._session_terminate_pending = terminate_pending;
@@ -2669,6 +2739,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session terminate success callback function
+   * @public
    */
   set_terminate_success: function(terminate_success) {
     this._session_terminate_success = terminate_success;
@@ -2676,6 +2747,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session terminate error callback function
+   * @public
    */
   set_terminate_error: function(terminate_error) {
     this._session_terminate_error = terminate_error;
@@ -2683,6 +2755,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session terminate request callback function
+   * @public
    */
   set_terminate_request: function(terminate_request) {
     this._session_terminate_request = terminate_request;
@@ -2690,6 +2763,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the remote stream
+   * @public
    */
   set_remote_stream: function(remote_stream) {
     try {
@@ -2719,6 +2793,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the remote view
+   * @public
    */
   set_remote_view: function(remote_view) {
     if(typeof this._remote_view !== 'object')
@@ -2729,6 +2804,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the remote content
+   * @public
    */
   set_content_remote: function(name, content_remote) {
     this._content_remote[name] = content_remote;
@@ -2736,6 +2812,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the stanza handlers
+   * @public
    */
   set_handlers: function(type, id, handler) {
     if(!(type in this._handlers))  this._handlers[type] = {};
@@ -2745,6 +2822,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the peer connection
+   * @public
    */
   set_peer_connection: function(peer_connection) {
     this._peer_connection = peer_connection;
@@ -2752,6 +2830,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the ID
+   * @public
    */
   set_id: function(id) {
     this._id = id;
@@ -2759,6 +2838,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the sent ID
+   * @public
    */
   set_sent_id: function(sent_id) {
     this._sent_id[sent_id] = 1;
@@ -2766,6 +2846,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the last received ID
+   * @public
    */
   set_received_id: function(received_id) {
     this._received_id[received_id] = 1;
@@ -2773,6 +2854,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the remote payloads
+   * @public
    */
   set_payloads_remote: function(name, payload_data) {
     this._payloads_remote[name] = payload_data;
@@ -2780,6 +2862,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Adds a remote payload
+   * @public
    */
   set_payloads_remote_add: function(name, payload_data) {
     try {
@@ -2802,6 +2885,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the remote group
+   * @public
    */
   set_group_remote: function(semantics, group_data) {
     this._group_remote[semantics] = group_data;
@@ -2809,6 +2893,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the remote candidates
+   * @public
    */
   set_candidates_remote: function(name, candidate_data) {
     this._candidates_remote[name] = candidate_data;
@@ -2816,6 +2901,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session initiate pending callback function
+   * @public
    */
   set_candidates_queue_remote: function(name, candidate_data) {
     if(name === null)
@@ -2826,6 +2912,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Adds a remote candidate
+   * @public
    */
   set_candidates_remote_add: function(name, candidate_data) {
     try {
@@ -2851,6 +2938,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
    /**
    * Sets the session senders
+   * @public
    */
   set_senders: function(name, senders) {
     if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
@@ -2860,6 +2948,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session creator
+   * @public
    */
   set_creator: function(name, creator) {
     if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
@@ -2869,6 +2958,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session initiator
+   * @public
    */
   set_initiator: function(initiator) {
     this._initiator = initiator;
@@ -2876,6 +2966,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session responder
+   * @public
    */
   set_responder: function(responder) {
     this._responder = responder;
@@ -2883,6 +2974,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the termination reason
+   * @public
    */
   set_reason: function(reason) {
     this._reason = reason || JSJAC_JINGLE_REASON_CANCEL;

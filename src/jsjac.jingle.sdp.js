@@ -25,6 +25,7 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Parses SDP payload
+   * @public
    * @returns {object} Parsed payload object
    */
   parse_payload: function(sdp_payload) {
@@ -535,6 +536,7 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Parses SDP group
+   * @public
    * @returns {object} Parsed group object
    */
   parse_group: function(sdp_payload) {
@@ -577,6 +579,7 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Update video resolution in payload
+   * @public
    * @returns {object} Updated payload
    */
   resolution_payload: function(payload) {
@@ -657,6 +660,7 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Parses SDP candidate
+   * @public
    * @returns {object} Parsed candidates object
    */
   parse_candidate: function(sdp_candidate) {
@@ -724,6 +728,7 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Generates SDP description
+   * @public
    * @returns {object} SDP object
    */
   generate: function(type, group, payloads, candidates) {    
@@ -743,6 +748,7 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Generate SDP candidates
+   * @public
    * @returns {object} SDP candidates array
    */
   generate_candidates: function(candidates) {    
@@ -820,6 +826,7 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Generates SDP description
+   * @public
    * @returns {object} SDP description payloads
    */
   generate_description: function(type, group, payloads, sdp_candidates) {    
@@ -848,13 +855,13 @@ var JSJaCJingleSDP = ring.create({
           cur_d_rtcp_mux;
 
       // Payloads headers
-      payloads_str += this.generate_protocol_version();
+      payloads_str += this._generate_protocol_version();
       payloads_str += WEBRTC_SDP_LINE_BREAK;
-      payloads_str += this.generate_origin();
+      payloads_str += this._generate_origin();
       payloads_str += WEBRTC_SDP_LINE_BREAK;
-      payloads_str += this.generate_session_name();
+      payloads_str += this._generate_session_name();
       payloads_str += WEBRTC_SDP_LINE_BREAK;
-      payloads_str += this.generate_timing();
+      payloads_str += this._generate_timing();
       payloads_str += WEBRTC_SDP_LINE_BREAK;
 
       // Add groups
@@ -876,7 +883,7 @@ var JSJaCJingleSDP = ring.create({
         for(cur_name_first in payloads) {
           cur_transports_obj_first = payloads[cur_name_first].transports || {};
 
-          payloads_str += this.generate_credentials(
+          payloads_str += this._generate_credentials(
             cur_transports_obj_first.ufrag,
             cur_transports_obj_first.pwd,
             cur_transports_obj_first.fingerprint
@@ -917,7 +924,7 @@ var JSJaCJingleSDP = ring.create({
         cur_d_rtcp_mux        = cur_description_obj['rtcp-mux'];
 
         // Current media
-        payloads_str += this.generate_description_media(
+        payloads_str += this._generate_description_media(
           cur_media,
           cur_network_obj.port,
           cur_d_encryption,
@@ -941,7 +948,7 @@ var JSJaCJingleSDP = ring.create({
 
         // Specific credentials?
         if(is_common_credentials === false) {
-          payloads_str += this.generate_credentials(
+          payloads_str += this._generate_credentials(
             cur_d_ufrag,
             cur_d_pwd,
             cur_d_fingerprint
@@ -1167,17 +1174,19 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Generates SDP protocol version
+   * @private
    * @returns {string} SDP protocol version raw text
    */
-  generate_protocol_version: function() {
+  _generate_protocol_version: function() {
     return 'v=0';
   },
 
   /**
    * Generates SDP origin
+   * @private
    * @returns {string} SDP origin raw text
    */
-  generate_origin: function() {    
+  _generate_origin: function() {    
     var sdp_origin = '';
 
     try {
@@ -1200,7 +1209,7 @@ var JSJaCJingleSDP = ring.create({
       sdp_origin += addrtype + ' ';
       sdp_origin += unicast_address;
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:sdp] generate_origin > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] _generate_origin > ' + e, 1);
     }
 
     return sdp_origin;
@@ -1208,25 +1217,28 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Generates SDP session name
+   * @private
    * @returns {string} SDP session name raw text
    */
-  generate_session_name: function() {
+  _generate_session_name: function() {
     return 's=' + (this.parent.get_sid() || '-');
   },
 
   /**
    * Generates SDP timing
+   * @private
    * @returns {string} SDP timing raw text
    */
-  generate_timing: function() {
+  _generate_timing: function() {
     return 't=0 0';
   },
 
   /**
    * Generates SDP credentials
+   * @private
    * @returns {string} SDP credentials raw text
    */
-  generate_credentials: function(ufrag, pwd, fingerprint) {    
+  _generate_credentials: function(ufrag, pwd, fingerprint) {    
     var sdp = '';
 
     // ICE credentials
@@ -1246,9 +1258,10 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Generates SDP media description
+   * @private
    * @returns {string} SDP media raw text
    */
-  generate_description_media: function(media, port, crypto, fingerprint, payload) {    
+  _generate_description_media: function(media, port, crypto, fingerprint, payload) {    
     var sdp_media = '';
 
     try {
@@ -1268,7 +1281,7 @@ var JSJaCJingleSDP = ring.create({
 
       sdp_media += ' ' + type_ids.join(' ');
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:sdp] generate_description_media > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] _generate_description_media > ' + e, 1);
     }
 
     return sdp_media;

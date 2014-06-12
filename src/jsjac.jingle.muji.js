@@ -94,6 +94,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Initiates a new Jingle session.
+   * @public
    */
   join: function() {
     this.get_debug().log('[JSJaCJingle:muji] join', 4);
@@ -147,6 +148,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Leaves current Jingle session.
+   * @public
    */
   leave: function() {
     this.get_debug().log('[JSJaCJingle:muji] leave', 4);
@@ -181,6 +183,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sends a given Muji presence stanza
+   * @public
    */
   send_presence: function(args) {
     this.get_debug().log('[JSJaCJingle:muji] send_presence', 4);
@@ -210,13 +213,13 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       // Submit to registered handler
       switch(args.action) {
         case JSJAC_JINGLE_MUJI_STATUS_PREPARE:
-          this.send_session_prepare(stanza); break;
+          this._send_session_prepare(stanza); break;
 
         case JSJAC_JINGLE_MUJI_STATUS_INITIATE:
-          this.send_session_initiate(stanza); break;
+          this._send_session_initiate(stanza); break;
 
         case JSJAC_JINGLE_MUJI_STATUS_LEAVE:
-          this.send_session_leave(stanza); break;
+          this._send_session_leave(stanza); break;
 
         default:
           this.get_debug().log('[JSJaCJingle:muji] send_presence > Unexpected error.', 1);
@@ -238,6 +241,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sends a given Muji message stanza
+   * @public
    */
   send_message: function(body) {
     this.get_debug().log('[JSJaCJingle:muji] send_message', 4);
@@ -255,16 +259,17 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Handles a Muji presence stanza
+   * @private
    */
-  handle_presence: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:muji] handle_presence', 4);
+  _handle_presence: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:muji] _handle_presence', 4);
 
     try {
       if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:muji] Incoming packet received' + '\n\n' + stanza.xml());
 
       // Locked?
       if(this.get_lock()) {
-        this.get_debug().log('[JSJaCJingle:muji] handle_presence > Cannot handle, resource locked. Please open another session or check WebRTC support.', 0);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_presence > Cannot handle, resource locked. Please open another session or check WebRTC support.', 0);
         return;
       }
 
@@ -272,7 +277,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       var _this = this;
 
       if(JSJaCJingle.defer(function() { _this.handle(stanza); })) {
-        this.get_debug().log('[JSJaCJingle:muji] handle_presence > Deferred (waiting for the library components to be initiated).', 0);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_presence > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
@@ -285,28 +290,29 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
         if(!muji) return;
 
         // Submit to registered handler
-        if(this.stanza_has_preparing(muji)) {
-          this.handle_participant_preparing(stanza);
-        } else if(this.stanza_has_content(muji)) {
-          this.handle_participant_initiating(stanza);
+        if(this._stanza_has_preparing(muji)) {
+          this._handle_participant_preparing(stanza);
+        } else if(this._stanza_has_content(muji)) {
+          this._handle_participant_initiating(stanza);
         } else {
-          if(this.stanza_from_participant(stanza)) {
-            this.handle_participant_terminating(stanza);
+          if(this._stanza_from_participant(stanza)) {
+            this._handle_participant_terminating(stanza);
           } else {
-            this.handle_participant_joining(stanza);
+            this._handle_participant_joining(stanza);
           }
         }
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] handle_presence > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _handle_presence > ' + e, 1);
     }
   },
 
   /**
    * Handles a Muji message stanza
+   * @private
    */
-  handle_message: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:muji] handle_message', 4);
+  _handle_message: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:muji] _handle_message', 4);
 
     try {
       // TODO: only for use by the user custom callbacks (route message)
@@ -314,7 +320,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       // Trigger handle message custom callback
       (this.get_room_message())(this, stanza);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] handle_message > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _handle_message > ' + e, 1);
     }
   },
 
@@ -326,15 +332,16 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sends the session prepare event.
+   * @private
    */
-  send_session_prepare: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:muji] send_session_prepare', 4);
+  _send_session_prepare: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:muji] _send_session_prepare', 4);
 
     try {
       if(this.get_status() === JSJAC_JINGLE_MUJI_STATUS_PREPARE   || 
          this.get_status() === JSJAC_JINGLE_MUJI_STATUS_INITIATE  ||
          this.get_status() === JSJAC_JINGLE_MUJI_STATUS_LEAVE) {
-        this.get_debug().log('[JSJaCJingle:muji] send_session_prepare > Cannot send prepare stanza, resource already prepared or initiated or left (status: ' + this.get_status() + ').', 0);
+        this.get_debug().log('[JSJaCJingle:muji] _send_session_prepare > Cannot send prepare stanza, resource already prepared or initiated or left (status: ' + this.get_status() + ').', 0);
         return;
       }
 
@@ -342,7 +349,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       var muji = this.utils.stanza_generate_muji(stanza);
       muji.appendChild(stanza.buildNode('preparing', { 'xmlns': NS_TELEPATHY_MUJI }));
 
-      this.get_debug().log('[JSJaCJingle:muji] send_session_prepare > Sent.', 2);
+      this.get_debug().log('[JSJaCJingle:muji] _send_session_prepare > Sent.', 2);
 
       // Trigger session prepare custom callback
       (this.get_session_prepare())(this);
@@ -350,19 +357,20 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       // Change session status
       this.set_status(JSJAC_JINGLE_MUJI_STATUS_PREPARE);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] send_session_prepare > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _send_session_prepare > ' + e, 1);
     }
   },
 
   /**
    * Sends the session initiate event.
+   * @private
    */
-  send_session_initiate: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:muji] send_session_initiate', 4);
+  _send_session_initiate: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:muji] _send_session_initiate', 4);
 
     try {
       if(this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_PREPARE) {
-        this.get_debug().log('[JSJaCJingle:muji] send_session_prepare > Cannot send prepare stanza, resource not prepared (status: ' + this.get_status() + ').', 0);
+        this.get_debug().log('[JSJaCJingle:muji] _send_session_initiate > Cannot send prepare stanza, resource not prepared (status: ' + this.get_status() + ').', 0);
         return;
       }
 
@@ -372,7 +380,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       this.utils.stanza_generate_content_local(stanza, muji);
       this.utils.stanza_generate_group_local(stanza, muji);
 
-      this.get_debug().log('[JSJaCJingle:muji] send_session_prepare > Sent.', 2);
+      this.get_debug().log('[JSJaCJingle:muji] _send_session_initiate > Sent.', 2);
 
       // Trigger session session initiate custom callback
       (this.get_session_initiate())(this);
@@ -380,15 +388,16 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       // Change session status
       this.set_status(JSJAC_JINGLE_MUJI_STATUS_INITIATE);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] send_session_initiate > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _send_session_initiate > ' + e, 1);
     }
   },
 
   /**
    * Sends the session leave event.
+   * @private
    */
-  send_session_leave: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:muji] send_session_leave', 4);
+  _send_session_leave: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:muji] _send_session_leave', 4);
 
     try {
       stanza.setType(JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE);
@@ -399,7 +408,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       // Trigger session leave custom callback
       (this.get_session_leave())(this);
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] send_session_leave > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _send_session_leave > ' + e, 1);
     }
   },
 
@@ -411,42 +420,45 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Handles the room join event.
+   * @private
    */
-  handle_room_join: function() {
-    this.get_debug().log('[JSJaCJingle:muji] handle_room_join', 4);
+  _handle_room_join: function() {
+    this.get_debug().log('[JSJaCJingle:muji] _handle_room_join', 4);
 
     try {
       // Initialize WebRTC
       this.peer.get_user_media(function() {
         _this.peer.connection_create(function() {
-          _this.get_debug().log('[JSJaCJingle:muji] handle_room_join > Ready to begin Jingle negotiation.', 2);
+          _this.get_debug().log('[JSJaCJingle:muji] _handle_room_join > Ready to begin Jingle negotiation.', 2);
 
           _this.send_presence({ action: JSJAC_JINGLE_MUJI_STATUS_INITIATE });
         });
       });
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] handle_room_join > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _handle_room_join > ' + e, 1);
     }
   },
 
   /**
    * Handles the room leave event.
+   * @private
    */
-  handle_room_leave: function() {
-    this.get_debug().log('[JSJaCJingle:muji] handle_room_leave', 4);
+  _handle_room_leave: function() {
+    this.get_debug().log('[JSJaCJingle:muji] _handle_room_leave', 4);
 
     try {
       // TODO
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] handle_room_leave > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _handle_room_leave > ' + e, 1);
     }
   },
 
   /**
    * Handles the participant preparing event.
+   * @private
    */
-  handle_participant_preparing: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:muji] handle_participant_preparing', 4);
+  _handle_participant_preparing: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:muji] _handle_participant_preparing', 4);
 
     try {
       var username = this.extract_stanza_username(stanza);
@@ -463,15 +475,16 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
       // TODO
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] handle_participant_preparing > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_preparing > ' + e, 1);
     }
   },
 
   /**
    * Handles the participant initiating event.
+   * @private
    */
-  handle_participant_initiating: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:muji] handle_participant_initiating', 4);
+  _handle_participant_initiating: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiating', 4);
 
     try {
       var username = this.extract_stanza_username(stanza);
@@ -481,15 +494,16 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
       // TODO: add participant to DOM (once PeerConnection stram starts flowing)
         // TODO: trigger participant leave user-defined callback
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] handle_participant_initiating > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiating > ' + e, 1);
     }
   },
 
   /**
    * Handles the participant terminating event.
+   * @private
    */
-  handle_participant_terminating: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:muji] handle_participant_terminating', 4);
+  _handle_participant_terminating: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:muji] _handle_participant_terminating', 4);
 
     try {
       var username = this.extract_stanza_username(stanza);
@@ -500,22 +514,23 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
         // TODO: trigger participant leave user-defined callback
       // TODO: if no more participant, close videochat
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] handle_participant_terminating > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_terminating > ' + e, 1);
     }
   },
 
   /**
    * Handles the participant joining event.
+   * @private
    */
-  handle_participant_joining: function(stanza) {
-    this.get_debug().log('[JSJaCJingle:muji] handle_participant_joining', 4);
+  _handle_participant_joining: function(stanza) {
+    this.get_debug().log('[JSJaCJingle:muji] _handle_participant_joining', 4);
 
     try {
       var username = this.extract_stanza_username(stanza);
       
       // TODO
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:muji] handle_participant_joining > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_joining > ' + e, 1);
     }
   },
 
@@ -527,19 +542,21 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Returns whether user is preparing or not
+   * @private
    * @param {object} muji
    * @returns {boolean} preparing state
    */
-  stanza_has_preparing: function(muji) {
+  _stanza_has_preparing: function(muji) {
     return muji.getChild('preparing', NS_TELEPATHY_MUJI) && true;
   },
 
   /**
    * Returns whether user has content or not
+   * @private
    * @param {object} muji
    * @returns {boolean} content state
    */
-  stanza_has_content: function(muji) {
+  _stanza_has_content: function(muji) {
     return muji.getChild('content', NS_TELEPATHY_MUJI) && true;
   },
 
@@ -551,6 +568,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the participants object
+   * @public
    * @returns {object} participants object
    */
   get_participants: function(username) {
@@ -565,6 +583,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the creator value
+   * @public
    * @returns {string} creator value
    */
   get_creator: function() {
@@ -573,6 +592,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the initiator value
+   * @public
    * @returns {string} initiator value
    */
   get_initiator: function() {
@@ -581,6 +601,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the responder value
+   * @public
    * @returns {string} responder value
    */
   get_responder: function() {
@@ -589,6 +610,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the room message callback function
+   * @public
    * @returns {function} remote view add callback function
    */
   get_room_message: function() {
@@ -600,6 +622,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the session prepare callback function
+   * @public
    * @returns {function} remote view add callback function
    */
   get_session_prepare: function() {
@@ -611,6 +634,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the session initiate callback function
+   * @public
    * @returns {function} remote view add callback function
    */
   get_session_initiate: function() {
@@ -622,6 +646,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the session leave callback function
+   * @public
    * @returns {function} remote view add callback function
    */
   get_session_leave: function() {
@@ -633,6 +658,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the participant join callback function
+   * @public
    * @returns {function} remote view add callback function
    */
   get_participant_join: function() {
@@ -644,6 +670,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the participant initiate callback function
+   * @public
    * @returns {function} remote view add callback function
    */
   get_participant_initiate: function() {
@@ -655,6 +682,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the participant leave callback function
+   * @public
    * @returns {function} remote view add callback function
    */
   get_participant_leave: function() {
@@ -666,6 +694,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the remote view add callback function
+   * @public
    * @returns {function} remote view add callback function
    */
   get_add_remote_view: function() {
@@ -677,6 +706,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Gets the remote view removal callback function
+   * @public
    * @returns {function} remote view removal callback function
    */
   get_remove_remote_view: function() {
@@ -714,10 +744,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase], {
 
   /**
    * Returns whether stanza is from a participant or not
-   * @public
+   * @private
    * @returns {boolean} Receiver state
    */
-  stanza_from_participant: function(stanza) {
+  _stanza_from_participant: function(stanza) {
     var username = this.extract_stanza_username();
     return (typeof self.get_participants(username) == 'object') && true;
   },

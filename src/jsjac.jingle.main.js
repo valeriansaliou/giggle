@@ -11,8 +11,8 @@
 var JSJaCJingle = new (ring.create({
   /**
    * Starts a new Jingle session
-   * @return JSJaCJingle session instance
-   * @type object
+   * @public
+   * @return {object} JSJaCJingle session instance
    */
   session: function(type, args) {
     var jingle;
@@ -39,6 +39,7 @@ var JSJaCJingle = new (ring.create({
 
   /**
    * Listens for Jingle events
+   * @public
    */
   listen: function(args) {
     try {
@@ -70,6 +71,7 @@ var JSJaCJingle = new (ring.create({
 
   /**
    * Routes Jingle stanzas
+   * @public
    */
   route: function(stanza) {
     try {
@@ -127,6 +129,7 @@ var JSJaCJingle = new (ring.create({
 
   /**
    * Adds a new Jingle session
+   * @public
    */
   add: function(sid, obj) {
     JSJAC_JINGLE_STORE_SESSIONS[sid] = obj;
@@ -134,8 +137,8 @@ var JSJaCJingle = new (ring.create({
 
   /**
    * Reads a new Jingle session
-   * @return Session
-   * @type object
+   * @public
+   * @return {object} Session
    */
   read: function(sid) {
     return (sid in JSJAC_JINGLE_STORE_SESSIONS) ? JSJAC_JINGLE_STORE_SESSIONS[sid] : null;
@@ -143,6 +146,7 @@ var JSJaCJingle = new (ring.create({
 
   /**
    * Removes a new Jingle session
+   * @public
    */
   remove: function(sid) {
     delete JSJAC_JINGLE_STORE_SESSIONS[sid];
@@ -150,6 +154,7 @@ var JSJaCJingle = new (ring.create({
 
   /**
    * Defer given task/execute deferred tasks
+   * @public
    */
   defer: function(arg) {
     try {
@@ -188,8 +193,8 @@ var JSJaCJingle = new (ring.create({
 
   /**
    * Maps the Jingle disco features
-   * @return Feature namespaces
-   * @type array
+   * @public
+   * @return {array} Feature namespaces
    */
   disco: function() {
     return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];

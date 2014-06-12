@@ -11,6 +11,7 @@
 var JSJaCJingleInit = new (ring.create({
   /**
    * Query the server for external services
+   * @public
    */
   extdisco: function() {
     JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:extdisco > Discovering available services...', 2);
@@ -96,6 +97,7 @@ var JSJaCJingleInit = new (ring.create({
 
   /**
    * Query the server for Jingle Relay Nodes services
+   * @public
    */
   relaynodes: function() {
     JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:relaynodes > Discovering available Jingle Relay Nodes services...', 2);
@@ -169,6 +171,7 @@ var JSJaCJingleInit = new (ring.create({
 
   /**
    * Query some external APIs for fallback STUN/TURN (must be configured)
+   * @public
    */
   fallback: function(fallback_url) {
     JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] lib:fallback > Discovering fallback services...', 2);
