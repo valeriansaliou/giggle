@@ -8,11 +8,23 @@
  */
 
 
+/** @module jsjac.jingle/main */
+
+
+/**
+ * Library main class.
+ * @class
+ * @classdesc Library main class.
+ * @requires module:nicolas-van/ring.js
+ * @see {@link http://ringjs.neoname.eu/|Ring.js}
+ */
 var JSJaCJingle = new (ring.create({
   /**
    * Starts a new Jingle session
    * @public
-   * @return {object} JSJaCJingle session instance
+   * @param {String} type
+   * @param {Object} [args]
+   * @returns {JSJaCJingleSingle|JSJaCJingleMuji} JSJaCJingle session instance
    */
   session: function(type, args) {
     var jingle;
@@ -40,6 +52,7 @@ var JSJaCJingle = new (ring.create({
   /**
    * Listens for Jingle events
    * @public
+   * @param {Object} [args]
    */
   listen: function(args) {
     try {
@@ -82,7 +95,7 @@ var JSJaCJingle = new (ring.create({
   /**
    * Maps the Jingle disco features
    * @public
-   * @return {array} Feature namespaces
+   * @returns {Array} Feature namespaces
    */
   disco: function() {
     return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];
@@ -91,6 +104,7 @@ var JSJaCJingle = new (ring.create({
   /**
    * Routes Jingle IQ stanzas
    * @private
+   * @param {JSJaCPacket} stanza
    */
   _route_iq: function(stanza) {
     try {
@@ -150,6 +164,7 @@ var JSJaCJingle = new (ring.create({
   /**
    * Routes Jingle message stanzas
    * @private
+   * @param {JSJaCPacket} stanza
    */
   _route_message: function(stanza) {
     try {
@@ -176,6 +191,7 @@ var JSJaCJingle = new (ring.create({
   /**
    * Routes Jingle presence stanzas
    * @private
+   * @param {JSJaCPacket} stanza
    */
   _route_presence: function(stanza) {
     try {
@@ -202,6 +218,9 @@ var JSJaCJingle = new (ring.create({
   /**
    * Adds a new Jingle session
    * @private
+   * @param {String} type
+   * @param {String} sid
+   * @param {Object} obj
    */
   _add: function(type, sid, obj) {
     JSJAC_JINGLE_STORE_SESSIONS[type][sid] = obj;
@@ -210,7 +229,9 @@ var JSJaCJingle = new (ring.create({
   /**
    * Reads a new Jingle session
    * @private
-   * @return {object} Session
+   * @param {String} type
+   * @param {String} sid
+   * @returns {Object} Session
    */
   _read: function(type, sid) {
     return (sid in JSJAC_JINGLE_STORE_SESSIONS[type]) ? JSJAC_JINGLE_STORE_SESSIONS[type][sid] : null;
@@ -219,6 +240,8 @@ var JSJaCJingle = new (ring.create({
   /**
    * Removes a new Jingle session
    * @private
+   * @param {String} type
+   * @param {String} sid
    */
   _remove: function(type, sid) {
     delete JSJAC_JINGLE_STORE_SESSIONS[type][sid];
@@ -227,6 +250,7 @@ var JSJaCJingle = new (ring.create({
   /**
    * Defer given task/execute deferred tasks
    * @private
+   * @param {(Function|Boolean)} arg
    */
   _defer: function(arg) {
     try {

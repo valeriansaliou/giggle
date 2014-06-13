@@ -8,6 +8,17 @@
  */
 
 
+/** @module jsjac.jingle/init */
+
+
+/**
+ * Library initialization class.
+ * @class
+ * @classdesc Library initialization class.
+ * @requires module:nicolas-van/ring.js
+ * @see {@link http://ringjs.neoname.eu/|Ring.js}
+ * @see {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
+ */
 var JSJaCJingleInit = new (ring.create({
   /**
    * Query the server for external services
@@ -172,6 +183,7 @@ var JSJaCJingleInit = new (ring.create({
   /**
    * Query some external APIs for fallback STUN/TURN (must be configured)
    * @private
+   * @param {String} fallback_url
    */
   _fallback: function(fallback_url) {
     JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:init] _fallback > Discovering fallback services...', 2);

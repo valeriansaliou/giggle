@@ -8,7 +8,10 @@
  */
 
 
- /**
+/** @module jsjac.jingle/header */
+
+
+/**
  * Implements:
  *
  * See the PROTOCOL.md file for a list of supported protocol extensions

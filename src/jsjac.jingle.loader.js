@@ -8,9 +8,20 @@
  */
 
 
+/** @module jsjac.jingle/loader */
+
+
+/**
+ * Library loader tool.
+ * @global
+ */
 var JSJaCJingleLoader = {
   /**
    * Maps library components to load
+   * @constant
+   * @type {Object}
+   * @static
+   * @default
    * @private
    */
   _includes: {
@@ -34,7 +45,9 @@ var JSJaCJingleLoader = {
 
   /**
    * Requires library component
+   * @static
    * @private
+   * @param {String} library_name
    */
   _require: function(library_name) {
     document.write(
@@ -45,6 +58,7 @@ var JSJaCJingleLoader = {
 
   /**
    * Engages library load process
+   * @static
    * @public
    */
   go: function() {

@@ -8,77 +8,114 @@
  */
 
 
-/**
- * Creates a new XMPP Jingle session.
- * @class Abstract base class for XMPP Jingle sessions. Contains all of the code in common for all Jingle sessions
- * @constructor
- * @abstract
- * @param {Object} args Jingle session arguments.
- * @param {DOM} args.local_view The path to the local stream view element.
- * @param {string} args.to The full JID to start the Jingle session with.
- * @param {string} args.media The media type to be used in the Jingle session.
- * @param {string} args.resolution The resolution to be used for video in the Jingle session.
- * @param {string} args.bandwidth The bandwidth to be limited for video in the Jingle session.
- * @param {string} args.fps The framerate to be used for video in the Jingle session.
- * @param {object} args.stun A list of STUN servers to use (override the default one).
- * @param {object} args.turn A list of TURN servers to use.
- * @param {boolean} args.sdp_trace Log SDP trace in console (requires a debug interface).
- * @param {boolean} args.net_trace Log network packet trace in console (requires a debug interface).
- * @param {JSJaCDebugger} args.debug A reference to a debugger implementing the JSJaCDebugger interface.
- */
+/** @module jsjac.jingle/base */
 
+
+/**
+ * Abstract base class for XMPP Jingle sessions.
+ * @abstract
+ * @class
+ * @classdesc  Abstract base class for XMPP Jingle sessions.
+ * @requires   module:nicolas-van/ring.js
+ * @requires   module:sstrigler/JSJaC
+ * @see        {@link http://ringjs.neoname.eu/|Ring.js}
+ * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
+ * @param      {Object}         [args]             - Jingle session arguments.
+ * @property   {DOM}            [args.local_view]  - The path to the local stream view element.
+ * @property   {String}         [args.to]          - The full JID to start the Jingle session with.
+ * @property   {String}         [args.media]       - The media type to be used in the Jingle session.
+ * @property   {String}         [args.resolution]  - The resolution to be used for video in the Jingle session.
+ * @property   {String}         [args.bandwidth]   - The bandwidth to be limited for video in the Jingle session.
+ * @property   {String}         [args.fps]         - The framerate to be used for video in the Jingle session.
+ * @property   {Object}         [args.stun]        - A list of STUN servers to use (override the default one).
+ * @property   {Object}         [args.turn]        - A list of TURN servers to use.
+ * @property   {Boolean}        [args.sdp_trace]   - Log SDP trace in console (requires a debug interface).
+ * @property   {Boolean}        [args.net_trace]   - Log network packet trace in console (requires a debug interface).
+ * @property   {JSJaCDebugger}  [args.debug]       - A reference to a debugger implementing the JSJaCDebugger interface.
+ */
 var __JSJaCJingleBase = ring.create({
   /**
    * Constructor
    */
   constructor: function(args) {
-    this.utils  = new JSJaCJingleUtils(this);
-    this.sdp    = new JSJaCJingleSDP(this);
+    /**
+     * @constant
+     * @type {JSJaCJingleUtils}
+     * @default
+     * @public
+     */
+    this.utils = new JSJaCJingleUtils(this);
+
+    /**
+     * @constant
+     * @type {JSJaCJingleSDP}
+     * @default
+     * @public
+     */
+    this.sdp = new JSJaCJingleSDP(this);
 
     if(args && args.to)
       /**
+       * @constant
+       * @type {String}
+       * @default
        * @private
        */
       this._to = args.to;
 
     if(args && args.media)
       /**
+       * @type {String}
+       * @default
        * @private
        */
       this._media = args.media;
 
     if(args && args.video_source)
       /**
+       * @type {String}
+       * @default
        * @private
        */
       this._video_source = args.video_source;
 
     if(args && args.resolution)
       /**
+       * @type {String}
+       * @default
        * @private
        */
       this._resolution = args.resolution;
 
     if(args && args.bandwidth)
       /**
+       * @type {Number}
+       * @default
        * @private
        */
       this._bandwidth = args.bandwidth;
 
     if(args && args.fps)
       /**
+       * @type {Number}
+       * @default
        * @private
        */
       this._fps = args.fps;
 
     if(args && args.local_view)
       /**
+       * @type {DOM}
+       * @default
        * @private
        */
       this._local_view = [args.local_view];
 
     if(args && args.stun) {
       /**
+       * @constant
+       * @type {Object}
+       * @default
        * @private
        */
       this._stun = args.stun;
@@ -88,6 +125,9 @@ var __JSJaCJingleBase = ring.create({
 
     if(args && args.turn) {
       /**
+       * @constant
+       * @type {Object}
+       * @default
        * @private
        */
       this._turn = args.turn;
@@ -97,162 +137,221 @@ var __JSJaCJingleBase = ring.create({
 
     if(args && args.sdp_trace)
       /**
+       * @type {Boolean}
+       * @default
        * @private
        */
       this._sdp_trace = args.sdp_trace;
 
     if(args && args.net_trace)
       /**
+       * @type {Boolean}
+       * @default
        * @private
        */
       this._net_trace = args.net_trace;
 
     if(args && args.debug && args.debug.log) {
       /**
-       * Reference to debugger interface
-       * (needs to implement method <code>log</code>)
+       * @type {JSJaCDebugger}
+       * @default
        * @private
-       * @type JSJaCDebugger
        */
       this._debug = args.debug;
     } else {
       /**
+       * @type {Function}
+       * @default
        * @private
        */
       this._debug = JSJAC_JINGLE_STORE_DEBUG;
     }
 
     /**
+     * @type {String}
+     * @default
      * @private
      */
     this._initiator = '';
 
     /**
+     * @type {String}
+     * @default
      * @private
      */
     this._responder = '';
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._creator = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._senders = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._local_stream = null;
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._content_local = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._peer_connection = {};
 
     /**
+     * @type {Number}
+     * @default
      * @private
      */
     this._id = 0;
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._sent_id = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._received_id = {};
 
     /**
+     * @type {Array}
+     * @default
      * @private
      */
     this._payloads_local = [];
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._group_local = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._candidates_local = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._candidates_queue_local = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._handlers = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._mute = {};
 
     /**
+     * @type {Boolean}
+     * @default
      * @private
      */
     this._lock = false;
 
     /**
+     * @type {Boolean}
+     * @default
      * @private
      */
     this._media_busy = false;
 
     /**
+     * @type {String}
+     * @default
      * @private
      */
     this._sid = '';
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._name = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._remote_view = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._remote_stream = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._content_remote = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._payloads_remote = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._group_remote = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._candidates_remote = {};
 
     /**
+     * @type {Object}
+     * @default
      * @private
      */
     this._candidates_queue_remote = {};
@@ -267,6 +366,10 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Registers a given handler on a given Jingle stanza
    * @public
+   * @param {String} type
+   * @param {String} id
+   * @param {Function} fn
+   * @returns {Boolean} Success
    */
   register_handler: function(type, id, fn) {
     this.get_debug().log('[JSJaCJingle:base] register_handler', 4);
@@ -298,6 +401,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Unregisters the given handler on a given Jingle stanza
    * @public
+   * @param {String} type
+   * @param {String} id
+   * @returns {Boolean} Success
    */
   unregister_handler: function(type, id) {
     this.get_debug().log('[JSJaCJingle:base] unregister_handler', 4);
@@ -324,6 +430,10 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Registers a view element
    * @public
+   * @param {String} username
+   * @param {String} tyoe
+   * @param {DOM} view
+   * @returns {Boolean} Success
    */
   register_view: function(username, type, view) {
     this.get_debug().log('[JSJaCJingle:base] register_view', 4);
@@ -369,6 +479,10 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Unregisters a view element
    * @public
+   * @param {String} username
+   * @param {String} type
+   * @param {DOM} view
+   * @returns {Boolean} Success
    */
   unregister_view: function(username, type, view) {
     this.get_debug().log('[JSJaCJingle:base] unregister_view', 4);
@@ -420,6 +534,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Creates a new peer connection
    * @private
+   * @param {String} username
+   * @param {Function} sdp_message_callback
    */
   _peer_connection_create: function(username, sdp_message_callback) {
     this.get_debug().log('[JSJaCJingle:base] _peer_connection_create', 4);
@@ -460,6 +576,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Creates peer connection instance
    * @private
+   * @param {String} username
    */
   _peer_connection_create_instance: function(username) {
     this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_instance', 4);
@@ -493,6 +610,10 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Generates peer connection callback for 'oniceconnectionstatechange'
    * @private
+   * @callback
+   * @param {JSJaCJingleSingle|JSJaCJingleMuji} _this
+   * @param {String} username
+   * @param {Object} e
    */
   _peer_connection_callback_oniceconnectionstatechange: function(_this, username, e) {
     _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_oniceconnectionstatechange', 4);
@@ -520,6 +641,10 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Generates peer connection callback for 'onaddstream'
    * @private
+   * @callback
+   * @param {JSJaCJingleSingle|JSJaCJingleMuji} _this
+   * @param {String} username
+   * @param {Object} e
    */
   _peer_connection_callback_onaddstream: function(_this, username, e) {
     _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onaddstream', 4);
@@ -539,6 +664,10 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Generates peer connection callback for 'onremovestream'
    * @private
+   * @callback
+   * @param {JSJaCJingleSingle|JSJaCJingleMuji} _this
+   * @param {String} username
+   * @param {Object} e
    */
   _peer_connection_callback_onremovestream: function(_this, username, e) {
     _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onremovestream', 4);
@@ -554,6 +683,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Creates peer connection local stream
    * @private
+   * @param {String} username
    */
   _peer_connection_create_local_stream: function(username) {
     this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_local_stream', 4);
@@ -570,6 +700,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Requests the user media (audio/video)
    * @private
+   * @param {Function} callback
    */
   _peer_get_user_media: function(callback) {
     this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media', 4);
@@ -590,6 +721,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Triggers the media obtained success event
    * @private
+   * @param {Function} callback
+   * @param {Object} stream
    */
   _peer_got_user_media_success: function(callback, stream) {
     this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success', 4);
@@ -625,6 +758,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Triggers the SDP description retrieval success event
    * @private
+   * @param {String} username
+   * @param {Object} sdp_local
    */
   _peer_got_description: function(username, sdp_local) {
     this.get_debug().log('[JSJaCJingle:base] _peer_got_description', 4);
@@ -708,6 +843,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Enables/disables the local stream sound
    * @private
+   * @param {Boolean} enable
    */
   _peer_sound: function(enable) {
     this.get_debug().log('[JSJaCJingle:base] _peer_sound', 4);
@@ -728,6 +864,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Attaches given stream to given DOM element
    * @private
+   * @param {DOM} element
+   * @param {Object} stream
+   * @param {Boolean} mute
    */
   _peer_stream_attach: function(element, stream, mute) {
     try {
@@ -752,6 +891,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Detaches stream from given DOM element
    * @private
+   * @param {DOM} element
    */
   _peer_stream_detach: function(element) {
     try {
@@ -775,7 +915,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Am I responder?
    * @public
-   * @returns {boolean} Receiver state
+   * @returns {Boolean} Receiver state
    */
   is_responder: function() {
     return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
@@ -784,7 +924,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Am I initiator?
    * @public
-   * @returns {boolean} Initiator state
+   * @returns {Boolean} Initiator state
    */
   is_initiator: function() {
     return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
@@ -793,6 +933,10 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Shortcut for commonly used tri-set-toggle
    * @private
+   * @param {Object} db_obj
+   * @param {String} username
+   * @param {String} [key]
+   * @param {Object} [store_obj]
    */
   _tri_toggle_set: function(db_obj, username, key, store_obj) {
     if(!(username in db_obj))  db_obj[username] = {};
@@ -816,7 +960,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the namespace
    * @public
-   * @returns {string} Namespace value
+   * @returns {String} Namespace value
    */
   get_namespace: function() {
     return this._namespace;
@@ -825,7 +969,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the local stream
    * @public
-   * @returns {object} Local stream instance
+   * @returns {Object} Local stream instance
    */
   get_local_stream: function() {
     return this._local_stream;
@@ -834,7 +978,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the local payloads
    * @public
-   * @returns {object} Local payloads object
+   * @param {String} [name]
+   * @returns {Object} Local payloads object
    */
   get_payloads_local: function(name) {
     if(name)
@@ -846,7 +991,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the local group
    * @public
-   * @returns {object} Local group object
+   * @param {String} [semantics]
+   * @returns {Object} Local group object
    */
   get_group_local: function(semantics) {
     if(semantics)
@@ -858,7 +1004,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the local candidates
    * @public
-   * @returns {object} Local candidates object
+   * @param {String} [name]
+   * @returns {Object} Local candidates object
    */
   get_candidates_local: function(name) {
     if(name)
@@ -870,7 +1017,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the local candidates queue
    * @public
-   * @returns {object} Local candidates queue object
+   * @param {String} [name]
+   * @returns {Object} Local candidates queue object
    */
   get_candidates_queue_local: function(name) {
     if(name)
@@ -882,7 +1030,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the local content
    * @public
-   * @returns {object} Local content object
+   * @param {String} [name]
+   * @returns {Object} Local content object
    */
   get_content_local: function(name) {
     if(name)
@@ -894,7 +1043,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the remote stream
    * @public
-   * @returns {object} Remote stream instance
+   * @param {String} [username]
+   * @returns {Object} Remote stream instance
    */
   get_remote_stream: function(username) {
     if(username)
@@ -906,7 +1056,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the remote content
    * @public
-   * @returns {object} Remote content object
+   * @param {String} [username]
+   * @param {String} [name]
+   * @returns {Object} Remote content object
    */
   get_content_remote: function(username, name) {
     if(name)
@@ -921,7 +1073,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the remote payloads
    * @public
-   * @returns {object} Remote payloads object
+   * @param {String} [username]
+   * @param {String} [name]
+   * @returns {Object} Remote payloads object
    */
   get_payloads_remote: function(username, name) {
     if(name)
@@ -937,7 +1091,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the remote group
    * @public
-   * @returns {object} Remote group object
+   * @param {String} [username]
+   * @param {String} [semantics]
+   * @returns {Object} Remote group object
    */
   get_group_remote: function(username, semantics) {
     if(semantics)
@@ -953,7 +1109,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the remote candidates
    * @public
-   * @returns {object} Remote candidates object
+   * @param {String} [username]
+   * @param {String} [name]
+   * @returns {Object} Remote candidates object
    */
   get_candidates_remote: function(username, name) {
     if(name)
@@ -969,7 +1127,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the remote candidates queue
    * @public
-   * @returns {object} Remote candidates queue object
+   * @param {String} [username]
+   * @param {String} [name]
+   * @returns {Object} Remote candidates queue object
    */
   get_candidates_queue_remote: function(username, name) {
     if(name)
@@ -985,7 +1145,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the peer connection
    * @public
-   * @returns {object} Peer connection
+   * @param {String} [username]
+   * @returns {Object} Peer connection
    */
   get_peer_connection: function(username) {
     if(username)
@@ -997,7 +1158,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the ID
    * @public
-   * @returns {number} ID value
+   * @returns {Number} ID value
    */
   get_id: function() {
     return this._id;
@@ -1006,7 +1167,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the new ID
    * @public
-   * @returns {string} New ID value
+   * @returns {String} New ID value
    */
   get_id_new: function() {
     var trans_id = this.get_id() + 1;
@@ -1018,7 +1179,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the sent IDs
    * @public
-   * @returns {object} Sent IDs object
+   * @returns {Object} Sent IDs object
    */
   get_sent_id: function() {
     return this._sent_id;
@@ -1027,7 +1188,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the received IDs
    * @public
-   * @returns {object} Received IDs object
+   * @returns {Object} Received IDs object
    */
   get_received_id: function() {
     return this._received_id;
@@ -1036,7 +1197,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the stanza handler
    * @public
-   * @returns {function} Stanza handler
+   * @param {String} type
+   * @param {String} id
+   * @returns {Function|Object} Stanza handler
    */
   get_handlers: function(type, id) {
     type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
@@ -1055,7 +1218,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the mute state
    * @public
-   * @returns {boolean} Mute value
+   * @param {String} [name]
+   * @returns {Boolean} Mute value
    */
   get_mute: function(name) {
     if(!name) name = '*';
@@ -1066,7 +1230,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the lock value
    * @public
-   * @returns {boolean} Lock value
+   * @returns {Boolean} Lock value
    */
   get_lock: function() {
     return this._lock || !JSJAC_JINGLE_AVAILABLE;
@@ -1075,7 +1239,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the media busy value
    * @public
-   * @returns {boolean} Media busy value
+   * @returns {Boolean} Media busy value
    */
   get_media_busy: function() {
     return this._media_busy;
@@ -1084,7 +1248,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the sid value
    * @public
-   * @returns {string} SID value
+   * @returns {String} SID value
    */
   get_sid: function() {
     return this._sid;
@@ -1093,7 +1257,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the status value
    * @public
-   * @returns {string} Status value
+   * @returns {String} Status value
    */
   get_status: function() {
     return this._status;
@@ -1102,7 +1266,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the to value
    * @public
-   * @returns {string} To value
+   * @returns {String} To value
    */
   get_to: function() {
     return this._to;
@@ -1111,7 +1275,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the initiator value
    * @public
-   * @returns {string} Initiator value
+   * @returns {String} Initiator value
    */
   get_initiator: function() {
     return this._initiator;
@@ -1120,7 +1284,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the responder value
    * @public
-   * @returns {string} Responder value
+   * @returns {String} Responder value
    */
   get_responder: function() {
     return this._responder;
@@ -1129,7 +1293,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the creator value
    * @public
-   * @returns {string} Creator value
+   * @param {String} [name]
+   * @returns {String|Object} Creator value
    */
   get_creator: function(name) {
     if(name)
@@ -1141,7 +1306,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the creator value (for this)
    * @public
-   * @returns {string} Creator value
+   * @param {String} name
+   * @returns {String} Creator value
    */
   get_creator_this: function(name) {
     return this.get_responder() == this.get_to() ? JSJAC_JINGLE_CREATOR_INITIATOR : JSJAC_JINGLE_CREATOR_RESPONDER;
@@ -1150,7 +1316,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the senders value
    * @public
-   * @returns {string} Senders value
+   * @param {String} [name]
+   * @returns {String} Senders value
    */
   get_senders: function(name) {
     if(name)
@@ -1162,7 +1329,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the media value
    * @public
-   * @returns {string} Media value
+   * @returns {String} Media value
    */
   get_media: function() {
     return (this._media && this._media in JSJAC_JINGLE_MEDIAS) ? this._media : JSJAC_JINGLE_MEDIA_VIDEO;
@@ -1171,7 +1338,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets a list of medias in use
    * @public
-   * @returns {object} Media list
+   * @returns {Object} Media list
    */
   get_media_all: function() {
     if(this.get_media() == JSJAC_JINGLE_MEDIA_AUDIO)
@@ -1183,7 +1350,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the video source value
    * @public
-   * @returns {string} Video source value
+   * @returns {String} Video source value
    */
   get_video_source: function() {
     return (this._video_source && this._video_source in JSJAC_JINGLE_VIDEO_SOURCES) ? this._video_source : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
@@ -1192,7 +1359,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the resolution value
    * @public
-   * @returns {string} Resolution value
+   * @returns {String} Resolution value
    */
   get_resolution: function() {
     return this._resolution ? (this._resolution).toString() : null;
@@ -1201,7 +1368,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the bandwidth value
    * @public
-   * @returns {string} Bandwidth value
+   * @returns {String} Bandwidth value
    */
   get_bandwidth: function() {
     return this._bandwidth ? (this._bandwidth).toString() : null;
@@ -1210,7 +1377,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the FPS value
    * @public
-   * @returns {string} FPS value
+   * @returns {String} FPS value
    */
   get_fps: function() {
     return this._fps ? (this._fps).toString() : null;
@@ -1219,7 +1386,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the name value
    * @public
-   * @returns {string} Name value
+   * @param {String} [name]
+   * @returns {String} Name value
    */
   get_name: function(name) {
     if(name)
@@ -1231,7 +1399,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the local_view value
    * @public
-   * @returns {DOM} local_view value
+   * @returns {DOM} Local view
    */
   get_local_view: function() {
     return (typeof this._local_view == 'object') ? this._local_view : [];
@@ -1240,7 +1408,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the remote_view value
    * @public
-   * @returns {DOM} remote_view value
+   * @param {String} username
+   * @returns {DOM} Remote view
    */
   get_remote_view: function(username) {
     return (typeof this._remote_view == 'object'  &&
@@ -1250,7 +1419,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the STUN servers
    * @public
-   * @returns {object} STUN servers
+   * @returns {Object} STUN servers
    */
   get_stun: function() {
     return (typeof this._stun == 'object') ? this._stun : {};
@@ -1259,7 +1428,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the TURN servers
    * @public
-   * @returns {object} TURN servers
+   * @returns {Object} TURN servers
    */
   get_turn: function() {
     return (typeof this._turn == 'object') ? this._turn : {};
@@ -1268,7 +1437,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the SDP trace value
    * @public
-   * @returns {boolean} SDP trace value
+   * @returns {Boolean} SDP trace value
    */
   get_sdp_trace: function() {
     return (this._sdp_trace === true);
@@ -1277,7 +1446,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the network packet trace value
    * @public
-   * @returns {boolean} Network packet trace value
+   * @returns {Boolean} Network packet trace value
    */
   get_net_trace: function() {
     return (this._net_trace === true);
@@ -1301,6 +1470,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the local stream
    * @private
+   * @param {Object} local_stream
    */
   _set_local_stream: function(local_stream) {
     try {
@@ -1333,6 +1503,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the local view
    * @private
+   * @param {DOM} local_view
    */
   _set_local_view: function(local_view) {
     if(typeof this._local_view !== 'object')
@@ -1344,6 +1515,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the remote view
    * @private
+   * @param {String} username
+   * @param {DOM} [remote_view]
    */
   _set_remote_view: function(username, remote_view) {
     if(typeof this._remote_view !== 'object')
@@ -1361,6 +1534,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Pops the given remote view
    * @private
+   * @param {String} username
+   * @param {DOM} remote_view_pop
    */
   _set_remote_view_pop: function(username, remote_view_pop) {
   	var i,
@@ -1383,6 +1558,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the local payload
    * @private
+   * @param {String} name
+   * @param {Object} payload_data
    */
   _set_payloads_local: function(name, payload_data) {
     this._payloads_local[name] = payload_data;
@@ -1391,6 +1568,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the local group
    * @private
+   * @param {String} name
+   * @param {Object} group_data
    */
   _set_group_local: function(semantics, group_data) {
     this._group_local[semantics] = group_data;
@@ -1399,6 +1578,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the local candidates
    * @private
+   * @param {String} name
+   * @param {Object} candidate_data
    */
   _set_candidates_local: function(name, candidate_data) {
     if(!(name in this._candidates_local))  this._candidates_local[name] = [];
@@ -1409,6 +1590,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the local candidates queue
    * @private
+   * @param {String} name
+   * @param {Object} candidate_data
    */
   _set_candidates_queue_local: function(name, candidate_data) {
     try {
@@ -1427,6 +1610,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the local content
    * @private
+   * @param {String} name
+   * @param {Object} content_local
    */
   _set_content_local: function(name, content_local) {
     this._content_local[name] = content_local;
@@ -1435,6 +1620,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the remote content
    * @private
+   * @param {String} username
+   * @param {String} name
+   * @param {Object} content_remote
    */
   _set_content_remote: function(username, name, content_remote) {
     this._tri_toggle_set(
@@ -1449,6 +1637,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the remote payloads
    * @private
+   * @param {String} username
+   * @param {String} name
+   * @param {Object} payload_data
    */
   _set_payloads_remote: function(username, name, payload_data) {
     this._tri_toggle_set(
@@ -1463,6 +1654,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Adds a remote payload
    * @private
+   * @param {String} username
+   * @param {String} name
+   * @param {Object} payload_data
    */
   _set_payloads_remote_add: function(username, name, payload_data) {
     try {
@@ -1488,6 +1682,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the remote group
    * @private
+   * @param {String} username
+   * @param {String} semantics
+   * @param {Object} group_data
    */
   _set_group_remote: function(username, semantics, group_data) {
     this._tri_toggle_set(
@@ -1502,6 +1699,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the remote candidates
    * @private
+   * @param {String} username
+   * @param {String} name
+   * @param {Object} candidate_data
    */
   _set_candidates_remote: function(username, name, candidate_data) {
     this._tri_toggle_set(
@@ -1516,6 +1716,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the session initiate pending callback function
    * @private
+   * @param {String} username
+   * @param {String} name
+   * @param {Object} candidate_data
    */
   _set_candidates_queue_remote: function(username, name, candidate_data) {
     this._tri_toggle_set(
@@ -1530,6 +1733,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Adds a remote candidate
    * @private
+   * @param {String} username
+   * @param {String} name
+   * @param {Object} candidate_data
    */
   _set_candidates_remote_add: function(username, name, candidate_data) {
     try {
@@ -1558,6 +1764,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the peer connection
    * @private
+   * @param {String} username
+   * @param {Object} peer_connection
    */
   _set_peer_connection: function(username, peer_connection) {
     this._peer_connection[username] = peer_connection;
@@ -1566,6 +1774,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the ID
    * @private
+   * @param {String|Number} id
    */
   _set_id: function(id) {
     this._id = id;
@@ -1574,6 +1783,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the sent ID
    * @private
+   * @param {String|Number} sent_id
    */
   _set_sent_id: function(sent_id) {
     this._sent_id[sent_id] = 1;
@@ -1582,6 +1792,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the last received ID
    * @private
+   * @param {String|Number} received_id
    */
   _set_received_id: function(received_id) {
     this._received_id[received_id] = 1;
@@ -1590,6 +1801,9 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the stanza handlers
    * @private
+   * @param {String} type
+   * @param {String|Number} id
+   * @param {Function} handler
    */
   _set_handlers: function(type, id, handler) {
     if(!(type in this._handlers))  this._handlers[type] = {};
@@ -1600,6 +1814,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the mute state
    * @private
+   * @param {String} [name]
+   * @param {String} mute
    */
   _set_mute: function(name, mute) {
     if(!name || name == '*') {
@@ -1613,6 +1829,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the lock value
    * @private
+   * @param {Boolean} lock
    */
   _set_lock: function(lock) {
     this._lock = lock;
@@ -1621,6 +1838,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Gets the media busy value
    * @private
+   * @param {Boolean} busy
    */
   _set_media_busy: function(busy) {
     this._media_busy = busy;
@@ -1629,6 +1847,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the session ID
    * @private
+   * @param {String} sid
    */
   _set_sid: function(sid) {
     this._sid = sid;
@@ -1637,6 +1856,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the session status
    * @private
+   * @param {String} status
    */
   _set_status: function(status) {
     this._status = status;
@@ -1645,6 +1865,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the session to value
    * @private
+   * @param {String} to
    */
   _set_to: function(to) {
     this._to = to;
@@ -1653,6 +1874,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the session initiator
    * @private
+   * @param {String} initiator
    */
   _set_initiator: function(initiator) {
     this._initiator = initiator;
@@ -1661,6 +1883,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the session responder
    * @private
+   * @param {String} responder
    */
   _set_responder: function(responder) {
     this._responder = responder;
@@ -1669,6 +1892,8 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the session creator
    * @private
+   * @param {String} name
+   * @param {String} creator
    */
   _set_creator: function(name, creator) {
     if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
@@ -1679,6 +1904,8 @@ var __JSJaCJingleBase = ring.create({
    /**
    * Sets the session senders
    * @private
+   * @param {String} name
+   * @param {String} senders
    */
   _set_senders: function(name, senders) {
     if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
@@ -1689,6 +1916,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the session media
    * @private
+   * @param {String} media
    */
   _set_media: function(media) {
     this._media = media;
@@ -1705,6 +1933,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the video resolution
    * @private
+   * @param {String} resolution
    */
   _set_resolution: function(resolution) {
     this._resolution = resolution;
@@ -1713,6 +1942,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the video bandwidth
    * @private
+   * @param {Number} bandwidth
    */
   _set_bandwidth: function(bandwidth) {
     this._bandwidth = bandwidth;
@@ -1721,6 +1951,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the video FPS
    * @private
+   * @param {Number} fps
    */
   _set_fps: function(fps) {
     this._fps = fps;
@@ -1729,6 +1960,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the source name
    * @private
+   * @param {String} name
    */
   _set_name: function(name) {
     this._name[name] = 1;
@@ -1737,22 +1969,27 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the STUN server address
    * @private
+   * @param {String} stun_host
+   * @param {Object} stun_data
    */
   _set_stun: function(stun_host, stun_data) {
-    this._stun[stun_server] = stun_data;
+    this._stun[stun_host] = stun_data;
   },
 
   /**
    * Sets the TURN server address
    * @private
+   * @param {String} turn_host
+   * @param {Object} turn_data
    */
   _set_turn: function(turn_host, turn_data) {
-    this._turn[turn_server] = turn_data;
+    this._turn[turn_host] = turn_data;
   },
 
   /**
    * Enables/disables SDP traces
    * @public
+   * @param {Boolean} sdp_trace
    */
   set_sdp_trace: function(sdp_trace) {
     this._sdp_trace = sdp_trace;
@@ -1761,6 +1998,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Enables/disables network traces
    * @public
+   * @param {Boolean} net_trace
    */
   set_net_trace: function(net_trace) {
     this._net_trace = net_trace;
@@ -1769,6 +2007,7 @@ var __JSJaCJingleBase = ring.create({
   /**
    * Sets the debugging wrapper
    * @public
+   * @param {JSJaCDebugger} debug
    */
   set_debug: function(debug) {
     this._debug = debug;

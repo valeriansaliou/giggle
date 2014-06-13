@@ -8,24 +8,39 @@
  */
 
 
+/** @module jsjac.jingle/utils */
+
+
 /**
- * Utilities class
- * @class Utilities class
- * @constructor
- * @param {object} parent Parent class.
+ * Utilities class.
+ * @class
+ * @classdesc Utilities class.
+ * @param {JSJaCJingleSingle|JSJaCJingleMuji} parent Parent class.
+ * @requires module:nicolas-van/ring.js
+ * @requires module:sstrigler/JSJaC
+ * @see {@link http://ringjs.neoname.eu/|Ring.js}
+ * @see {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */
 var JSJaCJingleUtils = ring.create({
   /**
    * Constructor
    */
   constructor: function(parent) {
+    /**
+     * @constant
+     * @type {JSJaCJingleSingle|JSJaCJingleMuji}
+     * @default
+     * @public
+     */
     this.parent = parent;
   },
 
   /**
    * Removes a given array value
    * @public
-   * @returns {object} new array
+   * @param {Array} array
+   * @param {*} value
+   * @returns {Array} New array
    */
   array_remove_value: function(array, value) {
     try {
@@ -46,7 +61,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Returns whether an object is empty or not
    * @public
-   * @returns {boolean} Empty value
+   * @param {Object} object
+   * @returns {Number} Object length
    */
   object_length: function(object) {    
     var key;
@@ -66,7 +82,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Collects given objects
    * @public
-   * @returns {object} Empty value
+   * @returns {Object} Collected object
    */
   object_collect: function() {    
     var i, p;
@@ -87,7 +103,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Clones a given object
    * @public
-   * @returns {object} Cloned object
+   * @param {Object} object
+   * @returns {Date|Array|Object} Cloned object
    */
   object_clone: function(object) {    
     try {
@@ -135,7 +152,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets the browser info
    * @public
-   * @returns {object} browser info
+   * @returns {Object} Browser info
    */
   browser: function() {    
     var browser_info = {
@@ -171,7 +188,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets the ICE config
    * @public
-   * @returns {object} ICE config
+   * @returns {Object} ICE config
    */
   config_ice: function() {    
     try {
@@ -270,7 +287,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets the node value from a stanza element
    * @public
-   * @returns {string} Node value
+   * @param {DOM} stanza
+   * @returns {String|Object} Node value
    */
   stanza_get_value: function(stanza) {    
     try {
@@ -289,7 +307,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets the attribute value from a stanza element
    * @public
-   * @returns {string} Attribute value
+   * @param {DOM} stanza
+   * @param {String} name
+   * @returns {String|Object} Attribute value
    */
   stanza_get_attribute: function(stanza, name) {    
     if(!name) return null;
@@ -310,6 +330,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Sets the attribute value to a stanza element
    * @public
+   * @param {DOM} stanza
+   * @param {String} name
+   * @param {*} value
    */
   stanza_set_attribute: function(stanza, name, value) {    
     if(!(name && value && stanza)) return;
@@ -328,7 +351,10 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets the Jingle node from a stanza
    * @public
-   * @returns {DOM} Jingle node
+   * @param {DOM} stanza
+   * @param {String} name
+   * @param {String} [ns]
+   * @returns {DOM} Selected DOM elements
    */
   stanza_get_element: function(stanza, name, ns) {    
     var matches_result = [];
@@ -363,7 +389,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets the Jingle node from a stanza
    * @public
-   * @returns {DOM} Jingle node
+   * @param {JSJaCPacket} stanza
+   * @returns {DOM|Object} Jingle node
    */
   stanza_jingle: function(stanza) {    
     try {
@@ -378,7 +405,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets the Jingle Muji node from a stanza
    * @public
-   * @returns {DOM} Jingle node
+   * @param {JSJaCPacket} stanza
+   * @returns {DOM|Object} Jingle node
    */
   stanza_muji: function(stanza) {    
     try {
@@ -393,7 +421,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets the from value from a stanza
    * @public
-   * @returns {string} from value
+   * @param {JSJaCPacket} stanza
+   * @returns {String|Object} From value
    */
   stanza_from: function(stanza) {    
     try {
@@ -408,7 +437,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets the SID value from a stanza
    * @public
-   * @returns {string} SID value
+   * @param {JSJaCPacket} stanza
+   * @returns {String|Object} SID value
    */
   stanza_sid: function(stanza) {    
     try {
@@ -424,7 +454,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Checks if a stanza is safe (known SID + sender)
    * @public
-   * @returns {boolean} safety state
+   * @param {JSJaCPacket} stanza
+   * @returns {Boolean} Safety state
    */
   stanza_safe: function(stanza) {    
     try {
@@ -439,7 +470,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets a stanza terminate reason
    * @public
-   * @returns {string} reason code
+   * @param {JSJaCPacket} stanza
+   * @returns {String|Object} Reason code
    */
   stanza_terminate_reason: function(stanza) {    
     try {
@@ -467,7 +499,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Gets a stanza session info
    * @public
-   * @returns {string} info code
+   * @param {JSJaCPacket} stanza
+   * @returns {String|Object} Info code
    */
   stanza_session_info: function(stanza) {    
     try {
@@ -491,6 +524,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Set a timeout limit to a stanza
    * @public
+   * @param {String} t_type
+   * @param {String} t_id
+   * @param {Object} handlers
    */
   stanza_timeout: function(t_type, t_id, handlers) {    
     try {
@@ -526,6 +562,12 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Parses stanza node
    * @public
+   * @param {DOM} parent
+   * @param {String} name
+   * @param {String} ns
+   * @param {Object} obj
+   * @param {Array} attrs
+   * @param {Object} [value]
    */
   stanza_parse_node: function(parent, name, ns, obj, attrs, value) {    
     try {
@@ -569,6 +611,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Parses stanza content
    * @public
+   * @param {String} username
+   * @param {JSJaCPacket} stanza
+   * @returns {Boolean} Success
    */
   stanza_parse_content: function(username, stanza) {    
     try {
@@ -644,7 +689,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Parses stanza group
    * @public
-   * @returns {boolean} success
+   * @param {String} username
+   * @param {JSJaCPacket} stanza
+   * @returns {Boolean} Success
    */
   stanza_parse_group: function(username, stanza) {    
     try {
@@ -701,6 +748,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Parses stanza payload
    * @public
+   * @param {DOM} stanza_content
+   * @returns {Object} Payload object
    */
   stanza_parse_payload: function(stanza_content) {    
     var payload_obj = {
@@ -973,6 +1022,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Parses stanza candidate
    * @public
+   * @param {Array} Candidates array
    */
   stanza_parse_candidate: function(stanza_content) {    
     var candidate_arr = [];
@@ -1014,7 +1064,13 @@ var JSJaCJingleUtils = ring.create({
 
   /*
    * Builds stanza node
-   * @returns {DOM} node
+   * @param {JSJaCPacket} doc
+   * @param {DOM} parent
+   * @param {Array} children
+   * @param {String} name
+   * @param {String} ns
+   * @param {String} [value]
+   * @returns {DOM} Built node
    */
   stanza_build_node: function(doc, parent, children, name, ns, value) {    
     var node = null;
@@ -1048,7 +1104,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates stanza Jingle node
    * @public
-   * @returns {DOM} node
+   * @param {JSJaCPacket} stanza
+   * @param {Object} attrs
+   * @returns {DOM} Jingle node
    */
   stanza_generate_jingle: function(stanza, attrs) {    
     var jingle = null;
@@ -1071,7 +1129,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates stanza Muji node
    * @public
-   * @returns {DOM} node
+   * @param {JSJaCPacket} stanza
+   * @returns {DOM} Muji node
    */
   stanza_generate_muji: function(stanza) {    
     var muji = null;
@@ -1088,6 +1147,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates stanza session info
    * @public
+   * @param {JSJaCPacket} stanza
+   * @param {DOM} jingle
+   * @param {Object} args
    */
   stanza_generate_session_info: function(stanza, jingle, args) {    
     try {
@@ -1110,6 +1172,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates stanza local content
    * @public
+   * @param {JSJaCPacket} stanza
+   * @param {DOM} jingle
+   * @param {Object} [override_content]
    */
   stanza_generate_content_local: function(stanza, jingle, override_content) {    
     try {
@@ -1350,6 +1415,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates stanza local group
    * @public
+   * @param {JSJaCPacket} stanza
+   * @param {DOM} jingle
    */
   stanza_generate_group_local: function(stanza, jingle) {    
     try {
@@ -1384,7 +1451,12 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates content
    * @public
-   * @returns {object} content object
+   * @param {String} creator
+   * @param {String} name
+   * @param {Object} senders
+   * @param {Object} payloads
+   * @param {Object} transports
+   * @returns {Object} Content object
    */
   generate_content: function(creator, name, senders, payloads, transports) {    
     var content_obj = {};
@@ -1408,7 +1480,7 @@ var JSJaCJingleUtils = ring.create({
 
       for(i in description_cpy.payload) {
         if(!('attrs' in description_cpy.payload[i]))
-          description_cpy.payload[i].attrs           = {};
+          description_cpy.payload[i].attrs        = {};
 
         description_cpy.payload[i].attrs.ptime    = description_ptime;
         description_cpy.payload[i].attrs.maxptime = description_maxptime;
@@ -1417,8 +1489,8 @@ var JSJaCJingleUtils = ring.create({
       content_obj.description = description_cpy;
 
       // Generate transport
-      content_obj.transport.candidate      = transports;
-      content_obj.transport.attrs          = {};
+      content_obj.transport.candidate   = transports;
+      content_obj.transport.attrs       = {};
       content_obj.transport.attrs.pwd   = payloads.transports ? payloads.transports.pwd   : null;
       content_obj.transport.attrs.ufrag = payloads.transports ? payloads.transports.ufrag : null;
 
@@ -1434,7 +1506,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates transport
    * @public
-   * @returns {object} transport object
+   * @param {Object} transport_init_obj
+   * @returns {Object} Transport object
    */
   generate_transport: function(transport_init_obj) {    
     var transport_obj = {
@@ -1515,6 +1588,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Builds remote content
    * @public
+   * @param {String} username
    */
   build_content_remote: function(username) {    
     try {
@@ -1542,7 +1616,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates media name
    * @public
-   * @returns {string} media name
+   * @param {String} media
+   * @returns {String} Media name
    */
   name_generate: function(media) {    
     var name = null;
@@ -1570,7 +1645,7 @@ var JSJaCJingleUtils = ring.create({
       for(i in content_all) {
         for(cur_name in content_all[i]) {
           try {
-            if(content_all[i][cur_name].description.attrs.media == media) {
+            if(content_all[i][cur_name].description.attrs.media === media) {
               name = cur_name; break;
             }
           } catch(e) {}
@@ -1590,7 +1665,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates media
    * @public
-   * @returns {string} media
+   * @param {String} name
+   * @returns {String} Media
    */
   media_generate: function(name) {    
     var cur_media;
@@ -1622,7 +1698,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates a MD5 hash from the given value
    * @public
-   * @returns {string} MD5 hash value
+   * @param {String} value
+   * @returns {String} MD5 hash value
    */
   generate_hash_md5: function(value) {
     return hex_md5(value);
@@ -1631,7 +1708,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates a random value
    * @public
-   * @returns {string} Random value
+   * @param {Number} i
+   * @returns {String} Random value
    */
   generate_random: function(i) {
     return JSJaCUtils.cnonce(i);
@@ -1640,7 +1718,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates a random SID value
    * @public
-   * @returns {string} SID value
+   * @returns {String} SID value
    */
   generate_sid: function() {
     return this.generate_random(16);
@@ -1649,7 +1727,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates a random ID value
    * @public
-   * @returns {string} ID value
+   * @returns {String} ID value
    */
   generate_id: function() {
     return this.generate_random(10);
@@ -1658,7 +1736,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Generates the constraints object
    * @public
-   * @returns {object} constraints object
+   * @returns {Object} constraints object
    */
   generate_constraints: function() {    
     var constraints = {
@@ -1777,7 +1855,8 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Returns whether SDP credentials are common or not (fingerprint & so)
    * @public
-   * @returns {boolean} credientials same state
+   * @param {Array} payloads
+   * @returns {Boolean} Credientials same state
    */
   is_sdp_common_credentials: function(payloads) {    
     var is_same = true;
@@ -1811,7 +1890,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Extracts network main details
    * @public
-   * @returns {object} network details
+   * @param {String} media
+   * @param {Array} candidates
+   * @returns {Object} Network details
    */
   network_extract_main: function(media, candidates) {    
     var network_obj = {
@@ -1894,7 +1975,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Returns our negotiation status
    * @public
-   * @returns {string} Negotiation status
+   * @returns {String} Negotiation status
    */
   negotiation_status: function() {
     return (this.parent.get_initiator() == this.connection_jid()) ? JSJAC_JINGLE_SENDERS_INITIATOR.jingle : JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
@@ -1903,7 +1984,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Get my connection JID
    * @public
-   * @returns {string} JID value
+   * @returns {String} JID value
    */
   connection_jid: function() {
     return JSJAC_JINGLE_STORE_CONNECTION.username + '@' + 
@@ -1914,7 +1995,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Get my connection username
    * @public
-   * @returns {string} Username value
+   * @returns {String} Username value
    */
   connection_username: function() {
     return JSJAC_JINGLE_STORE_CONNECTION.username;
@@ -1923,7 +2004,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Get my connection domain
    * @public
-   * @returns {string} Domain value
+   * @returns {String} Domain value
    */
   connection_domain: function() {
     return JSJAC_JINGLE_STORE_CONNECTION.domain;
@@ -1932,7 +2013,7 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Get my connection resource
    * @public
-   * @returns {string} Resource value
+   * @returns {String} Resource value
    */
   connection_resource: function() {
     return JSJAC_JINGLE_STORE_CONNECTION.resource;
@@ -1941,7 +2022,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Registers a view to map
    * @public
-   * @returns {object} view register functions
+   * @param {String} username
+   * @param {String} type
+   * @returns {Object} View register functions map
    */
   map_register_view: function(username, type) {    
     var fn = {
@@ -1988,7 +2071,9 @@ var JSJaCJingleUtils = ring.create({
   /**
    * Unregister a view from map
    * @public
-   * @returns {object} view unregister functions
+   * @param {String} username
+   * @param {String} type
+   * @returns {Object} View unregister functions map
    */
   map_unregister_view: function(username, type) {    
     return this.map_register_view(username, type);
