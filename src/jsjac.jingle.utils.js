@@ -1616,12 +1616,21 @@ var JSJaCJingleUtils = ring.create({
   },
 
   /**
+   * Generates a random value
+   * @public
+   * @returns {string} Random value
+   */
+  generate_random: function(i) {
+    return JSJaCUtils.cnonce(i);
+  },
+
+  /**
    * Generates a random SID value
    * @public
    * @returns {string} SID value
    */
   generate_sid: function() {
-    return JSJaCUtils.cnonce(16);
+    return this.generate_random(16);
   },
 
   /**
@@ -1630,7 +1639,7 @@ var JSJaCJingleUtils = ring.create({
    * @returns {string} ID value
    */
   generate_id: function() {
-    return JSJaCUtils.cnonce(10);
+    return this.generate_random(10);
   },
 
   /**

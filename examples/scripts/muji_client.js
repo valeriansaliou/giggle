@@ -233,21 +233,51 @@ var ARGS = {
         console.log('participant_leave');
     },
     
-    add_remote_view: function(_this) {
+    add_remote_view: function(_this, username, media) {
         console.log('add_remote_view');
 
-        // TODO: generate <video> / <audio> element
-        // TODO: add to DOM
-        // TODO: animate & show
+        var nobody_sel = $('#room_container h6');
+        var view_sel = $('#room_container video.video_remote').filter(function() {
+            return ($(this).attr('data-username') + '') === (username + '');
+        });
 
-        var remote_view_sel = null; // DOM selector >> $(path)[0]
-        return remote_view_sel;
+        // Not already in view?
+        if(!view_sel.size()) {
+            // NOTE: we can use 'media' parameter to either append an 'audio' or a 'video' element
+            view_sel = $(
+                '<video class="video_remote" data-username="' + username + '" src="" alt="" width="320" height="180" poster="./images/video_poster_big.png"></video>'
+            );
+
+            view_sel.insertBefore('#room_container .video_remote_container .clear:last');
+            view_sel.stop(true).hide().fadeIn(400);
+
+            if(nobody_sel.is(':visible')) {
+                nobody_sel.stop(true).fadeOut(250);
+            }
+        }
+
+        // IMPORTANT: return view selector
+        return view_sel[0];
     },
     
     remove_remote_view: function(_this) {
         console.log('remove_remote_view');
 
-        // TODO: animate & remove
+        var nobody_sel = $('#room_container h6');
+        var view_sel = $('#room_container video.video_remote').filter(function() {
+            return ($(this).attr('data-username') + '') === (username + '');
+        });
+
+        // Exists in view?
+        if(view_sel.size()) {
+            view_sel.stop(true).fadeOut(250, function() {
+                $(this).remove();
+
+                if(!$('#room_container video.video_remote').size() && nobody_sel.is(':hidden')) {
+                    nobody_sel.stop(true).fadeIn(400);
+                }
+            });
+        }
     }
 };
 
@@ -410,7 +440,6 @@ $(document).ready(function() {
                     ARGS.media        = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
                     ARGS.video_source = JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
                     ARGS.local_view   = document.getElementById('video_local');
-                    ARGS.remote_view  = document.getElementById('video_remote');
 
                     // Let's go!
                     JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_MUJI, ARGS);

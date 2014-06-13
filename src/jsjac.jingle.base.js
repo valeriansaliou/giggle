@@ -876,7 +876,10 @@ var __JSJaCJingleBase = ring.create({
     if(typeof this._remote_view[username] !== 'object')
       this._remote_view[username] = [];
 
-    this._remote_view[username].push(remote_view);
+    if(remote_view === null)
+      delete this._remote_view[username];
+    else
+      this._remote_view[username].push(remote_view);
   },
 
   /**
@@ -966,9 +969,13 @@ var __JSJaCJingleBase = ring.create({
    * @public
    */
   set_content_remote: function(username, name, content_remote) {
-    if(!(username in this._content_remote))  this._content_remote[username] = {};
+    this._set_tri_toggle(
+      this._content_remote,
 
-    this._content_remote[username][name] = content_remote;
+      username,
+      name,
+      content_remote
+    );
   },
 
   /**
@@ -976,9 +983,13 @@ var __JSJaCJingleBase = ring.create({
    * @public
    */
   set_payloads_remote: function(username, name, payload_data) {
-    if(!(username in this._payloads_remote))  this._payloads_remote[username] = {};
+    this._set_tri_toggle(
+      this._payloads_remote,
 
-    this._payloads_remote[username][name] = payload_data;
+      username,
+      name,
+      payload_data
+    );
   },
 
   /**
@@ -1011,9 +1022,13 @@ var __JSJaCJingleBase = ring.create({
    * @public
    */
   set_group_remote: function(username, semantics, group_data) {
-    if(!(username in this._group_remote))  this._group_remote[username] = {};
+    this._set_tri_toggle(
+      this._group_remote,
 
-    this._group_remote[username][semantics] = group_data;
+      username,
+      semantics,
+      group_data
+    );
   },
 
   /**
@@ -1021,9 +1036,13 @@ var __JSJaCJingleBase = ring.create({
    * @public
    */
   set_candidates_remote: function(username, name, candidate_data) {
-    if(!(username in this._candidates_remote))  this._candidates_remote[username] = {};
+    this._set_tri_toggle(
+      this._candidates_remote,
 
-    this._candidates_remote[username][name] = candidate_data;
+      username,
+      name,
+      candidate_data
+    );
   },
 
   /**
@@ -1031,12 +1050,13 @@ var __JSJaCJingleBase = ring.create({
    * @public
    */
   set_candidates_queue_remote: function(username, name, candidate_data) {
-    if(!(username in this._candidates_queue_remote))  this._candidates_queue_remote[username] = {};
+    this._set_tri_toggle(
+      this._candidates_queue_remote,
 
-    if(name === null)
-      this._candidates_queue_remote[username] = {};
-    else
-      this._candidates_queue_remote[username][name] = (candidate_data);
+      username,
+      name,
+      candidate_data
+    );
   },
 
   /**
@@ -1272,5 +1292,22 @@ var __JSJaCJingleBase = ring.create({
    */
   is_initiator: function() {
     return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
+  },
+
+  /**
+   * Shortcut for commonly used tri-set-toggle
+   * @private
+   */
+  _set_tri_toggle: function(db_obj, username, key, store_obj) {
+    if(!(username in db_obj))  db_obj[username] = {};
+
+    if(key === null) {
+      delete db_obj[username];
+    } else if(store_obj === null) {
+      if(key in db_obj[username])
+        delete db_obj[username][key];
+    } else {
+      db_obj[username][key] = store_obj;
+    }
   },
 });

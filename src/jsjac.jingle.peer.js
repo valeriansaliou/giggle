@@ -397,7 +397,7 @@ var JSJaCJinglePeer = ring.create({
 
       setTimeout(function() {
         // State did not change?
-        if(_this.parent.get_sid() == t_sid && _this.parent.get_peer_connection(_this.parent.get_to()).iceConnectionState == state) {
+        if(_this.parent.get_sid() == t_sid && _this.parent.get_peer_connection(username).iceConnectionState == state) {
           _this.parent.get_debug().log('[JSJaCJingle:peer] stanza_timeout > Peer timeout.', 2);
 
           // Error (transports are incompatible)

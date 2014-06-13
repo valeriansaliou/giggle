@@ -133,6 +133,8 @@ var NS_TELEPATHY_MUJI                               = 'http://telepathy.freedesk
 
 var NS_EXTDISCO                                     = 'urn:xmpp:extdisco:1';
 
+var NS_IETF_XMPP_STANZAS                            = 'urn:ietf:params:xml:ns:xmpp-stanzas';
+
 var NS_IETF_RFC_3264                                = 'urn:ietf:rfc:3264';
 var NS_IETF_RFC_5576                                = 'urn:ietf:rfc:5576';
 var NS_IETF_RFC_5888                                = 'urn:ietf:rfc:5888';
