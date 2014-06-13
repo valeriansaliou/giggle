@@ -37,7 +37,6 @@ module.exports = function(grunt) {
     'src/jsjac.jingle.constants.js',
     'src/jsjac.jingle.utils.js',
     'src/jsjac.jingle.sdp.js',
-    'src/jsjac.jingle.peer.js',
     'src/jsjac.jingle.base.js',
     'src/jsjac.jingle.single.js',
     'src/jsjac.jingle.muji.js',

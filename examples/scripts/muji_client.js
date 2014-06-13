@@ -277,7 +277,12 @@ var ARGS = {
                     nobody_sel.stop(true).fadeIn(400);
                 }
             });
+
+            // IMPORTANT: return view selector
+            return view_sel[0];
         }
+
+        return null;
     }
 };
 

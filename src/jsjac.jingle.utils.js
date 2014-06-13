@@ -337,6 +337,8 @@ var JSJaCJingleUtils = ring.create({
     if(!stanza)        return matches_result;
     if(stanza.length)  stanza = stanza[0];
 
+    ns = (ns || '*');
+
     try {
       var i;
 
@@ -365,7 +367,7 @@ var JSJaCJingleUtils = ring.create({
    */
   stanza_jingle: function(stanza) {    
     try {
-      return stanza.getChild('jingle', NS_JINGLE);
+      return stanza.getChild('jingle', this.parent.get_namespace());
     } catch(e) {
       this.parent.get_debug().log('[JSJaCJingle:utils] stanza_jingle > ' + e, 1);
     }
@@ -444,13 +446,13 @@ var JSJaCJingleUtils = ring.create({
       var jingle = this.stanza_jingle(stanza);
 
       if(jingle) {
-        var reason = this.stanza_get_element(jingle, 'reason', NS_JINGLE);
+        var reason = this.stanza_get_element(jingle, 'reason', this.parent.get_namespace());
 
         if(reason.length) {
           var cur_reason;
 
           for(cur_reason in JSJAC_JINGLE_REASONS) {
-            if(this.stanza_get_element(reason[0], cur_reason, NS_JINGLE).length)
+            if(this.stanza_get_element(reason[0], cur_reason, this.parent.get_namespace()).length)
               return cur_reason;
           }
         }
@@ -571,16 +573,27 @@ var JSJaCJingleUtils = ring.create({
   stanza_parse_content: function(username, stanza) {    
     try {
       var i,
-          jingle, content, cur_content,
+          jingle, namespace, content, cur_content,
           content_creator, content_name, content_senders,
           cur_candidates;
 
       // Parse initiate stanza
-      jingle = this.stanza_jingle(stanza);
+      switch(stanza.name) {
+        case JSJAC_JINGLE_STANZA_IQ:
+          // Jingle elements are encapsulated into IQs
+          jingle = this.stanza_jingle(stanza); break;
+
+        case JSJAC_JINGLE_STANZA_PRESENCE:
+          // Muji elements are encapsulated into Presences
+          jingle = this.stanza_muji(stanza); break;
+
+        default:
+          throw 'Stanza is not Jingle, nor Muji.'
+      }
 
       if(jingle) {
         // Childs
-        content = this.stanza_get_element(jingle, 'content', NS_JINGLE);
+        content = this.stanza_get_element(jingle, 'content', this.parent.get_namespace());
 
         if(content && content.length) {
           for(i = 0; i < content.length; i++) {
@@ -591,12 +604,12 @@ var JSJaCJingleUtils = ring.create({
             content_senders = this.parent.get_senders(content_name) || this.stanza_get_attribute(cur_content, 'senders');
             content_creator = this.parent.get_creator(content_name) || this.stanza_get_attribute(cur_content, 'creator');
 
-            this.parent.set_name(content_name);
-            this.parent.set_senders(content_name, content_senders);
-            this.parent.set_creator(content_name, content_creator);
+            this.parent._set_name(content_name);
+            this.parent._set_senders(content_name, content_senders);
+            this.parent._set_creator(content_name, content_creator);
 
             // Payloads (non-destructive setters / cumulative)
-            this.parent.set_payloads_remote_add(
+            this.parent._set_payloads_remote_add(
               username,
               content_name,
               this.stanza_parse_payload(cur_content)
@@ -605,13 +618,13 @@ var JSJaCJingleUtils = ring.create({
             // Candidates (enqueue them for ICE processing, too)
             cur_candidate = this.stanza_parse_candidate(cur_content);
 
-            this.parent.set_candidates_remote_add(
+            this.parent._set_candidates_remote_add(
               username,
               content_name,
               cur_candidate
             );
 
-            this.parent.set_candidates_queue_remote(
+            this.parent._set_candidates_queue_remote(
               username,
               content_name,
               cur_candidate
@@ -668,7 +681,7 @@ var JSJaCJingleUtils = ring.create({
             }
 
             // Payloads (non-destructive setters / cumulative)
-            this.parent.set_group_remote(
+            this.parent._set_group_remote(
               username,
               group_semantics,
               group_content_names
@@ -1043,7 +1056,7 @@ var JSJaCJingleUtils = ring.create({
     try {
       var cur_attr;
 
-      jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', { 'xmlns': NS_JINGLE }));
+      jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', { 'xmlns': this.parent.get_namespace() }));
 
       if(!attrs.sid) attrs.sid = this.parent.get_sid();
 
@@ -1137,7 +1150,7 @@ var JSJaCJingleUtils = ring.create({
       for(cur_media in content_local) {
         var cur_content = content_local[cur_media];
 
-        var content = jingle.appendChild(stanza.buildNode('content', { 'xmlns': NS_JINGLE }));
+        var content = jingle.appendChild(stanza.buildNode('content', { 'xmlns': this.parent.get_namespace() }));
 
         this.stanza_set_attribute(content, 'creator', cur_content.creator);
         this.stanza_set_attribute(content, 'name',    cur_content.name);
@@ -1482,7 +1495,7 @@ var JSJaCJingleUtils = ring.create({
       var cur_name;
 
       for(cur_name in this.parent.get_name()) {
-        this.parent.set_content_local(
+        this.parent._set_content_local(
           cur_name,
 
           this.generate_content(
@@ -1508,7 +1521,7 @@ var JSJaCJingleUtils = ring.create({
       var cur_name;
 
       for(cur_name in this.parent.get_name()) {
-        this.parent.set_content_remote(
+        this.parent._set_content_remote(
           username,
           cur_name,
 
@@ -1850,7 +1863,7 @@ var JSJaCJingleUtils = ring.create({
         cur_candidate = candidates[i];
 
         if(cur_candidate.id == media || cur_candidate.label == media) {
-          cur_candidate_parse = this.parent.sdp.parse_candidate(cur_candidate.candidate);
+          cur_candidate_parse = this.parent.sdp._parse_candidate(cur_candidate.candidate);
 
           if(cur_candidate_parse.type === JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST) {
             // Only proceed if no local network yet
@@ -1952,17 +1965,17 @@ var JSJaCJingleUtils = ring.create({
           fn.type       = type;
           fn.mute       = true;
           fn.view.get   = this.parent.get_local_view;
-          fn.view.set   = this.parent.set_local_view;
+          fn.view.set   = this.parent._set_local_view;
           fn.stream.get = this.parent.get_local_stream;
-          fn.stream.set = this.parent.set_local_stream;
+          fn.stream.set = this.parent._set_local_stream;
           break;
 
         case JSJAC_JINGLE_DIRECTION_REMOTE:
           fn.type       = type;
           fn.view.get   = this.parent.get_remote_view;
-          fn.view.set   = this.parent.set_remote_view;
+          fn.view.set   = this.parent._set_remote_view;
           fn.stream.get = this.parent.get_remote_stream;
-          fn.stream.set = this.parent.set_remote_stream;
+          fn.stream.set = this.parent._set_remote_stream;
           break;
       }
     } catch(e) {

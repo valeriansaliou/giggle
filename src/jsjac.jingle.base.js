@@ -34,7 +34,6 @@ var __JSJaCJingleBase = ring.create({
   constructor: function(args) {
     this.utils  = new JSJaCJingleUtils(this);
     this.sdp    = new JSJaCJingleSDP(this);
-    this.peer   = new JSJaCJinglePeer(this);
 
     if(args && args.to)
       /**
@@ -122,6 +121,26 @@ var __JSJaCJingleBase = ring.create({
        */
       this._debug = JSJAC_JINGLE_STORE_DEBUG;
     }
+
+    /**
+     * @private
+     */
+    this._initiator = '';
+
+    /**
+     * @private
+     */
+    this._responder = '';
+
+    /**
+     * @private
+     */
+    this._creator = {};
+
+    /**
+     * @private
+     */
+    this._senders = {};
 
     /**
      * @private
@@ -250,27 +269,27 @@ var __JSJaCJingleBase = ring.create({
    * @public
    */
   register_handler: function(type, id, fn) {
-    this.get_debug().log('[JSJaCJingle:single] register_handler', 4);
+    this.get_debug().log('[JSJaCJingle:base] register_handler', 4);
 
     try {
       type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
 
       if(typeof fn !== 'function') {
-        this.get_debug().log('[JSJaCJingle:single] register_handler > fn parameter not passed or not a function!', 1);
+        this.get_debug().log('[JSJaCJingle:base] register_handler > fn parameter not passed or not a function!', 1);
         return false;
       }
 
       if(id) {
-        this.set_handlers(type, id, fn);
+        this._set_handlers(type, id, fn);
 
-        this.get_debug().log('[JSJaCJingle:single] register_handler > Registered handler for id: ' + id + ' and type: ' + type, 3);
+        this.get_debug().log('[JSJaCJingle:base] register_handler > Registered handler for id: ' + id + ' and type: ' + type, 3);
         return true;
       } else {
-        this.get_debug().log('[JSJaCJingle:single] register_handler > Could not register handler (no ID).', 1);
+        this.get_debug().log('[JSJaCJingle:base] register_handler > Could not register handler (no ID).', 1);
         return false;
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] register_handler > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] register_handler > ' + e, 1);
     }
 
     return false;
@@ -281,7 +300,7 @@ var __JSJaCJingleBase = ring.create({
    * @public
    */
   unregister_handler: function(type, id) {
-    this.get_debug().log('[JSJaCJingle:single] unregister_handler', 4);
+    this.get_debug().log('[JSJaCJingle:base] unregister_handler', 4);
 
     try {
       type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
@@ -289,14 +308,14 @@ var __JSJaCJingleBase = ring.create({
       if(type in this._handlers && id in this._handlers[type]) {
         delete this._handlers[type][id];
 
-        this.get_debug().log('[JSJaCJingle:single] unregister_handler > Unregistered handler for id: ' + id + ' and type: ' + type, 3);
+        this.get_debug().log('[JSJaCJingle:base] unregister_handler > Unregistered handler for id: ' + id + ' and type: ' + type, 3);
         return true;
       } else {
-        this.get_debug().log('[JSJaCJingle:single] unregister_handler > Could not unregister handler with id: ' + id + ' and type: ' + type + ' (not found).', 2);
+        this.get_debug().log('[JSJaCJingle:base] unregister_handler > Could not unregister handler with id: ' + id + ' and type: ' + type + ' (not found).', 2);
         return false;
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] unregister_handler > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] unregister_handler > ' + e, 1);
     }
 
     return false;
@@ -307,7 +326,7 @@ var __JSJaCJingleBase = ring.create({
    * @public
    */
   register_view: function(username, type, view) {
-    this.get_debug().log('[JSJaCJingle:single] register_view', 4);
+    this.get_debug().log('[JSJaCJingle:base] register_view', 4);
 
     try {
       // Get view functions
@@ -319,7 +338,7 @@ var __JSJaCJingleBase = ring.create({
         // Check view is not already registered
         for(i in (fn.view.get)(username)) {
           if((fn.view.get)(username)[i] == view) {
-            this.get_debug().log('[JSJaCJingle:single] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
+            this.get_debug().log('[JSJaCJingle:base] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
             return true;
           }
         }
@@ -327,21 +346,21 @@ var __JSJaCJingleBase = ring.create({
         // Proceeds registration
         (fn.view.set)(username, view);
 
-        this.utils.peer_stream_attach(
+        this.utils._peer_stream_attach(
           [view],
           (fn.stream.get)(username),
           fn.mute
         );
 
-        this.get_debug().log('[JSJaCJingle:single] register_view > Registered view of type: ' + type, 3);
+        this.get_debug().log('[JSJaCJingle:base] register_view > Registered view of type: ' + type, 3);
 
         return true;
       } else {
-        this.get_debug().log('[JSJaCJingle:single] register_view > Could not register view of type: ' + type + ' (type unknown).', 1);
+        this.get_debug().log('[JSJaCJingle:base] register_view > Could not register view of type: ' + type + ' (type unknown).', 1);
         return false;
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] register_view > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] register_view > ' + e, 1);
     }
 
     return false;
@@ -352,7 +371,7 @@ var __JSJaCJingleBase = ring.create({
    * @public
    */
   unregister_view: function(username, type, view) {
-    this.get_debug().log('[JSJaCJingle:single] unregister_view', 4);
+    this.get_debug().log('[JSJaCJingle:base] unregister_view', 4);
 
     try {
       // Get view functions
@@ -365,7 +384,7 @@ var __JSJaCJingleBase = ring.create({
         for(i in (fn.view.get)(username)) {
           if((fn.view.get)(username)[i] == view) {
             // Proceeds un-registration
-            this.utils.peer_stream_detach(
+            this.utils._peer_stream_detach(
               [view]
             );
 
@@ -374,19 +393,19 @@ var __JSJaCJingleBase = ring.create({
               view
             );
 
-            this.get_debug().log('[JSJaCJingle:single] unregister_view > Unregistered view of type: ' + type, 3);
+            this.get_debug().log('[JSJaCJingle:base] unregister_view > Unregistered view of type: ' + type, 3);
             return true;
           }
         }
 
-        this.get_debug().log('[JSJaCJingle:single] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
+        this.get_debug().log('[JSJaCJingle:base] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
         return true;
       } else {
-        this.get_debug().log('[JSJaCJingle:single] unregister_view > Could not unregister view of type: ' + type + ' (type unknown).', 1);
+        this.get_debug().log('[JSJaCJingle:base] unregister_view > Could not unregister view of type: ' + type + ' (type unknown).', 1);
         return false;
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:single] unregister_view > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] unregister_view > ' + e, 1);
     }
 
     return false;
@@ -395,8 +414,413 @@ var __JSJaCJingleBase = ring.create({
 
 
   /**
+   * JSJSAC JINGLE PEER TOOLS
+   */
+
+  /**
+   * Creates a new peer connection
+   * @private
+   */
+  _peer_connection_create: function(username, sdp_message_callback) {
+    this.get_debug().log('[JSJaCJingle:base] _peer_connection_create', 4);
+
+    try {
+      // Create peer connection instance
+      this._peer_connection_create_instance(username);
+
+      // Event callbacks
+      var _this = this;
+
+      this.get_peer_connection(username).onicecandidate = function(e) {
+        _this._peer_connection_callback_onicecandidate.bind(this)(_this, sdp_message_callback, e);
+      };
+
+      this.get_peer_connection(username).oniceconnectionstatechange = function(e) {
+        _this._peer_connection_callback_oniceconnectionstatechange.bind(this)(_this, username, e);
+      };
+
+      this.get_peer_connection(username).onaddstream = function(e) {
+        _this._peer_connection_callback_onaddstream.bind(this)(_this, username, e);
+      };
+
+      this.get_peer_connection(username).onremovestream = function(e) {
+        _this._peer_connection_callback_onremovestream.bind(this)(_this, username, e);
+      };
+
+      // Add local stream
+      this._peer_connection_create_local_stream(username);
+
+      // Create offer
+      this._peer_connection_create_offer(username);
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _peer_connection_create > ' + e, 1);
+    }
+  },
+
+  /**
+   * Creates peer connection instance
+   * @private
+   */
+  _peer_connection_create_instance: function(username) {
+    this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_instance', 4);
+
+    try {
+      // Log STUN servers in use
+      var i;
+      var ice_config = this.utils.config_ice();
+
+      if(typeof ice_config.iceServers == 'object') {
+        for(i = 0; i < (ice_config.iceServers).length; i++)
+          this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_instance > Using ICE server at: ' + ice_config.iceServers[i].url + ' (' + (i + 1) + ').', 2);
+      } else {
+        this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_instance > No ICE server configured. Network may not work properly.', 0);
+      }
+
+      // Create the RTCPeerConnection object
+      this._set_peer_connection(
+        username,
+
+        new WEBRTC_PEER_CONNECTION(
+          ice_config,
+          WEBRTC_CONFIGURATION.peer_connection.constraints
+        )
+      );
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_instance > ' + e, 1);
+    }
+  },
+
+  /**
+   * Generates peer connection callback for 'oniceconnectionstatechange'
+   * @private
+   */
+  _peer_connection_callback_oniceconnectionstatechange: function(_this, username, e) {
+    _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_oniceconnectionstatechange', 4);
+
+    try {
+      // Connection errors?
+      switch(this.iceConnectionState) {
+        case 'disconnected':
+          _this._peer_timeout(username, this.iceConnectionState, {
+            timer  : JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT,
+            reason : JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR
+          });
+          break;
+
+        case 'checking':
+          _this._peer_timeout(username, this.iceConnectionState); break;
+      }
+
+      _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_oniceconnectionstatechange > (state: ' + this.iceConnectionState + ').', 2);
+    } catch(e) {
+      _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_oniceconnectionstatechange > ' + e, 1);
+    }
+  },
+
+  /**
+   * Generates peer connection callback for 'onaddstream'
+   * @private
+   */
+  _peer_connection_callback_onaddstream: function(_this, username, e) {
+    _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onaddstream', 4);
+
+    try {
+      if(!e) {
+        _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onaddstream > No data passed, dropped.', 2); return;
+      }
+
+      // Attach remote stream to DOM view
+      _this._set_remote_stream(username, e.stream);
+    } catch(e) {
+      _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onaddstream > ' + e, 1);
+    }
+  },
+
+  /**
+   * Generates peer connection callback for 'onremovestream'
+   * @private
+   */
+  _peer_connection_callback_onremovestream: function(_this, username, e) {
+    _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onremovestream', 4);
+
+    try {
+      // Detach remote stream from DOM view
+      _this._set_remote_stream(username, null);
+    } catch(e) {
+      _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onremovestream > ' + e, 1);
+    }
+  },
+
+  /**
+   * Creates peer connection local stream
+   * @private
+   */
+  _peer_connection_create_local_stream: function(username) {
+    this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_local_stream', 4);
+
+    try {
+      this.get_peer_connection(username).addStream(
+        this.get_local_stream()
+    	);
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_local_stream > ' + e, 1);
+    }
+  },
+
+  /**
+   * Requests the user media (audio/video)
+   * @private
+   */
+  _peer_get_user_media: function(callback) {
+    this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media', 4);
+
+    try {
+      this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media > Getting user media...', 2);
+
+      (WEBRTC_GET_MEDIA.bind(navigator))(
+        this.utils.generate_constraints(),
+        this._peer_got_user_media_success.bind(this, callback),
+        this._peer_got_user_media_error.bind(this)
+      );
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media > ' + e, 1);
+    }
+  },
+
+  /**
+   * Triggers the media obtained success event
+   * @private
+   */
+  _peer_got_user_media_success: function(callback, stream) {
+    this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success', 4);
+
+    try {
+      this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success > Got user media.', 2);
+
+      this._set_local_stream(stream);
+
+      if(callback && typeof callback == 'function') {
+        if((this.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) && this.get_local_view().length) {
+          this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
+
+          var _this = this;
+
+          var fn_loaded = function() {
+            _this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success > Local video loaded.', 2);
+
+            this.removeEventListener('loadeddata', fn_loaded, false);
+            callback();
+          };
+
+          _this.get_local_view()[0].addEventListener('loadeddata', fn_loaded, false);
+        } else {
+          callback();
+        }
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success > ' + e, 1);
+    }
+  },
+
+  /**
+   * Triggers the SDP description retrieval success event
+   * @private
+   */
+  _peer_got_description: function(username, sdp_local) {
+    this.get_debug().log('[JSJaCJingle:base] _peer_got_description', 4);
+
+    try {
+      this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Got local description.', 2);
+
+      if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:raw)' + '\n\n' + sdp_local.sdp, 4);
+
+      // Convert SDP raw data to an object
+      var cur_name;
+      var payload_parsed = this.sdp._parse_payload(sdp_local.sdp);
+      this.sdp._resolution_payload(payload_parsed);
+
+      for(cur_name in payload_parsed) {
+        this._set_payloads_local(
+          cur_name,
+          payload_parsed[cur_name]
+        );
+      }
+
+      var cur_semantics;
+      var group_parsed = this.sdp._parse_group(sdp_local.sdp);
+
+      for(cur_semantics in group_parsed) {
+        this._set_group_local(
+          cur_semantics,
+          group_parsed[cur_semantics]
+        );
+      }
+
+      // Filter our local description (remove unused medias)
+      var sdp_local_desc = this.sdp._generate_description(
+        sdp_local.type,
+        this.get_group_local(),
+        this.get_payloads_local(),
+
+        this.sdp._generate_candidates(
+          this.get_candidates_local()
+        )
+      );
+
+      if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
+
+      var _this = this;
+
+      this.get_peer_connection(username).setLocalDescription(
+        (new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)),
+
+        function() {
+          // Success (descriptions are compatible)
+        },
+
+        function(e) {
+          if(_this.get_sdp_trace())  _this.get_debug().log('[JSJaCJingle:base] _peer_got_description >SDP (local:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+
+          // Error (descriptions are incompatible)
+        }
+      );
+
+      this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Waiting for local candidates...', 2);
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _peer_got_description > ' + e, 1);
+    }
+  },
+
+  /**
+   * Triggers the SDP description not retrieved error event
+   * @private
+   */
+  _peer_fail_description: function() {
+    this.get_debug().log('[JSJaCJingle:base] _peer_fail_description', 4);
+
+    try {
+      this.get_debug().log('[JSJaCJingle:base] _peer_fail_description > Could not get local description!', 1);
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _peer_fail_description > ' + e, 1);
+    }
+  },
+
+  /**
+   * Enables/disables the local stream sound
+   * @private
+   */
+  _peer_sound: function(enable) {
+    this.get_debug().log('[JSJaCJingle:base] _peer_sound', 4);
+
+    try {
+      this.get_debug().log('[JSJaCJingle:base] _peer_sound > Enable: ' + enable, 2);
+
+      var i;
+      var audio_tracks = this.get_local_stream().getAudioTracks();
+
+      for(i = 0; i < audio_tracks.length; i++)
+        audio_tracks[i].enabled = enable;
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _peer_sound > ' + e, 1);
+    }
+  },
+
+  /**
+   * Attaches given stream to given DOM element
+   * @private
+   */
+  _peer_stream_attach: function(element, stream, mute) {
+    try {
+      var i;
+      var stream_src = stream ? URL.createObjectURL(stream) : '';
+
+      for(i in element) {
+        element[i].src = stream_src;
+
+        if(navigator.mozGetUserMedia)
+          element[i].play();
+        else
+          element[i].autoplay = true;
+
+        if(typeof mute == 'boolean') element[i].muted = mute;
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _peer_stream_attach > ' + e, 1);
+    }
+  },
+
+  /**
+   * Detaches stream from given DOM element
+   * @private
+   */
+  _peer_stream_detach: function(element) {
+    try {
+      var i;
+
+      for(i in element) {
+        element[i].pause();
+        element[i].src = '';
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _peer_stream_detach > ' + e, 1);
+    }
+  },
+
+
+
+  /**
+   * JSJSAC JINGLE SHORTCUTS
+   */
+
+  /**
+   * Am I responder?
+   * @public
+   * @returns {boolean} Receiver state
+   */
+  is_responder: function() {
+    return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
+  },
+
+  /**
+   * Am I initiator?
+   * @public
+   * @returns {boolean} Initiator state
+   */
+  is_initiator: function() {
+    return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
+  },
+
+  /**
+   * Shortcut for commonly used tri-set-toggle
+   * @private
+   */
+  _tri_toggle_set: function(db_obj, username, key, store_obj) {
+    if(!(username in db_obj))  db_obj[username] = {};
+
+    if(key === null) {
+      delete db_obj[username];
+    } else if(store_obj === null) {
+      if(key in db_obj[username])
+        delete db_obj[username][key];
+    } else {
+      db_obj[username][key] = store_obj;
+    }
+  },
+
+
+
+  /**
    * JSJSAC JINGLE GETTERS
    */
+
+  /**
+   * Gets the namespace
+   * @public
+   * @returns {string} Namespace value
+   */
+  get_namespace: function() {
+    return this._namespace;
+  },
 
   /**
    * Gets the local stream
@@ -507,7 +931,7 @@ var __JSJaCJingleBase = ring.create({
     if(username)
         return this._payloads_remote[username];
 
-    return this._payloads_remote
+    return this._payloads_remote;
   },
 
   /**
@@ -586,7 +1010,7 @@ var __JSJaCJingleBase = ring.create({
    */
   get_id_new: function() {
     var trans_id = this.get_id() + 1;
-    this.set_id(trans_id);
+    this._set_id(trans_id);
 
     return this.get_id_pre() + trans_id;
   },
@@ -682,6 +1106,57 @@ var __JSJaCJingleBase = ring.create({
    */
   get_to: function() {
     return this._to;
+  },
+
+  /**
+   * Gets the initiator value
+   * @public
+   * @returns {string} Initiator value
+   */
+  get_initiator: function() {
+    return this._initiator;
+  },
+
+  /**
+   * Gets the responder value
+   * @public
+   * @returns {string} Responder value
+   */
+  get_responder: function() {
+    return this._responder;
+  },
+
+  /**
+   * Gets the creator value
+   * @public
+   * @returns {string} Creator value
+   */
+  get_creator: function(name) {
+    if(name)
+      return (name in this._creator) ? this._creator[name] : null;
+
+    return this._creator;
+  },
+
+  /**
+   * Gets the creator value (for this)
+   * @public
+   * @returns {string} Creator value
+   */
+  get_creator_this: function(name) {
+    return this.get_responder() == this.get_to() ? JSJAC_JINGLE_CREATOR_INITIATOR : JSJAC_JINGLE_CREATOR_RESPONDER;
+  },
+
+  /**
+   * Gets the senders value
+   * @public
+   * @returns {string} Senders value
+   */
+  get_senders: function(name) {
+    if(name)
+      return (name in this._senders) ? this._senders[name] : null;
+
+    return this._senders;
   },
 
   /**
@@ -825,13 +1300,14 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the local stream
+   * @private
    */
-  set_local_stream: function(local_stream) {
+  _set_local_stream: function(local_stream) {
     try {
       if(!local_stream && this._local_stream) {
         (this._local_stream).stop();
 
-        this.peer.stream_detach(
+        this._peer_stream_detach(
           this.get_local_view()
         );
       }
@@ -839,26 +1315,26 @@ var __JSJaCJingleBase = ring.create({
       this._local_stream = local_stream;
 
       if(local_stream) {
-        this.peer.stream_attach(
+        this._peer_stream_attach(
           this.get_local_view(),
           this.get_local_stream(),
           true
         );
       } else {
-        this.peer.stream_detach(
+        this._peer_stream_detach(
           this.get_local_view()
         );
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:base] set_local_stream > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] _set_local_stream > ' + e, 1);
     }
   },
 
   /**
    * Sets the local view
-   * @public
+   * @private
    */
-  set_local_view: function(local_view) {
+  _set_local_view: function(local_view) {
     if(typeof this._local_view !== 'object')
       this._local_view = [];
 
@@ -867,9 +1343,9 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the remote view
-   * @public
+   * @private
    */
-  set_remote_view: function(username, remote_view) {
+  _set_remote_view: function(username, remote_view) {
     if(typeof this._remote_view !== 'object')
       this._remote_view = {};
 
@@ -883,26 +1359,48 @@ var __JSJaCJingleBase = ring.create({
   },
 
   /**
-   * Sets the local payload
-   * @public
+   * Pops the given remote view
+   * @private
    */
-  set_payloads_local: function(name, payload_data) {
+  _set_remote_view_pop: function(username, remote_view_pop) {
+  	var i,
+  	    remote_views, cur_remote_view,
+  	    remote_views_new;
+
+  	remote_views = this.get_remote_view(username);
+  	remote_views_new = [];
+
+  	for(i = 0; i < remote_views.length; i++) {
+  		cur_remote_view = remote_views[i];
+
+  		if(cur_remote_view !== remote_view_pop)
+  			remote_views_new.push(cur_remote_view);
+  	}
+
+  	this._remote_view[username] = remote_views_new;
+  },
+
+  /**
+   * Sets the local payload
+   * @private
+   */
+  _set_payloads_local: function(name, payload_data) {
     this._payloads_local[name] = payload_data;
   },
 
   /**
    * Sets the local group
-   * @public
+   * @private
    */
-  set_group_local: function(semantics, group_data) {
+  _set_group_local: function(semantics, group_data) {
     this._group_local[semantics] = group_data;
   },
 
   /**
    * Sets the local candidates
-   * @public
+   * @private
    */
-  set_candidates_local: function(name, candidate_data) {
+  _set_candidates_local: function(name, candidate_data) {
     if(!(name in this._candidates_local))  this._candidates_local[name] = [];
 
     (this._candidates_local[name]).push(candidate_data);
@@ -910,9 +1408,9 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the local candidates queue
-   * @public
+   * @private
    */
-  set_candidates_queue_local: function(name, candidate_data) {
+  _set_candidates_queue_local: function(name, candidate_data) {
     try {
       if(name === null) {
         this._candidates_queue_local = {};
@@ -922,54 +1420,24 @@ var __JSJaCJingleBase = ring.create({
         (this._candidates_queue_local[name]).push(candidate_data);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:base] set_candidates_queue_local > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] _set_candidates_queue_local > ' + e, 1);
     }
   },
 
   /**
    * Sets the local content
-   * @public
+   * @private
    */
-  set_content_local: function(name, content_local) {
+  _set_content_local: function(name, content_local) {
     this._content_local[name] = content_local;
   },
 
   /**
-   * Sets the remote stream
-   * @public
-   */
-  set_remote_stream: function(username, remote_stream) {
-    try {
-      if(!remote_stream && this._remote_stream[username]) {
-        this.peer.stream_detach(
-          this.get_remote_view(username)
-        );
-      }
-
-      this._remote_stream[username] = remote_stream;
-
-      if(remote_stream) {
-        this.peer.stream_attach(
-          this.get_remote_view(username),
-          this.get_remote_stream(username),
-          false
-        );
-      } else {
-        this.peer.stream_detach(
-          this.get_remote_view(username)
-        );
-      }
-    } catch(e) {
-      this.get_debug().log('[JSJaCJingle:base] set_remote_stream > ' + e, 1);
-    }
-  },
-
-  /**
    * Sets the remote content
-   * @public
+   * @private
    */
-  set_content_remote: function(username, name, content_remote) {
-    this._set_tri_toggle(
+  _set_content_remote: function(username, name, content_remote) {
+    this._tri_toggle_set(
       this._content_remote,
 
       username,
@@ -980,10 +1448,10 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the remote payloads
-   * @public
+   * @private
    */
-  set_payloads_remote: function(username, name, payload_data) {
-    this._set_tri_toggle(
+  _set_payloads_remote: function(username, name, payload_data) {
+    this._tri_toggle_set(
       this._payloads_remote,
 
       username,
@@ -994,14 +1462,14 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Adds a remote payload
-   * @public
+   * @private
    */
-  set_payloads_remote_add: function(username, name, payload_data) {
+  _set_payloads_remote_add: function(username, name, payload_data) {
     try {
       if(!(username in this._payloads_remote))  this._payloads_remote[username] = {};
 
       if(!(name in this._payloads_remote[username])) {
-        this.set_payloads_remote(username, name, payload_data);
+        this._set_payloads_remote(username, name, payload_data);
       } else {
         var key;
         var payloads_store = this._payloads_remote[username][name].descriptions.payload;
@@ -1013,16 +1481,16 @@ var __JSJaCJingleBase = ring.create({
         }
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:base] set_payloads_remote_add > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] _set_payloads_remote_add > ' + e, 1);
     }
   },
 
   /**
    * Sets the remote group
-   * @public
+   * @private
    */
-  set_group_remote: function(username, semantics, group_data) {
-    this._set_tri_toggle(
+  _set_group_remote: function(username, semantics, group_data) {
+    this._tri_toggle_set(
       this._group_remote,
 
       username,
@@ -1033,10 +1501,10 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the remote candidates
-   * @public
+   * @private
    */
-  set_candidates_remote: function(username, name, candidate_data) {
-    this._set_tri_toggle(
+  _set_candidates_remote: function(username, name, candidate_data) {
+    this._tri_toggle_set(
       this._candidates_remote,
 
       username,
@@ -1047,10 +1515,10 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the session initiate pending callback function
-   * @public
+   * @private
    */
-  set_candidates_queue_remote: function(username, name, candidate_data) {
-    this._set_tri_toggle(
+  _set_candidates_queue_remote: function(username, name, candidate_data) {
+    this._tri_toggle_set(
       this._candidates_queue_remote,
 
       username,
@@ -1061,16 +1529,16 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Adds a remote candidate
-   * @public
+   * @private
    */
-  set_candidates_remote_add: function(username, name, candidate_data) {
+  _set_candidates_remote_add: function(username, name, candidate_data) {
     try {
       if(!name) return;
 
       if(!(username in this._candidates_remote))  this._candidates_remote[username] = {};
 
       if(!(name in this._candidates_remote[username]))
-        this.set_candidates_remote(username, name, []);
+        this._set_candidates_remote(username, name, []);
    
       var c, i;
       var candidate_ids = [];
@@ -1083,47 +1551,47 @@ var __JSJaCJingleBase = ring.create({
           this.get_candidates_remote(username, name).push(candidate_data[i]);
       }
     } catch(e) {
-      this.get_debug().log('[JSJaCJingle:base] set_candidates_remote_add > ' + e, 1);
+      this.get_debug().log('[JSJaCJingle:base] _set_candidates_remote_add > ' + e, 1);
     }
   },
 
   /**
    * Sets the peer connection
-   * @public
+   * @private
    */
-  set_peer_connection: function(username, peer_connection) {
+  _set_peer_connection: function(username, peer_connection) {
     this._peer_connection[username] = peer_connection;
   },
 
   /**
    * Sets the ID
-   * @public
+   * @private
    */
-  set_id: function(id) {
+  _set_id: function(id) {
     this._id = id;
   },
 
   /**
    * Sets the sent ID
-   * @public
+   * @private
    */
-  set_sent_id: function(sent_id) {
+  _set_sent_id: function(sent_id) {
     this._sent_id[sent_id] = 1;
   },
 
   /**
    * Sets the last received ID
-   * @public
+   * @private
    */
-  set_received_id: function(received_id) {
+  _set_received_id: function(received_id) {
     this._received_id[received_id] = 1;
   },
 
   /**
    * Sets the stanza handlers
-   * @public
+   * @private
    */
-  set_handlers: function(type, id, handler) {
+  _set_handlers: function(type, id, handler) {
     if(!(type in this._handlers))  this._handlers[type] = {};
 
     this._handlers[type][id] = handler;
@@ -1131,9 +1599,9 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the mute state
-   * @public
+   * @private
    */
-  set_mute: function(name, mute) {
+  _set_mute: function(name, mute) {
     if(!name || name == '*') {
       this._mute = {};
       name = '*';
@@ -1144,105 +1612,141 @@ var __JSJaCJingleBase = ring.create({
 
   /**
    * Sets the lock value
-   * @public
+   * @private
    */
-  set_lock: function(lock) {
+  _set_lock: function(lock) {
     this._lock = lock;
   },
 
   /**
    * Gets the media busy value
-   * @public
+   * @private
    */
-  set_media_busy: function(busy) {
+  _set_media_busy: function(busy) {
     this._media_busy = busy;
   },
 
   /**
    * Sets the session ID
-   * @public
+   * @private
    */
-  set_sid: function(sid) {
+  _set_sid: function(sid) {
     this._sid = sid;
   },
 
   /**
    * Sets the session status
-   * @public
+   * @private
    */
-  set_status: function(status) {
+  _set_status: function(status) {
     this._status = status;
   },
 
   /**
    * Sets the session to value
-   * @public
+   * @private
    */
-  set_to: function(to) {
+  _set_to: function(to) {
     this._to = to;
   },
 
   /**
-   * Sets the session media
-   * @public
+   * Sets the session initiator
+   * @private
    */
-  set_media: function(media) {
+  _set_initiator: function(initiator) {
+    this._initiator = initiator;
+  },
+
+  /**
+   * Sets the session responder
+   * @private
+   */
+  _set_responder: function(responder) {
+    this._responder = responder;
+  },
+
+  /**
+   * Sets the session creator
+   * @private
+   */
+  _set_creator: function(name, creator) {
+    if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
+
+    this._creator[name] = creator;
+  },
+
+   /**
+   * Sets the session senders
+   * @private
+   */
+  _set_senders: function(name, senders) {
+    if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
+
+    this._senders[name] = senders;
+  },
+
+  /**
+   * Sets the session media
+   * @private
+   */
+  _set_media: function(media) {
     this._media = media;
   },
 
   /**
    * Sets the video source
-   * @public
+   * @private
    */
-  set_video_source: function() {
+  _set_video_source: function() {
     this._video_source = video_source;
   },
 
   /**
    * Sets the video resolution
-   * @public
+   * @private
    */
-  set_resolution: function(resolution) {
+  _set_resolution: function(resolution) {
     this._resolution = resolution;
   },
 
   /**
    * Sets the video bandwidth
-   * @public
+   * @private
    */
-  set_bandwidth: function(bandwidth) {
+  _set_bandwidth: function(bandwidth) {
     this._bandwidth = bandwidth;
   },
 
   /**
    * Sets the video FPS
-   * @public
+   * @private
    */
-  set_fps: function(fps) {
+  _set_fps: function(fps) {
     this._fps = fps;
   },
 
   /**
    * Sets the source name
-   * @public
+   * @private
    */
-  set_name: function(name) {
+  _set_name: function(name) {
     this._name[name] = 1;
   },
 
   /**
    * Sets the STUN server address
-   * @public
+   * @private
    */
-  set_stun: function(stun_host, stun_data) {
+  _set_stun: function(stun_host, stun_data) {
     this._stun[stun_server] = stun_data;
   },
 
   /**
    * Sets the TURN server address
-   * @public
+   * @private
    */
-  set_turn: function(turn_host, turn_data) {
+  _set_turn: function(turn_host, turn_data) {
     this._turn[turn_server] = turn_data;
   },
 
@@ -1268,46 +1772,5 @@ var __JSJaCJingleBase = ring.create({
    */
   set_debug: function(debug) {
     this._debug = debug;
-  },
-
-
-
-  /**
-   * JSJSAC JINGLE SHORTCUTS
-   */
-
-  /**
-   * Am I responder?
-   * @public
-   * @returns {boolean} Receiver state
-   */
-  is_responder: function() {
-    return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
-  },
-
-  /**
-   * Am I initiator?
-   * @public
-   * @returns {boolean} Initiator state
-   */
-  is_initiator: function() {
-    return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
-  },
-
-  /**
-   * Shortcut for commonly used tri-set-toggle
-   * @private
-   */
-  _set_tri_toggle: function(db_obj, username, key, store_obj) {
-    if(!(username in db_obj))  db_obj[username] = {};
-
-    if(key === null) {
-      delete db_obj[username];
-    } else if(store_obj === null) {
-      if(key in db_obj[username])
-        delete db_obj[username][key];
-    } else {
-      db_obj[username][key] = store_obj;
-    }
   },
 });

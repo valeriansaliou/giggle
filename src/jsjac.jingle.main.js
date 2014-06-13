@@ -54,9 +54,9 @@ var JSJaCJingle = new (ring.create({
 
       // Incoming IQs handler
       var cur_type, route_map = {}
-      route_map[JSJAC_JINGLE_STANZA_IQ]        = this.route_iq;
-      route_map[JSJAC_JINGLE_STANZA_PRESENCE]  = this.route_presence;
-      route_map[JSJAC_JINGLE_STANZA_MESSAGE]   = this.route_message;
+      route_map[JSJAC_JINGLE_STANZA_IQ]        = this._route_iq;
+      route_map[JSJAC_JINGLE_STANZA_MESSAGE]   = this._route_message;
+      route_map[JSJAC_JINGLE_STANZA_PRESENCE]  = this._route_presence;
 
       for(cur_type in route_map) {
         JSJAC_JINGLE_STORE_CONNECTION.registerHandler(
@@ -69,21 +69,30 @@ var JSJaCJingle = new (ring.create({
 
       // Discover available network services
       if(!args || args.extdisco !== false)
-        JSJaCJingleInit.extdisco();
+        JSJaCJingleInit._extdisco();
       if(!args || args.relaynodes !== false)
-        JSJaCJingleInit.relaynodes();
+        JSJaCJingleInit._relaynodes();
       if(args.fallback && typeof args.fallback === 'string')
-        JSJaCJingleInit.fallback(args.fallback);
+        JSJaCJingleInit._fallback(args.fallback);
     } catch(e) {
       JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] listen > ' + e, 1);
     }
   },
 
   /**
+   * Maps the Jingle disco features
+   * @public
+   * @return {array} Feature namespaces
+   */
+  disco: function() {
+    return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];
+  },
+
+  /**
    * Routes Jingle IQ stanzas
    * @private
    */
-  route_iq: function(stanza) {
+  _route_iq: function(stanza) {
     try {
       // Single?
       var action = null;
@@ -110,31 +119,31 @@ var JSJaCJingle = new (ring.create({
 
       // WebRTC not available ATM?
       if(jingle && !JSJAC_JINGLE_AVAILABLE) {
-        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_iq > Dropped Jingle packet (WebRTC not available).', 0);
+        JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] _route_iq > Dropped Jingle packet (WebRTC not available).', 0);
 
         (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
       } else {
         // New session? Or registered one?
-        var session_route = this.read(JSJAC_JINGLE_SESSION_SINGLE, sid);
+        var session_route = this._read(JSJAC_JINGLE_SESSION_SINGLE, sid);
 
         if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route === null) {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_iq > New Jingle session (sid: ' + sid + ').', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] _route_iq > New Jingle session (sid: ' + sid + ').', 2);
 
           JSJAC_JINGLE_STORE_INITIATE(stanza);
         } else if(sid) {
           if(session_route !== null) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_iq > Routed to Jingle session (sid: ' + sid + ').', 2);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] _route_iq > Routed to Jingle session (sid: ' + sid + ').', 2);
 
             session_route.handle(stanza);
           } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && stanza.getFrom()) {
-            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_iq > Unknown Jingle session (sid: ' + sid + ').', 0);
+            JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] _route_iq > Unknown Jingle session (sid: ' + sid + ').', 0);
 
             (new JSJaCJingleSingle({ to: stanza.getFrom() })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
           }
         }
       }
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_iq > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] _route_iq > ' + e, 1);
     }
   },
 
@@ -142,7 +151,7 @@ var JSJaCJingle = new (ring.create({
    * Routes Jingle message stanzas
    * @private
    */
-  route_message: function(stanza) {
+  _route_message: function(stanza) {
     try {
       // Muji?
       var from = stanza.getFrom();
@@ -151,16 +160,16 @@ var JSJaCJingle = new (ring.create({
         var jid = new JSJaCJID(from);
         var room = jid.getNode() + '@' + jid.getDomain();
 
-        var session_route = this.read(JSJAC_JINGLE_SESSION_MUJI, room);
+        var session_route = this._read(JSJAC_JINGLE_SESSION_MUJI, room);
 
         if(session_route !== null) {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_message > Routed to Jingle session (room: ' + room + ').', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] _route_message > Routed to Jingle session (room: ' + room + ').', 2);
 
           session_route.handle_message(stanza);
         }
       }
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_message > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] _route_message > ' + e, 1);
     }
   },
 
@@ -168,7 +177,7 @@ var JSJaCJingle = new (ring.create({
    * Routes Jingle presence stanzas
    * @private
    */
-  route_presence: function(stanza) {
+  _route_presence: function(stanza) {
     try {
       // Muji?
       var from = stanza.getFrom();
@@ -177,49 +186,49 @@ var JSJaCJingle = new (ring.create({
         var jid = new JSJaCJID(from);
         var room = jid.getNode() + '@' + jid.getDomain();
 
-        var session_route = this.read(JSJAC_JINGLE_SESSION_MUJI, room);
+        var session_route = this._read(JSJAC_JINGLE_SESSION_MUJI, room);
 
         if(session_route !== null) {
-          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_presence > Routed to Jingle session (room: ' + room + ').', 2);
+          JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] _route_presence > Routed to Jingle session (room: ' + room + ').', 2);
 
           session_route.handle_presence(stanza);
         }
       }
     } catch(e) {
-      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] route_presence > ' + e, 1);
+      JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] _route_presence > ' + e, 1);
     }
   },
 
   /**
    * Adds a new Jingle session
-   * @public
+   * @private
    */
-  add: function(type, sid, obj) {
+  _add: function(type, sid, obj) {
     JSJAC_JINGLE_STORE_SESSIONS[type][sid] = obj;
   },
 
   /**
    * Reads a new Jingle session
-   * @public
+   * @private
    * @return {object} Session
    */
-  read: function(type, sid) {
+  _read: function(type, sid) {
     return (sid in JSJAC_JINGLE_STORE_SESSIONS[type]) ? JSJAC_JINGLE_STORE_SESSIONS[type][sid] : null;
   },
 
   /**
    * Removes a new Jingle session
-   * @public
+   * @private
    */
-  remove: function(type, sid) {
+  _remove: function(type, sid) {
     delete JSJAC_JINGLE_STORE_SESSIONS[type][sid];
   },
 
   /**
    * Defer given task/execute deferred tasks
-   * @public
+   * @private
    */
-  defer: function(arg) {
+  _defer: function(arg) {
     try {
       if(typeof arg == 'function') {
         // Deferring?
@@ -252,14 +261,5 @@ var JSJaCJingle = new (ring.create({
     } catch(e) {
       JSJAC_JINGLE_STORE_DEBUG.log('[JSJaCJingle:main] defer > ' + e, 1);
     }
-  },
-
-  /**
-   * Maps the Jingle disco features
-   * @public
-   * @return {array} Feature namespaces
-   */
-  disco: function() {
-    return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];
   },
 }))();

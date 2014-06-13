@@ -11,9 +11,9 @@
 var JSJaCJingleLoader = {
   /**
    * Maps library components to load
-   * @public
+   * @private
    */
-  includes: {
+  _includes: {
     lib: [
       'underscore/underscore',
       'ring/ring'
@@ -24,7 +24,6 @@ var JSJaCJingleLoader = {
       'jsjac.jingle.constants',
       'jsjac.jingle.utils',
       'jsjac.jingle.sdp',
-      'jsjac.jingle.peer',
       'jsjac.jingle.base',
       'jsjac.jingle.single',
       'jsjac.jingle.muji',
@@ -35,9 +34,9 @@ var JSJaCJingleLoader = {
 
   /**
    * Requires library component
-   * @public
+   * @private
    */
-  require: function(library_name) {
+  _require: function(library_name) {
     document.write(
       '<script type="text/javascript" src="' + library_name + '"></script>'
     );
@@ -51,10 +50,10 @@ var JSJaCJingleLoader = {
   go: function() {
     var includes = [], c;
 
-    for(c in this.includes.lib) {
-      includes.push('../lib/' + this.includes.lib[c]);
+    for(c in this._includes.lib) {
+      includes.push('../lib/' + this._includes.lib[c]);
     }
-    includes = includes.concat(this.includes.src);
+    includes = includes.concat(this._includes.src);
 
     var scripts = document.getElementsByTagName('script');
     var path = './', i, j;
@@ -67,7 +66,7 @@ var JSJaCJingleLoader = {
     }
 
     for(j = 0; j < includes.length; j++) {
-      this.require(path + includes[j] + '.js');
+      this._require(path + includes[j] + '.js');
     }
   },
 };

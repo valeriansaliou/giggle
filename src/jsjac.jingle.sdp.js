@@ -25,10 +25,10 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Parses SDP payload
-   * @public
+   * @private
    * @returns {object} Parsed payload object
    */
-  parse_payload: function(sdp_payload) {
+  _parse_payload: function(sdp_payload) {
     var payload = {};
 
     try {
@@ -502,7 +502,7 @@ var JSJaCJingleSDP = ring.create({
         m_candidate = R_WEBRTC_SDP_CANDIDATE.exec(cur_line);
 
         if(m_candidate) {
-          this.parse_candidate_store({
+          this._parse_candidate_store({
             media     : cur_media,
             candidate : cur_line
           });
@@ -528,7 +528,7 @@ var JSJaCJingleSDP = ring.create({
         }
       }
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:sdp] parse_payload > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] _parse_payload > ' + e, 1);
     }
 
     return payload;
@@ -536,10 +536,10 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Parses SDP group
-   * @public
+   * @private
    * @returns {object} Parsed group object
    */
-  parse_group: function(sdp_payload) {
+  _parse_group: function(sdp_payload) {
     var group = {};
 
     try {
@@ -571,7 +571,7 @@ var JSJaCJingleSDP = ring.create({
         }
       }
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:sdp] parse_group > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] _parse_group > ' + e, 1);
     }
 
     return group;
@@ -579,10 +579,10 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Update video resolution in payload
-   * @public
+   * @private
    * @returns {object} Updated payload
    */
-  resolution_payload: function(payload) {
+  _resolution_payload: function(payload) {
     try {
       if(!payload || typeof payload !== 'object') return {};
 
@@ -607,7 +607,7 @@ var JSJaCJingleSDP = ring.create({
 
       // Try media constraints? (less reliable)
       if(!res_height || !res_width) {
-        this.parent.get_debug().log('[JSJaCJingle:sdp] resolution_payload > Could not get local video resolution, falling back on constraints (local video may not be ready).', 0);
+        this.parent.get_debug().log('[JSJaCJingle:sdp] _resolution_payload > Could not get local video resolution, falling back on constraints (local video may not be ready).', 0);
 
         constraints = this.generate_constraints();
 
@@ -616,7 +616,7 @@ var JSJaCJingleSDP = ring.create({
            typeof constraints.video.mandatory           !== 'object'  || 
            typeof constraints.video.mandatory.minWidth  !== 'number'  || 
            typeof constraints.video.mandatory.minHeight !== 'number'  ) {
-          this.parent.get_debug().log('[JSJaCJingle:sdp] resolution_payload > Could not get local video resolution (not sending it).', 1);
+          this.parent.get_debug().log('[JSJaCJingle:sdp] _resolution_payload > Could not get local video resolution (not sending it).', 1);
           return payload;
         }
 
@@ -650,9 +650,9 @@ var JSJaCJingleSDP = ring.create({
         }
       }
 
-      this.parent.get_debug().log('[JSJaCJingle:sdp] resolution_payload > Got local video resolution (' + res_width + 'x' + res_height + ').', 2);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] _resolution_payload > Got local video resolution (' + res_width + 'x' + res_height + ').', 2);
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:sdp] resolution_payload > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] _resolution_payload > ' + e, 1);
     }
 
     return payload;
@@ -660,10 +660,10 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Parses SDP candidate
-   * @public
+   * @private
    * @returns {object} Parsed candidates object
    */
-  parse_candidate: function(sdp_candidate) {
+  _parse_candidate: function(sdp_candidate) {
     var candidate = {};
 
     try {
@@ -691,7 +691,7 @@ var JSJaCJingleSDP = ring.create({
       // Incomplete?
       if(error !== 0) return {};
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:sdp] parse_candidate > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] _parse_candidate > ' + e, 1);
     }
 
     return candidate;
@@ -700,15 +700,15 @@ var JSJaCJingleSDP = ring.create({
   /**
    * Parses SDP candidate & store it
    */
-  parse_candidate_store: function(sdp_candidate) {
+  _parse_candidate_store: function(sdp_candidate) {
     // Store received candidate
     var candidate_media = sdp_candidate.media;
     var candidate_data  = sdp_candidate.candidate;
 
     // Convert SDP raw data to an object
-    var candidate_obj   = this.parse_candidate(candidate_data);
+    var candidate_obj   = this._parse_candidate(candidate_data);
 
-    this.parent.set_candidates_local(
+    this.parent._set_candidates_local(
       this.parent.utils.name_generate(
         candidate_media
       ),
@@ -717,7 +717,7 @@ var JSJaCJingleSDP = ring.create({
     );
 
     // Enqueue candidate
-    this.parent.set_candidates_queue_local(
+    this.parent._set_candidates_queue_local(
       this.parent.utils.name_generate(
         candidate_media
       ),
@@ -728,19 +728,19 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Generates SDP description
-   * @public
+   * @private
    * @returns {object} SDP object
    */
-  generate: function(type, group, payloads, candidates) {    
+  _generate: function(type, group, payloads, candidates) {    
     try {
       var sdp_obj = {};
 
-      sdp_obj.candidates  = this.generate_candidates(candidates);
-      sdp_obj.description = this.generate_description(type, group, payloads, sdp_obj.candidates);
+      sdp_obj.candidates  = this._generate_candidates(candidates);
+      sdp_obj.description = this._generate_description(type, group, payloads, sdp_obj.candidates);
 
       return sdp_obj;
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:sdp] generate > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] _generate > ' + e, 1);
     }
 
     return {};
@@ -748,10 +748,10 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Generate SDP candidates
-   * @public
+   * @private
    * @returns {object} SDP candidates array
    */
-  generate_candidates: function(candidates) {    
+  _generate_candidates: function(candidates) {    
     var candidates_arr = [];
 
     try {
@@ -818,7 +818,7 @@ var JSJaCJingleSDP = ring.create({
         }
       }
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:sdp] generate_candidates > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] _generate_candidates > ' + e, 1);
     }
 
     return candidates_arr;
@@ -826,10 +826,10 @@ var JSJaCJingleSDP = ring.create({
 
   /**
    * Generates SDP description
-   * @public
+   * @private
    * @returns {object} SDP description payloads
    */
-  generate_description: function(type, group, payloads, sdp_candidates) {    
+  _generate_description: function(type, group, payloads, sdp_candidates) {    
     var payloads_obj = {};
 
     try {
@@ -1166,7 +1166,7 @@ var JSJaCJingleSDP = ring.create({
       payloads_obj.type = type;
       payloads_obj.sdp  = payloads_str;
     } catch(e) {
-      this.parent.get_debug().log('[JSJaCJingle:sdp] generate_description > ' + e, 1);
+      this.parent.get_debug().log('[JSJaCJingle:sdp] _generate_description > ' + e, 1);
     }
 
     return payloads_obj;

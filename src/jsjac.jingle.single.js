@@ -144,27 +144,12 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
     /**
      * @private
      */
-    this._initiator = '';
-
-    /**
-     * @private
-     */
-    this._responder = '';
-
-    /**
-     * @private
-     */
-    this._senders = {};
-
-    /**
-     * @private
-     */
-    this._creator = {};
-
-    /**
-     * @private
-     */
     this._reason = JSJAC_JINGLE_REASON_CANCEL;
+
+    /**
+     * @private
+     */
+    this._namespace = NS_JINGLE;
   },
 
 
@@ -185,13 +170,13 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Defer?
       var _this = this;
 
-      if(JSJaCJingle.defer(function() { _this.initiate(); })) {
+      if(JSJaCJingle._defer(function() { _this.initiate(); })) {
         this.get_debug().log('[JSJaCJingle:single] initiate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
-      if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
+      if(this.get_status() !== JSJAC_JINGLE_STATUS_INACTIVE) {
         this.get_debug().log('[JSJaCJingle:single] initiate > Cannot initiate, resource not inactive (status: ' + this.get_status() + ').', 0);
         return;
       }
@@ -205,37 +190,37 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       (this.get_session_initiate_pending())(this);
 
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_INITIATING);
+      this._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
       // Set session values
-      this.set_sid(this.utils.generate_sid());
-      this.set_initiator(this.utils.connection_jid());
-      this.set_responder(this.get_to());
+      this._set_sid(this.utils.generate_sid());
+      this._set_initiator(this.utils.connection_jid());
+      this._set_responder(this.get_to());
 
       for(i in this.get_media_all()) {
         cur_name = this.utils.name_generate(
           this.get_media_all()[i]
         );
 
-        this.set_name(cur_name);
+        this._set_name(cur_name);
 
-        this.set_senders(
+        this._set_senders(
           cur_name,
           JSJAC_JINGLE_SENDERS_BOTH.jingle
         );
 
-        this.set_creator(
+        this._set_creator(
           cur_name,
           JSJAC_JINGLE_CREATOR_INITIATOR
         );
       }
 
       // Register session to common router
-      JSJaCJingle.add(JSJAC_JINGLE_SESSION_SINGLE, this.get_sid(), this);
+      JSJaCJingle._add(JSJAC_JINGLE_SESSION_SINGLE, this.get_sid(), this);
 
       // Initialize WebRTC
-      this.peer.get_user_media(function() {
-        _this.peer.connection_create(
+      this._peer_get_user_media(function() {
+        _this._peer_connection_create(
           _this.get_to(),
 
           function() {
@@ -267,13 +252,13 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Defer?
       var _this = this;
 
-      if(JSJaCJingle.defer(function() { _this.accept(); })) {
+      if(JSJaCJingle._defer(function() { _this.accept(); })) {
         this.get_debug().log('[JSJaCJingle:single] accept > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
-      if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
+      if(this.get_status() !== JSJAC_JINGLE_STATUS_INITIATED) {
         this.get_debug().log('[JSJaCJingle:single] accept > Cannot accept, resource not initiated (status: ' + this.get_status() + ').', 0);
         return;
       }
@@ -284,11 +269,11 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       (this.get_session_accept_pending())(this);
 
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_ACCEPTING);
+      this._set_status(JSJAC_JINGLE_STATUS_ACCEPTING);
 
       // Initialize WebRTC
-      this.peer.get_user_media(function() {
-        _this.peer.connection_create(
+      this._peer_get_user_media(function() {
+        _this._peer_connection_create(
           _this.get_to(),
 
           function() {
@@ -321,13 +306,15 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Defer?
       var _this = this;
 
-      if(JSJaCJingle.defer(function() { _this.info(name, args); })) {
+      if(JSJaCJingle._defer(function() { _this.info(name, args); })) {
         this.get_debug().log('[JSJaCJingle:single] info > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
-      if(!(this.get_status() == JSJAC_JINGLE_STATUS_INITIATED || this.get_status() == JSJAC_JINGLE_STATUS_ACCEPTING || this.get_status() == JSJAC_JINGLE_STATUS_ACCEPTED)) {
+      if(!(this.get_status() === JSJAC_JINGLE_STATUS_INITIATED  ||
+           this.get_status() === JSJAC_JINGLE_STATUS_ACCEPTING  ||
+           this.get_status() === JSJAC_JINGLE_STATUS_ACCEPTED)) {
         this.get_debug().log('[JSJaCJingle:single] info > Cannot send info, resource not active (status: ' + this.get_status() + ').', 0);
         return;
       }
@@ -362,19 +349,19 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Defer?
       var _this = this;
 
-      if(JSJaCJingle.defer(function() { _this.terminate(reason); })) {
+      if(JSJaCJingle._defer(function() { _this.terminate(reason); })) {
         this.get_debug().log('[JSJaCJingle:single] terminate > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
 
       // Slot unavailable?
-      if(this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
+      if(this.get_status() === JSJAC_JINGLE_STATUS_TERMINATED) {
         this.get_debug().log('[JSJaCJingle:single] terminate > Cannot terminate, resource already terminated (status: ' + this.get_status() + ').', 0);
         return;
       }
 
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_TERMINATING);
+      this._set_status(JSJAC_JINGLE_STATUS_TERMINATING);
 
       // Trigger terminate pending custom callback
       (this.get_session_terminate_pending())(this);
@@ -403,7 +390,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Defer?
       var _this = this;
 
-      if(JSJaCJingle.defer(function() { _this.send(type, args); })) {
+      if(JSJaCJingle._defer(function() { _this.send(type, args); })) {
         this.get_debug().log('[JSJaCJingle:single] send > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -425,8 +412,6 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
           this.get_debug().log('[JSJaCJingle:single] send > Stanza action unknown: ' + (args.action || 'undefined'), 1);
           return;
         }
-
-        this.set_sent_id(args.id);
 
         // Submit to registered handler
         switch(args.action) {
@@ -486,6 +471,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         return false;
       }
 
+      this._set_sent_id(args.id);
+
       JSJAC_JINGLE_STORE_CONNECTION.send(stanza);
 
       if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:single] send > Outgoing packet sent' + '\n\n' + stanza.xml());
@@ -517,7 +504,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Defer?
       var _this = this;
 
-      if(JSJaCJingle.defer(function() { _this.handle(stanza); })) {
+      if(JSJaCJingle._defer(function() { _this.handle(stanza); })) {
         this.get_debug().log('[JSJaCJingle:single] handle > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -525,7 +512,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       var id   = stanza.getID();
       var type = stanza.getType();
 
-      if(id && type == JSJAC_JINGLE_IQ_TYPE_RESULT)  this.set_received_id(id);
+      if(id && type == JSJAC_JINGLE_IQ_TYPE_RESULT)  this._set_received_id(id);
 
       // Submit to custom handler
       if(typeof this.get_handlers(type, id) == 'function') {
@@ -616,7 +603,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Defer?
       var _this = this;
 
-      if(JSJaCJingle.defer(function() { _this.mute(name); })) {
+      if(JSJaCJingle._defer(function() { _this.mute(name); })) {
         this.get_debug().log('[JSJaCJingle:single] mute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -627,8 +614,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         return;
       }
 
-      this.peer.sound(false);
-      this.set_mute(name, true);
+      this._peer_sound(false);
+      this._set_mute(name, true);
 
       this.send(JSJAC_JINGLE_IQ_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_MUTE, name: name });
     } catch(e) {
@@ -653,7 +640,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Defer?
       var _this = this;
 
-      if(JSJaCJingle.defer(function() { _this.unmute(name); })) {
+      if(JSJaCJingle._defer(function() { _this.unmute(name); })) {
         this.get_debug().log('[JSJaCJingle:single] unmute > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -664,8 +651,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         return;
       }
 
-      this.peer.sound(true);
-      this.set_mute(name, false);
+      this._peer_sound(true);
+      this._set_mute(name, false);
 
       this.send(JSJAC_JINGLE_IQ_TYPE_SET, { action: JSJAC_JINGLE_ACTION_SESSION_INFO, info: JSJAC_JINGLE_SESSION_INFO_UNMUTE, name: name });
     } catch(e) {
@@ -692,7 +679,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       // Defer?
       var _this = this;
 
-      if(JSJaCJingle.defer(function() { _this.media(media); })) {
+      if(JSJaCJingle._defer(function() { _this.media(media); })) {
         this.get_debug().log('[JSJaCJingle:single] media > Deferred (waiting for the library components to be initiated).', 0);
         return;
       }
@@ -722,14 +709,14 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       this.get_debug().log('[JSJaCJingle:single] media > Changing media to: ' + media + '...', 2);
 
       // Store new media
-      this.set_media(media);
-      this.set_media_busy(true);
+      this._set_media(media);
+      this._set_media_busy(true);
 
       // Toggle video mode (add/remove)
       if(media == JSJAC_JINGLE_MEDIA_VIDEO) {
         // TODO: the flow is something like that...
-        /*this.peer.get_user_media(function() {
-          this.peer.connection_create(
+        /*this._peer_get_user_media(function() {
+          this._peer_connection_create(
             this.get_to(),
 
             function() {
@@ -746,8 +733,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         });*/
       } else {
         // TODO: the flow is something like that...
-        /*this.peer.get_user_media(function() {
-          this.peer.connection_create(
+        /*this._peer_get_user_media(function() {
+          this._peer_connection_create(
             this.get_to(),
 
             function() {
@@ -898,7 +885,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
     this.get_debug().log('[JSJaCJingle:single] _send_session_accept', 4);
 
     try {
-      if(this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING) {
+      if(this.get_status() !== JSJAC_JINGLE_STATUS_ACCEPTING) {
         this.get_debug().log('[JSJaCJingle:single] _send_session_accept > Cannot send accept stanza, resource not accepting (status: ' + this.get_status() + ').', 0);
         this._send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
@@ -990,7 +977,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
     this.get_debug().log('[JSJaCJingle:single] _send_session_initiate', 4);
 
     try {
-      if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATING) {
+      if(this.get_status() !== JSJAC_JINGLE_STATUS_INITIATING) {
         this.get_debug().log('[JSJaCJingle:single] _send_session_initiate > Cannot send initiate stanza, resource not initiating (status: ' + this.get_status() + ').', 0);
         return;
       }
@@ -1037,7 +1024,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
     this.get_debug().log('[JSJaCJingle:single] _send_session_terminate', 4);
 
     try {
-      if(this.get_status() != JSJAC_JINGLE_STATUS_TERMINATING) {
+      if(this.get_status() !== JSJAC_JINGLE_STATUS_TERMINATING) {
         this.get_debug().log('[JSJaCJingle:single] _send_session_terminate > Cannot send terminate stanza, resource not terminating (status: ' + this.get_status() + ').', 0);
         return;
       }
@@ -1051,15 +1038,15 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       args.reason = args.reason || JSJAC_JINGLE_REASON_SUCCESS;
 
       // Store terminate reason
-      this.set_reason(args.reason);
+      this._set_reason(args.reason);
 
       // Build terminate stanza
       var jingle = this.utils.stanza_generate_jingle(stanza, {
         'action': JSJAC_JINGLE_ACTION_SESSION_TERMINATE
       });
 
-      var jingle_reason = jingle.appendChild(stanza.buildNode('reason', {'xmlns': NS_JINGLE}));
-      jingle_reason.appendChild(stanza.buildNode(args.reason, {'xmlns': NS_JINGLE}));
+      var jingle_reason = jingle.appendChild(stanza.buildNode('reason', {'xmlns': this.get_namespace()}));
+      jingle_reason.appendChild(stanza.buildNode(args.reason, {'xmlns': this.get_namespace()}));
 
       // Schedule success
       var _this = this;
@@ -1104,7 +1091,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
     this.get_debug().log('[JSJaCJingle:single] _send_transport_info', 4);
 
     try {
-      if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
+      if(this.get_status() !== JSJAC_JINGLE_STATUS_INITIATED  &&
+         this.get_status() !== JSJAC_JINGLE_STATUS_ACCEPTING  &&
+         this.get_status() !== JSJAC_JINGLE_STATUS_ACCEPTED) {
         this.get_debug().log('[JSJaCJingle:single] _send_transport_info > Cannot send transport info, resource not initiated, nor accepting, nor accepted (status: ' + this.get_status() + ').', 0);
         return;
       }
@@ -1427,7 +1416,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
     try {
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_ACCEPTED);
+      this._set_status(JSJAC_JINGLE_STATUS_ACCEPTED);
     } catch(e) {
       this.get_debug().log('[JSJaCJingle:single] _handle_session_accept_success > ' + e, 1);
     }
@@ -1459,7 +1448,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
     try {
       // Slot unavailable?
-      if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED) {
+      if(this.get_status() !== JSJAC_JINGLE_STATUS_INITIATED) {
         this.get_debug().log('[JSJaCJingle:single] _handle_session_accept_request > Cannot handle, resource already accepted (status: ' + this.get_status() + ').', 0);
         this._send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
@@ -1469,7 +1458,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
       var i, cur_candidate_obj;
 
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_ACCEPTING);
+      this._set_status(JSJAC_JINGLE_STATUS_ACCEPTING);
 
       var rd_sid = this.utils.stanza_sid(stanza);
 
@@ -1485,7 +1474,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         (this.get_session_accept_success())(this, stanza);
         this._handle_session_accept_success(stanza);
 
-        var sdp_remote = this.sdp.generate(
+        var sdp_remote = this.sdp._generate(
           WEBRTC_SDP_TYPE_ANSWER,
           this.get_group_remote(this.get_to()),
           this.get_payloads_remote(this.get_to()),
@@ -1525,7 +1514,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         }
 
         // Empty the unapplied candidates queue
-        this.set_candidates_queue_remote(this.get_to(), null);
+        this._set_candidates_queue_remote(this.get_to(), null);
 
         // Success reply
         this.send(JSJAC_JINGLE_IQ_TYPE_RESULT, { id: stanza.getID() });
@@ -1698,7 +1687,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
     try {
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_INITIATED);
+      this._set_status(JSJAC_JINGLE_STATUS_INITIATED);
     } catch(e) {
       this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_success > ' + e, 1);
     }
@@ -1714,13 +1703,13 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
     try {
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_INACTIVE);
+      this._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
 
       // Stop WebRTC
-      this.peer.stop();
+      this._peer_stop();
 
       // Lock session (cannot be used later)
-      this.set_lock(true);
+      this._set_lock(true);
     } catch(e) {
       this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_error > ' + e, 1);
     }
@@ -1736,14 +1725,14 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
     try {
       // Slot unavailable?
-      if(this.get_status() != JSJAC_JINGLE_STATUS_INACTIVE) {
+      if(this.get_status() !== JSJAC_JINGLE_STATUS_INACTIVE) {
         this.get_debug().log('[JSJaCJingle:single] _handle_session_initiate_request > Cannot handle, resource already initiated (status: ' + this.get_status() + ').', 0);
         this._send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_INITIATING);
+      this._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
       // Common vars
       var rd_from = this.utils.stanza_from(stanza);
@@ -1755,22 +1744,22 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         this.utils.stanza_parse_group(this.get_to(), stanza);
 
         // Set session values
-        this.set_sid(rd_sid);
-        this.set_to(rd_from);
-        this.set_initiator(rd_from);
-        this.set_responder(this.utils.connection_jid());
+        this._set_sid(rd_sid);
+        this._set_to(rd_from);
+        this._set_initiator(rd_from);
+        this._set_responder(this.utils.connection_jid());
 
         // Register session to common router
-        JSJaCJingle.add(JSJAC_JINGLE_SESSION_SINGLE, rd_sid, this);
+        JSJaCJingle._add(JSJAC_JINGLE_SESSION_SINGLE, rd_sid, this);
 
         // Generate and store content data
         this.utils.build_content_remote(this.get_to());
 
         // Video or audio-only session?
         if(JSJAC_JINGLE_MEDIA_VIDEO in this.get_content_remote(this.get_to())) {
-          this.set_media(JSJAC_JINGLE_MEDIA_VIDEO);
+          this._set_media(JSJAC_JINGLE_MEDIA_VIDEO);
         } else if(JSJAC_JINGLE_MEDIA_AUDIO in this.get_content_remote(this.get_to())) {
-          this.set_media(JSJAC_JINGLE_MEDIA_AUDIO);
+          this._set_media(JSJAC_JINGLE_MEDIA_AUDIO);
         } else {
           // Session initiation not done
           (this.get_session_initiate_error())(this, stanza);
@@ -1860,10 +1849,10 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
     try {
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_TERMINATED);
+      this._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
       // Stop WebRTC
-      this.peer.stop();
+      this._peer_stop();
     } catch(e) {
       this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_success > ' + e, 1);
     }
@@ -1879,13 +1868,13 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
     try {
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_TERMINATED);
+      this._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
 
       // Stop WebRTC
-      this.peer.stop();
+      this._peer_stop();
 
       // Lock session (cannot be used later)
-      this.set_lock(true);
+      this._set_lock(true);
 
       this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_error > Forced session termination locally.', 0);
     } catch(e) {
@@ -1903,17 +1892,18 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
     try {
       // Slot unavailable?
-      if(this.get_status() == JSJAC_JINGLE_STATUS_INACTIVE || this.get_status() == JSJAC_JINGLE_STATUS_TERMINATED) {
+      if(this.get_status() === JSJAC_JINGLE_STATUS_INACTIVE  ||
+         this.get_status() === JSJAC_JINGLE_STATUS_TERMINATED) {
         this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_request > Cannot handle, resource not active (status: ' + this.get_status() + ').', 0);
         this._send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
       }
 
       // Change session status
-      this.set_status(JSJAC_JINGLE_STATUS_TERMINATING);
+      this._set_status(JSJAC_JINGLE_STATUS_TERMINATING);
 
       // Store termination reason
-      this.set_reason(this.utils.stanza_terminate_reason(stanza));
+      this._set_reason(this.utils.stanza_terminate_reason(stanza));
 
       // Trigger terminate success callbacks
       (this.get_session_terminate_success())(this, stanza);
@@ -1954,7 +1944,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
     try {
       // Slot unavailable?
-      if(this.get_status() != JSJAC_JINGLE_STATUS_INITIATED && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTING && this.get_status() != JSJAC_JINGLE_STATUS_ACCEPTED) {
+      if(this.get_status() !== JSJAC_JINGLE_STATUS_INITIATED  &&
+         this.get_status() !== JSJAC_JINGLE_STATUS_ACCEPTING  &&
+         this.get_status() !== JSJAC_JINGLE_STATUS_ACCEPTED) {
         this.get_debug().log('[JSJaCJingle:single] _handle_transport_info > Cannot handle, resource not initiated, nor accepting, nor accepted (status: ' + this.get_status() + ').', 0);
         this._send_error(stanza, JSJAC_JINGLE_ERROR_OUT_OF_ORDER);
         return;
@@ -1992,7 +1984,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
         }
 
         // Empty the unapplied candidates queue
-        this.set_candidates_queue_remote(this.get_to(), null);
+        this._set_candidates_queue_remote(this.get_to(), null);
 
         // Success reply
         this.send(JSJAC_JINGLE_IQ_TYPE_RESULT, { id: stanza.getID() });
@@ -2055,6 +2047,211 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
     } catch(e) {
       this.get_debug().log('[JSJaCJingle:single] _handle_transport_replace > ' + e, 1);
     }
+  },
+
+
+
+  /**
+   * JSJSAC JINGLE PEER TOOLS
+   */
+
+  /**
+   * Generates peer connection callback for 'onicecandidate'
+   * @private
+   */
+  _peer_connection_callback_onicecandidate: function(_this, sdp_message_callback, e) {
+    _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_onicecandidate', 4);
+
+    try {
+      if(e.candidate) {
+        _this.sdp._parse_candidate_store({
+          media     : (isNaN(e.candidate.sdpMid) ? e.candidate.sdpMid : _this.utils.media_generate(parseInt(e.candidate.sdpMid, 10))),
+          candidate : e.candidate.candidate
+        });
+      } else {
+        // Build or re-build content (local)
+        _this.utils.build_content_local();
+
+        // In which action stanza should candidates be sent?
+        if((_this.is_initiator() && _this.get_status() === JSJAC_JINGLE_STATUS_INITIATING)  ||
+           (_this.is_responder() && _this.get_status() === JSJAC_JINGLE_STATUS_ACCEPTING)) {
+          _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_onicecandidate > Got initial candidates.', 2);
+
+          // Execute what's next (initiate/accept session)
+          sdp_message_callback();
+        } else {
+          _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_onicecandidate > Got more candidates (on the go).', 2);
+
+          // Send unsent candidates
+          var candidates_queue_local = _this.get_candidates_queue_local();
+
+          if(_this.utils.object_length(candidates_queue_local) > 0)
+            _this.send(JSJAC_JINGLE_IQ_TYPE_SET, { action: JSJAC_JINGLE_ACTION_TRANSPORT_INFO, candidates: candidates_queue_local });
+        }
+
+        // Empty the unsent candidates queue
+        _this._set_candidates_queue_local(null);
+      }
+    } catch(e) {
+      _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_onicecandidate > ' + e, 1);
+    }
+  },
+
+  /**
+   * Creates peer connection offer
+   * @private
+   */
+  _peer_connection_create_offer: function(username) {
+    this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_offer', 4);
+
+    try {
+      // Create offer
+      this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_offer > Getting local description...', 2);
+
+      if(this.is_initiator()) {
+        // Local description
+        this.get_peer_connection(username).createOffer(
+          function(sdp_local) {
+            this._peer_got_description(username, sdp_local);
+          }.bind(this),
+
+          this._peer_fail_description.bind(this),
+          WEBRTC_CONFIGURATION.create_offer
+        );
+
+        // Then, wait for responder to send back its remote description
+      } else {
+        // Apply SDP data
+        sdp_remote = this.sdp._generate(
+          WEBRTC_SDP_TYPE_OFFER,
+          this.get_group_remote(username),
+          this.get_payloads_remote(username),
+          this.get_candidates_queue_remote(username)
+        );
+
+        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_offer > SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
+
+        // Remote description
+        this.get_peer_connection(username).setRemoteDescription(
+          (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
+
+          function() {
+            // Success (descriptions are compatible)
+          },
+
+          function(e) {
+            if(_this.get_sdp_trace())  _this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_offer > SDP (remote:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+
+            // Error (descriptions are incompatible)
+            _this.terminate(JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS);
+          }
+        );
+
+        // Local description
+        this.get_peer_connection(username).createAnswer(
+          function(sdp_local) {
+            this._peer_got_description(username, sdp_local);
+          }.bind(this),
+          
+          this._peer_fail_description.bind(this),
+          WEBRTC_CONFIGURATION.create_answer
+        );
+
+        // ICE candidates
+        var c;
+        var cur_candidate_obj;
+
+        for(c in sdp_remote.candidates) {
+          cur_candidate_obj = sdp_remote.candidates[c];
+
+          this.get_peer_connection(username).addIceCandidate(
+            new WEBRTC_ICE_CANDIDATE({
+              sdpMLineIndex : cur_candidate_obj.id,
+              candidate     : cur_candidate_obj.candidate
+            })
+          );
+        }
+
+        // Empty the unapplied candidates queue
+        this._set_candidates_queue_remote(username, null);
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_offer > ' + e, 1);
+    }
+  },
+
+  /**
+   * Triggers the media not obtained error event
+   * @private
+   */
+  _peer_got_user_media_error: function(error) {
+    this.get_debug().log('[JSJaCJingle:single] _peer_got_user_media_error', 4);
+
+    try {
+      (this.get_session_initiate_error())(this);
+
+      // Not needed in case we are the responder (breaks termination)
+      if(this.is_initiator()) this._handle_session_initiate_error();
+
+      // Not needed in case we are the initiator (no packet sent, ever)
+      if(this.is_responder()) this.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
+
+      this.get_debug().log('[JSJaCJingle:single] _peer_got_user_media_error > Failed (' + (error.PERMISSION_DENIED ? 'permission denied' : 'unknown' ) + ').', 1);
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:single] _peer_got_user_media_error > ' + e, 1);
+    }
+  },
+
+  /**
+   * Set a timeout limit to peer connection
+   * @private
+   */
+  _peer_timeout: function(username, state, args) {
+    try {
+      // Assert
+      if(typeof args !== 'object') args = {};
+
+      var t_sid = this.get_sid();
+
+      var _this = this;
+
+      setTimeout(function() {
+        // State did not change?
+        if(_this.get_sid() == t_sid && _this.get_peer_connection(username).iceConnectionState == state) {
+          _this.get_debug().log('[JSJaCJingle:single] _peer_timeout > Peer timeout.', 2);
+
+          // Error (transports are incompatible)
+          _this.terminate(args.reason || JSJAC_JINGLE_REASON_FAILED_TRANSPORT);
+        }
+      }, ((args.timer || JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT) * 1000));
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:single] _peer_timeout > ' + e, 1);
+    }
+  },
+
+  /**
+   * Stops ongoing peer connections
+   * @private
+   */
+  _peer_stop: function() {
+    this.get_debug().log('[JSJaCJingle:base] _peer_stop', 4);
+
+    // Detach media streams from DOM view
+    this._set_local_stream(null);
+
+    // Stop selected remote stream, or all streams?
+    var cur_username;
+
+    for(cur_username in this.get_peer_connection()) {
+        this._set_remote_stream(cur_username, null);
+
+        // Close the media stream
+        if(this.get_peer_connection(cur_username))
+          this.get_peer_connection(cur_username).close();
+    }
+
+    // Remove this session from router
+    JSJaCJingle._remove(JSJAC_JINGLE_SESSION_SINGLE, this.get_sid());
   },
 
 
@@ -2253,57 +2450,6 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
   },
 
   /**
-   * Gets the senders value
-   * @public
-   * @returns {string} Senders value
-   */
-  get_senders: function(name) {
-    if(name)
-      return (name in this._senders) ? this._senders[name] : null;
-
-    return this._senders;
-  },
-
-  /**
-   * Gets the creator value
-   * @public
-   * @returns {string} Creator value
-   */
-  get_creator: function(name) {
-    if(name)
-      return (name in this._creator) ? this._creator[name] : null;
-
-    return this._creator;
-  },
-
-  /**
-   * Gets the creator value (for this)
-   * @public
-   * @returns {string} Creator value
-   */
-  get_creator_this: function(name) {
-    return this.get_responder() == this.get_to() ? JSJAC_JINGLE_CREATOR_INITIATOR : JSJAC_JINGLE_CREATOR_RESPONDER;
-  },
-
-  /**
-   * Gets the initiator value
-   * @public
-   * @returns {string} Initiator value
-   */
-  get_initiator: function() {
-    return this._initiator;
-  },
-
-  /**
-   * Gets the responder value
-   * @public
-   * @returns {string} Responder value
-   */
-  get_responder: function() {
-    return this._responder;
-  },
-
-  /**
    * Gets the reason value
    * @public
    * @returns {string} Reason value
@@ -2320,166 +2466,162 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
 
   /**
    * Sets the session initiate pending callback function
-   * @public
+   * @private
    */
-  set_session_initiate_pending: function(session_initiate_pending) {
+  _set_session_initiate_pending: function(session_initiate_pending) {
     this._session_initiate_pending = session_initiate_pending;
   },
 
   /**
    * Sets the session initiate success callback function
-   * @public
+   * @private
    */
-  set_initiate_success: function(initiate_success) {
+  _set_initiate_success: function(initiate_success) {
     this._session_initiate_success = initiate_success;
   },
 
   /**
    * Sets the session initiate error callback function
-   * @public
+   * @private
    */
-  set_initiate_error: function(initiate_error) {
+  _set_initiate_error: function(initiate_error) {
     this._session_initiate_error = initiate_error;
   },
 
   /**
    * Sets the session initiate request callback function
-   * @public
+   * @private
    */
-  set_initiate_request: function(initiate_request) {
+  _set_initiate_request: function(initiate_request) {
     this._session_initiate_request = initiate_request;
   },
 
   /**
    * Sets the session accept pending callback function
-   * @public
+   * @private
    */
-  set_accept_pending: function(accept_pending) {
+  _set_accept_pending: function(accept_pending) {
     this._session_accept_pending = accept_pending;
   },
 
   /**
    * Sets the session accept success callback function
-   * @public
+   * @private
    */
-  set_accept_success: function(accept_success) {
+  _set_accept_success: function(accept_success) {
     this._session_accept_success = accept_success;
   },
 
   /**
    * Sets the session accept error callback function
-   * @public
+   * @private
    */
-  set_accept_error: function(accept_error) {
+  _set_accept_error: function(accept_error) {
     this._session_accept_error = accept_error;
   },
 
   /**
    * Sets the session accept request callback function
-   * @public
+   * @private
    */
-  set_accept_request: function(accept_request) {
+  _set_accept_request: function(accept_request) {
     this._session_accept_request = accept_request;
   },
 
   /**
    * Sets the session info success callback function
-   * @public
+   * @private
    */
-  set_info_success: function(info_success) {
+  _set_info_success: function(info_success) {
     this._session_info_success = info_success;
   },
 
   /**
    * Sets the session info error callback function
-   * @public
+   * @private
    */
-  set_info_error: function(info_error) {
+  _set_info_error: function(info_error) {
     this._session_info_error = info_error;
   },
 
   /**
    * Sets the session info request callback function
-   * @public
+   * @private
    */
-  set_info_request: function(info_request) {
+  _set_info_request: function(info_request) {
     this._session_info_request = info_request;
   },
 
   /**
    * Sets the session terminate pending callback function
-   * @public
+   * @private
    */
-  set_terminate_pending: function(terminate_pending) {
+  _set_terminate_pending: function(terminate_pending) {
     this._session_terminate_pending = terminate_pending;
   },
 
   /**
    * Sets the session terminate success callback function
-   * @public
+   * @private
    */
-  set_terminate_success: function(terminate_success) {
+  _set_terminate_success: function(terminate_success) {
     this._session_terminate_success = terminate_success;
   },
 
   /**
    * Sets the session terminate error callback function
-   * @public
+   * @private
    */
-  set_terminate_error: function(terminate_error) {
+  _set_terminate_error: function(terminate_error) {
     this._session_terminate_error = terminate_error;
   },
 
   /**
    * Sets the session terminate request callback function
-   * @public
+   * @private
    */
-  set_terminate_request: function(terminate_request) {
+  _set_terminate_request: function(terminate_request) {
     this._session_terminate_request = terminate_request;
-  },
-
-   /**
-   * Sets the session senders
-   * @public
-   */
-  set_senders: function(name, senders) {
-    if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
-
-    this._senders[name] = senders;
-  },
-
-  /**
-   * Sets the session creator
-   * @public
-   */
-  set_creator: function(name, creator) {
-    if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
-
-    this._creator[name] = creator;
-  },
-
-  /**
-   * Sets the session initiator
-   * @public
-   */
-  set_initiator: function(initiator) {
-    this._initiator = initiator;
-  },
-
-  /**
-   * Sets the session responder
-   * @public
-   */
-  set_responder: function(responder) {
-    this._responder = responder;
   },
 
   /**
    * Sets the termination reason
-   * @public
+   * @private
    */
-  set_reason: function(reason) {
+  _set_reason: function(reason) {
     this._reason = reason || JSJAC_JINGLE_REASON_CANCEL;
+  },
+
+  /**
+   * Sets the remote stream
+   * @private
+   */
+  _set_remote_stream: function(username, remote_stream) {
+    try {
+      if(!remote_stream && this._remote_stream[username]) {
+        this._peer_stream_detach(
+          this.get_remote_view(username)
+        );
+      }
+
+      if(remote_stream) {
+        this._remote_stream[username] = remote_stream;
+
+        this._peer_stream_attach(
+          this.get_remote_view(username),
+          this.get_remote_stream(username),
+          false
+        );
+      } else {
+        if(username in this._remote_stream)  delete this._remote_stream[username];
+
+        this._peer_stream_detach(
+          this.get_remote_view(username)
+        );
+      }
+    } catch(e) {
+      this.get_debug().log('[JSJaCJingle:base] _set_remote_stream > ' + e, 1);
+    }
   },
 
 });
