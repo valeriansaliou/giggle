@@ -16,10 +16,10 @@
  * @class
  * @classdesc  Creates a new XMPP Jingle session.
  * @augments   __JSJaCJingleBase
- * @requires   lib:nicolas-van/ring.js
- * @requires   lib:sstrigler/JSJaC
- * @requires   module:jsjac-jingle/main
- * @requires   module:jsjac-jingle/base
+ * @requires   nicolas-van/ring.js
+ * @requires   sstrigler/JSJaC
+ * @requires   jsjac-jingle/main
+ * @requires   jsjac-jingle/base
  * @see        {@link http://xmpp.org/extensions/xep-0166.html|XEP-0166: Jingle}
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}

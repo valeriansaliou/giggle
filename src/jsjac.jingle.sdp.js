@@ -15,8 +15,8 @@
  * SDP helpers class.
  * @class
  * @classdesc  SDP helpers class.
- * @requires   lib:nicolas-van/ring.js
- * @requires   lib:sstrigler/JSJaC
+ * @requires   nicolas-van/ring.js
+ * @requires   sstrigler/JSJaC
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @param      {JSJaCJingleSingle|JSJaCJingleMuji} parent Parent class.
  */

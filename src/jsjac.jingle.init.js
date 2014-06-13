@@ -15,8 +15,8 @@
  * Library initialization class.
  * @class
  * @classdesc  Library initialization class.
- * @requires   lib:nicolas-van/ring.js
- * @requires   module:jsjac-jingle/main
+ * @requires   nicolas-van/ring.js
+ * @requires   jsjac-jingle/main
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */

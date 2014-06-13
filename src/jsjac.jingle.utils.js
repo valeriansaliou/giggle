@@ -16,8 +16,8 @@
  * @class
  * @classdesc  Utilities class.
  * @param      {JSJaCJingleSingle|JSJaCJingleMuji} parent Parent class.
- * @requires   lib:nicolas-van/ring.js
- * @requires   lib:sstrigler/JSJaC
+ * @requires   nicolas-van/ring.js
+ * @requires   sstrigler/JSJaC
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */

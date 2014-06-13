@@ -16,10 +16,10 @@
  * @abstract
  * @class
  * @classdesc  Abstract base class for XMPP Jingle sessions.
- * @requires   lib:nicolas-van/ring.js
- * @requires   lib:sstrigler/JSJaC
- * @requires   module:jsjac-jingle/utils
- * @requires   module:jsjac-jingle/sdp
+ * @requires   nicolas-van/ring.js
+ * @requires   sstrigler/JSJaC
+ * @requires   jsjac-jingle/utils
+ * @requires   jsjac-jingle/sdp
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  * @param      {Object}         [args]             - Jingle session arguments.
