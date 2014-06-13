@@ -14,9 +14,12 @@
 /**
  * Library main class.
  * @class
- * @classdesc Library main class.
- * @requires module:nicolas-van/ring.js
- * @see {@link http://ringjs.neoname.eu/|Ring.js}
+ * @classdesc  Library main class.
+ * @requires   lib:nicolas-van/ring.js
+ * @requires   module:jsjac-jingle/init
+ * @requires   module:jsjac-jingle/single
+ * @requires   module:jsjac-jingle/muji
+ * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  */
 var JSJaCJingle = new (ring.create({
   /**

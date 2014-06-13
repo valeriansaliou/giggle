@@ -14,10 +14,11 @@
 /**
  * Library initialization class.
  * @class
- * @classdesc Library initialization class.
- * @requires module:nicolas-van/ring.js
- * @see {@link http://ringjs.neoname.eu/|Ring.js}
- * @see {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
+ * @classdesc  Library initialization class.
+ * @requires   lib:nicolas-van/ring.js
+ * @requires   module:jsjac-jingle/main
+ * @see        {@link http://ringjs.neoname.eu/|Ring.js}
+ * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */
 var JSJaCJingleInit = new (ring.create({
   /**

@@ -14,11 +14,11 @@
 /**
  * SDP helpers class.
  * @class
- * @classdesc SDP helpers class.
- * @requires module:nicolas-van/ring.js
- * @requires module:sstrigler/JSJaC
- * @see {@link http://ringjs.neoname.eu/|Ring.js}
- * @param {JSJaCJingleSingle|JSJaCJingleMuji} parent Parent class.
+ * @classdesc  SDP helpers class.
+ * @requires   lib:nicolas-van/ring.js
+ * @requires   lib:sstrigler/JSJaC
+ * @see        {@link http://ringjs.neoname.eu/|Ring.js}
+ * @param      {JSJaCJingleSingle|JSJaCJingleMuji} parent Parent class.
  */
 var JSJaCJingleSDP = ring.create({
   /**

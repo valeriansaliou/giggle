@@ -14,12 +14,12 @@
 /**
  * Utilities class.
  * @class
- * @classdesc Utilities class.
- * @param {JSJaCJingleSingle|JSJaCJingleMuji} parent Parent class.
- * @requires module:nicolas-van/ring.js
- * @requires module:sstrigler/JSJaC
- * @see {@link http://ringjs.neoname.eu/|Ring.js}
- * @see {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
+ * @classdesc  Utilities class.
+ * @param      {JSJaCJingleSingle|JSJaCJingleMuji} parent Parent class.
+ * @requires   lib:nicolas-van/ring.js
+ * @requires   lib:sstrigler/JSJaC
+ * @see        {@link http://ringjs.neoname.eu/|Ring.js}
+ * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */
 var JSJaCJingleUtils = ring.create({
   /**

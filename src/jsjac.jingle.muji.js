@@ -16,8 +16,10 @@
  * @class
  * @classdesc  Creates a new XMPP Jingle Muji session.
  * @augments   __JSJaCJingleBase
- * @requires   module:nicolas-van/ring.js
- * @requires   module:sstrigler/JSJaC
+ * @requires   lib:nicolas-van/ring.js
+ * @requires   lib:sstrigler/JSJaC
+ * @requires   module:jsjac-jingle/main
+ * @requires   module:jsjac-jingle/base
  * @see        {@link http://xmpp.org/extensions/xep-0272.html|XEP-0272: Multiparty Jingle (Muji)}
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}

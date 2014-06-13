@@ -13,6 +13,7 @@
 
 /**
  * Library loader tool.
+ * @requires module:jsjac-jingle/main
  * @global
  */
 var JSJaCJingleLoader = {
