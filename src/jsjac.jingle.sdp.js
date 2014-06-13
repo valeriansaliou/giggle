@@ -8,7 +8,7 @@
  */
 
 
-/** @module jsjac.jingle/sdp */
+/** @module jsjac-jingle/sdp */
 
 
 /**

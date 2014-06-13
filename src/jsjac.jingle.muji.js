@@ -8,7 +8,7 @@
  */
 
 
-/** @module jsjac.jingle/muji */
+/** @module jsjac-jingle/muji */
 
 
 /**

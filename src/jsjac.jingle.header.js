@@ -8,7 +8,7 @@
  */
 
 
-/** @module jsjac.jingle/header */
+/** @module jsjac-jingle/header */
 
 
 /**

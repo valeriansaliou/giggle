@@ -8,7 +8,7 @@
  */
 
 
-/** @module jsjac.jingle/utils */
+/** @module jsjac-jingle/utils */
 
 
 /**
