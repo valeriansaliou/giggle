@@ -633,7 +633,7 @@ var JSJaCJingleUtils = ring.create({
           jingle = this.stanza_muji(stanza); break;
 
         default:
-          throw 'Stanza is not Jingle, nor Muji.'
+          throw 'Stanza is not Jingle, nor Muji.';
       }
 
       if(jingle) {

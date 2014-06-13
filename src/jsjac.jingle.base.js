@@ -613,9 +613,9 @@ var __JSJaCJingleBase = ring.create({
    * @callback
    * @param {JSJaCJingleSingle|JSJaCJingleMuji} _this
    * @param {String} username
-   * @param {Object} e
+   * @param {Object} data
    */
-  _peer_connection_callback_oniceconnectionstatechange: function(_this, username, e) {
+  _peer_connection_callback_oniceconnectionstatechange: function(_this, username, data) {
     _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_oniceconnectionstatechange', 4);
 
     try {
@@ -644,18 +644,18 @@ var __JSJaCJingleBase = ring.create({
    * @callback
    * @param {JSJaCJingleSingle|JSJaCJingleMuji} _this
    * @param {String} username
-   * @param {Object} e
+   * @param {Object} data
    */
-  _peer_connection_callback_onaddstream: function(_this, username, e) {
+  _peer_connection_callback_onaddstream: function(_this, username, data) {
     _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onaddstream', 4);
 
     try {
-      if(!e) {
+      if(!data) {
         _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onaddstream > No data passed, dropped.', 2); return;
       }
 
       // Attach remote stream to DOM view
-      _this._set_remote_stream(username, e.stream);
+      _this._set_remote_stream(username, data.stream);
     } catch(e) {
       _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onaddstream > ' + e, 1);
     }
@@ -667,9 +667,9 @@ var __JSJaCJingleBase = ring.create({
    * @callback
    * @param {JSJaCJingleSingle|JSJaCJingleMuji} _this
    * @param {String} username
-   * @param {Object} e
+   * @param {Object} data
    */
-  _peer_connection_callback_onremovestream: function(_this, username, e) {
+  _peer_connection_callback_onremovestream: function(_this, username, data) {
     _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onremovestream', 4);
 
     try {

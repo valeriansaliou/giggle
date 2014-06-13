@@ -173,7 +173,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
        * @default
        * @private
        */
-      this._remote_view = {}
+      this._remote_view = {};
 
       if(this.get_to())
         this._remote_view[this.get_to()] = [args.remote_view];
@@ -2205,16 +2205,17 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase], {
    * @callback
    * @param {JSJaCJingleSingle} _this
    * @param {Function} sdp_message_callback
-   * @param {Object} e
+   * @param {Object} data
    */
-  _peer_connection_callback_onicecandidate: function(_this, sdp_message_callback, e) {
+  _peer_connection_callback_onicecandidate: function(_this, sdp_message_callback, data) {
     _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_onicecandidate', 4);
 
     try {
-      if(e.candidate) {
+      if(data.candidate) {
         _this.sdp._parse_candidate_store({
-          media     : (isNaN(e.candidate.sdpMid) ? e.candidate.sdpMid : _this.utils.media_generate(parseInt(e.candidate.sdpMid, 10))),
-          candidate : e.candidate.candidate
+          media     : (isNaN(data.candidate.sdpMid) ? data.candidate.sdpMid
+                                                    : _this.utils.media_generate(parseInt(data.candidate.sdpMid, 10))),
+          candidate : data.candidate.candidate
         });
       } else {
         // Build or re-build content (local)

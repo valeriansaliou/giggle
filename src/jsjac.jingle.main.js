@@ -66,7 +66,7 @@ var JSJaCJingle = new (ring.create({
         JSJAC_JINGLE_STORE_DEBUG = args.debug;
 
       // Incoming IQs handler
-      var cur_type, route_map = {}
+      var cur_type, route_map = {};
       route_map[JSJAC_JINGLE_STANZA_IQ]        = this._route_iq;
       route_map[JSJAC_JINGLE_STANZA_MESSAGE]   = this._route_message;
       route_map[JSJAC_JINGLE_STANZA_PRESENCE]  = this._route_presence;
