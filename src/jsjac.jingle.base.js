@@ -541,10 +541,10 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Creates a new peer connection
      * @private
-     * @fires __JSJaCJingleBase#_peer_connection_callback_onicecandidate
-     * @fires __JSJaCJingleBase#_peer_connection_callback_oniceconnectionstatechange
-     * @fires __JSJaCJingleBase#_peer_connection_callback_onaddstream
-     * @fires __JSJaCJingleBase#_peer_connection_callback_onremovestream
+     * @fires base-__JSJaCJingleBase#_peer_connection_callback_onicecandidate
+     * @fires base-__JSJaCJingleBase#_peer_connection_callback_oniceconnectionstatechange
+     * @fires base-__JSJaCJingleBase#_peer_connection_callback_onaddstream
+     * @fires base-__JSJaCJingleBase#_peer_connection_callback_onremovestream
      * @param {String} username
      * @param {Function} sdp_message_callback
      */
@@ -560,7 +560,7 @@ var __JSJaCJingleBase = ring.create(
 
         /**
          * Listens for incoming ICE candidates
-         * @event __JSJaCJingleBase#_peer_connection_callback_onicecandidate
+         * @event base-__JSJaCJingleBase#_peer_connection_callback_onicecandidate
          * @type {Function}
          */
         this.get_peer_connection(username).onicecandidate = function(data) {
@@ -569,7 +569,7 @@ var __JSJaCJingleBase = ring.create(
 
         /**
          * Listens for ICE connection state change
-         * @event __JSJaCJingleBase#_peer_connection_callback_oniceconnectionstatechange
+         * @event base-__JSJaCJingleBase#_peer_connection_callback_oniceconnectionstatechange
          * @type {Function}
          */
         this.get_peer_connection(username).oniceconnectionstatechange = function(data) {
@@ -578,7 +578,7 @@ var __JSJaCJingleBase = ring.create(
 
         /**
          * Listens for stream add
-         * @event __JSJaCJingleBase#_peer_connection_callback_onaddstream
+         * @event base-__JSJaCJingleBase#_peer_connection_callback_onaddstream
          * @type {Function}
          */
         this.get_peer_connection(username).onaddstream = function(data) {
@@ -587,7 +587,7 @@ var __JSJaCJingleBase = ring.create(
 
         /**
          * Listens for stream remove
-         * @event __JSJaCJingleBase#_peer_connection_callback_onremovestream
+         * @event base-__JSJaCJingleBase#_peer_connection_callback_onremovestream
          * @type {Function}
          */
         this.get_peer_connection(username).onremovestream = function(data) {
