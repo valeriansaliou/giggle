@@ -9,11 +9,13 @@
 
 
 /** @module jsjac-jingle/loader */
+/** @exports JSJaCJingleLoader */
 
 
 /**
  * Library loader tool.
  * @requires module:jsjac-jingle/main
+ * @namespace
  * @global
  */
 var JSJaCJingleLoader = {
@@ -21,6 +23,7 @@ var JSJaCJingleLoader = {
    * Maps library components to load
    * @constant
    * @type {Object}
+   * @readonly
    * @static
    * @default
    * @private

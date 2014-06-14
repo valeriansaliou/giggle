@@ -19,6 +19,7 @@
  * @constant
  * @global
  * @type {function}
+ * @readonly
  * @default
  * @public
  */
@@ -31,6 +32,7 @@ var WEBRTC_GET_MEDIA           = ( navigator.webkitGetUserMedia     ||
  * @constant
  * @global
  * @type {function}
+ * @readonly
  * @default
  * @public
  */
@@ -42,6 +44,7 @@ var WEBRTC_PEER_CONNECTION     = ( window.webkitRTCPeerConnection   ||
  * @constant
  * @global
  * @type {function}
+ * @readonly
  * @default
  * @public
  */
@@ -52,6 +55,7 @@ var WEBRTC_SESSION_DESCRIPTION = ( window.mozRTCSessionDescription  ||
  * @constant
  * @global
  * @type {function}
+ * @readonly
  * @default
  * @public
  */
@@ -62,6 +66,7 @@ var WEBRTC_ICE_CANDIDATE       = ( window.mozRTCIceCandidate        ||
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -99,6 +104,7 @@ var WEBRTC_CONFIGURATION = {
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -108,6 +114,7 @@ var WEBRTC_SDP_LINE_BREAK      = '\r\n';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -117,6 +124,7 @@ var WEBRTC_SDP_TYPE_OFFER      = 'offer';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -126,6 +134,7 @@ var WEBRTC_SDP_TYPE_ANSWER     = 'answer';
  * @constant
  * @global
  * @type {RegExp}
+ * @readonly
  * @default
  * @public
  */
@@ -135,6 +144,7 @@ var R_WEBRTC_SDP_CANDIDATE     = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -164,6 +174,7 @@ var R_WEBRTC_SDP_ICE_PAYLOAD   = {
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -175,6 +186,7 @@ var R_NETWORK_PROTOCOLS        = {
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -194,6 +206,7 @@ var R_NETWORK_IP               = {
  * @constant
  * @global
  * @type {RegExp}
+ * @readonly
  * @default
  * @public
  */
@@ -208,6 +221,7 @@ var R_JSJAC_JINGLE_SERVICE_URI    = /^(\w+):([^:\?]+)(?::(\d+))?(?:\?transport=(
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -217,6 +231,7 @@ var NS_JINGLE                                       = 'urn:xmpp:jingle:1';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -226,6 +241,7 @@ var NS_JINGLE_ERRORS                                = 'urn:xmpp:jingle:errors:1'
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -235,6 +251,7 @@ var NS_JINGLE_APPS_RTP                              = 'urn:xmpp:jingle:apps:rtp:
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -244,6 +261,7 @@ var NS_JINGLE_APPS_RTP_INFO                         = 'urn:xmpp:jingle:apps:rtp:
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -253,6 +271,7 @@ var NS_JINGLE_APPS_RTP_AUDIO                        = 'urn:xmpp:jingle:apps:rtp:
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -262,6 +281,7 @@ var NS_JINGLE_APPS_RTP_VIDEO                        = 'urn:xmpp:jingle:apps:rtp:
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -271,6 +291,7 @@ var NS_JINGLE_APPS_RTP_RTP_HDREXT                   = 'urn:xmpp:jingle:apps:rtp:
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -280,6 +301,7 @@ var NS_JINGLE_APPS_RTP_RTCP_FB                      = 'urn:xmpp:jingle:apps:rtp:
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -289,6 +311,7 @@ var NS_JINGLE_APPS_RTP_ZRTP                         = 'urn:xmpp:jingle:apps:rtp:
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -298,6 +321,7 @@ var NS_JINGLE_APPS_RTP_SSMA                         = 'urn:xmpp:jingle:apps:rtp:
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -307,6 +331,7 @@ var NS_JINGLE_APPS_STUB                             = 'urn:xmpp:jingle:apps:stub
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -316,6 +341,7 @@ var NS_JINGLE_APPS_DTLS                             = 'urn:xmpp:tmp:jingle:apps:
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -325,6 +351,7 @@ var NS_JINGLE_APPS_GROUPING                         = 'urn:xmpp:jingle:apps:grou
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -334,6 +361,7 @@ var NS_JINGLE_TRANSPORTS_RAWUDP                     = 'urn:xmpp:jingle:transport
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -343,6 +371,7 @@ var NS_JINGLE_TRANSPORTS_ICEUDP                     = 'urn:xmpp:jingle:transport
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -352,6 +381,7 @@ var NS_JINGLE_TRANSPORTS_STUB                       = 'urn:xmpp:jingle:transport
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -361,6 +391,7 @@ var NS_JINGLE_SECURITY_STUB                         = 'urn:xmpp:jingle:security:
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -370,6 +401,7 @@ var NS_JABBER_JINGLENODES                           = 'http://jabber.org/protoco
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -379,6 +411,7 @@ var NS_JABBER_JINGLENODES_CHANNEL                   = 'http://jabber.org/protoco
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -388,6 +421,7 @@ var NS_TELEPATHY_MUJI                               = 'http://telepathy.freedesk
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -397,6 +431,7 @@ var NS_EXTDISCO                                     = 'urn:xmpp:extdisco:1';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -406,6 +441,7 @@ var NS_IETF_XMPP_STANZAS                            = 'urn:ietf:params:xml:ns:xm
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -415,6 +451,7 @@ var NS_IETF_RFC_3264                                = 'urn:ietf:rfc:3264';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -424,6 +461,7 @@ var NS_IETF_RFC_5576                                = 'urn:ietf:rfc:5576';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -433,6 +471,7 @@ var NS_IETF_RFC_5888                                = 'urn:ietf:rfc:5888';
  * @constant
  * @global
  * @type {RegExp}
+ * @readonly
  * @default
  * @public
  */
@@ -442,6 +481,7 @@ var R_NS_JINGLE_APP                                 = /^urn:xmpp:jingle:app:(\w+
  * @constant
  * @global
  * @type {RegExp}
+ * @readonly
  * @default
  * @public
  */
@@ -451,6 +491,7 @@ var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transpor
  * @constant
  * @global
  * @type {Arrat}
+ * @readonly
  * @default
  * @public
  */
@@ -507,6 +548,7 @@ var MAP_DISCO_JINGLE                                = [
  * @constant
  * @global
  * @type {boolean}
+ * @readonly
  * @default
  * @public
  */
@@ -516,6 +558,7 @@ var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true :
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -525,6 +568,7 @@ var JSJAC_JINGLE_SESSION_SINGLE                      = 'single';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -534,6 +578,7 @@ var JSJAC_JINGLE_SESSION_MUJI                        = 'muji';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -543,6 +588,7 @@ var JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT                = 15;
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -552,6 +598,7 @@ var JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT             = 5;
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -561,6 +608,7 @@ var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -570,6 +618,7 @@ var JSJAC_JINGLE_STANZA_ID_PRE                       = 'jj';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -579,6 +628,7 @@ var JSJAC_JINGLE_NETWORK                             = '0';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -588,6 +638,7 @@ var JSJAC_JINGLE_GENERATION                          = '0';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -597,6 +648,7 @@ var JSJAC_JINGLE_DIRECTION_LOCAL                     = 'local';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -606,6 +658,7 @@ var JSJAC_JINGLE_DIRECTION_REMOTE                    = 'remote';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -615,6 +668,7 @@ var JSJAC_JINGLE_BROWSER_FIREFOX                     = 'Firefox';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -624,6 +678,7 @@ var JSJAC_JINGLE_BROWSER_CHROME                      = 'Chrome';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -633,6 +688,7 @@ var JSJAC_JINGLE_BROWSER_SAFARI                      = 'Safari';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -642,6 +698,7 @@ var JSJAC_JINGLE_BROWSER_OPERA                       = 'Opera';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -651,6 +708,7 @@ var JSJAC_JINGLE_BROWSER_IE                          = 'IE';
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -660,6 +718,7 @@ var JSJAC_JINGLE_SENDERS_BOTH                        = { jingle: 'both',      sd
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -669,6 +728,7 @@ var JSJAC_JINGLE_SENDERS_INITIATOR                   = { jingle: 'initiator', sd
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -678,6 +738,7 @@ var JSJAC_JINGLE_SENDERS_NONE                        = { jingle: 'none',      sd
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -687,6 +748,7 @@ var JSJAC_JINGLE_SENDERS_RESPONDER                   = { jingle: 'responder', sd
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -696,6 +758,7 @@ var JSJAC_JINGLE_CREATOR_INITIATOR                   = 'initiator';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -705,6 +768,7 @@ var JSJAC_JINGLE_CREATOR_RESPONDER                   = 'responder';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -714,6 +778,7 @@ var JSJAC_JINGLE_STATUS_INACTIVE                     = 'inactive';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -723,6 +788,7 @@ var JSJAC_JINGLE_STATUS_INITIATING                   = 'initiating';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -732,6 +798,7 @@ var JSJAC_JINGLE_STATUS_INITIATED                    = 'initiated';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -741,6 +808,7 @@ var JSJAC_JINGLE_STATUS_ACCEPTING                    = 'accepting';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -750,6 +818,7 @@ var JSJAC_JINGLE_STATUS_ACCEPTED                     = 'accepted';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -759,6 +828,7 @@ var JSJAC_JINGLE_STATUS_TERMINATING                  = 'terminating';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -768,6 +838,7 @@ var JSJAC_JINGLE_STATUS_TERMINATED                   = 'terminated';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -777,6 +848,7 @@ var JSJAC_JINGLE_ACTION_CONTENT_ACCEPT               = 'content-accept';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -786,6 +858,7 @@ var JSJAC_JINGLE_ACTION_CONTENT_ADD                  = 'content-add';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -795,6 +868,7 @@ var JSJAC_JINGLE_ACTION_CONTENT_MODIFY               = 'content-modify';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -804,6 +878,7 @@ var JSJAC_JINGLE_ACTION_CONTENT_REJECT               = 'content-reject';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -813,6 +888,7 @@ var JSJAC_JINGLE_ACTION_CONTENT_REMOVE               = 'content-remove';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -822,6 +898,7 @@ var JSJAC_JINGLE_ACTION_DESCRIPTION_INFO             = 'description-info';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -831,6 +908,7 @@ var JSJAC_JINGLE_ACTION_SECURITY_INFO                = 'security-info';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -840,6 +918,7 @@ var JSJAC_JINGLE_ACTION_SESSION_ACCEPT               = 'session-accept';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -849,6 +928,7 @@ var JSJAC_JINGLE_ACTION_SESSION_INFO                 = 'session-info';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -858,6 +938,7 @@ var JSJAC_JINGLE_ACTION_SESSION_INITIATE             = 'session-initiate';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -867,6 +948,7 @@ var JSJAC_JINGLE_ACTION_SESSION_TERMINATE            = 'session-terminate';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -876,6 +958,7 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT             = 'transport-accept';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -885,6 +968,7 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_INFO               = 'transport-info';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -894,6 +978,7 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_REJECT             = 'transport-reject';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -903,6 +988,7 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE            = 'transport-replace';
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -912,6 +998,7 @@ var JSJAC_JINGLE_ERROR_OUT_OF_ORDER                  = { jingle: 'out-of-order',
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -921,6 +1008,7 @@ var JSJAC_JINGLE_ERROR_TIE_BREAK                     = { jingle: 'tie-break',   
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -930,6 +1018,7 @@ var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION               = { jingle: 'unknown-sessio
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -939,6 +1028,7 @@ var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO              = { jingle: 'unsupported-in
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -948,6 +1038,7 @@ var JSJAC_JINGLE_ERROR_SECURITY_REQUIRED             = { jingle: 'security-requi
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -957,6 +1048,7 @@ var XMPP_ERROR_UNEXPECTED_REQUEST                    = { xmpp: 'unexpected-reque
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -966,6 +1058,7 @@ var XMPP_ERROR_CONFLICT                              = { xmpp: 'conflict',      
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -975,6 +1068,7 @@ var XMPP_ERROR_ITEM_NOT_FOUND                        = { xmpp: 'item-not-found',
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -984,6 +1078,7 @@ var XMPP_ERROR_NOT_ACCEPTABLE                        = { xmpp: 'not-acceptable',
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -993,6 +1088,7 @@ var XMPP_ERROR_FEATURE_NOT_IMPLEMENTED               = { xmpp: 'feature-not-impl
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1002,6 +1098,7 @@ var XMPP_ERROR_SERVICE_UNAVAILABLE                   = { xmpp: 'service-unavaila
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1011,6 +1108,7 @@ var XMPP_ERROR_REDIRECT                              = { xmpp: 'redirect',      
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1020,6 +1118,7 @@ var XMPP_ERROR_RESOURCE_CONSTRAINT                   = { xmpp: 'resource-constra
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1030,6 +1129,7 @@ var XMPP_ERROR_BAD_REQUEST                           = { xmpp: 'bad-request',   
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1039,6 +1139,7 @@ var JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION          = 'alternative-session';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1048,6 +1149,7 @@ var JSJAC_JINGLE_REASON_BUSY                         = 'busy';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1057,6 +1159,7 @@ var JSJAC_JINGLE_REASON_CANCEL                       = 'cancel';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1066,6 +1169,7 @@ var JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR           = 'connectivity-error';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1075,6 +1179,7 @@ var JSJAC_JINGLE_REASON_DECLINE                      = 'decline';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1084,6 +1189,7 @@ var JSJAC_JINGLE_REASON_EXPIRED                      = 'expired';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1093,6 +1199,7 @@ var JSJAC_JINGLE_REASON_FAILED_APPLICATION           = 'failed-application';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1102,6 +1209,7 @@ var JSJAC_JINGLE_REASON_FAILED_TRANSPORT             = 'failed-transport';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1111,6 +1219,7 @@ var JSJAC_JINGLE_REASON_GENERAL_ERROR                = 'general-error';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1120,6 +1229,7 @@ var JSJAC_JINGLE_REASON_GONE                         = 'gone';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1129,6 +1239,7 @@ var JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS      = 'incompatible-parameters'
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1138,6 +1249,7 @@ var JSJAC_JINGLE_REASON_MEDIA_ERROR                  = 'media-error';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1147,6 +1259,7 @@ var JSJAC_JINGLE_REASON_SECURITY_ERROR               = 'security-error';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1156,6 +1269,7 @@ var JSJAC_JINGLE_REASON_SUCCESS                      = 'success';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1165,6 +1279,7 @@ var JSJAC_JINGLE_REASON_TIMEOUT                      = 'timeout';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1174,6 +1289,7 @@ var JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS     = 'unsupported-applications
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1183,6 +1299,7 @@ var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS       = 'unsupported-transports';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1192,6 +1309,7 @@ var JSJAC_JINGLE_SESSION_INFO_ACTIVE                 = 'active';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1201,6 +1319,7 @@ var JSJAC_JINGLE_SESSION_INFO_HOLD                   = 'hold';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1210,6 +1329,7 @@ var JSJAC_JINGLE_SESSION_INFO_MUTE                   = 'mute';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1219,6 +1339,7 @@ var JSJAC_JINGLE_SESSION_INFO_RINGING                = 'ringing';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1228,6 +1349,7 @@ var JSJAC_JINGLE_SESSION_INFO_UNHOLD                 = 'unhold';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1237,6 +1359,7 @@ var JSJAC_JINGLE_SESSION_INFO_UNMUTE                 = 'unmute';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1246,6 +1369,7 @@ var JSJAC_JINGLE_MEDIA_AUDIO                         = 'audio';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1255,6 +1379,7 @@ var JSJAC_JINGLE_MEDIA_VIDEO                         = 'video';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1264,6 +1389,7 @@ var JSJAC_JINGLE_VIDEO_SOURCE_CAMERA                 = 'camera';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1273,6 +1399,7 @@ var JSJAC_JINGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1282,6 +1409,7 @@ var JSJAC_JINGLE_STANZA_IQ                           = 'iq';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1291,6 +1419,7 @@ var JSJAC_JINGLE_STANZA_MESSAGE                      = 'message';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1300,6 +1429,7 @@ var JSJAC_JINGLE_STANZA_PRESENCE                     = 'presence';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1309,6 +1439,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_ALL                    = 'all';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1318,6 +1449,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_NORMAL                 = 'normal';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1327,6 +1459,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_CHAT                   = 'chat';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1336,6 +1469,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_HEADLINE               = 'headline';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1345,6 +1479,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_GROUPCHAT              = 'groupchat';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1354,6 +1489,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_ERROR                  = 'error';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1363,6 +1499,7 @@ var JSJAC_JINGLE_PRESENCE_TYPE_ALL                   = 'all';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1372,6 +1509,7 @@ var JSJAC_JINGLE_PRESENCE_TYPE_AVAILABLE             = 'available';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1381,6 +1519,7 @@ var JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE           = 'unavailable';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1390,6 +1529,7 @@ var JSJAC_JINGLE_PRESENCE_TYPE_ERROR                 = 'error';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1399,6 +1539,7 @@ var JSJAC_JINGLE_IQ_TYPE_ALL                         = 'all';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1408,6 +1549,7 @@ var JSJAC_JINGLE_IQ_TYPE_RESULT                      = 'result';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1417,6 +1559,7 @@ var JSJAC_JINGLE_IQ_TYPE_SET                         = 'set';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1426,6 +1569,7 @@ var JSJAC_JINGLE_IQ_TYPE_GET                         = 'get';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1435,6 +1579,7 @@ var JSJAC_JINGLE_IQ_TYPE_ERROR                       = 'error';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1444,6 +1589,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST             = 'host';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1453,6 +1599,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX            = 'srflx';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1462,6 +1609,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_PRFLX            = 'prflx';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1471,6 +1619,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_RELAY            = 'relay';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1480,6 +1629,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE            = 'ice';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1489,6 +1639,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_METHOD_RAW            = 'raw';
  * @constant
  * @global
  * @type {Array}
+ * @readonly
  * @default
  * @public
  */
@@ -1511,6 +1662,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_MAP_ICEUDP            = [
  * @constant
  * @global
  * @type {Array}
+ * @readonly
  * @default
  * @public
  */
@@ -1527,6 +1679,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP            = [
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1536,6 +1689,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_LOCAL           = 'IN';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1545,6 +1699,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE          = 'IN';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1554,6 +1709,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V4          = 'IP4';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1563,6 +1719,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V6          = 'IP6';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1572,6 +1729,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_TCP          = 'tcp';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1581,6 +1739,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_UDP          = 'udp';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1590,6 +1749,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IP_V4                 = '0.0.0.0';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1599,6 +1759,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IP_V6                 = '::';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1608,6 +1769,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT            = JSJAC_JINGLE_SDP_CANDIDAT
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1617,6 +1779,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PORT_DEFAULT          = '1';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1626,6 +1789,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT         = JSJAC_JINGLE_SDP_CANDIDAT
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1635,6 +1799,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT     = JSJAC_JINGLE_SDP_CANDIDAT
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1644,6 +1809,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT      = JSJAC_JINGLE_SDP_CANDIDAT
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1659,6 +1825,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PRIORITY_DEFAULT      = '1';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1668,6 +1835,7 @@ var JSJAC_JINGLE_MUJI_ACTION_PREPARE                 = 'prepare';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1677,6 +1845,7 @@ var JSJAC_JINGLE_MUJI_ACTION_INITIATE                = 'initiate';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1686,6 +1855,7 @@ var JSJAC_JINGLE_MUJI_ACTION_LEAVE                   = 'leave';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1695,6 +1865,7 @@ var JSJAC_JINGLE_MUJI_STATUS_INACTIVE                = 'inactive';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1704,6 +1875,7 @@ var JSJAC_JINGLE_MUJI_STATUS_PREPARING               = 'preparing';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1713,6 +1885,7 @@ var JSJAC_JINGLE_MUJI_STATUS_PREPARED                = 'prepared';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1722,6 +1895,7 @@ var JSJAC_JINGLE_MUJI_STATUS_INITIATING              = 'initiating';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1731,6 +1905,7 @@ var JSJAC_JINGLE_MUJI_STATUS_INITIATED               = 'initiated';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1740,6 +1915,7 @@ var JSJAC_JINGLE_MUJI_STATUS_LEAVING                 = 'leaving';
  * @constant
  * @global
  * @type {string}
+ * @readonly
  * @default
  * @public
  */
@@ -1755,6 +1931,7 @@ var JSJAC_JINGLE_MUJI_STATUS_LEFT                    = 'left';
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1768,6 +1945,7 @@ JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_RELAY]  = JSJAC
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1782,6 +1960,7 @@ JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_IE]                           = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1795,6 +1974,7 @@ JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_RESPONDER.jingle]              = JSJAC
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1806,6 +1986,7 @@ JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_RESPONDER]                    = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1822,6 +2003,7 @@ JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATED]                    = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1846,6 +2028,7 @@ JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE]              = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1860,6 +2043,7 @@ JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_SECURITY_REQUIRED.jingle]         = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1878,6 +2062,7 @@ XMPP_ERRORS[XMPP_ERROR_BAD_REQUEST.xmpp]                                 = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1904,6 +2089,7 @@ JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS]         = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1919,6 +2105,7 @@ JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]             = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1930,6 +2117,7 @@ JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                            = { lab
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1941,6 +2129,7 @@ JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_SCREEN]             = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1956,6 +2145,7 @@ JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_ERROR]              = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1969,6 +2159,7 @@ JSJAC_JINGLE_PRESENCE_TYPES[JSJAC_JINGLE_PRESENCE_TYPE_ERROR]            = 1;
  * @constant
  * @global
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -1987,6 +2178,7 @@ JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_ERROR]                        = 1;
 
 /**
  * @type {JSJaCConnection}
+ * @readonly
  * @default
  * @public
  */
@@ -1994,6 +2186,7 @@ var JSJAC_JINGLE_STORE_CONNECTION                         = null;
 
 /**
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -2003,6 +2196,7 @@ JSJAC_JINGLE_STORE_SESSIONS[JSJAC_JINGLE_SESSION_MUJI]    = {};
 
 /**
  * @type {function}
+ * @readonly
  * @default
  * @public
  */
@@ -2010,6 +2204,7 @@ var JSJAC_JINGLE_STORE_INITIATE   = function(stanza) {};
 
 /**
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -2019,6 +2214,7 @@ var JSJAC_JINGLE_STORE_DEBUG      = {
 
 /**
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -2029,6 +2225,7 @@ var JSJAC_JINGLE_STORE_EXTDISCO   = {
 
 /**
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -2039,6 +2236,7 @@ var JSJAC_JINGLE_STORE_FALLBACK   = {
 
 /**
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
@@ -2048,6 +2246,7 @@ var JSJAC_JINGLE_STORE_RELAYNODES = {
 
 /**
  * @type {object}
+ * @readonly
  * @default
  * @public
  */
