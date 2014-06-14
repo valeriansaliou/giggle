@@ -212,7 +212,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Initiates a new Jingle session.
      * @public
-     * @fires single-JSJaCJingleSingle#get_session_initiate_pending
+     * @fires JSJaCJingleSingle#get_session_initiate_pending
      */
     initiate: function() {
       this.get_debug().log('[JSJaCJingle:single] initiate', 4);
@@ -296,7 +296,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Accepts the Jingle session.
      * @public
-     * @fires single-JSJaCJingleSingle#get_session_accept_pending
+     * @fires JSJaCJingleSingle#get_session_accept_pending
      */
     accept: function() {
       this.get_debug().log('[JSJaCJingle:single] accept', 4);
@@ -397,7 +397,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Terminates the Jingle session.
      * @public
-     * @fires single-JSJaCJingleSingle#get_session_terminate_pending
+     * @fires JSJaCJingleSingle#get_session_terminate_pending
      * @param {String} reason
      */
     terminate: function(reason) {
@@ -556,21 +556,21 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles a given Jingle stanza response
      * @private
-     * @fires single-JSJaCJingleSingle#_handle_content_accept
-     * @fires single-JSJaCJingleSingle#_handle_content_add
-     * @fires single-JSJaCJingleSingle#_handle_content_modify
-     * @fires single-JSJaCJingleSingle#_handle_content_reject
-     * @fires single-JSJaCJingleSingle#_handle_content_remove
-     * @fires single-JSJaCJingleSingle#_handle_description_info
-     * @fires single-JSJaCJingleSingle#_handle_security_info
-     * @fires single-JSJaCJingleSingle#_handle_session_accept
-     * @fires single-JSJaCJingleSingle#_handle_session_info
-     * @fires single-JSJaCJingleSingle#_handle_session_initiate
-     * @fires single-JSJaCJingleSingle#_handle_session_terminate
-     * @fires single-JSJaCJingleSingle#_handle_transport_accept
-     * @fires single-JSJaCJingleSingle#_handle_transport_info
-     * @fires single-JSJaCJingleSingle#_handle_transport_reject
-     * @fires single-JSJaCJingleSingle#_handle_transport_replace
+     * @fires JSJaCJingleSingle#_handle_content_accept
+     * @fires JSJaCJingleSingle#_handle_content_add
+     * @fires JSJaCJingleSingle#_handle_content_modify
+     * @fires JSJaCJingleSingle#_handle_content_reject
+     * @fires JSJaCJingleSingle#_handle_content_remove
+     * @fires JSJaCJingleSingle#_handle_description_info
+     * @fires JSJaCJingleSingle#_handle_security_info
+     * @fires JSJaCJingleSingle#_handle_session_accept
+     * @fires JSJaCJingleSingle#_handle_session_info
+     * @fires JSJaCJingleSingle#_handle_session_initiate
+     * @fires JSJaCJingleSingle#_handle_session_terminate
+     * @fires JSJaCJingleSingle#_handle_transport_accept
+     * @fires JSJaCJingleSingle#_handle_transport_info
+     * @fires JSJaCJingleSingle#_handle_transport_reject
+     * @fires JSJaCJingleSingle#_handle_transport_replace
      * @param {JSJaCPacket} stanza
      */
     handle: function(stanza) {
@@ -975,10 +975,10 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Sends the Jingle session accept
      * @private
-     * @fires single-JSJaCJingleSingle#_handle_session_accept_success
-     * @fires single-JSJaCJingleSingle#_handle_session_accept_error
-     * @fires single-JSJaCJingleSingle#get_session_accept_success
-     * @fires single-JSJaCJingleSingle#get_session_accept_error
+     * @fires JSJaCJingleSingle#_handle_session_accept_success
+     * @fires JSJaCJingleSingle#_handle_session_accept_error
+     * @fires JSJaCJingleSingle#get_session_accept_success
+     * @fires JSJaCJingleSingle#get_session_accept_error
      * @param {JSJaCPacket} stanza
      * @param {Object} args
      */
@@ -1031,8 +1031,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Sends the Jingle session info
      * @private
-     * @fires single-JSJaCJingleSingle#_handle_session_info_success
-     * @fires single-JSJaCJingleSingle#_handle_session_info_error
+     * @fires JSJaCJingleSingle#_handle_session_info_success
+     * @fires JSJaCJingleSingle#_handle_session_info_error
      * @param {JSJaCPacket} stanza
      * @param {Object} args
      */
@@ -1081,10 +1081,10 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Sends the Jingle session initiate
      * @private
-     * @fires single-JSJaCJingleSingle#_handle_initiate_info_success
-     * @fires single-JSJaCJingleSingle#_handle_initiate_info_error
-     * @fires single-JSJaCJingleSingle#get_session_initiate_success
-     * @fires single-JSJaCJingleSingle#get_session_initiate_error
+     * @fires JSJaCJingleSingle#_handle_initiate_info_success
+     * @fires JSJaCJingleSingle#_handle_initiate_info_error
+     * @fires JSJaCJingleSingle#get_session_initiate_success
+     * @fires JSJaCJingleSingle#get_session_initiate_error
      * @param {JSJaCPacket} stanza
      * @param {Object} args
      */
@@ -1136,10 +1136,10 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Sends the Jingle session terminate
      * @private
-     * @fires single-JSJaCJingleSingle#_handle_session_terminate_success
-     * @fires single-JSJaCJingleSingle#_handle_session_terminate_error
-     * @fires single-JSJaCJingleSingle#get_session_terminate_success
-     * @fires single-JSJaCJingleSingle#get_session_terminate_error
+     * @fires JSJaCJingleSingle#_handle_session_terminate_success
+     * @fires JSJaCJingleSingle#_handle_session_terminate_error
+     * @fires JSJaCJingleSingle#get_session_terminate_success
+     * @fires JSJaCJingleSingle#get_session_terminate_error
      * @param {JSJaCPacket} stanza
      * @param {Object} args
      */
@@ -1212,8 +1212,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Sends the Jingle transport info
      * @private
-     * @fires single-JSJaCJingleSingle#_handle_transport_info_success
-     * @fires single-JSJaCJingleSingle#_handle_transport_info_error
+     * @fires JSJaCJingleSingle#_handle_transport_info_success
+     * @fires JSJaCJingleSingle#_handle_transport_info_error
      * @param {JSJaCPacket} stanza
      * @param {Object} args
      */
@@ -1365,7 +1365,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle content accept
      * @private
-     * @event single-JSJaCJingleSingle#_handle_content_accept
+     * @event JSJaCJingleSingle#_handle_content_accept
      * @param {JSJaCPacket} stanza
      */
     _handle_content_accept: function(stanza) {
@@ -1386,7 +1386,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle content add
      * @private
-     * @event single-JSJaCJingleSingle#_handle_content_add
+     * @event JSJaCJingleSingle#_handle_content_add
      * @param {JSJaCPacket} stanza
      */
     _handle_content_add: function(stanza) {
@@ -1408,7 +1408,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle content modify
      * @private
-     * @event single-JSJaCJingleSingle#_handle_content_modify
+     * @event JSJaCJingleSingle#_handle_content_modify
      * @param {JSJaCPacket} stanza
      */
     _handle_content_modify: function(stanza) {
@@ -1431,7 +1431,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle content reject
      * @private
-     * @event single-JSJaCJingleSingle#_handle_content_reject
+     * @event JSJaCJingleSingle#_handle_content_reject
      * @param {JSJaCPacket} stanza
      */
     _handle_content_reject: function(stanza) {
@@ -1450,7 +1450,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle content remove
      * @private
-     * @event single-JSJaCJingleSingle#_handle_content_remove
+     * @event JSJaCJingleSingle#_handle_content_remove
      * @param {JSJaCPacket} stanza
      */
     _handle_content_remove: function(stanza) {
@@ -1470,7 +1470,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle description info
      * @private
-     * @event single-JSJaCJingleSingle#_handle_description_info
+     * @event JSJaCJingleSingle#_handle_description_info
      * @param {JSJaCPacket} stanza
      */
     _handle_description_info: function(stanza) {
@@ -1487,7 +1487,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle security info
      * @private
-     * @event single-JSJaCJingleSingle#_handle_security_info
+     * @event JSJaCJingleSingle#_handle_security_info
      * @param {JSJaCPacket} stanza
      */
     _handle_security_info: function(stanza) {
@@ -1504,12 +1504,12 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session accept
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_accept
-     * @fires single-JSJaCJingleSingle#_handle_session_accept_success
-     * @fires single-JSJaCJingleSingle#_handle_session_accept_error
-     * @fires single-JSJaCJingleSingle#get_session_accept_success
-     * @fires single-JSJaCJingleSingle#get_session_accept_error
-     * @fires single-JSJaCJingleSingle#get_session_accept_request
+     * @event JSJaCJingleSingle#_handle_session_accept
+     * @fires JSJaCJingleSingle#_handle_session_accept_success
+     * @fires JSJaCJingleSingle#_handle_session_accept_error
+     * @fires JSJaCJingleSingle#get_session_accept_success
+     * @fires JSJaCJingleSingle#get_session_accept_error
+     * @fires JSJaCJingleSingle#get_session_accept_request
      * @param {JSJaCPacket} stanza
      */
     _handle_session_accept: function(stanza) {
@@ -1559,7 +1559,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session accept success
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_accept_success
+     * @event JSJaCJingleSingle#_handle_session_accept_success
      * @param {JSJaCPacket} stanza
      */
     _handle_session_accept_success: function(stanza) {
@@ -1576,7 +1576,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session accept error
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_accept_error
+     * @event JSJaCJingleSingle#_handle_session_accept_error
      * @param {JSJaCPacket} stanza
      */
     _handle_session_accept_error: function(stanza) {
@@ -1593,11 +1593,11 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session accept request
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_accept_request
-     * @fires single-JSJaCJingleSingle#_handle_session_accept_success
-     * @fires single-JSJaCJingleSingle#_handle_session_accept_error
-     * @fires single-JSJaCJingleSingle#get_session_accept_success
-     * @fires single-JSJaCJingleSingle#get_session_accept_error
+     * @event JSJaCJingleSingle#_handle_session_accept_request
+     * @fires JSJaCJingleSingle#_handle_session_accept_success
+     * @fires JSJaCJingleSingle#_handle_session_accept_error
+     * @fires JSJaCJingleSingle#get_session_accept_success
+     * @fires JSJaCJingleSingle#get_session_accept_error
      * @param {JSJaCPacket} stanza
      */
     _handle_session_accept_request: function(stanza) {
@@ -1695,13 +1695,13 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session info
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_info
-     * @fires single-JSJaCJingleSingle#_handle_session_info_success
-     * @fires single-JSJaCJingleSingle#_handle_session_info_error
-     * @fires single-JSJaCJingleSingle#_handle_session_info_request
-     * @fires single-JSJaCJingleSingle#get_session_info_success
-     * @fires single-JSJaCJingleSingle#get_session_info_error
-     * @fires single-JSJaCJingleSingle#get_session_info_request
+     * @event JSJaCJingleSingle#_handle_session_info
+     * @fires JSJaCJingleSingle#_handle_session_info_success
+     * @fires JSJaCJingleSingle#_handle_session_info_error
+     * @fires JSJaCJingleSingle#_handle_session_info_request
+     * @fires JSJaCJingleSingle#get_session_info_success
+     * @fires JSJaCJingleSingle#get_session_info_error
+     * @fires JSJaCJingleSingle#get_session_info_request
      * @param {JSJaCPacket} stanza
      */
     _handle_session_info: function(stanza) {
@@ -1750,7 +1750,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session info success
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_info_success
+     * @event JSJaCJingleSingle#_handle_session_info_success
      * @param {JSJaCPacket} stanza
      */
     _handle_session_info_success: function(stanza) {
@@ -1760,7 +1760,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session info error
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_info_error
+     * @event JSJaCJingleSingle#_handle_session_info_error
      * @param {JSJaCPacket} stanza
      */
     _handle_session_info_error: function(stanza) {
@@ -1770,11 +1770,11 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session info request
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_info_request
-     * @fires single-JSJaCJingleSingle#_handle_session_info_success
-     * @fires single-JSJaCJingleSingle#_handle_session_info_error
-     * @fires single-JSJaCJingleSingle#get_session_info_success
-     * @fires single-JSJaCJingleSingle#get_session_info_error
+     * @event JSJaCJingleSingle#_handle_session_info_request
+     * @fires JSJaCJingleSingle#_handle_session_info_success
+     * @fires JSJaCJingleSingle#_handle_session_info_error
+     * @fires JSJaCJingleSingle#get_session_info_success
+     * @fires JSJaCJingleSingle#get_session_info_error
      * @param {JSJaCPacket} stanza
      */
     _handle_session_info_request: function(stanza) {
@@ -1822,13 +1822,13 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session initiate
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_initiate
-     * @fires single-JSJaCJingleSingle#_handle_session_initiate_success
-     * @fires single-JSJaCJingleSingle#_handle_session_initiate_error
-     * @fires single-JSJaCJingleSingle#_handle_session_initiate_request
-     * @fires single-JSJaCJingleSingle#get_session_initiate_success
-     * @fires single-JSJaCJingleSingle#get_session_initiate_error
-     * @fires single-JSJaCJingleSingle#get_session_initiate_request
+     * @event JSJaCJingleSingle#_handle_session_initiate
+     * @fires JSJaCJingleSingle#_handle_session_initiate_success
+     * @fires JSJaCJingleSingle#_handle_session_initiate_error
+     * @fires JSJaCJingleSingle#_handle_session_initiate_request
+     * @fires JSJaCJingleSingle#get_session_initiate_success
+     * @fires JSJaCJingleSingle#get_session_initiate_error
+     * @fires JSJaCJingleSingle#get_session_initiate_request
      * @param {JSJaCPacket} stanza
      */
     _handle_session_initiate: function(stanza) {
@@ -1868,7 +1868,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session initiate success
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_initiate_success
+     * @event JSJaCJingleSingle#_handle_session_initiate_success
      * @param {JSJaCPacket} stanza
      */
     _handle_session_initiate_success: function(stanza) {
@@ -1885,7 +1885,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session initiate error
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_initiate_error
+     * @event JSJaCJingleSingle#_handle_session_initiate_error
      * @param {JSJaCPacket} stanza
      */
     _handle_session_initiate_error: function(stanza) {
@@ -1908,11 +1908,11 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session initiate request
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_initiate_request
-     * @fires single-JSJaCJingleSingle#_handle_session_initiate_success
-     * @fires single-JSJaCJingleSingle#_handle_session_initiate_error
-     * @fires single-JSJaCJingleSingle#get_session_initiate_success
-     * @fires single-JSJaCJingleSingle#get_session_initiate_error
+     * @event JSJaCJingleSingle#_handle_session_initiate_request
+     * @fires JSJaCJingleSingle#_handle_session_initiate_success
+     * @fires JSJaCJingleSingle#_handle_session_initiate_error
+     * @fires JSJaCJingleSingle#get_session_initiate_success
+     * @fires JSJaCJingleSingle#get_session_initiate_error
      * @param {JSJaCPacket} stanza
      */
     _handle_session_initiate_request: function(stanza) {
@@ -1993,13 +1993,13 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session terminate
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_terminate
-     * @fires single-JSJaCJingleSingle#_handle_session_terminate_success
-     * @fires single-JSJaCJingleSingle#_handle_session_terminate_error
-     * @fires single-JSJaCJingleSingle#_handle_session_terminate_request
-     * @fires single-JSJaCJingleSingle#get_session_terminate_success
-     * @fires single-JSJaCJingleSingle#get_session_terminate_error
-     * @fires single-JSJaCJingleSingle#get_session_terminate_request
+     * @event JSJaCJingleSingle#_handle_session_terminate
+     * @fires JSJaCJingleSingle#_handle_session_terminate_success
+     * @fires JSJaCJingleSingle#_handle_session_terminate_error
+     * @fires JSJaCJingleSingle#_handle_session_terminate_request
+     * @fires JSJaCJingleSingle#get_session_terminate_success
+     * @fires JSJaCJingleSingle#get_session_terminate_error
+     * @fires JSJaCJingleSingle#get_session_terminate_request
      * @param {JSJaCPacket} stanza
      */
     _handle_session_terminate: function(stanza) {
@@ -2050,7 +2050,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session terminate success
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_terminate_success
+     * @event JSJaCJingleSingle#_handle_session_terminate_success
      * @param {JSJaCPacket} stanza
      */
     _handle_session_terminate_success: function(stanza) {
@@ -2070,7 +2070,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session terminate error
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_terminate_error
+     * @event JSJaCJingleSingle#_handle_session_terminate_error
      * @param {JSJaCPacket} stanza
      */
     _handle_session_terminate_error: function(stanza) {
@@ -2095,9 +2095,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session terminate request
      * @private
-     * @event single-JSJaCJingleSingle#_handle_session_terminate_request
-     * @fires single-JSJaCJingleSingle#_handle_session_terminate_success
-     * @fires single-JSJaCJingleSingle#get_session_terminate_success
+     * @event JSJaCJingleSingle#_handle_session_terminate_request
+     * @fires JSJaCJingleSingle#_handle_session_terminate_success
+     * @fires JSJaCJingleSingle#get_session_terminate_success
      * @param {JSJaCPacket} stanza
      */
     _handle_session_terminate_request: function(stanza) {
@@ -2135,7 +2135,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle transport accept
      * @private
-     * @event single-JSJaCJingleSingle#_handle_transport_accept
+     * @event JSJaCJingleSingle#_handle_transport_accept
      * @param {JSJaCPacket} stanza
      */
     _handle_transport_accept: function(stanza) {
@@ -2152,7 +2152,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle transport info
      * @private
-     * @event single-JSJaCJingleSingle#_handle_transport_info
+     * @event JSJaCJingleSingle#_handle_transport_info
      * @param {JSJaCPacket} stanza
      */
     _handle_transport_info: function(stanza) {
@@ -2218,7 +2218,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle transport info success
      * @private
-     * @event single-JSJaCJingleSingle#_handle_transport_info_success
+     * @event JSJaCJingleSingle#_handle_transport_info_success
      * @param {JSJaCPacket} stanza
      */
     _handle_transport_info_success: function(stanza) {
@@ -2228,7 +2228,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle transport info error
      * @private
-     * @event single-JSJaCJingleSingle#_handle_transport_info_error
+     * @event JSJaCJingleSingle#_handle_transport_info_error
      * @param {JSJaCPacket} stanza
      */
     _handle_transport_info_error: function(stanza) {
@@ -2238,7 +2238,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle transport reject
      * @private
-     * @event single-JSJaCJingleSingle#_handle_transport_reject
+     * @event JSJaCJingleSingle#_handle_transport_reject
      * @param {JSJaCPacket} stanza
      */
     _handle_transport_reject: function(stanza) {
@@ -2255,7 +2255,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle transport replace
      * @private
-     * @event single-JSJaCJingleSingle#_handle_transport_replace
+     * @event JSJaCJingleSingle#_handle_transport_replace
      * @param {JSJaCPacket} stanza
      */
     _handle_transport_replace: function(stanza) {
@@ -2409,7 +2409,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Triggers the media not obtained error event
      * @private
-     * @fires single-JSJaCJingleSingle#get_session_initiate_error
+     * @fires JSJaCJingleSingle#get_session_initiate_error
      * @param {Object} error
      */
     _peer_got_user_media_error: function(error) {
@@ -2495,7 +2495,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session initiate pending callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_initiate_pending
+     * @event JSJaCJingleSingle#get_session_initiate_pending
      * @returns {Function} Callback function
      */
     get_session_initiate_pending: function() {
@@ -2508,7 +2508,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session initiate success callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_initiate_success
+     * @event JSJaCJingleSingle#get_session_initiate_success
      * @returns {Function} Callback function
      */
     get_session_initiate_success: function() {
@@ -2521,7 +2521,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session initiate error callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_initiate_error
+     * @event JSJaCJingleSingle#get_session_initiate_error
      * @returns {Function} Callback function
      */
     get_session_initiate_error: function() {
@@ -2534,7 +2534,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session initiate request callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_initiate_request
+     * @event JSJaCJingleSingle#get_session_initiate_request
      * @returns {Function} Callback function
      */
     get_session_initiate_request: function() {
@@ -2547,7 +2547,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session accept pending callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_accept_pending
+     * @event JSJaCJingleSingle#get_session_accept_pending
      * @returns {Function} Callback function
      */
     get_session_accept_pending: function() {
@@ -2560,7 +2560,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session accept success callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_accept_success
+     * @event JSJaCJingleSingle#get_session_accept_success
      * @returns {Function} Callback function
      */
     get_session_accept_success: function() {
@@ -2573,7 +2573,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session accept error callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_accept_error
+     * @event JSJaCJingleSingle#get_session_accept_error
      * @returns {Function} Callback function
      */
     get_session_accept_error: function() {
@@ -2586,7 +2586,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session accept request callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_accept_request
+     * @event JSJaCJingleSingle#get_session_accept_request
      * @returns {Function} Callback function
      */
     get_session_accept_request: function() {
@@ -2599,7 +2599,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session info success callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_info_success
+     * @event JSJaCJingleSingle#get_session_info_success
      * @returns {Function} Callback function
      */
     get_session_info_success: function() {
@@ -2612,7 +2612,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session info error callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_info_error
+     * @event JSJaCJingleSingle#get_session_info_error
      * @returns {Function} Callback function
      */
     get_session_info_error: function() {
@@ -2625,7 +2625,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session info request callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_info_request
+     * @event JSJaCJingleSingle#get_session_info_request
      * @returns {Function} Callback function
      */
     get_session_info_request: function() {
@@ -2638,7 +2638,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session terminate pending callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_terminate_pending
+     * @event JSJaCJingleSingle#get_session_terminate_pending
      * @returns {Function} Callback function
      */
     get_session_terminate_pending: function() {
@@ -2651,7 +2651,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session terminate success callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_terminate_success
+     * @event JSJaCJingleSingle#get_session_terminate_success
      * @returns {Function} Callback function
      */
     get_session_terminate_success: function() {
@@ -2664,7 +2664,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session terminate error callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_terminate_error
+     * @event JSJaCJingleSingle#get_session_terminate_error
      * @returns {Function} Callback function
      */
     get_session_terminate_error: function() {
@@ -2677,7 +2677,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Gets the session terminate request callback function
      * @public
-     * @event single-JSJaCJingleSingle#get_session_terminate_request
+     * @event JSJaCJingleSingle#get_session_terminate_request
      * @returns {Function} Callback function
      */
     get_session_terminate_request: function() {
