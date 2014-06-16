@@ -190,6 +190,48 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         this._remote_view = [args.remote_view];
 
       /**
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._remote_stream = {};
+
+      /**
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._content_remote = {};
+
+      /**
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._payloads_remote = {};
+
+      /**
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._group_remote = {};
+
+      /**
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._candidates_remote = {};
+
+      /**
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._candidates_queue_remote = {};
+
+      /**
        * @constant
        * @member {String}
        * @default
@@ -1030,7 +1072,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
           'responder' : this.get_responder()
         });
 
-        this.utils.stanza_generate_content_local(stanza, jingle);
+        this.utils.stanza_generate_content_local(stanza, jingle, true);
         this.utils.stanza_generate_group_local(stanza, jingle);
 
         // Schedule success
@@ -1135,7 +1177,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
           'initiator' : this.get_initiator()
         });
 
-        this.utils.stanza_generate_content_local(stanza, jingle);
+        this.utils.stanza_generate_content_local(stanza, jingle, true);
         this.utils.stanza_generate_group_local(stanza, jingle);
 
         // Schedule success
@@ -1285,7 +1327,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
           );
         }
 
-        this.utils.stanza_generate_content_local(stanza, jingle, content_queue_local);
+        this.utils.stanza_generate_content_local(stanza, jingle, true, content_queue_local);
         this.utils.stanza_generate_group_local(stanza, jingle);
 
         // Schedule success
@@ -2296,6 +2338,92 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      */
 
     /**
+     * Creates peer connection instance
+     * @private
+     */
+    _peer_connection_create_instance: function() {
+      this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_instance', 4);
+
+      try {
+        // Log STUN servers in use
+        var i;
+        var ice_config = this.utils.config_ice();
+
+        if(typeof ice_config.iceServers == 'object') {
+          for(i = 0; i < (ice_config.iceServers).length; i++)
+            this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_instance > Using ICE server at: ' + ice_config.iceServers[i].url + ' (' + (i + 1) + ').', 2);
+        } else {
+          this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_instance > No ICE server configured. Network may not work properly.', 0);
+        }
+
+        // Create the RTCPeerConnection object
+        this._set_peer_connection(
+          new WEBRTC_PEER_CONNECTION(
+            ice_config,
+            WEBRTC_CONFIGURATION.peer_connection.constraints
+          )
+        );
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_instance > ' + e, 1);
+      }
+    },
+
+    /**
+     * Attaches peer connection callbacks
+     * @private
+     * @fires JSJaCJingleSingle#_peer_connection_callback_onicecandidate
+     * @fires JSJaCJingleSingle#_peer_connection_callback_oniceconnectionstatechange
+     * @fires JSJaCJingleSingle#_peer_connection_callback_onaddstream
+     * @fires JSJaCJingleSingle#_peer_connection_callback_onremovestream
+     * @param {Function} sdp_message_callback
+     */
+    _peer_connection_callbacks: function(sdp_message_callback) {
+      this.get_debug().log('[JSJaCJingle:single] _peer_connection_callbacks', 4);
+
+      try {
+        var _this = this;
+
+        /**
+         * Listens for incoming ICE candidates
+         * @event JSJaCJingleSingle#_peer_connection_callback_onicecandidate
+         * @type {Function}
+         */
+        this.get_peer_connection().onicecandidate = function(data) {
+          _this._peer_connection_callback_onicecandidate.bind(this)(_this, sdp_message_callback, data);
+        };
+
+        /**
+         * Listens for ICE connection state change
+         * @event JSJaCJingleSingle#_peer_connection_callback_oniceconnectionstatechange
+         * @type {Function}
+         */
+        this.get_peer_connection().oniceconnectionstatechange = function(data) {
+          _this._peer_connection_callback_oniceconnectionstatechange.bind(this)(_this, data);
+        };
+
+        /**
+         * Listens for stream add
+         * @event JSJaCJingleSingle#_peer_connection_callback_onaddstream
+         * @type {Function}
+         */
+        this.get_peer_connection().onaddstream = function(data) {
+          _this._peer_connection_callback_onaddstream.bind(this)(_this, data);
+        };
+
+        /**
+         * Listens for stream remove
+         * @event JSJaCJingleSingle#_peer_connection_callback_onremovestream
+         * @type {Function}
+         */
+        this.get_peer_connection().onremovestream = function(data) {
+          _this._peer_connection_callback_onremovestream.bind(this)(_this, data);
+        };
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:single] _peer_connection_callbacks > ' + e, 1);
+      }
+    },
+
+    /**
      * Generates peer connection callback for 'onicecandidate'
      * @private
      * @callback
@@ -2339,10 +2467,81 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     },
 
     /**
+     * Generates peer connection callback for 'oniceconnectionstatechange'
+     * @private
+     * @callback
+     * @param {JSJaCJingleSingle} _this
+     * @param {Object} data
+     */
+    _peer_connection_callback_oniceconnectionstatechange: function(_this, data) {
+      _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_oniceconnectionstatechange', 4);
+
+      try {
+        // Connection errors?
+        switch(this.iceConnectionState) {
+          case 'disconnected':
+            _this._peer_timeout(this.iceConnectionState, {
+              timer  : JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT,
+              reason : JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR
+            });
+            break;
+
+          case 'checking':
+            _this._peer_timeout(this.iceConnectionState); break;
+        }
+
+        _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_oniceconnectionstatechange > (state: ' + this.iceConnectionState + ').', 2);
+      } catch(e) {
+        _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_oniceconnectionstatechange > ' + e, 1);
+      }
+    },
+
+    /**
+     * Generates peer connection callback for 'onaddstream'
+     * @private
+     * @callback
+     * @param {JSJaCJingleSingle} _this
+     * @param {Object} data
+     */
+    _peer_connection_callback_onaddstream: function(_this, data) {
+      _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_onaddstream', 4);
+
+      try {
+        if(!data) {
+          _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_onaddstream > No data passed, dropped.', 2); return;
+        }
+
+        // Attach remote stream to DOM view
+        _this._set_remote_stream(data.stream);
+      } catch(e) {
+        _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_onaddstream > ' + e, 1);
+      }
+    },
+
+    /**
+     * Generates peer connection callback for 'onremovestream'
+     * @private
+     * @callback
+     * @param {JSJaCJingleSingle} _this
+     * @param {Object} data
+     */
+    _peer_connection_callback_onremovestream: function(_this, data) {
+      _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_onremovestream', 4);
+
+      try {
+        // Detach remote stream from DOM view
+        _this._set_remote_stream(null);
+      } catch(e) {
+        _this.get_debug().log('[JSJaCJingle:single] _peer_connection_callback_onremovestream > ' + e, 1);
+      }
+    },
+
+    /**
      * Dispatches peer connection to correct creator (offer/answer)
      * @private
+     * @param {Function} [sdp_message_callback] - Not used there
      */
-    _peer_connection_create_dispatch: function() {
+    _peer_connection_create_dispatch: function(sdp_message_callback) {
       this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_dispatch', 4);
 
       try {
@@ -2358,8 +2557,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Creates peer connection offer
      * @private
+     * @param {Function} [sdp_message_callback] - Not used there
      */
-    _peer_connection_create_offer: function() {
+    _peer_connection_create_offer: function(sdp_message_callback) {
       this.get_debug().log('[JSJaCJingle:single] _peer_connection_create_offer', 4);
 
       try {
@@ -2507,6 +2707,25 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:single] _peer_timeout > ' + e, 1);
       }
+    },
+
+    /**
+     * Stops ongoing peer connections
+     * @private
+     */
+    _peer_stop: function() {
+      this.get_debug().log('[JSJaCJingle:single] _peer_stop', 4);
+
+      // Detach media streams from DOM view
+      this._set_local_stream(null);
+      this._set_remote_stream(null);
+
+      // Close the media stream
+      if(this.get_peer_connection())
+        this.get_peer_connection().close();
+
+      // Remove this session from router
+      JSJaCJingle._remove(JSJAC_JINGLE_SESSION_SINGLE, this.get_sid());
     },
 
 
@@ -2756,6 +2975,89 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       return this._reason;
     },
 
+    /**
+     * Gets the remote_view value
+     * @public
+     * @returns {DOM} Remote view
+     */
+    get_remote_view: function() {
+      return this._remote_view;
+    },
+
+    /**
+     * Gets the remote stream
+     * @public
+     * @returns {Object} Remote stream instance
+     */
+    get_remote_stream: function() {
+      return this._remote_stream;
+    },
+
+    /**
+     * Gets the remote content
+     * @public
+     * @param {String} [name]
+     * @returns {Object} Remote content object
+     */
+    get_content_remote: function(name) {
+      if(name)
+        return (name in this._content_remote) ? this._content_remote[name] : {};
+
+      return this._content_remote;
+    },
+
+    /**
+     * Gets the remote payloads
+     * @public
+     * @param {String} [name]
+     * @returns {Object} Remote payloads object
+     */
+    get_payloads_remote: function(name) {
+      if(name)
+        return (name in this._payloads_remote) ? this._payloads_remote[name] : {};
+
+      return this._payloads_remote;
+    },
+
+    /**
+     * Gets the remote group
+     * @public
+     * @param {String} [semantics]
+     * @returns {Object} Remote group object
+     */
+    get_group_remote: function(semantics) {
+      if(semantics)
+        return (semantics in this._group_remote) ? this._group_remote[semantics] : {};
+
+      return this._group_remote;
+    },
+
+    /**
+     * Gets the remote candidates
+     * @public
+     * @param {String} [name]
+     * @returns {Object} Remote candidates object
+     */
+    get_candidates_remote: function(name) {
+      if(name)
+        return (name in this._candidates_remote) ? this._candidates_remote[name] : [];
+
+      return this._candidates_remote;
+    },
+
+    /**
+     * Gets the remote candidates queue
+     * @public
+     * @param {String} [name]
+     * @returns {Object} Remote candidates queue object
+     */
+    get_candidates_queue_remote: function(name) {
+      if(name)
+        return (name in this._candidates_queue_remote) ? this._candidates_queue_remote[name] : {};
+
+      return this._candidates_queue_remote;
+    },
+
 
 
     /**
@@ -2913,6 +3215,157 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      */
     _set_reason: function(reason) {
       this._reason = reason || JSJAC_JINGLE_REASON_CANCEL;
+    },
+
+    /**
+     * Sets the remote stream
+     * @private
+     * @param {DOM} [remote_stream]
+     */
+    _set_remote_stream: function(remote_stream) {
+      try {
+        if(!remote_stream && this._remote_stream !== null) {
+          this._peer_stream_detach(
+            this.get_remote_view()
+          );
+        }
+
+        if(remote_stream) {
+          this._remote_stream = remote_stream;
+
+          this._peer_stream_attach(
+            this.get_remote_view(),
+            this.get_remote_stream(),
+            false
+          );
+        } else {
+          this._remote_stream = null;
+
+          this._peer_stream_detach(
+            this.get_remote_view()
+          );
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:single] _set_remote_stream > ' + e, 1);
+      }
+    },
+
+    /**
+     * Sets the remote view
+     * @private
+     * @param {DOM} [remote_view]
+     */
+    _set_remote_view: function(remote_view) {
+      if(typeof this._remote_view !== 'object')
+        this._remote_view = [];
+
+      this._remote_view.push(remote_view);
+    },
+
+    /**
+     * Sets the remote content
+     * @private
+     * @param {String} name
+     * @param {Object} content_remote
+     */
+    _set_content_remote: function(name, content_remote) {
+      this._content_remote[name] = content_remote;
+    },
+
+    /**
+     * Sets the remote payloads
+     * @private
+     * @param {String} name
+     * @param {Object} payload_data
+     */
+    _set_payloads_remote: function(name, payload_data) {
+      this._payloads_remote[name] = payload_data;
+    },
+
+    /**
+     * Adds a remote payload
+     * @private
+     * @param {String} name
+     * @param {Object} payload_data
+     */
+    _set_payloads_remote_add: function(name, payload_data) {
+      try {
+        if(!(name in this._payloads_remote)) {
+          this._set_payloads_remote(name, payload_data);
+        } else {
+          var key;
+          var payloads_store = this._payloads_remote[name].descriptions.payload;
+          var payloads_add   = payload_data.descriptions.payload;
+
+          for(key in payloads_add) {
+            if(!(key in payloads_store))
+              payloads_store[key] = payloads_add[key];
+          }
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:single] _set_payloads_remote_add > ' + e, 1);
+      }
+    },
+
+    /**
+     * Sets the remote group
+     * @private
+     * @param {String} semantics
+     * @param {Object} group_data
+     */
+    _set_group_remote: function(semantics, group_data) {
+      this._group_remote[semantics] = group_data;
+    },
+
+    /**
+     * Sets the remote candidates
+     * @private
+     * @param {String} name
+     * @param {Object} candidate_data
+     */
+    _set_candidates_remote: function(name, candidate_data) {
+      this._candidates_remote[name] = candidate_data;
+    },
+
+    /**
+     * Sets the session initiate pending callback function
+     * @private
+     * @param {String} name
+     * @param {Object} candidate_data
+     */
+    _set_candidates_queue_remote: function(name, candidate_data) {
+      if(name === null)
+        this._candidates_queue_remote = {};
+      else
+        this._candidates_queue_remote[name] = (candidate_data);
+    },
+
+    /**
+     * Adds a remote candidate
+     * @private
+     * @param {String} name
+     * @param {Object} candidate_data
+     */
+    _set_candidates_remote_add: function(name, candidate_data) {
+      try {
+        if(!name) return;
+
+        if(!(name in this._candidates_remote))
+          this._set_candidates_remote(name, []);
+     
+        var c, i;
+        var candidate_ids = [];
+
+        for(c in this.get_candidates_remote(name))
+          candidate_ids.push(this.get_candidates_remote(name)[c].id);
+
+        for(i in candidate_data) {
+          if((candidate_data[i].id).indexOf(candidate_ids) !== -1)
+            this.get_candidates_remote(name).push(candidate_data[i]);
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:single] _set_candidates_remote_add > ' + e, 1);
+      }
     },
   }
 );

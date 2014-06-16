@@ -781,7 +781,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         // Build Muji stanza
         var muji = this.utils.stanza_generate_muji(stanza);
 
-        this.utils.stanza_generate_content_local(stanza, muji);
+        this.utils.stanza_generate_content_local(stanza, muji, false);
         this.utils.stanza_generate_group_local(stanza, muji);
 
         // Schedule success
@@ -883,34 +883,21 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
           // Change session status
           this._set_status(JSJAC_JINGLE_MUJI_STATUS_PREPARED);
 
+          // Initialize WebRTC
           var _this = this;
 
-          // Initialize WebRTC
-          _this._peer_get_user_media(function() {
-            // Create local peer connection
+          this._peer_get_user_media(function() {
             _this._peer_connection_create(function() {
               _this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_success > Ready to begin Muji initiation.', 2);
+
+              // Build content (local)
+              _this.utils.build_content_local();
 
               // Change session status
               _this._set_status(JSJAC_JINGLE_MUJI_STATUS_INITIATING);
 
               _this.send_presence({ action: JSJAC_JINGLE_MUJI_ACTION_INITIATE });
             });
-
-            // Undefer pending handlers
-            var i, handlers;
-            handlers = _this.get_deferred_handlers(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA);
-
-            if(typeof handlers == 'object' && handlers.length) {
-              _this.get_debug().log('[JSJaCJingle:single] _handle_session_prepare_success > Submitted to deferred handlers.', 2);
-
-              for(i in handlers) {
-                /* @function */
-                handlers[i]();
-              }
-
-              _this.undefer_handler(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA);
-            }
           });
         }
       } catch(e) {
@@ -952,6 +939,21 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       try {
         // Change session status
         this._set_status(JSJAC_JINGLE_MUJI_STATUS_INITIATED);
+
+        // Undefer pending handlers
+        var i, handlers;
+        handlers = this.get_deferred_handlers(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA);
+
+        if(typeof handlers == 'object' && handlers.length) {
+          this.get_debug().log('[JSJaCJingle:single] _handle_session_prepare_success > Submitted to deferred handlers.', 2);
+
+          for(i in handlers) {
+            /* @function */
+            handlers[i]();
+          }
+
+          this.undefer_handler(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA);
+        }
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _handle_session_initiate_success > ' + e, 1);
       }
@@ -1426,48 +1428,50 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      */
 
     /**
-     * Generates peer connection callback for 'onicecandidate'
+     * Creates peer connection instance
      * @private
-     * @callback
-     * @param {JSJaCJingleMuji} _this
-     * @param {Function} sdp_message_callback
-     * @param {Object} data
      */
-    _peer_connection_callback_onicecandidate: function(_this, sdp_message_callback, data) {
-      _this.get_debug().log('[JSJaCJingle:muji] _peer_connection_callback_onicecandidate', 4);
+    _peer_connection_create_instance: function() {
+      this.get_debug().log('[JSJaCJingle:muji] _peer_connection_create_instance', 4);
 
       try {
-        if(data.candidate) {
-          _this.sdp._parse_candidate_store_store_data(data);
-        } else {
-          // Build or re-build content (local)
-          _this.utils.build_content_local();
-
-          // In which action stanza should candidates be sent?
-          if(_this.get_status() === JSJAC_JINGLE_MUJI_STATUS_PREPARED) {
-            _this.get_debug().log('[JSJaCJingle:muji] _peer_connection_callback_onicecandidate > Got initial candidates.', 2);
-
-            // Execute what's next (initiate/accept session)
-            sdp_message_callback();
-          }
-
-          // Empty the unsent candidates queue
-          _this._set_candidates_queue_local(null);
-        }
+        // Create the RTCPeerConnection object
+        this._set_peer_connection(
+          new WEBRTC_PEER_CONNECTION(
+            null,
+            WEBRTC_CONFIGURATION.peer_connection.constraints
+          )
+        );
       } catch(e) {
-        _this.get_debug().log('[JSJaCJingle:muji] _peer_connection_callback_onicecandidate > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _peer_connection_create_instance > ' + e, 1);
+      }
+    },
+
+    /**
+     * Attaches peer connection callbacks (not used)
+     * @private
+     * @param {Function} [sdp_message_callback]
+     */
+    _peer_connection_callbacks: function(sdp_message_callback) {
+      this.get_debug().log('[JSJaCJingle:single] _peer_connection_callbacks', 4);
+
+      try {
+        // Not used for Muji
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:single] _peer_connection_callbacks > ' + e, 1);
       }
     },
 
     /**
      * Dispatches peer connection to correct creator (offer/answer)
      * @private
+     * @param {Function} [sdp_message_callback]
      */
-    _peer_connection_create_dispatch: function() {
+    _peer_connection_create_dispatch: function(sdp_message_callback) {
       this.get_debug().log('[JSJaCJingle:muji] _peer_connection_create_dispatch', 4);
 
       try {
-        this._peer_connection_create_offer();
+        this._peer_connection_create_offer(sdp_message_callback);
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _peer_connection_create_dispatch > ' + e, 1);
       }
@@ -1476,8 +1480,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     /**
      * Creates peer connection offer
      * @private
+     * @param {Function} [sdp_message_callback]
      */
-    _peer_connection_create_offer: function() {
+    _peer_connection_create_offer: function(sdp_message_callback) {
       this.get_debug().log('[JSJaCJingle:muji] _peer_connection_create_offer', 4);
 
       try {
@@ -1487,7 +1492,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         // Local description
         this.get_peer_connection().createOffer(
           function(sdp_local) {
-            this._peer_got_description(sdp_local);
+            this._peer_got_description(sdp_local, sdp_message_callback);
           }.bind(this),
 
           this._peer_fail_description.bind(this),
@@ -1546,6 +1551,24 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _peer_timeout > ' + e, 1);
       }
+    },
+
+    /**
+     * Stops ongoing peer connections
+     * @private
+     */
+    _peer_stop: function() {
+      this.get_debug().log('[JSJaCJingle:muji] _peer_stop', 4);
+
+      // Detach media streams from DOM view
+      this._set_local_stream(null);
+
+      // Close the media stream
+      if(this.get_peer_connection())
+        this.get_peer_connection().close();
+
+      // Remove this session from router
+      JSJaCJingle._remove(JSJAC_JINGLE_SESSION_SINGLE, this.get_sid());
     },
 
 

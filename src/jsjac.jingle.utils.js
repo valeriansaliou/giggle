@@ -1323,32 +1323,34 @@ var JSJaCJingleUtils = ring.create(
                 }
               }
 
-              // Encryption
-              if(cs_d_encryption && 
-                 (cs_d_encryption.crypto && cs_d_encryption.crypto.length || 
-                  cs_d_encryption['zrtp-hash'] && cs_d_encryption['zrtp-hash'].length)) {
-                var encryption = description.appendChild(stanza.buildNode('encryption', { 'xmlns': NS_JINGLE_APPS_RTP }));
+              // Encryption?
+              if(has_transport === true) {
+                if(cs_d_encryption && 
+                   (cs_d_encryption.crypto && cs_d_encryption.crypto.length || 
+                    cs_d_encryption['zrtp-hash'] && cs_d_encryption['zrtp-hash'].length)) {
+                  var encryption = description.appendChild(stanza.buildNode('encryption', { 'xmlns': NS_JINGLE_APPS_RTP }));
 
-                this.stanza_set_attribute(encryption, 'required', (cs_d_encryption.attrs.required || '0'));
+                  this.stanza_set_attribute(encryption, 'required', (cs_d_encryption.attrs.required || '0'));
 
-                // Crypto
-                this.stanza_build_node(
-                  stanza,
-                  encryption,
-                  cs_d_encryption.crypto,
-                  'crypto',
-                  NS_JINGLE_APPS_RTP
-                );
+                  // Crypto
+                  this.stanza_build_node(
+                    stanza,
+                    encryption,
+                    cs_d_encryption.crypto,
+                    'crypto',
+                    NS_JINGLE_APPS_RTP
+                  );
 
-                // ZRTP-HASH
-                this.stanza_build_node(
-                  stanza,
-                  encryption,
-                  cs_d_encryption['zrtp-hash'],
-                  'zrtp-hash',
-                  NS_JINGLE_APPS_RTP_ZRTP,
-                  'value'
-                );
+                  // ZRTP-HASH
+                  this.stanza_build_node(
+                    stanza,
+                    encryption,
+                    cs_d_encryption['zrtp-hash'],
+                    'zrtp-hash',
+                    NS_JINGLE_APPS_RTP_ZRTP,
+                    'value'
+                  );
+                }
               }
 
               // RTCP-FB (common)
@@ -1385,25 +1387,27 @@ var JSJaCJingleUtils = ring.create(
             }
           }
 
-          // Build transport
-          var cs_transport = this.generate_transport(cur_content.transport);
+          // Build transport?
+          if(has_transport === true) {
+            var cs_transport = this.generate_transport(cur_content.transport);
 
-          // Transport candidates: ICE-UDP
-          if((cs_transport.ice.candidate).length > 0) {
-            fn_build_transport(
-              content,
-              cs_transport.ice,
-              NS_JINGLE_TRANSPORTS_ICEUDP
-            );
-          }
+            // Transport candidates: ICE-UDP
+            if((cs_transport.ice.candidate).length > 0) {
+              fn_build_transport(
+                content,
+                cs_transport.ice,
+                NS_JINGLE_TRANSPORTS_ICEUDP
+              );
+            }
 
-          // Transport candidates: RAW-UDP
-          if((cs_transport.raw.candidate).length > 0) {
-            fn_build_transport(
-              content,
-              cs_transport.raw,
-              NS_JINGLE_TRANSPORTS_RAWUDP
-            );
+            // Transport candidates: RAW-UDP
+            if((cs_transport.raw.candidate).length > 0) {
+              fn_build_transport(
+                content,
+                cs_transport.raw,
+                NS_JINGLE_TRANSPORTS_RAWUDP
+              );
+            }
           }
         }
       } catch(e) {
@@ -1494,7 +1498,7 @@ var JSJaCJingleUtils = ring.create(
         content_obj.transport.attrs.ufrag = payloads.transports ? payloads.transports.ufrag : null;
 
         if(payloads.transports && payloads.transports.fingerprint)
-          content_obj.transport.fingerprint  = payloads.transports.fingerprint;
+          content_obj.transport.fingerprint = payloads.transports.fingerprint;
       } catch(e) {
         this.parent.get_debug().log('[JSJaCJingle:utils] generate_content > ' + e, 1);
       }
@@ -1625,8 +1629,11 @@ var JSJaCJingleUtils = ring.create(
         var content_all = [];
 
         // Push remote contents
-        var content_remote = this.parent.get_content_remote();
-        var cur_participant, participants;
+        var cur_participant, participants,
+            content_remote = {};
+
+        if(typeof this.parent.get_content_remote == 'function')
+          content_remote = this.parent.get_content_remote();
 
         for(cur_participant in content_remote) {
           content_all.push(
