@@ -223,6 +223,13 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this._participants = {};
 
       /**
+       * @member {String}
+       * @default
+       * @private
+       */
+      this._iid = '';
+
+      /**
        * @constant
        * @member {String}
        * @default
@@ -282,6 +289,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         this._set_status(JSJAC_JINGLE_MUJI_STATUS_PREPARING);
 
         // Set session values
+        this._set_iid(this.utils.generate_iid());
         this._set_sid(
           this.utils.generate_hash_md5(this.get_to())
         );
@@ -552,6 +560,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
           if(!muji) return;
 
           // Submit to registered handler
+          var username = this.extract_stanza_username(stanza);
           var status = this.get_participants(username);
 
           var fn_log_drop = function() {
@@ -1435,14 +1444,18 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         // Assert
         if(typeof args !== 'object') args = {};
 
-        var t_sid = this.get_sid();
+        var t_iid = this.get_iid();
 
         var _this = this;
 
         setTimeout(function() {
-          // State did not change?
-          if(_this.get_sid() == t_sid && _this.get_peer_connection(username).iceConnectionState == state) {
-            _this.get_debug().log('[JSJaCJingle:muji] _peer_timeout > Peer timeout.', 2);
+          try {
+            // State did not change?
+            if(_this.get_iid() == t_iid && _this.get_peer_connection(username).iceConnectionState == state) {
+              _this.get_debug().log('[JSJaCJingle:muji] _peer_timeout > Peer timeout.', 2);
+            }
+          } catch(e) {
+            _this.get_debug().log('[JSJaCJingle:muji] _peer_timeout > ' + e, 1);
           }
         }, ((args.timer || JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT) * 1000));
       } catch(e) {
@@ -1490,6 +1503,15 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     /**
      * JSJSAC JINGLE SHORTCUTS
      */
+
+    /**
+     * Returns local user candidates
+     * @private
+     * @returns {Object} Candidates
+     */
+    _local_user_candidates: function() {
+      return this.get_candidates_local(this.get_username());
+    },
 
     /**
      * Returns whether user media is ready or not
@@ -1879,6 +1901,15 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       return JSJAC_JINGLE_STANZA_ID_PRE + '_' + (this.get_sid() || '0') + '_' + this.get_username() + '_';
     },
 
+    /**
+     * Gets the iid value
+     * @public
+     * @returns {String} IID value
+     */
+    get_iid: function() {
+      return this._iid;
+    },
+
 
 
     /**
@@ -2069,6 +2100,15 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      */
     _set_username: function(username) {
       this._username = username;
+    },
+
+    /**
+     * Sets the instance ID
+     * @private
+     * @param {String} iid
+     */
+    _set_iid: function(iid) {
+      this._iid = iid;
     },
 
     /**

@@ -923,7 +923,7 @@ var __JSJaCJingleBase = ring.create(
         );
 
         // Need to wait for local candidates?
-        var candidates_local_main = this.get_candidates_local(this.get_username());
+        var candidates_local_main = this._local_user_candidates();
 
         if(this.utils.count_candidates(candidates_local_main) === 0) {
           this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Waiting for local candidates...', 2);

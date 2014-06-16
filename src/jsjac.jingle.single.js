@@ -2540,6 +2540,21 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
 
 
     /**
+     * JSJSAC JINGLE SHORTCUTS
+     */
+
+    /**
+     * Returns local user candidates
+     * @private
+     * @returns {Object} Candidates
+     */
+    _local_user_candidates: function() {
+      return this.get_candidates_local(this.get_to());
+    },
+
+
+
+    /**
      * JSJSAC JINGLE GETTERS
      */
 

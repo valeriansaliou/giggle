@@ -1735,6 +1735,15 @@ var JSJaCJingleUtils = ring.create(
     },
 
     /**
+     * Generates a random IID value
+     * @public
+     * @returns {String} IID value
+     */
+    generate_iid: function() {
+      return this.generate_random(24);
+    },
+
+    /**
      * Generates a random ID value
      * @public
      * @returns {String} ID value
