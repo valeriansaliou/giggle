@@ -110,13 +110,23 @@ var __JSJaCJingleBase = ring.create(
          */
         this._fps = args.fps;
 
-      if(args && args.local_view)
-        /**
-         * @member {DOM}
-         * @default
-         * @private
-         */
-        this._local_view = [args.local_view];
+      if(args && args.local_view) {
+        if(args.local_view instanceof Array) {
+          /**
+           * @member {DOM}
+           * @default
+           * @private
+           */
+          this._local_view = args.local_view;
+        } else {
+          /**
+           * @member {DOM}
+           * @default
+           * @private
+           */
+          this._local_view = [args.local_view];
+        }
+      }
 
       if(args && args.stun) {
         /**
@@ -214,7 +224,7 @@ var __JSJaCJingleBase = ring.create(
        * @default
        * @private
        */
-      this._content_local = {};
+      this._content_local = [];
 
       /**
        * @member {Object}
@@ -249,7 +259,7 @@ var __JSJaCJingleBase = ring.create(
        * @default
        * @private
        */
-      this._payloads_local = {};
+      this._payloads_local = [];
 
       /**
        * @member {Object}
@@ -277,7 +287,7 @@ var __JSJaCJingleBase = ring.create(
        * @default
        * @private
        */
-      this._remote_view = {};
+      this._remote_view = [];
 
       /**
        * @member {Object}
@@ -497,35 +507,34 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Registers a view element
      * @public
-     * @param {String} username
      * @param {String} tyoe
      * @param {DOM} view
      * @returns {Boolean} Success
      */
-    register_view: function(username, type, view) {
+    register_view: function(type, view) {
       this.get_debug().log('[JSJaCJingle:base] register_view', 4);
 
       try {
         // Get view functions
-        var fn = this.utils.map_register_view(username, type);
+        var fn = this.utils.map_register_view(type);
 
         if(fn.type == type) {
           var i;
 
           // Check view is not already registered
-          for(i in (fn.view.get)(username)) {
-            if((fn.view.get)(username)[i] == view) {
+          for(i in (fn.view.get)()) {
+            if((fn.view.get)()[i] == view) {
               this.get_debug().log('[JSJaCJingle:base] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
               return true;
             }
           }
 
           // Proceeds registration
-          (fn.view.set)(username, view);
+          (fn.view.set)(view);
 
           this.utils._peer_stream_attach(
             [view],
-            (fn.stream.get)(username),
+            (fn.stream.get)(),
             fn.mute
           );
 
@@ -546,31 +555,30 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Unregisters a view element
      * @public
-     * @param {String} username
      * @param {String} type
      * @param {DOM} view
      * @returns {Boolean} Success
      */
-    unregister_view: function(username, type, view) {
+    unregister_view: function(type, view) {
       this.get_debug().log('[JSJaCJingle:base] unregister_view', 4);
 
       try {
         // Get view functions
-        var fn = this.utils.map_unregister_view(username, type);
+        var fn = this.utils.map_unregister_view(type);
 
         if(fn.type == type) {
           var i;
 
           // Check view is registered
-          for(i in (fn.view.get)(username)) {
-            if((fn.view.get)(username)[i] == view) {
+          for(i in (fn.view.get)()) {
+            if((fn.view.get)()[i] == view) {
               // Proceeds un-registration
               this.utils._peer_stream_detach(
                 [view]
               );
 
               this.utils.array_remove_value(
-                (fn.view.get)(username),
+                (fn.view.get)(),
                 view
               );
 
@@ -605,15 +613,14 @@ var __JSJaCJingleBase = ring.create(
      * @fires __JSJaCJingleBase#_peer_connection_callback_oniceconnectionstatechange
      * @fires __JSJaCJingleBase#_peer_connection_callback_onaddstream
      * @fires __JSJaCJingleBase#_peer_connection_callback_onremovestream
-     * @param {String} username
      * @param {Function} sdp_message_callback
      */
-    _peer_connection_create: function(username, sdp_message_callback) {
+    _peer_connection_create: function(sdp_message_callback) {
       this.get_debug().log('[JSJaCJingle:base] _peer_connection_create', 4);
 
       try {
         // Create peer connection instance
-        this._peer_connection_create_instance(username);
+        this._peer_connection_create_instance();
 
         // Event callbacks
         var _this = this;
@@ -623,8 +630,8 @@ var __JSJaCJingleBase = ring.create(
          * @event __JSJaCJingleBase#_peer_connection_callback_onicecandidate
          * @type {Function}
          */
-        this.get_peer_connection(username).onicecandidate = function(data) {
-          _this._peer_connection_callback_onicecandidate.bind(this)(_this, username, sdp_message_callback, data);
+        this.get_peer_connection().onicecandidate = function(data) {
+          _this._peer_connection_callback_onicecandidate.bind(this)(_this, sdp_message_callback, data);
         };
 
         /**
@@ -632,8 +639,8 @@ var __JSJaCJingleBase = ring.create(
          * @event __JSJaCJingleBase#_peer_connection_callback_oniceconnectionstatechange
          * @type {Function}
          */
-        this.get_peer_connection(username).oniceconnectionstatechange = function(data) {
-          _this._peer_connection_callback_oniceconnectionstatechange.bind(this)(_this, username, data);
+        this.get_peer_connection().oniceconnectionstatechange = function(data) {
+          _this._peer_connection_callback_oniceconnectionstatechange.bind(this)(_this, data);
         };
 
         /**
@@ -641,8 +648,8 @@ var __JSJaCJingleBase = ring.create(
          * @event __JSJaCJingleBase#_peer_connection_callback_onaddstream
          * @type {Function}
          */
-        this.get_peer_connection(username).onaddstream = function(data) {
-          _this._peer_connection_callback_onaddstream.bind(this)(_this, username, data);
+        this.get_peer_connection().onaddstream = function(data) {
+          _this._peer_connection_callback_onaddstream.bind(this)(_this, data);
         };
 
         /**
@@ -650,15 +657,15 @@ var __JSJaCJingleBase = ring.create(
          * @event __JSJaCJingleBase#_peer_connection_callback_onremovestream
          * @type {Function}
          */
-        this.get_peer_connection(username).onremovestream = function(data) {
-          _this._peer_connection_callback_onremovestream.bind(this)(_this, username, data);
+        this.get_peer_connection().onremovestream = function(data) {
+          _this._peer_connection_callback_onremovestream.bind(this)(_this, data);
         };
 
         // Add local stream
-        this._peer_connection_create_local_stream(username);
+        this._peer_connection_create_local_stream();
 
         // Create offer/answer
-        this._peer_connection_create_dispatch(username);
+        this._peer_connection_create_dispatch();
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:base] _peer_connection_create > ' + e, 1);
       }
@@ -667,9 +674,8 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Creates peer connection instance
      * @private
-     * @param {String} username
      */
-    _peer_connection_create_instance: function(username) {
+    _peer_connection_create_instance: function() {
       this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_instance', 4);
 
       try {
@@ -686,8 +692,6 @@ var __JSJaCJingleBase = ring.create(
 
         // Create the RTCPeerConnection object
         this._set_peer_connection(
-          username,
-
           new WEBRTC_PEER_CONNECTION(
             ice_config,
             WEBRTC_CONFIGURATION.peer_connection.constraints
@@ -703,24 +707,23 @@ var __JSJaCJingleBase = ring.create(
      * @private
      * @callback
      * @param {JSJaCJingleSingle|JSJaCJingleMuji} _this
-     * @param {String} username
      * @param {Object} data
      */
-    _peer_connection_callback_oniceconnectionstatechange: function(_this, username, data) {
+    _peer_connection_callback_oniceconnectionstatechange: function(_this, data) {
       _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_oniceconnectionstatechange', 4);
 
       try {
         // Connection errors?
         switch(this.iceConnectionState) {
           case 'disconnected':
-            _this._peer_timeout(username, this.iceConnectionState, {
+            _this._peer_timeout(this.iceConnectionState, {
               timer  : JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT,
               reason : JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR
             });
             break;
 
           case 'checking':
-            _this._peer_timeout(username, this.iceConnectionState); break;
+            _this._peer_timeout(this.iceConnectionState); break;
         }
 
         _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_oniceconnectionstatechange > (state: ' + this.iceConnectionState + ').', 2);
@@ -734,10 +737,9 @@ var __JSJaCJingleBase = ring.create(
      * @private
      * @callback
      * @param {JSJaCJingleSingle|JSJaCJingleMuji} _this
-     * @param {String} username
      * @param {Object} data
      */
-    _peer_connection_callback_onaddstream: function(_this, username, data) {
+    _peer_connection_callback_onaddstream: function(_this, data) {
       _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onaddstream', 4);
 
       try {
@@ -746,7 +748,7 @@ var __JSJaCJingleBase = ring.create(
         }
 
         // Attach remote stream to DOM view
-        _this._set_remote_stream(username, data.stream);
+        _this._set_remote_stream(data.stream);
       } catch(e) {
         _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onaddstream > ' + e, 1);
       }
@@ -757,15 +759,14 @@ var __JSJaCJingleBase = ring.create(
      * @private
      * @callback
      * @param {JSJaCJingleSingle|JSJaCJingleMuji} _this
-     * @param {String} username
      * @param {Object} data
      */
-    _peer_connection_callback_onremovestream: function(_this, username, data) {
+    _peer_connection_callback_onremovestream: function(_this, data) {
       _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onremovestream', 4);
 
       try {
         // Detach remote stream from DOM view
-        _this._set_remote_stream(username, null);
+        _this._set_remote_stream(null);
       } catch(e) {
         _this.get_debug().log('[JSJaCJingle:base] _peer_connection_callback_onremovestream > ' + e, 1);
       }
@@ -774,13 +775,12 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Creates peer connection local stream
      * @private
-     * @param {String} username
      */
-    _peer_connection_create_local_stream: function(username) {
+    _peer_connection_create_local_stream: function() {
       this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_local_stream', 4);
 
       try {
-        this.get_peer_connection(username).addStream(
+        this.get_peer_connection().addStream(
           this.get_local_stream()
       	);
       } catch(e) {
@@ -855,25 +855,23 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Triggers the SDP description retrieval success event
      * @private
-     * @param {String} username
      * @param {Object} sdp_local
      */
-    _peer_got_description: function(username, sdp_local) {
+    _peer_got_description: function(sdp_local) {
       this.get_debug().log('[JSJaCJingle:base] _peer_got_description', 4);
 
       try {
         this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Got local description.', 2);
 
-        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:raw) > [' + username + ']' + '\n\n' + sdp_local.sdp, 4);
+        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:raw)' + '\n\n' + sdp_local.sdp, 4);
 
         // Convert SDP raw data to an object
         var cur_name;
-        var payload_parsed = this.sdp._parse_payload(username, sdp_local.sdp);
+        var payload_parsed = this.sdp._parse_payload(sdp_local.sdp);
         this.sdp._resolution_payload(payload_parsed);
 
         for(cur_name in payload_parsed) {
           this._set_payloads_local(
-            username,
             cur_name,
             payload_parsed[cur_name]
           );
@@ -884,7 +882,6 @@ var __JSJaCJingleBase = ring.create(
 
         for(cur_semantics in group_parsed) {
           this._set_group_local(
-            username,
             cur_semantics,
             group_parsed[cur_semantics]
           );
@@ -892,23 +889,20 @@ var __JSJaCJingleBase = ring.create(
 
         // Filter our local description (remove unused medias)
         var sdp_local_desc = this.sdp._generate_description(
-          username,
-
           sdp_local.type,
-          this.get_group_local(username),
-          this.get_payloads_local(username),
+          this.get_group_local(),
+          this.get_payloads_local(),
 
           this.sdp._generate_candidates(
-            username,
-            this.get_candidates_local(username)
+            this.get_candidates_local()
           )
         );
 
-        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:gen) > [' + username + ']' + '\n\n' + sdp_local_desc.sdp, 4);
+        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
 
         var _this = this;
 
-        this.get_peer_connection(username).setLocalDescription(
+        this.get_peer_connection().setLocalDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_local_desc)),
 
           function() {
@@ -916,21 +910,15 @@ var __JSJaCJingleBase = ring.create(
           },
 
           function(e) {
-            if(_this.get_sdp_trace())  _this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:error) > [' + username + ']' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+            if(_this.get_sdp_trace())  _this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
 
             // Error (descriptions are incompatible)
           }
         );
 
         // Need to wait for local candidates?
-        var candidates_local_main = this._local_user_candidates();
-
-        if(this.utils.count_candidates(candidates_local_main) === 0) {
+        if(this.utils.count_candidates(this._local_user_candidates()) === 0) {
           this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Waiting for local candidates...', 2);
-        } else {
-          this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Local candidates already discovered, copying them into participant storage space.', 2);
-
-          this._candidates_local[username] = this.utils.object_clone(candidates_local_main);
         }
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:base] _peer_got_description > ' + e, 1);
@@ -1017,6 +1005,25 @@ var __JSJaCJingleBase = ring.create(
       }
     },
 
+    /**
+     * Stops ongoing peer connections
+     * @private
+     */
+    _peer_stop: function() {
+      this.get_debug().log('[JSJaCJingle:base] _peer_stop', 4);
+
+      // Detach media streams from DOM view
+      this._set_local_stream(null);
+      this._set_remote_stream(null);
+
+      // Close the media stream
+      if(this.get_peer_connection())
+        this.get_peer_connection().close();
+
+      // Remove this session from router
+      JSJaCJingle._remove(JSJAC_JINGLE_SESSION_SINGLE, this.get_sid());
+    },
+
 
 
     /**
@@ -1039,95 +1046,6 @@ var __JSJaCJingleBase = ring.create(
      */
     is_initiator: function() {
       return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
-    },
-
-    /**
-     * Flushes local user data
-     * @private
-     * @param {String} username
-     */
-    _flush_local_user: function(username) {
-      this._set_local_stream(null);
-      this._set_content_local(username, null);
-      this._set_payloads_local(username, null);
-      this._set_group_local(username, null);
-      this._set_candidates_local(username, null);
-      this._set_candidates_queue_local(username, null);
-      this._set_peer_connection(username, null);
-    },
-
-    /**
-     * Shortcut for commonly used bi-get-toggle
-     * @private
-     * @param {Object} db_obj
-     * @param {String} username
-     * @param {String} [key]
-     * @returns {Object} Storage object
-     */
-    _bi_toggle_get: function(db_obj, username, key) {
-      if(key) {
-        return (username in db_obj  &&
-                key in db_obj[username]) ? db_obj[username][key] : {};
-      }
-
-      if(username)  return db_obj[username];
-
-      return db_obj;
-    },
-
-    /**
-     * Shortcut for commonly used tri-set-toggle (object endpoint)
-     * @private
-     * @param {Object} db_obj
-     * @param {String} username
-     * @param {String} [key]
-     * @param {Object} [store_obj]
-     * @returns {Object} Updated storage object
-     */
-    _tri_toggle_set_object: function(db_obj, username, key, store_obj) {
-      if(!(username in db_obj))  db_obj[username] = {};
-
-      if(username === null) {
-        db_obj = {};
-      } else if(key === null) {
-        delete db_obj[username];
-      } else if(store_obj === null) {
-        if(key in db_obj[username])
-          delete db_obj[username][key];
-      } else {
-        db_obj[username][key] = store_obj;
-      }
-
-      return db_obj;
-    },
-
-    /**
-     * Shortcut for commonly used tri-set-toggle (array endpoint)
-     * @private
-     * @param {Object} db_obj
-     * @param {String} username
-     * @param {String} [key]
-     * @param {Object} [store_obj]
-     * @returns {Object} Updated storage object
-     */
-    _tri_toggle_set_array: function(db_obj, username, key, store_obj) {
-      if(!(username in db_obj))  db_obj[username] = {};
-
-      if(username === null) {
-        db_obj = {};
-      } else if(key === null) {
-        delete db_obj[username];
-      } else if(store_obj === null) {
-        if(key in db_obj[username])
-          delete db_obj[username][key];
-      } else {
-        if(typeof db_obj[username][key] != 'object')
-          db_obj[username][key] = [];
-
-        db_obj[username][key].push(store_obj);
-      }
-
-      return db_obj;
     },
 
 
@@ -1157,186 +1075,148 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Gets the local payloads
      * @public
-     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Local payloads object
      */
-    get_payloads_local: function(username, name) {
-      return this._bi_toggle_get(
-        this._payloads_local,
+    get_payloads_local: function(name) {
+      if(name)
+        return (name in this._payloads_local) ? this._payloads_local[name] : {};
 
-        username,
-        name
-      );
+      return this._payloads_local;
     },
 
     /**
      * Gets the local group
      * @public
-     * @param {String} [username]
      * @param {String} [semantics]
      * @returns {Object} Local group object
      */
-    get_group_local: function(username, semantics) {
-      return this._bi_toggle_get(
-        this._group_local,
+    get_group_local: function(semantics) {
+      if(semantics)
+        return (semantics in this._group_local) ? this._group_local[semantics] : {};
 
-        username,
-        semantics
-      );
+      return this._group_local;
     },
 
     /**
      * Gets the local candidates
      * @public
-     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Local candidates object
      */
-    get_candidates_local: function(username, name) {
-      return this._bi_toggle_get(
-        this._candidates_local,
+    get_candidates_local: function(name) {
+      if(name)
+        return (name in this._candidates_local) ? this._candidates_local[name] : {};
 
-        username,
-        name
-      );
+      return this._candidates_local;
     },
 
     /**
      * Gets the local candidates queue
      * @public
-     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Local candidates queue object
      */
-    get_candidates_queue_local: function(username, name) {
-      return this._bi_toggle_get(
-        this._candidates_queue_local,
+    get_candidates_queue_local: function(name) {
+      if(name)
+        return (name in this._candidates_queue_local) ? this._candidates_queue_local[name] : {};
 
-        username,
-        name
-      );
+      return this._candidates_queue_local;
     },
 
     /**
      * Gets the local content
      * @public
-     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Local content object
      */
-    get_content_local: function(username, name) {
-      return this._bi_toggle_get(
-        this._content_local,
+    get_content_local: function(name) {
+      if(name)
+        return (name in this._content_local) ? this._content_local[name] : {};
 
-        username,
-        name
-      );
+      return this._content_local;
     },
 
     /**
      * Gets the remote stream
      * @public
-     * @param {String} [username]
      * @returns {Object} Remote stream instance
      */
-    get_remote_stream: function(username) {
-      if(username)
-          return this._remote_stream[username];
-
+    get_remote_stream: function() {
       return this._remote_stream;
     },
 
     /**
      * Gets the remote content
      * @public
-     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Remote content object
      */
-    get_content_remote: function(username, name) {
-      return this._bi_toggle_get(
-        this._content_remote,
+    get_content_remote: function(name) {
+      if(name)
+        return (name in this._content_remote) ? this._content_remote[name] : {};
 
-        username,
-        name
-      );
+      return this._content_remote;
     },
 
     /**
      * Gets the remote payloads
      * @public
-     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Remote payloads object
      */
-    get_payloads_remote: function(username, name) {
-      return this._bi_toggle_get(
-        this._payloads_remote,
+    get_payloads_remote: function(name) {
+      if(name)
+        return (name in this._payloads_remote) ? this._payloads_remote[name] : {};
 
-        username,
-        name
-      );
+      return this._payloads_remote;
     },
 
     /**
      * Gets the remote group
      * @public
-     * @param {String} [username]
      * @param {String} [semantics]
      * @returns {Object} Remote group object
      */
-    get_group_remote: function(username, semantics) {
-      return this._bi_toggle_get(
-        this._group_remote,
+    get_group_remote: function(semantics) {
+      if(semantics)
+        return (semantics in this._group_remote) ? this._group_remote[semantics] : {};
 
-        username,
-        semantics
-      );
+      return this._group_remote;
     },
 
     /**
      * Gets the remote candidates
      * @public
-     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Remote candidates object
      */
-    get_candidates_remote: function(username, name) {
-      return this._bi_toggle_get(
-        this._candidates_remote,
+    get_candidates_remote: function(name) {
+      if(name)
+        return (name in this._candidates_remote) ? this._candidates_remote[name] : [];
 
-        username,
-        name
-      );
+      return this._candidates_remote;
     },
 
     /**
      * Gets the remote candidates queue
      * @public
-     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Remote candidates queue object
      */
-    get_candidates_queue_remote: function(username, name) {
-      return this._bi_toggle_get(
-        this._candidates_queue_remote,
+    get_candidates_queue_remote: function(name) {
+      if(name)
+        return (name in this._candidates_queue_remote) ? this._candidates_queue_remote[name] : {};
 
-        username,
-        name
-      );
+      return this._candidates_queue_remote;
     },
 
     /**
      * Gets the peer connection
      * @public
-     * @param {String} [username]
      * @returns {Object} Peer connection
      */
-    get_peer_connection: function(username) {
-      if(username)
-          return this._peer_connection[username];
-
+    get_peer_connection: function() {
       return this._peer_connection;
     },
 
@@ -1456,6 +1336,15 @@ var __JSJaCJingleBase = ring.create(
      */
     get_status: function() {
       return this._status;
+    },
+
+    /**
+     * Gets the connection value
+     * @public
+     * @returns {JSJaCConnection} Connection value
+     */
+    get_connection: function() {
+      return this._connection;
     },
 
     /**
@@ -1603,12 +1492,10 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Gets the remote_view value
      * @public
-     * @param {String} username
      * @returns {DOM} Remote view
      */
-    get_remote_view: function(username) {
-      return (typeof this._remote_view == 'object'  &&
-              username in this._remote_view) ? this._remote_view[username] : [];
+    get_remote_view: function() {
+      return this._remote_view;
     },
 
     /**
@@ -1717,187 +1604,145 @@ var __JSJaCJingleBase = ring.create(
     },
 
     /**
-     * Sets the remote view
+     * Sets the remote stream
      * @private
-     * @param {String} username
-     * @param {DOM} [remote_view]
+     * @param {DOM} [remote_stream]
      */
-    _set_remote_view: function(username, remote_view) {
-      if(typeof this._remote_view !== 'object')
-        this._remote_view = {};
+    _set_remote_stream: function(remote_stream) {
+      try {
+        if(!remote_stream && this._remote_stream !== null) {
+          this._peer_stream_detach(
+            this.get_remote_view()
+          );
+        }
 
-      if(username !== null) {
-        if(typeof this._remote_view[username] !== 'object')
-          this._remote_view[username] = [];
+        if(remote_stream) {
+          this._remote_stream = remote_stream;
 
-        if(remote_view === null)
-          delete this._remote_view[username];
-        else
-          this._remote_view[username].push(remote_view);
-      } else {
-        this._remote_view = {};
+          this._peer_stream_attach(
+            this.get_remote_view(),
+            this.get_remote_stream(),
+            false
+          );
+        } else {
+          this._remote_stream = null;
+
+          this._peer_stream_detach(
+            this.get_remote_view()
+          );
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:base] _set_remote_stream > ' + e, 1);
       }
     },
 
     /**
-     * Pops the given remote view
+     * Sets the remote view
      * @private
-     * @param {String} username
-     * @param {DOM} remote_view_pop
+     * @param {DOM} [remote_view]
      */
-    _set_remote_view_pop: function(username, remote_view_pop) {
-    	var i,
-    	    remote_views, cur_remote_view,
-    	    remote_views_new;
+    _set_remote_view: function(remote_view) {
+      if(typeof this._remote_view !== 'object')
+        this._remote_view = [];
 
-    	remote_views = this.get_remote_view(username);
-    	remote_views_new = [];
-
-    	for(i = 0; i < remote_views.length; i++) {
-    		cur_remote_view = remote_views[i];
-
-    		if(cur_remote_view !== remote_view_pop)
-    			remote_views_new.push(cur_remote_view);
-    	}
-
-    	this._remote_view[username] = remote_views_new;
+      this._remote_view.push(remote_view);
     },
 
     /**
      * Sets the local payload
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} payload_data
      */
-    _set_payloads_local: function(username, name, payload_data) {
-      this._tri_toggle_set_object(
-        this._payloads_local,
-
-        username,
-        name,
-        payload_data
-      );
+    _set_payloads_local: function(name, payload_data) {
+      this._payloads_local[name] = payload_data
     },
 
     /**
      * Sets the local group
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} group_data
      */
-    _set_group_local: function(username, semantics, group_data) {
-      this._tri_toggle_set_object(
-        this._group_local,
-
-        username,
-        semantics,
-        group_data
-      );
+    _set_group_local: function(semantics, group_data) {
+      this._group_local[semantics] = group_data;
     },
 
     /**
      * Sets the local candidates
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} candidate_data
      */
-    _set_candidates_local: function(username, name, candidate_data) {
-      this._tri_toggle_set_array(
-        this._candidates_local,
+    _set_candidates_local: function(name, candidate_data) {
+      if(!(name in this._candidates_local))  this._candidates_local[name] = [];
 
-        username,
-        name,
-        candidate_data
-      );
+      (this._candidates_local[name]).push(candidate_data);
     },
 
     /**
      * Sets the local candidates queue
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} candidate_data
      */
-    _set_candidates_queue_local: function(username, name, candidate_data) {
-      this._tri_toggle_set_array(
-        this._candidates_queue_local,
+    _set_candidates_queue_local: function(name, candidate_data) {
+      try {
+        if(name === null) {
+          this._candidates_queue_local = {};
+        } else {
+          if(!(name in this._candidates_queue_local))  this._candidates_queue_local[name] = [];
 
-        username,
-        name,
-        candidate_data
-      );
+          (this._candidates_queue_local[name]).push(candidate_data);
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:base] _set_candidates_queue_local > ' + e, 1);
+      }
     },
 
     /**
      * Sets the local content
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} content_local
      */
-    _set_content_local: function(username, name, content_local) {
-      this._tri_toggle_set_object(
-        this._content_local,
-
-        username,
-        name,
-        content_local
-      );
+    _set_content_local: function(name, content_local) {
+      this._content_local[name] = content_local;
     },
 
     /**
      * Sets the remote content
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} content_remote
      */
-    _set_content_remote: function(username, name, content_remote) {
-      this._tri_toggle_set_object(
-        this._content_remote,
-
-        username,
-        name,
-        content_remote
-      );
+    _set_content_remote: function(name, content_remote) {
+      this._content_remote[name] = content_remote;
     },
 
     /**
      * Sets the remote payloads
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} payload_data
      */
-    _set_payloads_remote: function(username, name, payload_data) {
-      this._tri_toggle_set_object(
-        this._payloads_remote,
-
-        username,
-        name,
-        payload_data
-      );
+    _set_payloads_remote: function(name, payload_data) {
+      this._payloads_remote[name] = payload_data;
     },
 
     /**
      * Adds a remote payload
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} payload_data
      */
-    _set_payloads_remote_add: function(username, name, payload_data) {
+    _set_payloads_remote_add: function(name, payload_data) {
       try {
-        if(!(username in this._payloads_remote))  this._payloads_remote[username] = {};
-
-        if(!(name in this._payloads_remote[username])) {
-          this._set_payloads_remote(username, name, payload_data);
+        if(!(name in this._payloads_remote)) {
+          this._set_payloads_remote(name, payload_data);
         } else {
           var key;
-          var payloads_store = this._payloads_remote[username][name].descriptions.payload;
+          var payloads_store = this._payloads_remote[name].descriptions.payload;
           var payloads_add   = payload_data.descriptions.payload;
 
           for(key in payloads_add) {
@@ -1913,79 +1758,58 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Sets the remote group
      * @private
-     * @param {String} username
      * @param {String} semantics
      * @param {Object} group_data
      */
-    _set_group_remote: function(username, semantics, group_data) {
-      this._tri_toggle_set_object(
-        this._group_remote,
-
-        username,
-        semantics,
-        group_data
-      );
+    _set_group_remote: function(semantics, group_data) {
+      this._group_remote[semantics] = group_data;
     },
 
     /**
      * Sets the remote candidates
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} candidate_data
      */
-    _set_candidates_remote: function(username, name, candidate_data) {
-      this._tri_toggle_set_object(
-        this._candidates_remote,
-
-        username,
-        name,
-        candidate_data
-      );
+    _set_candidates_remote: function(name, candidate_data) {
+      this._candidates_remote[name] = candidate_data;
     },
 
     /**
      * Sets the session initiate pending callback function
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} candidate_data
      */
-    _set_candidates_queue_remote: function(username, name, candidate_data) {
-      this._tri_toggle_set_object(
-        this._candidates_queue_remote,
-
-        username,
-        name,
-        candidate_data
-      );
+    _set_candidates_queue_remote: function(name, candidate_data) {
+      if(name === null)
+        this._candidates_queue_remote = {};
+      else
+        this._candidates_queue_remote[name] = (candidate_data);
     },
 
     /**
      * Adds a remote candidate
      * @private
-     * @param {String} username
      * @param {String} name
      * @param {Object} candidate_data
      */
-    _set_candidates_remote_add: function(username, name, candidate_data) {
+    _set_candidates_remote_add: function(name, candidate_data) {
       try {
         if(!name) return;
 
-        if(!(username in this._candidates_remote))  this._candidates_remote[username] = {};
-
-        if(!(name in this._candidates_remote[username]))
-          this._set_candidates_remote(username, name, []);
+        if(!(name in this._candidates_remote))
+          this._set_candidates_remote(name, []);
      
         var c, i;
         var candidate_ids = [];
 
-        for(c in this.get_candidates_remote(username, name))
-          candidate_ids.push(this.get_candidates_remote(username, name)[c].id);
+        for(c in this.get_candidates_remote(name))
+          candidate_ids.push(this.get_candidates_remote(name)[c].id);
 
         for(i in candidate_data) {
           if((candidate_data[i].id).indexOf(candidate_ids) !== -1)
-            this.get_candidates_remote(username, name).push(candidate_data[i]);
+            this.get_candidates_remote(name).push(candidate_data[i]);
         }
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:base] _set_candidates_remote_add > ' + e, 1);
@@ -1995,16 +1819,10 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Sets the peer connection
      * @private
-     * @param {String} username
      * @param {Object} peer_connection
      */
-    _set_peer_connection: function(username, peer_connection) {
-      if(peer_connection === null) {
-        if(username in this._peer_connection)
-          delete this._peer_connection[username];
-      } else {
-        this._peer_connection[username] = peer_connection;
-      }
+    _set_peer_connection: function(peer_connection) {
+      this._peer_connection = peer_connection;
     },
 
     /**
@@ -2128,6 +1946,15 @@ var __JSJaCJingleBase = ring.create(
      */
     _set_to: function(to) {
       this._to = to;
+    },
+
+    /**
+     * Sets the session connection value
+     * @private
+     * @param {JSJaCConnection} connection
+     */
+    _set_to: function(connection) {
+      this._connection = connection;
     },
 
     /**

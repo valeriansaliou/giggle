@@ -42,11 +42,10 @@ var JSJaCJingleSDP = ring.create(
     /**
      * Parses SDP payload
      * @private
-     * @param {String} username
      * @param {String} sdp_payload
      * @returns {Object} Parsed payload object
      */
-    _parse_payload: function(username, sdp_payload) {
+    _parse_payload: function(sdp_payload) {
       var payload = {};
 
       try {
@@ -139,7 +138,7 @@ var JSJaCJingleSDP = ring.create(
           // 'audio/video' line?
           if(m_media) {
             cur_media = m_media[1];
-            cur_name  = this.parent.utils.name_generate(username, cur_media);
+            cur_name  = this.parent.utils.name_generate(cur_media);
 
             // Push it to parent array
             init_descriptions(cur_name, 'attrs', {});
@@ -520,14 +519,10 @@ var JSJaCJingleSDP = ring.create(
           m_candidate = R_WEBRTC_SDP_CANDIDATE.exec(cur_line);
 
           if(m_candidate) {
-            this._parse_candidate_store(
-              username,
-
-              {
-                media     : cur_media,
-                candidate : cur_line
-              }
-            );
+            this._parse_candidate_store({
+              media     : cur_media,
+              candidate : cur_line
+            });
 
             continue;
           }
@@ -725,10 +720,9 @@ var JSJaCJingleSDP = ring.create(
     /**
      * Parses SDP candidate & store it
      * @private
-     * @param {String} username
      * @param {Object} sdp_candidate
      */
-    _parse_candidate_store: function(username, sdp_candidate) {
+    _parse_candidate_store: function(sdp_candidate) {
       // Store received candidate
       var candidate_media = sdp_candidate.media;
       var candidate_data  = sdp_candidate.candidate;
@@ -737,25 +731,13 @@ var JSJaCJingleSDP = ring.create(
       var candidate_obj   = this._parse_candidate(candidate_data);
 
       this.parent._set_candidates_local(
-        username,
-
-        this.parent.utils.name_generate(
-          username,
-          candidate_media
-        ),
-
+        this.parent.utils.name_generate(candidate_media),
         candidate_obj
       );
 
       // Enqueue candidate
       this.parent._set_candidates_queue_local(
-        username,
-
-        this.parent.utils.name_generate(
-          username,
-          candidate_media
-        ),
-
+        this.parent.utils.name_generate(candidate_media),
         candidate_obj
       );
     },
@@ -763,13 +745,12 @@ var JSJaCJingleSDP = ring.create(
     /**
      * Parses SDP candidate & store it from data
      * @private
-     * @param {String} username
      * @param {Object} data
      */
-    _parse_candidate_store_store_data: function(username, data) {
-      this._parse_candidate_store(username, {
+    _parse_candidate_store_store_data: function(data) {
+      this._parse_candidate_store({
         media     : (isNaN(data.candidate.sdpMid) ? data.candidate.sdpMid
-                                                  : this.parent.utils.media_generate(username, parseInt(data.candidate.sdpMid, 10))),
+                                                  : this.parent.utils.media_generate(parseInt(data.candidate.sdpMid, 10))),
         candidate : data.candidate.candidate
       });
     },
@@ -777,19 +758,18 @@ var JSJaCJingleSDP = ring.create(
     /**
      * Generates SDP description
      * @private
-     * @param {String} username
      * @param {String} type
      * @param {Object} group
      * @param {Object} payloads
      * @param {Object} candidates
      * @returns {Object} SDP object
      */
-    _generate: function(username, type, group, payloads, candidates) {    
+    _generate: function(type, group, payloads, candidates) {    
       try {
         var sdp_obj = {};
 
-        sdp_obj.candidates  = this._generate_candidates(username, candidates);
-        sdp_obj.description = this._generate_description(username, type, group, payloads, sdp_obj.candidates);
+        sdp_obj.candidates  = this._generate_candidates(candidates);
+        sdp_obj.description = this._generate_description(type, group, payloads, sdp_obj.candidates);
 
         return sdp_obj;
       } catch(e) {
@@ -802,11 +782,10 @@ var JSJaCJingleSDP = ring.create(
     /**
      * Generate SDP candidates
      * @private
-     * @param {String} username
      * @param {Object} candidates
      * @returns {Array} SDP candidates array
      */
-    _generate_candidates: function(username, candidates) {
+    _generate_candidates: function(candidates) {
       var candidates_arr = [];
 
       try {
@@ -816,7 +795,7 @@ var JSJaCJingleSDP = ring.create(
 
         for(cur_name in candidates) {
           cur_c_name = candidates[cur_name];
-          cur_media   = this.parent.utils.media_generate(username, cur_name);
+          cur_media   = this.parent.utils.media_generate(cur_name);
 
           for(i in cur_c_name) {
             cur_candidate = cur_c_name[i];
@@ -882,14 +861,13 @@ var JSJaCJingleSDP = ring.create(
     /**
      * Generates SDP description
      * @private
-     * @param {String} username
      * @param {String} type
      * @param {Object} group
      * @param {Object} payloads
      * @param {Object} sdp_candidates
      * @returns {Object} SDP description payloads
      */
-    _generate_description: function(username, type, group, payloads, sdp_candidates) {    
+    _generate_description: function(type, group, payloads, sdp_candidates) {    
       var payloads_obj = {};
 
       try {
@@ -957,7 +935,7 @@ var JSJaCJingleSDP = ring.create(
         for(cur_name in payloads) {
           cur_name_obj          = payloads[cur_name];
           cur_senders           = this.parent.get_senders(cur_name);
-          cur_media             = this.parent.get_name(cur_name) ? this.parent.utils.media_generate(username, cur_name) : null;
+          cur_media             = this.parent.get_name(cur_name) ? this.parent.utils.media_generate(cur_name) : null;
 
           // No media?
           if(!cur_media) continue;

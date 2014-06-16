@@ -615,11 +615,10 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Parses stanza content
      * @public
-     * @param {String} username
      * @param {JSJaCPacket} stanza
      * @returns {Boolean} Success
      */
-    stanza_parse_content: function(username, stanza) {    
+    stanza_parse_content: function(stanza) {    
       try {
         var i,
             jingle, namespace, content, cur_content,
@@ -659,7 +658,6 @@ var JSJaCJingleUtils = ring.create(
 
               // Payloads (non-destructive setters / cumulative)
               this.parent._set_payloads_remote_add(
-                username,
                 content_name,
                 this.stanza_parse_payload(cur_content)
               );
@@ -668,13 +666,11 @@ var JSJaCJingleUtils = ring.create(
               cur_candidate = this.stanza_parse_candidate(cur_content);
 
               this.parent._set_candidates_remote_add(
-                username,
                 content_name,
                 cur_candidate
               );
 
               this.parent._set_candidates_queue_remote(
-                username,
                 content_name,
                 cur_candidate
               );
@@ -693,11 +689,10 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Parses stanza group
      * @public
-     * @param {String} username
      * @param {JSJaCPacket} stanza
      * @returns {Boolean} Success
      */
-    stanza_parse_group: function(username, stanza) {    
+    stanza_parse_group: function(stanza) {    
       try {
         var i, j,
             jingle,
@@ -733,7 +728,6 @@ var JSJaCJingleUtils = ring.create(
 
               // Payloads (non-destructive setters / cumulative)
               this.parent._set_group_remote(
-                username,
                 group_semantics,
                 group_content_names
               );
@@ -1176,15 +1170,15 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Generates stanza local content
      * @public
-     * @param {String} username
      * @param {JSJaCPacket} stanza
      * @param {DOM} jingle
+     * @param {Boolean} has_transport
      * @param {Object} [override_content]
      */
-    stanza_generate_content_local: function(username, stanza, jingle, override_content) {    
+    stanza_generate_content_local: function(stanza, jingle, has_transport, override_content) {    
       try {
         var cur_media;
-        var content_local = override_content ? override_content : this.parent.get_content_local(username);
+        var content_local = override_content ? override_content : this.parent.get_content_local();
 
         var _this = this;
 
@@ -1420,17 +1414,16 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Generates stanza local group
      * @public
-     * @param {String} username
      * @param {JSJaCPacket} stanza
      * @param {DOM} jingle
      */
-    stanza_generate_group_local: function(username, stanza, jingle) {    
+    stanza_generate_group_local: function(stanza, jingle) {    
       try {
         var i,
             cur_semantics, cur_group, cur_group_name,
             group;
 
-        var group_local = this.parent.get_group_local(username);
+        var group_local = this.parent.get_group_local();
 
         for(cur_semantics in group_local) {
           cur_group = group_local[cur_semantics];
@@ -1568,23 +1561,21 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Builds local content
      * @public
-     * @param {String} username
      */
-    build_content_local: function(username) {    
+    build_content_local: function() {    
       try {
         var cur_name;
 
         for(cur_name in this.parent.get_name()) {
           this.parent._set_content_local(
-            username,
             cur_name,
 
             this.generate_content(
               JSJAC_JINGLE_SENDERS_INITIATOR.jingle,
               cur_name,
               this.parent.get_senders(cur_name),
-              this.parent.get_payloads_local(username, cur_name),
-              this.parent.get_candidates_local(username, cur_name)
+              this.parent.get_payloads_local(cur_name),
+              this.parent.get_candidates_local(cur_name)
             )
           );
         }
@@ -1596,23 +1587,21 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Builds remote content
      * @public
-     * @param {String} username
      */
-    build_content_remote: function(username) {    
+    build_content_remote: function() {    
       try {
         var cur_name;
 
         for(cur_name in this.parent.get_name()) {
           this.parent._set_content_remote(
-            username,
             cur_name,
 
             this.generate_content(
               this.parent.get_creator(cur_name),
               cur_name,
               this.parent.get_senders(cur_name),
-              this.parent.get_payloads_remote(username, cur_name),
-              this.parent.get_candidates_remote(username, cur_name)
+              this.parent.get_payloads_remote(cur_name),
+              this.parent.get_candidates_remote(cur_name)
             )
           );
         }
@@ -1624,11 +1613,10 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Generates media name
      * @public
-     * @param {String} username
      * @param {String} media
      * @returns {String} Media name
      */
-    name_generate: function(username, media) {    
+    name_generate: function(media) {    
       var name = null;
 
       try {
@@ -1648,7 +1636,7 @@ var JSJaCJingleUtils = ring.create(
 
         // Push local content
         content_all.push(
-          this.parent.get_content_local(username)
+          this.parent.get_content_local()
         );
 
         for(i in content_all) {
@@ -1674,11 +1662,10 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Generates media
      * @public
-     * @param {String} username
      * @param {String} name
      * @returns {String} Media
      */
-    media_generate: function(username, name) {    
+    media_generate: function(name) {    
       var cur_media;
       var media = null;
 
@@ -1691,7 +1678,7 @@ var JSJaCJingleUtils = ring.create(
           }
         } else {
           for(cur_media in JSJAC_JINGLE_MEDIAS) {
-            if(name == this.name_generate(username, cur_media)) {
+            if(name == this.name_generate(cur_media)) {
               media = cur_media; break;
             }
           }
@@ -2064,11 +2051,10 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Registers a view to map
      * @public
-     * @param {String} username
      * @param {String} type
      * @returns {Object} View register functions map
      */
-    map_register_view: function(username, type) {    
+    map_register_view: function(type) {    
       var fn = {
         type   : null,
         mute   : false,
@@ -2113,12 +2099,11 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Unregister a view from map
      * @public
-     * @param {String} username
      * @param {String} type
      * @returns {Object} View unregister functions map
      */
-    map_unregister_view: function(username, type) {    
-      return this.map_register_view(username, type);
+    map_unregister_view: function(type) {    
+      return this.map_register_view(type);
     },
   }
 );

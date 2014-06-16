@@ -109,6 +109,10 @@ var ARGS = {
         console.log('session_accept_request');
     },
 
+    session_info_pending: function(_this, stanza) {
+        console.log('session_info_pending');
+    },
+
     session_info_success: function(_this, stanza) {
         console.log('session_info_success');
     },

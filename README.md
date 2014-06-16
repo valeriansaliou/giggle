@@ -170,6 +170,13 @@ var ARGS = {
         console.log('session_info_error');
     },
 
+    session_info_pending: function(_this, stanza) {
+        // Update your client UI
+        // Got an info pending!
+
+        console.log('session_info_pending');
+    },
+
     session_info_request: function(_this, stanza) {
         // Update your client UI
         // Got an info request!
