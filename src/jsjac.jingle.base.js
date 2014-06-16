@@ -1324,7 +1324,7 @@ var __JSJaCJingleBase = ring.create(
      * @param {Object} payload_data
      */
     _set_payloads_local: function(name, payload_data) {
-      this._payloads_local[name] = payload_data
+      this._payloads_local[name] = payload_data;
     },
 
     /**
@@ -1516,7 +1516,7 @@ var __JSJaCJingleBase = ring.create(
      * @private
      * @param {JSJaCConnection} connection
      */
-    _set_to: function(connection) {
+    _set_connection: function(connection) {
       this._connection = connection;
     },
 
