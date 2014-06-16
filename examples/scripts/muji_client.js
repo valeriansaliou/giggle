@@ -248,11 +248,18 @@ var ARGS = {
                 '<video class="video_remote" data-username="' + username + '" src="" alt="" width="320" height="180" poster="./images/video_poster_big.png"></video>'
             );
 
-            view_sel.insertBefore('#room_container .video_remote_container .clear:last');
-            view_sel.stop(true).hide().fadeIn(400);
+            view_sel.insertBefore('#room_container .clear:last').hide();
+
+            var fn_reveal_view = function() {
+                view_sel.stop(true).hide().fadeIn(400);
+            };
 
             if(nobody_sel.is(':visible')) {
-                nobody_sel.stop(true).fadeOut(250);
+                nobody_sel.stop(true).fadeOut(250, function() {
+                    fn_reveal_view();
+                });
+            } else {
+                fn_reveal_view();
             }
         }
 
@@ -260,7 +267,7 @@ var ARGS = {
         return view_sel[0];
     },
     
-    remove_remote_view: function(_this) {
+    remove_remote_view: function(_this, username) {
         console.log('remove_remote_view');
 
         var nobody_sel = $('#room_container h6');

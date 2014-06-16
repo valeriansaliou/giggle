@@ -1176,14 +1176,15 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Generates stanza local content
      * @public
+     * @param {String} username
      * @param {JSJaCPacket} stanza
      * @param {DOM} jingle
      * @param {Object} [override_content]
      */
-    stanza_generate_content_local: function(stanza, jingle, override_content) {    
+    stanza_generate_content_local: function(username, stanza, jingle, override_content) {    
       try {
         var cur_media;
-        var content_local = override_content ? override_content : this.parent.get_content_local();
+        var content_local = override_content ? override_content : this.parent.get_content_local(username);
 
         var _this = this;
 
@@ -1419,16 +1420,17 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Generates stanza local group
      * @public
+     * @param {String} username
      * @param {JSJaCPacket} stanza
      * @param {DOM} jingle
      */
-    stanza_generate_group_local: function(stanza, jingle) {    
+    stanza_generate_group_local: function(username, stanza, jingle) {    
       try {
         var i,
             cur_semantics, cur_group, cur_group_name,
             group;
 
-        var group_local = this.parent.get_group_local();
+        var group_local = this.parent.get_group_local(username);
 
         for(cur_semantics in group_local) {
           cur_group = group_local[cur_semantics];
@@ -1566,21 +1568,23 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Builds local content
      * @public
+     * @param {String} username
      */
-    build_content_local: function() {    
+    build_content_local: function(username) {    
       try {
         var cur_name;
 
         for(cur_name in this.parent.get_name()) {
           this.parent._set_content_local(
+            username,
             cur_name,
 
             this.generate_content(
               JSJAC_JINGLE_SENDERS_INITIATOR.jingle,
               cur_name,
               this.parent.get_senders(cur_name),
-              this.parent.get_payloads_local(cur_name),
-              this.parent.get_candidates_local(cur_name)
+              this.parent.get_payloads_local(username, cur_name),
+              this.parent.get_candidates_local(username, cur_name)
             )
           );
         }
@@ -1620,10 +1624,11 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Generates media name
      * @public
+     * @param {String} username
      * @param {String} media
      * @returns {String} Media name
      */
-    name_generate: function(media) {    
+    name_generate: function(username, media) {    
       var name = null;
 
       try {
@@ -1643,7 +1648,7 @@ var JSJaCJingleUtils = ring.create(
 
         // Push local content
         content_all.push(
-          this.parent.get_content_local()
+          this.parent.get_content_local(username)
         );
 
         for(i in content_all) {
@@ -1669,10 +1674,11 @@ var JSJaCJingleUtils = ring.create(
     /**
      * Generates media
      * @public
+     * @param {String} username
      * @param {String} name
      * @returns {String} Media
      */
-    media_generate: function(name) {    
+    media_generate: function(username, name) {    
       var cur_media;
       var media = null;
 
@@ -1685,7 +1691,7 @@ var JSJaCJingleUtils = ring.create(
           }
         } else {
           for(cur_media in JSJAC_JINGLE_MEDIAS) {
-            if(name == this.name_generate(cur_media)) {
+            if(name == this.name_generate(username, cur_media)) {
               media = cur_media; break;
             }
           }
@@ -1889,6 +1895,29 @@ var JSJaCJingleUtils = ring.create(
       }
 
       return is_same;
+    },
+
+    /**
+     * Returns number of candidates in candidates object
+     * @public
+     * @param {Object} candidates_obj
+     * @returns {Number} Number of candidates
+     */
+    count_candidates: function(candidates_obj) {    
+      var count_candidates = 0;
+
+      try {
+        var i;
+
+        for(i in candidates_obj) {
+          count_candidates += (typeof candidates_obj[i] == 'object') ? candidates_obj[i].length : 0;
+        }
+      } catch(e) {
+        this.parent.get_debug().log('[JSJaCJingle:utils] count_candidates > ' + e, 1);
+      } finally {
+        return count_candidates;
+      }
+
     },
 
     /**

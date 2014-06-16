@@ -249,7 +249,7 @@ var __JSJaCJingleBase = ring.create(
        * @default
        * @private
        */
-      this._payloads_local = [];
+      this._payloads_local = {};
 
       /**
        * @member {Object}
@@ -271,48 +271,6 @@ var __JSJaCJingleBase = ring.create(
        * @private
        */
       this._candidates_queue_local = {};
-
-      /**
-       * @member {Object}
-       * @default
-       * @private
-       */
-      this._handlers = {};
-
-      /**
-       * @member {Object}
-       * @default
-       * @private
-       */
-      this._mute = {};
-
-      /**
-       * @member {Boolean}
-       * @default
-       * @private
-       */
-      this._lock = false;
-
-      /**
-       * @member {Boolean}
-       * @default
-       * @private
-       */
-      this._media_busy = false;
-
-      /**
-       * @member {String}
-       * @default
-       * @private
-       */
-      this._sid = '';
-
-      /**
-       * @member {Object}
-       * @default
-       * @private
-       */
-      this._name = {};
 
       /**
        * @member {Object}
@@ -362,6 +320,55 @@ var __JSJaCJingleBase = ring.create(
        * @private
        */
       this._candidates_queue_remote = {};
+
+      /**
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._registered_handlers = {};
+
+      /**
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._deferred_handlers = {};
+
+      /**
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._mute = {};
+
+      /**
+       * @member {Boolean}
+       * @default
+       * @private
+       */
+      this._lock = false;
+
+      /**
+       * @member {Boolean}
+       * @default
+       * @private
+       */
+      this._media_busy = false;
+
+      /**
+       * @member {String}
+       * @default
+       * @private
+       */
+      this._sid = '';
+
+      /**
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._name = {};
     },
 
 
@@ -390,7 +397,7 @@ var __JSJaCJingleBase = ring.create(
         }
 
         if(id) {
-          this._set_handlers(type, id, fn);
+          this._set_registered_handlers(type, id, fn);
 
           this.get_debug().log('[JSJaCJingle:base] register_handler > Registered handler for id: ' + id + ' and type: ' + type, 3);
           return true;
@@ -418,8 +425,8 @@ var __JSJaCJingleBase = ring.create(
       try {
         type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
 
-        if(type in this._handlers && id in this._handlers[type]) {
-          delete this._handlers[type][id];
+        if(type in this._registered_handlers && id in this._registered_handlers[type]) {
+          this._set_registered_handlers(type, id, null);
 
           this.get_debug().log('[JSJaCJingle:base] unregister_handler > Unregistered handler for id: ' + id + ' and type: ' + type, 3);
           return true;
@@ -429,6 +436,59 @@ var __JSJaCJingleBase = ring.create(
         }
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:base] unregister_handler > ' + e, 1);
+      }
+
+      return false;
+    },
+
+    /**
+     * Defers a given handler
+     * @public
+     * @param {String} ns
+     * @param {Function} fn
+     * @returns {Boolean} Success
+     */
+    defer_handler: function(ns, fn) {
+      this.get_debug().log('[JSJaCJingle:base] defer_handler', 4);
+
+      try {
+        if(typeof fn !== 'function') {
+          this.get_debug().log('[JSJaCJingle:base] defer_handler > fn parameter not passed or not a function!', 1);
+          return false;
+        }
+
+        this._set_deferred_handlers(ns, fn);
+
+        this.get_debug().log('[JSJaCJingle:base] defer_handler > Deferred handler for namespace: ' + ns, 3);
+        return true;
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:base] defer_handler > ' + e, 1);
+      }
+
+      return false;
+    },
+
+    /**
+     * Undefers the given handler
+     * @public
+     * @param {String} ns
+     * @returns {Boolean} Success
+     */
+    undefer_handler: function(ns) {
+      this.get_debug().log('[JSJaCJingle:base] undefer_handler', 4);
+
+      try {
+        if(ns in this._deferred_handlers) {
+          this._set_deferred_handlers(ns, null);
+
+          this.get_debug().log('[JSJaCJingle:base] undefer_handler > Undeferred handler for namespace: ' + ns, 3);
+          return true;
+        } else {
+          this.get_debug().log('[JSJaCJingle:base] undefer_handler > Could not undefer handler with namespace: ' + ns + ' (not found).', 2);
+          return false;
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:base] undefer_handler > ' + e, 1);
       }
 
       return false;
@@ -564,7 +624,7 @@ var __JSJaCJingleBase = ring.create(
          * @type {Function}
          */
         this.get_peer_connection(username).onicecandidate = function(data) {
-          _this._peer_connection_callback_onicecandidate.bind(this)(_this, sdp_message_callback, data);
+          _this._peer_connection_callback_onicecandidate.bind(this)(_this, username, sdp_message_callback, data);
         };
 
         /**
@@ -597,8 +657,8 @@ var __JSJaCJingleBase = ring.create(
         // Add local stream
         this._peer_connection_create_local_stream(username);
 
-        // Create offer
-        this._peer_connection_create_offer(username);
+        // Create offer/answer
+        this._peer_connection_create_dispatch(username);
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:base] _peer_connection_create > ' + e, 1);
       }
@@ -737,13 +797,19 @@ var __JSJaCJingleBase = ring.create(
       this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media', 4);
 
       try {
-        this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media > Getting user media...', 2);
+        if(this.get_local_stream() === null) {
+          this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media > Getting user media...', 2);
 
-        (WEBRTC_GET_MEDIA.bind(navigator))(
-          this.utils.generate_constraints(),
-          this._peer_got_user_media_success.bind(this, callback),
-          this._peer_got_user_media_error.bind(this)
-        );
+          (WEBRTC_GET_MEDIA.bind(navigator))(
+            this.utils.generate_constraints(),
+            this._peer_got_user_media_success.bind(this, callback),
+            this._peer_got_user_media_error.bind(this)
+          );
+        } else {
+          this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media > User media already acquired.', 2);
+
+          callback();
+        }
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media > ' + e, 1);
       }
@@ -798,15 +864,16 @@ var __JSJaCJingleBase = ring.create(
       try {
         this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Got local description.', 2);
 
-        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:raw)' + '\n\n' + sdp_local.sdp, 4);
+        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:raw) > [' + username + ']' + '\n\n' + sdp_local.sdp, 4);
 
         // Convert SDP raw data to an object
         var cur_name;
-        var payload_parsed = this.sdp._parse_payload(sdp_local.sdp);
+        var payload_parsed = this.sdp._parse_payload(username, sdp_local.sdp);
         this.sdp._resolution_payload(payload_parsed);
 
         for(cur_name in payload_parsed) {
           this._set_payloads_local(
+            username,
             cur_name,
             payload_parsed[cur_name]
           );
@@ -817,6 +884,7 @@ var __JSJaCJingleBase = ring.create(
 
         for(cur_semantics in group_parsed) {
           this._set_group_local(
+            username,
             cur_semantics,
             group_parsed[cur_semantics]
           );
@@ -824,16 +892,19 @@ var __JSJaCJingleBase = ring.create(
 
         // Filter our local description (remove unused medias)
         var sdp_local_desc = this.sdp._generate_description(
+          username,
+
           sdp_local.type,
-          this.get_group_local(),
-          this.get_payloads_local(),
+          this.get_group_local(username),
+          this.get_payloads_local(username),
 
           this.sdp._generate_candidates(
-            this.get_candidates_local()
+            username,
+            this.get_candidates_local(username)
           )
         );
 
-        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
+        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:gen) > [' + username + ']' + '\n\n' + sdp_local_desc.sdp, 4);
 
         var _this = this;
 
@@ -845,13 +916,22 @@ var __JSJaCJingleBase = ring.create(
           },
 
           function(e) {
-            if(_this.get_sdp_trace())  _this.get_debug().log('[JSJaCJingle:base] _peer_got_description >SDP (local:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+            if(_this.get_sdp_trace())  _this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:error) > [' + username + ']' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
 
             // Error (descriptions are incompatible)
           }
         );
 
-        this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Waiting for local candidates...', 2);
+        // Need to wait for local candidates?
+        var candidates_local_main = this.get_candidates_local(this.get_username());
+
+        if(this.utils.count_candidates(candidates_local_main) === 0) {
+          this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Waiting for local candidates...', 2);
+        } else {
+          this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Local candidates already discovered, copying them into participant storage space.', 2);
+
+          this._candidates_local[username] = this.utils.object_clone(candidates_local_main);
+        }
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:base] _peer_got_description > ' + e, 1);
       }
@@ -962,17 +1042,54 @@ var __JSJaCJingleBase = ring.create(
     },
 
     /**
-     * Shortcut for commonly used tri-set-toggle
+     * Flushes local user data
+     * @private
+     * @param {String} username
+     */
+    _flush_local_user: function(username) {
+      this._set_local_stream(null);
+      this._set_content_local(username, null);
+      this._set_payloads_local(username, null);
+      this._set_group_local(username, null);
+      this._set_candidates_local(username, null);
+      this._set_candidates_queue_local(username, null);
+      this._set_peer_connection(username, null);
+    },
+
+    /**
+     * Shortcut for commonly used bi-get-toggle
+     * @private
+     * @param {Object} db_obj
+     * @param {String} username
+     * @param {String} [key]
+     * @returns {Object} Storage object
+     */
+    _bi_toggle_get: function(db_obj, username, key) {
+      if(key) {
+        return (username in db_obj  &&
+                key in db_obj[username]) ? db_obj[username][key] : {};
+      }
+
+      if(username)  return db_obj[username];
+
+      return db_obj;
+    },
+
+    /**
+     * Shortcut for commonly used tri-set-toggle (object endpoint)
      * @private
      * @param {Object} db_obj
      * @param {String} username
      * @param {String} [key]
      * @param {Object} [store_obj]
+     * @returns {Object} Updated storage object
      */
-    _tri_toggle_set: function(db_obj, username, key, store_obj) {
+    _tri_toggle_set_object: function(db_obj, username, key, store_obj) {
       if(!(username in db_obj))  db_obj[username] = {};
 
-      if(key === null) {
+      if(username === null) {
+        db_obj = {};
+      } else if(key === null) {
         delete db_obj[username];
       } else if(store_obj === null) {
         if(key in db_obj[username])
@@ -980,6 +1097,37 @@ var __JSJaCJingleBase = ring.create(
       } else {
         db_obj[username][key] = store_obj;
       }
+
+      return db_obj;
+    },
+
+    /**
+     * Shortcut for commonly used tri-set-toggle (array endpoint)
+     * @private
+     * @param {Object} db_obj
+     * @param {String} username
+     * @param {String} [key]
+     * @param {Object} [store_obj]
+     * @returns {Object} Updated storage object
+     */
+    _tri_toggle_set_array: function(db_obj, username, key, store_obj) {
+      if(!(username in db_obj))  db_obj[username] = {};
+
+      if(username === null) {
+        db_obj = {};
+      } else if(key === null) {
+        delete db_obj[username];
+      } else if(store_obj === null) {
+        if(key in db_obj[username])
+          delete db_obj[username][key];
+      } else {
+        if(typeof db_obj[username][key] != 'object')
+          db_obj[username][key] = [];
+
+        db_obj[username][key].push(store_obj);
+      }
+
+      return db_obj;
     },
 
 
@@ -1009,66 +1157,81 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Gets the local payloads
      * @public
+     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Local payloads object
      */
-    get_payloads_local: function(name) {
-      if(name)
-        return (name in this._payloads_local) ? this._payloads_local[name] : {};
+    get_payloads_local: function(username, name) {
+      return this._bi_toggle_get(
+        this._payloads_local,
 
-      return this._payloads_local;
+        username,
+        name
+      );
     },
 
     /**
      * Gets the local group
      * @public
+     * @param {String} [username]
      * @param {String} [semantics]
      * @returns {Object} Local group object
      */
-    get_group_local: function(semantics) {
-      if(semantics)
-        return (semantics in this._group_local) ? this._group_local[semantics] : {};
+    get_group_local: function(username, semantics) {
+      return this._bi_toggle_get(
+        this._group_local,
 
-      return this._group_local;
+        username,
+        semantics
+      );
     },
 
     /**
      * Gets the local candidates
      * @public
+     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Local candidates object
      */
-    get_candidates_local: function(name) {
-      if(name)
-        return (name in this._candidates_local) ? this._candidates_local[name] : {};
+    get_candidates_local: function(username, name) {
+      return this._bi_toggle_get(
+        this._candidates_local,
 
-      return this._candidates_local;
+        username,
+        name
+      );
     },
 
     /**
      * Gets the local candidates queue
      * @public
+     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Local candidates queue object
      */
-    get_candidates_queue_local: function(name) {
-      if(name)
-        return (name in this._candidates_queue_local) ? this._candidates_queue_local[name] : {};
+    get_candidates_queue_local: function(username, name) {
+      return this._bi_toggle_get(
+        this._candidates_queue_local,
 
-      return this._candidates_queue_local;
+        username,
+        name
+      );
     },
 
     /**
      * Gets the local content
      * @public
+     * @param {String} [username]
      * @param {String} [name]
      * @returns {Object} Local content object
      */
-    get_content_local: function(name) {
-      if(name)
-        return (name in this._content_local) ? this._content_local[name] : {};
+    get_content_local: function(username, name) {
+      return this._bi_toggle_get(
+        this._content_local,
 
-      return this._content_local;
+        username,
+        name
+      );
     },
 
     /**
@@ -1092,13 +1255,12 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Object} Remote content object
      */
     get_content_remote: function(username, name) {
-      if(name)
-        return (name in this._content_remote[username]) ? this._content_remote[username][name] : {};
-      
-      if(username)
-          return this._content_remote[username];
+      return this._bi_toggle_get(
+        this._content_remote,
 
-      return this._content_remote;
+        username,
+        name
+      );
     },
 
     /**
@@ -1109,14 +1271,12 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Object} Remote payloads object
      */
     get_payloads_remote: function(username, name) {
-      if(name)
-        return (username in this._payloads_remote  &&
-                name in this._payloads_remote[username]) ? this._payloads_remote[username][name] : {};
+      return this._bi_toggle_get(
+        this._payloads_remote,
 
-      if(username)
-          return this._payloads_remote[username];
-
-      return this._payloads_remote;
+        username,
+        name
+      );
     },
 
     /**
@@ -1127,14 +1287,12 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Object} Remote group object
      */
     get_group_remote: function(username, semantics) {
-      if(semantics)
-        return (username in this._group_remote  &&
-                semantics in this._group_remote[username]) ? this._group_remote[username][semantics] : {};
+      return this._bi_toggle_get(
+        this._group_remote,
 
-      if(username)
-          return this._group_remote[username];
-
-      return this._group_remote;
+        username,
+        semantics
+      );
     },
 
     /**
@@ -1145,14 +1303,12 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Object} Remote candidates object
      */
     get_candidates_remote: function(username, name) {
-      if(name)
-        return (username in this._candidates_remote  &&
-                name in this._candidates_remote[username]) ? this._candidates_remote[username][name] : [];
+      return this._bi_toggle_get(
+        this._candidates_remote,
 
-      if(username)
-          return this._candidates_remote[username];
-
-      return this._candidates_remote;
+        username,
+        name
+      );
     },
 
     /**
@@ -1163,14 +1319,12 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Object} Remote candidates queue object
      */
     get_candidates_queue_remote: function(username, name) {
-      if(name)
-        return (username in this._candidates_queue_remote  &&
-                name in this._candidates_queue_remote[username]) ? this._candidates_queue_remote[username][name] : {};
+      return this._bi_toggle_get(
+        this._candidates_queue_remote,
 
-      if(username)
-          return this._candidates_queue_remote[username];
-
-      return this._candidates_queue_remote;
+        username,
+        name
+      );
     },
 
     /**
@@ -1226,24 +1380,34 @@ var __JSJaCJingleBase = ring.create(
     },
 
     /**
-     * Gets the stanza handler
+     * Gets the registered stanza handler
      * @public
      * @param {String} type
      * @param {String} id
-     * @returns {Function|Object} Stanza handler
+     * @returns {Array} Stanza handler
      */
-    get_handlers: function(type, id) {
+    get_registered_handlers: function(type, id) {
       type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
 
       if(id) {
-        if(type != JSJAC_JINGLE_IQ_TYPE_ALL && type in this._handlers && typeof this._handlers[type][id] == 'function')
-          return this._handlers[type][id];
+        if(type != JSJAC_JINGLE_IQ_TYPE_ALL && type in this._registered_handlers && typeof this._registered_handlers[type][id] == 'object')
+          return this._registered_handlers[type][id];
 
-        if(JSJAC_JINGLE_IQ_TYPE_ALL in this._handlers && typeof this._handlers[JSJAC_JINGLE_IQ_TYPE_ALL][id] == 'function')
-          return this._handlers[type][id];
+        if(JSJAC_JINGLE_IQ_TYPE_ALL in this._registered_handlers && typeof this._registered_handlers[JSJAC_JINGLE_IQ_TYPE_ALL][id] == 'object')
+          return this._registered_handlers[type][id];
       }
 
-      return null;
+      return [];
+    },
+
+    /**
+     * Gets the deferred stanza handler
+     * @public
+     * @param {String} ns
+     * @returns {Array} Stanza handler
+     */
+    get_deferred_handlers: function(ns) {
+      return this._deferred_handlers[ns] || [];
     },
 
     /**
@@ -1499,6 +1663,15 @@ var __JSJaCJingleBase = ring.create(
      */
 
     /**
+     * Sets the namespace
+     * @private
+     * @param {String} Namespace value
+     */
+    _set_namespace: function(namespace) {
+      this._namespace = namespace;
+    },
+
+    /**
      * Sets the local stream
      * @private
      * @param {Object} local_stream
@@ -1553,13 +1726,17 @@ var __JSJaCJingleBase = ring.create(
       if(typeof this._remote_view !== 'object')
         this._remote_view = {};
 
-      if(typeof this._remote_view[username] !== 'object')
-        this._remote_view[username] = [];
+      if(username !== null) {
+        if(typeof this._remote_view[username] !== 'object')
+          this._remote_view[username] = [];
 
-      if(remote_view === null)
-        delete this._remote_view[username];
-      else
-        this._remote_view[username].push(remote_view);
+        if(remote_view === null)
+          delete this._remote_view[username];
+        else
+          this._remote_view[username].push(remote_view);
+      } else {
+        this._remote_view = {};
+      }
     },
 
     /**
@@ -1589,63 +1766,86 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Sets the local payload
      * @private
+     * @param {String} username
      * @param {String} name
      * @param {Object} payload_data
      */
-    _set_payloads_local: function(name, payload_data) {
-      this._payloads_local[name] = payload_data;
+    _set_payloads_local: function(username, name, payload_data) {
+      this._tri_toggle_set_object(
+        this._payloads_local,
+
+        username,
+        name,
+        payload_data
+      );
     },
 
     /**
      * Sets the local group
      * @private
+     * @param {String} username
      * @param {String} name
      * @param {Object} group_data
      */
-    _set_group_local: function(semantics, group_data) {
-      this._group_local[semantics] = group_data;
+    _set_group_local: function(username, semantics, group_data) {
+      this._tri_toggle_set_object(
+        this._group_local,
+
+        username,
+        semantics,
+        group_data
+      );
     },
 
     /**
      * Sets the local candidates
      * @private
+     * @param {String} username
      * @param {String} name
      * @param {Object} candidate_data
      */
-    _set_candidates_local: function(name, candidate_data) {
-      if(!(name in this._candidates_local))  this._candidates_local[name] = [];
+    _set_candidates_local: function(username, name, candidate_data) {
+      this._tri_toggle_set_array(
+        this._candidates_local,
 
-      (this._candidates_local[name]).push(candidate_data);
+        username,
+        name,
+        candidate_data
+      );
     },
 
     /**
      * Sets the local candidates queue
      * @private
+     * @param {String} username
      * @param {String} name
      * @param {Object} candidate_data
      */
-    _set_candidates_queue_local: function(name, candidate_data) {
-      try {
-        if(name === null) {
-          this._candidates_queue_local = {};
-        } else {
-          if(!(name in this._candidates_queue_local))  this._candidates_queue_local[name] = [];
+    _set_candidates_queue_local: function(username, name, candidate_data) {
+      this._tri_toggle_set_array(
+        this._candidates_queue_local,
 
-          (this._candidates_queue_local[name]).push(candidate_data);
-        }
-      } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _set_candidates_queue_local > ' + e, 1);
-      }
+        username,
+        name,
+        candidate_data
+      );
     },
 
     /**
      * Sets the local content
      * @private
+     * @param {String} username
      * @param {String} name
      * @param {Object} content_local
      */
-    _set_content_local: function(name, content_local) {
-      this._content_local[name] = content_local;
+    _set_content_local: function(username, name, content_local) {
+      this._tri_toggle_set_object(
+        this._content_local,
+
+        username,
+        name,
+        content_local
+      );
     },
 
     /**
@@ -1656,7 +1856,7 @@ var __JSJaCJingleBase = ring.create(
      * @param {Object} content_remote
      */
     _set_content_remote: function(username, name, content_remote) {
-      this._tri_toggle_set(
+      this._tri_toggle_set_object(
         this._content_remote,
 
         username,
@@ -1673,7 +1873,7 @@ var __JSJaCJingleBase = ring.create(
      * @param {Object} payload_data
      */
     _set_payloads_remote: function(username, name, payload_data) {
-      this._tri_toggle_set(
+      this._tri_toggle_set_object(
         this._payloads_remote,
 
         username,
@@ -1718,7 +1918,7 @@ var __JSJaCJingleBase = ring.create(
      * @param {Object} group_data
      */
     _set_group_remote: function(username, semantics, group_data) {
-      this._tri_toggle_set(
+      this._tri_toggle_set_object(
         this._group_remote,
 
         username,
@@ -1735,7 +1935,7 @@ var __JSJaCJingleBase = ring.create(
      * @param {Object} candidate_data
      */
     _set_candidates_remote: function(username, name, candidate_data) {
-      this._tri_toggle_set(
+      this._tri_toggle_set_object(
         this._candidates_remote,
 
         username,
@@ -1752,7 +1952,7 @@ var __JSJaCJingleBase = ring.create(
      * @param {Object} candidate_data
      */
     _set_candidates_queue_remote: function(username, name, candidate_data) {
-      this._tri_toggle_set(
+      this._tri_toggle_set_object(
         this._candidates_queue_remote,
 
         username,
@@ -1799,7 +1999,12 @@ var __JSJaCJingleBase = ring.create(
      * @param {Object} peer_connection
      */
     _set_peer_connection: function(username, peer_connection) {
-      this._peer_connection[username] = peer_connection;
+      if(peer_connection === null) {
+        if(username in this._peer_connection)
+          delete this._peer_connection[username];
+      } else {
+        this._peer_connection[username] = peer_connection;
+      }
     },
 
     /**
@@ -1830,16 +2035,39 @@ var __JSJaCJingleBase = ring.create(
     },
 
     /**
-     * Sets the stanza handlers
+     * Sets the registered stanza handlers
      * @private
      * @param {String} type
      * @param {String|Number} id
      * @param {Function} handler
      */
-    _set_handlers: function(type, id, handler) {
-      if(!(type in this._handlers))  this._handlers[type] = {};
+    _set_registered_handlers: function(type, id, handler) {
+      if(!(type in this._registered_handlers))  this._registered_handlers[type] = {};
 
-      this._handlers[type][id] = handler;
+      if(handler === null) {
+        if(id in this._registered_handlers[type])
+          delete this._registered_handlers[type][id];
+      } else {
+        if(typeof this._registered_handlers[type][id] != 'object')
+          this._registered_handlers[type][id] = [];
+
+        this._registered_handlers[type][id].push(handler);
+      }
+    },
+
+    /**
+     * Sets the deferred stanza handlers
+     * @private
+     * @param {String} ns
+     * @param {Function|Object} handler
+     */
+    _set_deferred_handlers: function(ns, handler) {
+      if(!(ns in this._deferred_handlers))  this._deferred_handlers[ns] = [];
+
+      if(handler === null)
+        delete this._deferred_handlers[ns];
+      else
+        this._deferred_handlers[ns].push(handler);
     },
 
     /**
