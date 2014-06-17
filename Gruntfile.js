@@ -69,7 +69,7 @@ module.exports = function(grunt) {
   var fn_generate_task = function(tasks_obj, t) {
     var tasks_map = [];
 
-    if(t === null) {
+    if(!t) {
       if(typeof tasks_obj.main == 'object') {
         tasks_map.push('main');
       } else {
