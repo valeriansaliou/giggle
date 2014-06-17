@@ -609,7 +609,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
 
         this._set_sent_id(args.id);
 
-        JSJAC_JINGLE_STORE_CONNECTION.send(stanza);
+        this.get_connection().send(stanza);
 
         if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:single] send > Outgoing packet sent' + '\n\n' + stanza.xml());
 
@@ -1417,7 +1417,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         if('xmpp'   in error) error_node.appendChild(stanza_error.buildNode(error.xmpp,   { 'xmlns': NS_STANZAS       }));
         if('jingle' in error) error_node.appendChild(stanza_error.buildNode(error.jingle, { 'xmlns': NS_JINGLE_ERRORS }));
 
-        JSJAC_JINGLE_STORE_CONNECTION.send(stanza_error);
+        this.get_connection().send(stanza_error);
 
         this.get_debug().log('[JSJaCJingle:single] _send_error > Sent: ' + (error.jingle || error.xmpp), 2);
       } catch(e) {

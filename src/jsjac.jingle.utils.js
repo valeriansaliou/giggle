@@ -84,17 +84,43 @@ var JSJaCJingleUtils = ring.create(
     },
 
     /**
+     * Returns whether given objects are equal or not
+     * @public
+     * @param {...Object} arguments - Objects to be compared
+     * @returns {Boolean} Equality
+     */
+    object_equal: function() {
+      var equal = true,
+          last_value = null;
+
+      if(arguments.length >= 1) {
+        for(var i = 0; i < arguments.length; i++) {
+          if(i > 0) {
+            equal = (JSON.stringify(last_value) === JSON.stringify(arguments[i]));
+            if(equal !== true)  break;
+          }
+
+          last_value = arguments[i];
+        }
+      } else {
+        equal = false;
+      }
+
+      return equal;
+    },
+
+    /**
      * Collects given objects
      * @public
+     * @param {...Object} arguments - Objects to be collected
      * @returns {Object} Collected object
      */
-    object_collect: function() {    
+    object_collect: function() {
       var i, p;
 
       var collect_obj = {};
-      var len = arguments.length;
 
-      for(i = 0; i < len; i++) {
+      for(i = 0; i < arguments.length; i++) {
         for(p in arguments[i]) {
           if(arguments[i].hasOwnProperty(p))
             collect_obj[p] = arguments[i][p];
@@ -102,6 +128,34 @@ var JSJaCJingleUtils = ring.create(
       }
 
       return collect_obj;
+    },
+
+    /**
+     * Collects given arrays
+     * @public
+     * @param {...Array} arguments - Arrays to be collected
+     * @returns {Array} Collected array
+     */
+    array_collect: function() {
+      var i, j, p,
+          cur_arr;
+
+      var collect_arr = [];
+
+      for(i = 0; i < arguments.length; i++) {
+        cur_arr = arguments[i];
+
+        loop_arr: for(j = 0; j < cur_arr.length; j++) {
+          // Ensure uniqueness of object
+          for(p in collect_arr) {
+            if(this.object_equal(cur_arr[j], collect_arr[p]))  continue loop_arr;
+          }
+
+          collect_arr.push(cur_arr[j]);
+        }
+      }
+
+      return collect_arr;
     },
 
     /**
@@ -197,78 +251,73 @@ var JSJaCJingleUtils = ring.create(
     config_ice: function() {    
       try {
         // Collect data (user + server)
-        var stun_config = this.object_collect(
+        var stun_config = this.array_collect(
           this.parent.get_stun(),
-          JSJAC_JINGLE_STORE_EXTDISCO.stun,
-          JSJAC_JINGLE_STORE_RELAYNODES.stun,
-          JSJAC_JINGLE_STORE_FALLBACK.stun
+          JSJaCJingleStorage.get_extdisco().stun,
+          JSJaCJingleStorage.get_relaynodes().stun,
+          JSJaCJingleStorage.get_fallback().stun
         );
 
-        var turn_config = this.object_collect(
+        var turn_config = this.array_collect(
           this.parent.get_turn(),
-          JSJAC_JINGLE_STORE_EXTDISCO.turn,
-          JSJAC_JINGLE_STORE_FALLBACK.turn
+          JSJaCJingleStorage.get_extdisco().turn,
+          JSJaCJingleStorage.get_fallback().turn
         );
 
         // Can proceed?
-        if(stun_config && this.object_length(stun_config)  || 
-           turn_config && this.object_length(turn_config)  ) {
+        if(stun_config.length || turn_config.length) {
           var config = {
             iceServers : []
           };
 
           // STUN servers
-          var cur_stun_host, cur_stun_obj, cur_stun_config;
+          var i, cur_stun_obj, cur_stun_config;
 
-          for(cur_stun_host in stun_config) {
-            if(cur_stun_host) {
-              cur_stun_obj = stun_config[cur_stun_host];
+          for(i in stun_config) {
+            cur_stun_obj = stun_config[i];
 
-              cur_stun_config = {};
-              cur_stun_config.url = 'stun:' + cur_stun_host;
+            cur_stun_config = {};
+            cur_stun_config.url = 'stun:' + cur_stun_obj.host;
 
-              if(cur_stun_obj.port)
-                cur_stun_config.url += ':' + cur_stun_obj.port;
+            if(cur_stun_obj.port)
+              cur_stun_config.url += ':' + cur_stun_obj.port;
 
-              if(cur_stun_obj.transport && this.browser().name != JSJAC_JINGLE_BROWSER_FIREFOX)
-                cur_stun_config.url += '?transport=' + cur_stun_obj.transport;
+            if(cur_stun_obj.transport && this.browser().name != JSJAC_JINGLE_BROWSER_FIREFOX)
+              cur_stun_config.url += '?transport=' + cur_stun_obj.transport;
 
-              (config.iceServers).push(cur_stun_config);
-            }
+            (config.iceServers).push(cur_stun_config);
           }
 
           // TURN servers
-          var cur_turn_host, cur_turn_obj, cur_turn_config;
+          var j, cur_turn_obj, cur_turn_config;
 
-          for(cur_turn_host in turn_config) {
-            if(cur_turn_host) {
-              cur_turn_obj = turn_config[cur_turn_host];
+          for(j in turn_config) {
+            cur_turn_obj = turn_config[j];
 
-              cur_turn_config = {};
-              cur_turn_config.url = 'turn:' + cur_turn_host;
+            cur_turn_config = {};
+            cur_turn_config.url = 'turn:' + cur_turn_obj.host;
 
-              if(cur_turn_obj.port)
-                cur_turn_config.url += ':' + cur_turn_obj.port;
+            if(cur_turn_obj.port)
+              cur_turn_config.url += ':' + cur_turn_obj.port;
 
-              if(cur_turn_obj.transport)
-                cur_turn_config.url += '?transport=' + cur_turn_obj.transport;
+            if(cur_turn_obj.transport)
+              cur_turn_config.url += '?transport=' + cur_turn_obj.transport;
 
-              if(cur_turn_obj.username)
-                cur_turn_config.username = cur_turn_obj.username;
+            if(cur_turn_obj.username)
+              cur_turn_config.username = cur_turn_obj.username;
 
-              if(cur_turn_obj.password)
-                cur_turn_config.password = cur_turn_obj.password;
+            if(cur_turn_obj.password)
+              cur_turn_config.password = cur_turn_obj.password;
 
-              (config.iceServers).push(cur_turn_config);
-            }
+            (config.iceServers).push(cur_turn_config);
           }
 
           // Check we have at least a STUN server (if user can traverse NAT)
-          var i;
+          var k;
           var has_stun = false;
 
-          for(i in config.iceServers) {
-            if((config.iceServers[i].url).match(R_NETWORK_PROTOCOLS.stun)) {
+          for(k in config.iceServers) {
+            if((config.iceServers[k].url).match(R_NETWORK_PROTOCOLS.stun)) {
               has_stun = true; break;
             }
           }
@@ -1900,9 +1949,9 @@ var JSJaCJingleUtils = ring.create(
 
           if(typeof prev_credentials == 'object') {
             if((prev_credentials.ufrag !== cur_credentials.ufrag)  ||
-               (prev_credentials.pwd !== cur_credentials.pwd  )    ||
-               (JSON.stringify(prev_credentials.fingerprint) !== JSON.stringify(cur_credentials.fingerprint)
-              )) {
+               (prev_credentials.pwd !== cur_credentials.pwd)      ||
+               this.object_equal(prev_credentials.fingerprint, cur_credentials.fingerprint)
+              ) {
               is_same = false;
               break;
             }
@@ -2040,9 +2089,9 @@ var JSJaCJingleUtils = ring.create(
      * @returns {String} JID value
      */
     connection_jid: function() {
-      return JSJAC_JINGLE_STORE_CONNECTION.username + '@' + 
-             JSJAC_JINGLE_STORE_CONNECTION.domain   + '/' + 
-             JSJAC_JINGLE_STORE_CONNECTION.resource;
+      return this.parent.get_connection().username + '@' + 
+             this.parent.get_connection().domain   + '/' + 
+             this.parent.get_connection().resource;
     },
 
     /**
@@ -2051,7 +2100,7 @@ var JSJaCJingleUtils = ring.create(
      * @returns {String} Username value
      */
     connection_username: function() {
-      return JSJAC_JINGLE_STORE_CONNECTION.username;
+      return this.parent.get_connection().username;
     },
 
     /**
@@ -2060,7 +2109,7 @@ var JSJaCJingleUtils = ring.create(
      * @returns {String} Domain value
      */
     connection_domain: function() {
-      return JSJAC_JINGLE_STORE_CONNECTION.domain;
+      return this.parent.get_connection().domain;
     },
 
     /**
@@ -2069,7 +2118,7 @@ var JSJaCJingleUtils = ring.create(
      * @returns {String} Resource value
      */
     connection_resource: function() {
-      return JSJAC_JINGLE_STORE_CONNECTION.resource;
+      return this.parent.get_connection().resource;
     },
 
     /**

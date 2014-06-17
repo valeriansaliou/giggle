@@ -35,6 +35,7 @@ module.exports = function(grunt) {
   var GRUNT_SRC_FILES = [
     'src/jsjac.jingle.header.js',
     'src/jsjac.jingle.constants.js',
+    'src/jsjac.jingle.storage.js',
     'src/jsjac.jingle.utils.js',
     'src/jsjac.jingle.sdp.js',
     'src/jsjac.jingle.base.js',
@@ -68,7 +69,7 @@ module.exports = function(grunt) {
   var fn_generate_task = function(tasks_obj, t) {
     var tasks_map = [];
 
-    if(t == null) {
+    if(t === null) {
       if(typeof tasks_obj.main == 'object') {
         tasks_map.push('main');
       } else {
@@ -82,10 +83,10 @@ module.exports = function(grunt) {
       tasks_map.push(t);
     }
 
-    for(c in tasks_map) {
+    for(var c in tasks_map) {
       t = tasks_map[c];
 
-      for(i in tasks_obj[t]) {
+      for(var i in tasks_obj[t]) {
         grunt.task.run(tasks_obj[t][i]);
       }
     }

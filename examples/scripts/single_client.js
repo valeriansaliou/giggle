@@ -24,6 +24,28 @@ var ARGS = {
     net_trace   : (url_param('net') == '1'),
     debug       : (new JSJaCConsoleLogger(4)),
 
+    // STUN servers list (optional)
+    // List: https://gist.github.com/zziuni/3741933
+    stun: [
+        {
+            host      : 'stun.l.google.com',
+            port      : 19302,
+            transport : 'udp'
+        },
+
+        {
+            host      : 'stun.ekiga.net',
+            port      : 3478,
+            transport : 'tcp'
+        },
+
+        {
+            host      : 'stunserver.org',
+            port      : 3478,
+            transport : 'tcp'
+        }
+    ],
+
     // Custom handlers (optional)
     session_initiate_pending: function(_this) {
         console.log('session_initiate_pending');

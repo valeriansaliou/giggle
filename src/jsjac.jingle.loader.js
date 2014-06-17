@@ -37,6 +37,7 @@ var JSJaCJingleLoader = {
     src: [
       'jsjac.jingle.header',
       'jsjac.jingle.constants',
+      'jsjac.jingle.storage',
       'jsjac.jingle.utils',
       'jsjac.jingle.sdp',
       'jsjac.jingle.base',

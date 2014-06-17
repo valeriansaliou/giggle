@@ -27,12 +27,13 @@
  * @property   {DOM}            [args.local_view]             - The path to the local stream view element.
  * @property   {Boolean}        [args.local_stream_readonly]  - Whether the local stream is read-only or not.
  * @property   {String}         [args.to]                     - The full JID to start the Jingle session with.
+ * @property   {String}         [args.connection]             - The connection to be attached to.
  * @property   {String}         [args.media]                  - The media type to be used in the Jingle session.
  * @property   {String}         [args.resolution]             - The resolution to be used for video in the Jingle session.
  * @property   {String}         [args.bandwidth]              - The bandwidth to be limited for video in the Jingle session.
  * @property   {String}         [args.fps]                    - The framerate to be used for video in the Jingle session.
- * @property   {Object}         [args.stun]                   - A list of STUN servers to use (override the default one).
- * @property   {Object}         [args.turn]                   - A list of TURN servers to use.
+ * @property   {Array}          [args.stun]                   - A list of STUN servers to use (override the default one).
+ * @property   {Array}          [args.turn]                   - A list of TURN servers to use.
  * @property   {Boolean}        [args.sdp_trace]              - Log SDP trace in console (requires a debug interface).
  * @property   {Boolean}        [args.net_trace]              - Log network packet trace in console (requires a debug interface).
  * @property   {JSJaCDebugger}  [args.debug]                  - A reference to a debugger implementing the JSJaCDebugger interface.
@@ -70,6 +71,24 @@ var __JSJaCJingleBase = ring.create(
          * @private
          */
         this._to = args.to;
+
+      if(args && args.connection) {
+        /**
+         * @constant
+         * @member {JSJaCConnection}
+         * @default
+         * @private
+         */
+        this._connection = args.connection;
+      } else {
+        /**
+         * @constant
+         * @member {JSJaCConnection}
+         * @default
+         * @private
+         */
+        this._connection = JSJaCJingleStorage.get_connection();
+      }
 
       if(args && args.media)
         /**
@@ -144,25 +163,25 @@ var __JSJaCJingleBase = ring.create(
       if(args && args.stun) {
         /**
          * @constant
-         * @member {Object}
+         * @member {Array}
          * @default
          * @private
          */
         this._stun = args.stun;
       } else {
-        this._stun = {};
+        this._stun = [];
       }
 
       if(args && args.turn) {
         /**
          * @constant
-         * @member {Object}
+         * @member {Array}
          * @default
          * @private
          */
         this._turn = args.turn;
       } else {
-        this._turn = {};
+        this._turn = [];
       }
 
       if(args && args.sdp_trace)
@@ -194,7 +213,7 @@ var __JSJaCJingleBase = ring.create(
          * @default
          * @private
          */
-        this._debug = JSJAC_JINGLE_STORE_DEBUG;
+        this._debug = JSJaCJingleStorage.get_debug();
       }
 
       /**
@@ -1241,19 +1260,19 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Gets the STUN servers
      * @public
-     * @returns {Object} STUN servers
+     * @returns {Array} STUN servers
      */
     get_stun: function() {
-      return (typeof this._stun == 'object') ? this._stun : {};
+      return (typeof this._stun == 'object') ? this._stun : [];
     },
 
     /**
      * Gets the TURN servers
      * @public
-     * @returns {Object} TURN servers
+     * @returns {Array} TURN servers
      */
     get_turn: function() {
-      return (typeof this._turn == 'object') ? this._turn : {};
+      return (typeof this._turn == 'object') ? this._turn : [];
     },
 
     /**
@@ -1661,7 +1680,12 @@ var __JSJaCJingleBase = ring.create(
      * @param {Object} stun_data
      */
     _set_stun: function(stun_host, stun_data) {
-      this._stun[stun_host] = stun_data;
+      this._stun.push(
+        this.utils.object_collect(
+          { 'host': stun_host },
+          stun_data
+        )
+      );
     },
 
     /**
@@ -1671,7 +1695,12 @@ var __JSJaCJingleBase = ring.create(
      * @param {Object} turn_data
      */
     _set_turn: function(turn_host, turn_data) {
-      this._turn[turn_host] = turn_data;
+      this._turn.push(
+        this.utils.object_collect(
+          { 'host': turn_host },
+          turn_data
+        )
+      );
     },
 
     /**

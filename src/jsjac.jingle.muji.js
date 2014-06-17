@@ -424,7 +424,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
 
         this._set_sent_id(args.id);
 
-        JSJAC_JINGLE_STORE_CONNECTION.send(stanza);
+        this.get_connection().send(stanza);
 
         if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:muji] send_presence > Outgoing packet sent' + '\n\n' + stanza.xml());
 
@@ -478,7 +478,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         stanza.setType(JSJAC_JINGLE_MESSAGE_TYPE_GROUPCHAT);
         stanza.setBody(body);
 
-        JSJAC_JINGLE_STORE_CONNECTION.send(stanza);
+        this.get_connection().send(stanza);
 
         if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:muji] send_message > Outgoing packet sent' + '\n\n' + stanza.xml());
 

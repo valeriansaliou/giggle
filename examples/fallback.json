@@ -1,9 +1,3 @@
-/**
- * @fileoverview JSJaC Jingle fallback API example
- * Uses same format as 
- * Run JSJaCJingle.js with a local fallback URL configured (args.fallback <string>)
- */
-
 {
     "username": "webrtc.1@jappix.com:1388838519",
     "password": "Ra7CmocZrIBpvyoEsqKnUjcPXlA=",
