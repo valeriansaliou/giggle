@@ -109,7 +109,7 @@ var ARGS = {
         console.log('session_accept_request');
     },
 
-    session_info_pending: function(_this, stanza) {
+    session_info_pending: function(_this) {
         console.log('session_info_pending');
     },
 
@@ -253,7 +253,7 @@ $(document).ready(function() {
                         else
                             $('#login_error').text('Invalid credentials.').show();
 
-                        if(SC_CONNECTED && JINGLE != null) JINGLE.terminate();
+                        if(SC_CONNECTED && JINGLE !== null) JINGLE.terminate();
 
                         $('#form_login').find('input, button').removeAttr('disabled');
                         $('#form_login button').show();
@@ -291,9 +291,9 @@ $(document).ready(function() {
                                 delete (SC_PRESENCE[jid_bare])[jid_resource];
 
                                 var size = 0;
-                                for(i in SC_PRESENCE[jid_bare]) size++;
+                                for(var i in SC_PRESENCE[jid_bare]) size++;
 
-                                if(size == 0) delete SC_PRESENCE[jid_bare];
+                                if(size === 0) delete SC_PRESENCE[jid_bare];
                             }
                         } else {
                             if(!(jid_bare in SC_PRESENCE)) SC_PRESENCE[jid_bare] = {};
@@ -305,8 +305,8 @@ $(document).ready(function() {
                         var roster_call = '';
                         $('#roster_call').hide().empty();
 
-                        for(cur_bare_jid in SC_PRESENCE) {
-                            for(cur_resource in SC_PRESENCE[cur_bare_jid]) {
+                        for(var cur_bare_jid in SC_PRESENCE) {
+                            for(var cur_resource in SC_PRESENCE[cur_bare_jid]) {
                                 roster_call += '<li>';
                                     roster_call += '<a href="#" data-jid="' + (cur_bare_jid + '/' + cur_resource).htmlEnc() + '"><b>' + cur_bare_jid.htmlEnc() + '</b>/' + cur_resource.htmlEnc() + '</a>';
                                 roster_call += '</li>';
@@ -337,16 +337,14 @@ $(document).ready(function() {
                     }
                 });
                 
-                // Configure credentials
-                oArgs = new Object();
-                oArgs.username = jid_obj.getNode();
-                oArgs.domain = jid_obj.getDomain();
-                oArgs.resource = jid_obj.getResource();
-                oArgs.pass = login_pwd;
-                oArgs.secure = true;
-                
                 // Connect
-                con.connect(oArgs);
+                con.connect({
+                    username:  jid_obj.getNode(),
+                    domain:    jid_obj.getDomain(),
+                    resource:  jid_obj.getResource(),
+                    pass:      login_pwd,
+                    secure:    true
+                });
 
                 // Disable form
                 $('#form_login').find('input, button').attr('disabled', true);
@@ -410,7 +408,7 @@ $(document).ready(function() {
         try {
             if(!SC_CONNECTED) return false;
 
-            if(JINGLE != null) JINGLE.terminate();
+            if(JINGLE !== null) JINGLE.terminate();
 
             $('.live_notif').hide();
         } catch(e) {
@@ -425,7 +423,7 @@ $(document).ready(function() {
         try {
             if(!SC_CONNECTED) return false;
 
-            if(JINGLE != null) JINGLE.mute(JSJAC_JINGLE_MEDIA_AUDIO);
+            if(JINGLE !== null) JINGLE.mute(JSJAC_JINGLE_MEDIA_AUDIO);
 
             $(this).hide();
             $('#live_unmute').show();
@@ -441,7 +439,7 @@ $(document).ready(function() {
         try {
             if(!SC_CONNECTED) return false;
 
-            if(JINGLE != null) JINGLE.unmute(JSJAC_JINGLE_MEDIA_AUDIO);
+            if(JINGLE !== null) JINGLE.unmute(JSJAC_JINGLE_MEDIA_AUDIO);
 
             $(this).hide();
             $('#live_mute').show();

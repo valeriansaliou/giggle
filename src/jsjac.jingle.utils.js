@@ -439,6 +439,23 @@ var JSJaCJingleUtils = ring.create(
     },
 
     /**
+     * Extracts username from stanza
+     * @public
+     * @param {JSJaCPacket} stanza
+     * @returns {String|Object} Username
+     */
+    stanza_username: function(stanza) {
+      try {
+        var from = stanza.getFrom();
+        return (new JSJaCJID(from)).getResource();
+      } catch(e) {
+        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_username > ' + e, 1);
+      }
+
+      return null;
+    },
+
+    /**
      * Gets the SID value from a stanza
      * @public
      * @param {JSJaCPacket} stanza

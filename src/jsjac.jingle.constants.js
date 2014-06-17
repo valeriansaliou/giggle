@@ -602,6 +602,56 @@ var JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT             = 5;
  * @default
  * @public
  */
+var JSJAC_JINGLE_MEDIA_READYSTATE_UNINITIALIZED      = 0;
+
+/**
+ * @constant
+ * @global
+ * @type {Number}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MEDIA_READYSTATE_LOADING            = 1;
+
+/**
+ * @constant
+ * @global
+ * @type {Number}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MEDIA_READYSTATE_LOADED             = 2;
+
+/**
+ * @constant
+ * @global
+ * @type {Number}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MEDIA_READYSTATE_INTERACTIVE        = 3;
+
+/**
+ * @constant
+ * @global
+ * @type {Number}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MEDIA_READYSTATE_COMPLETED          = 4;
+
+/**
+ * @constant
+ * @global
+ * @type {Number}
+ * @readonly
+ * @default
+ * @public
+ */
 var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
 
 /**
@@ -1930,6 +1980,16 @@ var JSJAC_JINGLE_MUJI_STATUS_LEFT                    = 'left';
  * @public
  */
 var JSJAC_JINGLE_MUJI_INITIATE_WAIT                  = 2;
+
+/**
+ * @constant
+ * @global
+ * @type {Number}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MUJI_LEAVE_WAIT                     = 1;
 
 /**
  * @constant

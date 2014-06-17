@@ -23,18 +23,19 @@
  * @requires   jsjac-jingle/sdp
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
- * @param      {Object}         [args]             - Jingle session arguments.
- * @property   {DOM}            [args.local_view]  - The path to the local stream view element.
- * @property   {String}         [args.to]          - The full JID to start the Jingle session with.
- * @property   {String}         [args.media]       - The media type to be used in the Jingle session.
- * @property   {String}         [args.resolution]  - The resolution to be used for video in the Jingle session.
- * @property   {String}         [args.bandwidth]   - The bandwidth to be limited for video in the Jingle session.
- * @property   {String}         [args.fps]         - The framerate to be used for video in the Jingle session.
- * @property   {Object}         [args.stun]        - A list of STUN servers to use (override the default one).
- * @property   {Object}         [args.turn]        - A list of TURN servers to use.
- * @property   {Boolean}        [args.sdp_trace]   - Log SDP trace in console (requires a debug interface).
- * @property   {Boolean}        [args.net_trace]   - Log network packet trace in console (requires a debug interface).
- * @property   {JSJaCDebugger}  [args.debug]       - A reference to a debugger implementing the JSJaCDebugger interface.
+ * @param      {Object}         [args]                        - Jingle session arguments.
+ * @property   {DOM}            [args.local_view]             - The path to the local stream view element.
+ * @property   {Boolean}        [args.local_stream_readonly]  - Whether the local stream is read-only or not.
+ * @property   {String}         [args.to]                     - The full JID to start the Jingle session with.
+ * @property   {String}         [args.media]                  - The media type to be used in the Jingle session.
+ * @property   {String}         [args.resolution]             - The resolution to be used for video in the Jingle session.
+ * @property   {String}         [args.bandwidth]              - The bandwidth to be limited for video in the Jingle session.
+ * @property   {String}         [args.fps]                    - The framerate to be used for video in the Jingle session.
+ * @property   {Object}         [args.stun]                   - A list of STUN servers to use (override the default one).
+ * @property   {Object}         [args.turn]                   - A list of TURN servers to use.
+ * @property   {Boolean}        [args.sdp_trace]              - Log SDP trace in console (requires a debug interface).
+ * @property   {Boolean}        [args.net_trace]              - Log network packet trace in console (requires a debug interface).
+ * @property   {JSJaCDebugger}  [args.debug]                  - A reference to a debugger implementing the JSJaCDebugger interface.
  */
 var __JSJaCJingleBase = ring.create(
   /** @lends __JSJaCJingleBase.prototype */
@@ -126,6 +127,18 @@ var __JSJaCJingleBase = ring.create(
            */
           this._local_view = [args.local_view];
         }
+      }
+
+      if(args && args.local_stream_readonly) {
+        /**
+         * @constant
+         * @member {Boolean}
+         * @default
+         * @private
+         */
+        this._local_stream_readonly = args.local_stream_readonly;
+      } else {
+        this._local_stream_readonly = false;
       }
 
       if(args && args.stun) {
@@ -641,8 +654,6 @@ var __JSJaCJingleBase = ring.create(
 
         if(callback && typeof callback == 'function') {
           if((this.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) && this.get_local_view().length) {
-            this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
-
             var _this = this;
 
             var fn_loaded = function() {
@@ -652,7 +663,13 @@ var __JSJaCJingleBase = ring.create(
               callback();
             };
 
-            _this.get_local_view()[0].addEventListener('loadeddata', fn_loaded, false);
+            if(_this.get_local_view()[0].readyState >= JSJAC_JINGLE_MEDIA_READYSTATE_LOADED) {
+              fn_loaded();
+            } else {
+              this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
+
+              _this.get_local_view()[0].addEventListener('loadeddata', fn_loaded, false);
+            }
           } else {
             callback();
           }
@@ -858,15 +875,6 @@ var __JSJaCJingleBase = ring.create(
      */
     get_namespace: function() {
       return this._namespace;
-    },
-
-    /**
-     * Gets the local stream
-     * @public
-     * @returns {Object} Local stream instance
-     */
-    get_local_stream: function() {
-      return this._local_stream;
     },
 
     /**
@@ -1204,7 +1212,25 @@ var __JSJaCJingleBase = ring.create(
     },
 
     /**
-     * Gets the local_view value
+     * Gets the local stream
+     * @public
+     * @returns {Object} Local stream instance
+     */
+    get_local_stream: function() {
+      return this._local_stream;
+    },
+
+    /**
+     * Gets the local stream read-only state
+     * @public
+     * @returns {Boolean} Read-only state
+     */
+    get_local_stream_readonly: function() {
+      return this._local_stream_readonly;
+    },
+
+    /**
+     * Gets the local view value
      * @public
      * @returns {DOM} Local view
      */
@@ -1279,6 +1305,10 @@ var __JSJaCJingleBase = ring.create(
      */
     _set_local_stream: function(local_stream) {
       try {
+        if(this.get_local_stream_readonly() === true) {
+          this.get_debug().log('[JSJaCJingle:base] _set_local_stream > Local stream is read-only, not setting it.', 0); return;
+        }
+
         if(!local_stream && this._local_stream) {
           (this._local_stream).stop();
 
@@ -1303,6 +1333,15 @@ var __JSJaCJingleBase = ring.create(
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:base] _set_local_stream > ' + e, 1);
       }
+    },
+
+    /**
+     * Sets the local stream read-only state
+     * @private
+     * @param {Boolean} local_stream_readonly
+     */
+    _set_local_stream_readonly: function(local_stream_readonly) {
+      this._local_stream_readonly = local_stream_readonly;
     },
 
     /**

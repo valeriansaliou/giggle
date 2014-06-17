@@ -362,8 +362,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         /* @function */
         (this.get_session_leave_pending())(this);
 
-        // Leave the room
-        this.send_presence({ action: JSJAC_JINGLE_MUJI_ACTION_LEAVE });
+        // Leave the room (after properly terminating participant sessions)
+        this._terminate_participant_sessions(function() {
+          _this.send_presence({ action: JSJAC_JINGLE_MUJI_ACTION_LEAVE });
+        });
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] leave > ' + e, 1);
       }
@@ -394,7 +396,6 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
           return false;
         }
 
-        // Assert
         if(typeof args !== 'object') args = {};
 
         // Build stanza
@@ -561,9 +562,8 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
           if(!muji) return;
 
           // Submit to registered handler
-          var username = this.extract_stanza_username(stanza);
-          var status = ((this.get_participants(username) || {}).status  ||
-                        JSJAC_JINGLE_MUJI_STATUS_INACTIVE);
+          var username = this.utils.stanza_username(stanza);
+          var status = this._participant_status(username);
 
           var fn_log_drop = function() {
             _this.get_debug().log('[JSJaCJingle:muji] handle_presence > Dropped out-of-order participant stanza with status: ' + status, 1);
@@ -617,6 +617,14 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
           return;
         }
 
+        if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:muji] handle_message > Incoming packet received' + '\n\n' + stanza.xml());
+
+        // Locked?
+        if(this.get_lock()) {
+          this.get_debug().log('[JSJaCJingle:muji] handle_message > Cannot handle, resource locked. Please open another session or check WebRTC support.', 0);
+          return;
+        }
+
         // Trigger custom callback
         /* @function */
         (this.get_room_message_in())(this, stanza);
@@ -649,13 +657,16 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         }
 
         // Already muted?
-        if(this.get_mute(name)) {
+        if(this.get_mute(name) === true) {
           this.get_debug().log('[JSJaCJingle:muji] mute > Resource already muted.', 0);
           return;
         }
 
         this._peer_sound(false);
         this._set_mute(name, true);
+
+        // Mute all participants
+        this._toggle_participants_mute(name, JSJAC_JINGLE_SESSION_INFO_MUTE);
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] mute > ' + e, 1);
       }
@@ -685,13 +696,16 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         }
 
         // Already unmute?
-        if(!this.get_mute(name)) {
+        if(this.get_mute(name) === false) {
           this.get_debug().log('[JSJaCJingle:muji] unmute > Resource already unmuted.', 0);
           return;
         }
 
         this._peer_sound(true);
         this._set_mute(name, false);
+
+        // Unmute all participants
+        this._toggle_participants_mute(name, JSJAC_JINGLE_SESSION_INFO_UNMUTE);
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] unmute > ' + e, 1);
       }
@@ -724,7 +738,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         }
 
         if(!args) {
-          this.get_debug().log('[JSJaCJingle:muji] _send_session_prepare > Argument not provided.', 1);
+          this.get_debug().log('[JSJaCJingle:muji] _send_session_prepare > Arguments not provided.', 1);
           return;
         }
 
@@ -774,7 +788,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         }
 
         if(!args) {
-          this.get_debug().log('[JSJaCJingle:muji] _send_session_initiate > Argument not provided.', 1);
+          this.get_debug().log('[JSJaCJingle:muji] _send_session_initiate > Arguments not provided.', 1);
           return;
         }
 
@@ -820,8 +834,13 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:muji] _send_session_leave', 4);
 
       try {
+        if(this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_LEAVING) {
+          this.get_debug().log('[JSJaCJingle:muji] _send_session_leave > Cannot send leave stanza, resource already left (status: ' + this.get_status() + ').', 0);
+          return;
+        }
+
         if(!args) {
-          this.get_debug().log('[JSJaCJingle:muji] _send_session_leave > Argument not provided.', 1);
+          this.get_debug().log('[JSJaCJingle:muji] _send_session_leave > Arguments not provided.', 1);
           return;
         }
 
@@ -865,7 +884,12 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_success', 4);
 
       try {
-        var username = this.extract_stanza_username(stanza);
+        if(this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_PREPARING) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_success > Cannot handle prepare success stanza, resource already prepared (status: ' + this.get_status() + ').', 0);
+          return;
+        }
+
+        var username = this.utils.stanza_username(stanza);
 
         if(!username) {
           throw 'No username provided, not accepting session prepare stanza.';
@@ -915,8 +939,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_error', 4);
 
       try {
-        // Change session status
-        this._set_status(JSJAC_JINGLE_STATUS_INACTIVE);
+        if(this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_PREPARING) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_error > Cannot handle prepare error stanza, resource already prepared (status: ' + this.get_status() + ').', 0);
+          return;
+        }
 
         this.leave();
 
@@ -937,6 +963,11 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:muji] _handle_session_initiate_success', 4);
 
       try {
+        if(this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_INITIATING) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_session_initiate_success > Cannot handle initiate success stanza, resource already initiated (status: ' + this.get_status() + ').', 0);
+          return;
+        }
+
         // Change session status
         this._set_status(JSJAC_JINGLE_MUJI_STATUS_INITIATED);
 
@@ -969,6 +1000,11 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:muji] _handle_session_initiate_error', 4);
 
       try {
+        if(this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_INITIATING) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_session_initiate_error > Cannot handle initiate error stanza, resource already initiated (status: ' + this.get_status() + ').', 0);
+          return;
+        }
+
         this.leave();
 
         // Lock session (cannot be used later)
@@ -988,6 +1024,11 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:muji] _handle_session_leave_success', 4);
 
       try {
+        if(this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_LEAVING) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_session_leave_success > Cannot handle leave success stanza, resource already left (status: ' + this.get_status() + ').', 0);
+          return;
+        }
+
         // Change session status
         this._set_status(JSJAC_JINGLE_MUJI_STATUS_LEFT);
 
@@ -1011,6 +1052,11 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:muji] _handle_session_leave_error', 4);
 
       try {
+        if(this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_LEAVING) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_session_leave_success > Cannot handle leave error stanza, resource already left (status: ' + this.get_status() + ').', 0);
+          return;
+        }
+
         // Change session status
         this._set_status(JSJAC_JINGLE_MUJI_STATUS_LEFT);
 
@@ -1034,15 +1080,35 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @private
      * @event JSJaCJingleMuji#_handle_participant_prepare
      * @param {JSJaCPacket} stanza
+     * @param {Boolean} [is_deferred]
      */
-    _handle_participant_prepare: function(stanza) {
+    _handle_participant_prepare: function(stanza, is_deferred) {
       this.get_debug().log('[JSJaCJingle:muji] _handle_participant_prepare', 4);
 
       try {
-        var username = this.extract_stanza_username(stanza);
+        // Defer if user media not ready yet
+        if(this._defer_participant_handler(stanza, this._handle_participant_prepare) === true)  return;
+
+        var username = this.utils.stanza_username(stanza);
 
         if(!username) {
           throw 'No username provided, not accepting participant prepare stanza.';
+        }
+
+        // Local slot unavailable?
+        if(this.get_status() === JSJAC_JINGLE_MUJI_STATUS_INACTIVE  ||
+           this.get_status() === JSJAC_JINGLE_MUJI_STATUS_LEAVING   ||
+           this.get_status() === JSJAC_JINGLE_MUJI_STATUS_LEFT) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_participant_prepare > [' + username + '] > Cannot handle, resource not available (status: ' + this.get_status() + ').', 0);
+          return;
+        }
+
+        // Remote slot unavailable?
+        var status = this._participant_status(username);
+
+        if(status !== JSJAC_JINGLE_MUJI_STATUS_INACTIVE) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_participant_prepare > [' + username + '] > Cannot handle prepare stanza, participant already prepared (status: ' + status + ').', 0);
+          return;
         }
 
         this._set_participants(username, {
@@ -1058,46 +1124,60 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @private
      * @event JSJaCJingleMuji#_handle_participant_initiate
      * @param {JSJaCPacket} stanza
+     * @param {Boolean} [is_deferred]
      */
-    _handle_participant_initiate: function(stanza) {
+    _handle_participant_initiate: function(stanza, is_deferred) {
       this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate', 4);
 
       try {
         // Defer if user media not ready yet
-        var _this = this;
+        if(this._defer_participant_handler(stanza, this._handle_participant_initiate) === true)  return;
 
-        if(!this._is_ready_user_media()) {
-          this.defer_handler(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA, function() {
-            _this._handle_participant_initiate(stanza);
-          });
-
-          return;
-        }
-
-        var username = this.extract_stanza_username(stanza);
+        var username = this.utils.stanza_username(stanza);
 
         if(!username) {
           throw 'No username provided, not accepting participant initiate stanza.';
         }
 
-        // Slot unavailable?
+        // Local slot unavailable?
         if(this.get_status() === JSJAC_JINGLE_MUJI_STATUS_INACTIVE  ||
            this.get_status() === JSJAC_JINGLE_MUJI_STATUS_LEAVING   ||
            this.get_status() === JSJAC_JINGLE_MUJI_STATUS_LEFT) {
-          this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate > Cannot handle (from: ' + username + '), resource not available (status: ' + this.get_status() + ').', 0);
+          this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate > [' + username + '] > Cannot handle, resource not available (status: ' + this.get_status() + ').', 0);
           return;
         }
 
-        // Create Jingle session
-        this._set_participants(username, {
-          status: JSJAC_JINGLE_MUJI_STATUS_INITIATED,
-          session: (new JSJaCJingleSingle(
-            this._generate_session_args(username)
-          ))
-        });
+        // Remote slot unavailable?
+        var status = this._participant_status(username);
 
-        // Initiate Jingle session
-        this.get_participants(username).session.initiate();
+        if(status !== JSJAC_JINGLE_MUJI_STATUS_INACTIVE  &&
+           status !== JSJAC_JINGLE_MUJI_STATUS_PREPARED) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate > [' + username + '] > Cannot handle initiate stanza, participant already initiated (status: ' + status + ').', 0);
+          return;
+        }
+
+        // Need to initiate? (participant was here before we joined)
+        /* @see {@link http://xmpp.org/extensions/xep-0272.html#joining|XEP-0272: Multiparty Jingle (Muji) - Joining a Conference} */
+        if(is_deferred === true) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate > [' + username + '] Initiating participant Jingle session...', 2);
+
+          // Create Jingle session
+          this._set_participants(username, {
+            status: JSJAC_JINGLE_MUJI_STATUS_INITIATED,
+            session: (new JSJaCJingleSingle(
+              this._generate_session_args(username)
+            ))
+          });
+
+          // Initiate Jingle session
+          this.get_participants(username).session.initiate();
+        } else {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate > [' + username + '] Waiting for participant Jingle initiation request...', 2);
+
+          this._set_participants(username, {
+            status: JSJAC_JINGLE_MUJI_STATUS_INITIATED
+          });
+        }
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate > ' + e, 1);
       }
@@ -1108,15 +1188,36 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @private
      * @event JSJaCJingleMuji#_handle_participant_leave
      * @param {JSJaCPacket} stanza
+     * @param {Boolean} [is_deferred]
      */
-    _handle_participant_leave: function(stanza) {
+    _handle_participant_leave: function(stanza, is_deferred) {
       this.get_debug().log('[JSJaCJingle:muji] _handle_participant_leave', 4);
 
       try {
-        var username = this.extract_stanza_username(stanza);
+        // Defer if user media not ready yet
+        if(this._defer_participant_handler(stanza, this._handle_participant_leave) === true)  return;
+
+        var username = this.utils.stanza_username(stanza);
 
         if(!username) {
           throw 'No username provided, not accepting participant leave stanza.';
+        }
+
+        // Local slot unavailable?
+        if(this.get_status() === JSJAC_JINGLE_MUJI_STATUS_INACTIVE  ||
+           this.get_status() === JSJAC_JINGLE_MUJI_STATUS_LEAVING   ||
+           this.get_status() === JSJAC_JINGLE_MUJI_STATUS_LEFT) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_participant_leave > [' + username + '] > Cannot handle, resource not available (status: ' + this.get_status() + ').', 0);
+          return;
+        }
+
+        // Remote slot unavailable?
+        var status = this._participant_status(username);
+
+        if(status !== JSJAC_JINGLE_MUJI_STATUS_PREPARED  &&
+           status !== JSJAC_JINGLE_MUJI_STATUS_INITIATED) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_participant_leave > [' + username + '] > Cannot handle leave stanza, participant already left or inactive (status: ' + status + ').', 0);
+          return;
         }
 
         // Remove participant session
@@ -1139,9 +1240,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_initiate_pending
-     * @param {JSJaCPacket} stanza
+     * @param {JSJaCJingleSingle} session
      */
-    _jingle_session_initiate_pending: function(stanza) {
+    _jingle_session_initiate_pending: function(session) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_pending', 4);
 
       try {
@@ -1155,13 +1256,25 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_initiate_success
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_initiate_success: function(stanza) {
+    _jingle_session_initiate_success: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_success', 4);
 
       try {
-        // TODO
+        // Mute participant?
+        var cur_media_name;
+
+        for(cur_media_name in this._mute) {
+          if(this.get_mute(cur_media_name) === true) {
+            this._toggle_participants_mute(
+              cur_media_name,
+              JSJAC_JINGLE_SESSION_INFO_MUTE,
+              username
+            );
+          }
+        }
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_success > ' + e, 1);
       }
@@ -1171,9 +1284,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_initiate_error
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_initiate_error: function(stanza) {
+    _jingle_session_initiate_error: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_error', 4);
 
       try {
@@ -1187,9 +1301,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_initiate_request
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_initiate_request: function(stanza) {
+    _jingle_session_initiate_request: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_request', 4);
 
       try {
@@ -1203,9 +1318,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_accept_pending
-     * @param {JSJaCPacket} stanza
+     * @param {JSJaCJingleSingle} session
      */
-    _jingle_session_accept_pending: function(stanza) {
+    _jingle_session_accept_pending: function(session) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_pending', 4);
 
       try {
@@ -1219,9 +1334,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_accept_success
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_accept_success: function(stanza) {
+    _jingle_session_accept_success: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_success', 4);
 
       try {
@@ -1235,9 +1351,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_accept_error
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_accept_error: function(stanza) {
+    _jingle_session_accept_error: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_error', 4);
 
       try {
@@ -1251,6 +1368,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_accept_request
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
     _jingle_session_accept_request: function(session, stanza) {
@@ -1268,13 +1386,13 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_info_pending
-     * @param {JSJaCPacket} stanza
+     * @param {JSJaCJingleSingle} session
      */
-    _jingle_session_info_pending: function(stanza) {
+    _jingle_session_info_pending: function(session) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_pending', 4);
 
       try {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_pending > Not implemented in Muji conferences.', 0);
+        // TODO
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_pending > ' + e, 1);
       }
@@ -1284,13 +1402,14 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_info_success
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_info_success: function(stanza) {
+    _jingle_session_info_success: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_success', 4);
 
       try {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_success > Not implemented in Muji conferences.', 0);
+        // TODO
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_success > ' + e, 1);
       }
@@ -1300,13 +1419,14 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_info_error
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_info_error: function(stanza) {
+    _jingle_session_info_error: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_error', 4);
 
       try {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_error > Not implemented in Muji conferences.', 0);
+        // TODO
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_error > ' + e, 1);
       }
@@ -1316,16 +1436,14 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_info_request
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_info_request: function(stanza) {
+    _jingle_session_info_request: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_request', 4);
 
       try {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_request > Not implemented in Muji conferences.', 0);
-
-        // Not implemented for now
-        this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
+        // TODO
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_request > ' + e, 1);
       }
@@ -1335,9 +1453,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_terminate_pending
-     * @param {JSJaCPacket} stanza
+     * @param {JSJaCJingleSingle} session
      */
-    _jingle_session_terminate_pending: function(stanza) {
+    _jingle_session_terminate_pending: function(session) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_pending', 4);
 
       try {
@@ -1351,9 +1469,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_terminate_success
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_terminate_success: function(stanza) {
+    _jingle_session_terminate_success: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_success', 4);
 
       try {
@@ -1367,9 +1486,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_terminate_error
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_terminate_error: function(stanza) {
+    _jingle_session_terminate_error: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_error', 4);
 
       try {
@@ -1383,9 +1503,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * Handles the Jingle session prepare success
      * @private
      * @event JSJaCJingleMuji#_jingle_session_terminate_request
+     * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_terminate_request: function(stanza) {
+    _jingle_session_terminate_request: function(session, stanza) {
       this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_request', 4);
 
       try {
@@ -1564,7 +1685,8 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this._set_local_stream(null);
 
       // Close the media stream
-      if(this.get_peer_connection())
+      if(this.get_peer_connection()  && 
+         (typeof this.get_peer_connection().close == 'function'))
         this.get_peer_connection().close();
 
       // Remove this session from router
@@ -1576,6 +1698,118 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     /**
      * JSJSAC JINGLE SHORTCUTS
      */
+
+    /**
+     * Terminate participant sessions
+     * @private
+     * @param {Function} [leave_callback]
+     */
+    _terminate_participant_sessions: function(leave_callback) {
+      try {
+        // Terminate each session
+        var cur_username, cur_participant,
+            participants = this.get_participants();
+
+        for(cur_username in participants) {
+          cur_participant = participants[cur_username];
+
+          if(typeof cur_participant.session != 'undefined') {
+            cur_participant.session.terminate();
+            this.get_remove_remote_view()(this, cur_username);
+          }
+        }
+
+        // Execute callback after a while
+        var _this = this;
+
+        if(typeof leave_callback == 'function') {
+          setTimeout(function() {
+            try {
+              leave_callback();
+            } catch(e) {
+              _this.get_debug().log('[JSJaCJingle:muji] _terminate_participant_sessions > ' + e, 1);
+            }
+          }, (JSJAC_JINGLE_MUJI_LEAVE_WAIT * 1000));
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _terminate_participant_sessions > ' + e, 1);
+      }
+    },
+
+    /**
+     * Mutes/unmutes all or given participant(s)
+     * @private
+     * @param {String} media_name
+     * @param {String} mute_action
+     * @param {String} [username]
+     */
+    _toggle_participants_mute: function(media_name, mute_action, username) {
+      try {
+        var i, cur_participant;
+        var participants = {};
+
+        // One specific or all?
+        if(username)
+          participants[username] = this.get_participants(username);
+        else
+          participants = this.get_participants();
+
+        for(i in participants) {
+          cur_participant = participants[i];
+
+          if(cur_participant.session.get_status() === JSJAC_JINGLE_STATUS_INITIATED) {
+            switch(mute_action) {
+              case JSJAC_JINGLE_SESSION_INFO_MUTE:
+                cur_participant.session.mute(media_name); break;
+
+              case JSJAC_JINGLE_SESSION_INFO_UNMUTE:
+                cur_participant.session.unmute(media_name); break;
+            }
+          }
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _toggle_participants_mute > ' + e, 1);
+      }
+    },
+
+    /**
+     * Returns participant status (even if inexistant)
+     * @private
+     * @param {JSJaCPacket} stanza
+     * @param {Function} fn
+     * @returns {Boolean} Defer status
+     */
+    _defer_participant_handler: function(stanza, fn) {
+      var is_deferred = false;
+
+      try {
+        var _this = this;
+
+        if(this._is_ready_user_media() === false) {
+          this.defer_handler(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA, function() {
+            fn.bind(_this)(stanza, true);
+          });
+
+          is_deferred = true;
+
+          this.get_debug().log('[JSJaCJingle:muji] _defer_participant_handler > Deferred participant handler (waiting for user media).', 0);
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _defer_participant_handler > ' + e, 1);
+      } finally {
+        return is_deferred;
+      }
+    },
+
+    /**
+     * Returns participant status (even if inexistant)
+     * @private
+     * @param {String} username
+     * @returns {String} Status
+     */
+    _participant_status: function(username) {
+      return ((this.get_participants(username) || {}).status || JSJAC_JINGLE_MUJI_STATUS_INACTIVE);
+    },
 
     /**
      * Returns local user candidates
@@ -1596,24 +1830,13 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     },
 
     /**
-     * Extracts username from stanza
-     * @public
-     * @param {JSJaCPacket} stanza
-     * @returns {String} Username
-     */
-    extract_stanza_username: function(stanza) {
-      var from = stanza.getFrom();
-      return (new JSJaCJID(from)).getResource();
-    },
-
-    /**
      * Returns whether stanza is from a participant or not
      * @private
      * @param {JSJaCPacket} stanza
      * @returns {Boolean} Participant state
      */
     _stanza_from_participant: function(stanza) {
-      var username = this.extract_stanza_username(stanza);
+      var username = this.utils.stanza_username(stanza);
       return (this.get_participants(username) in JSJAC_JINGLE_MUJI_STATUS) && true;
     },
 
@@ -1624,7 +1847,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Boolean} Local user state
      */
     _stanza_from_local: function(stanza) {
-      return this.extract_stanza_username(stanza) === this.get_username();
+      return this.utils.stanza_username(stanza) === this.get_username();
     },
 
     /**
@@ -1670,10 +1893,11 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
 
       try {
         // Main values
-        args.connection   = this.get_connection();
-        args.to           = this.get_to() + '/' + this.get_username();
-        args.local_view   = this.get_local_view();
-        args.remote_view  = this.get_add_remote_view()(this, username, this.get_media());
+        args.connection             = this.get_connection();
+        args.to                     = this.get_to() + '/' + this.get_username();
+        args.local_view             = this.get_local_view();
+        args.remote_view            = this.get_add_remote_view()(this, username, this.get_media());
+        args.local_stream_readonly  = true;
 
         // Handlers
         args.session_initiate_pending   = this._jingle_session_initiate_pending.bind(this);

@@ -768,7 +768,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         }
 
         // Already muted?
-        if(this.get_mute(name)) {
+        if(this.get_mute(name) === true) {
           this.get_debug().log('[JSJaCJingle:single] mute > Resource already muted.', 0);
           return;
         }
@@ -806,7 +806,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         }
 
         // Already unmute?
-        if(!this.get_mute(name)) {
+        if(this.get_mute(name) === false) {
           this.get_debug().log('[JSJaCJingle:single] unmute > Resource already unmuted.', 0);
           return;
         }
@@ -1062,7 +1062,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         }
 
         if(!args) {
-          this.get_debug().log('[JSJaCJingle:single] _send_session_accept > Argument not provided.', 1);
+          this.get_debug().log('[JSJaCJingle:single] _send_session_accept > Arguments not provided.', 1);
           return;
         }
 
@@ -1110,7 +1110,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
 
       try {
         if(!args) {
-          this.get_debug().log('[JSJaCJingle:single] _send_session_info > Argument not provided.', 1);
+          this.get_debug().log('[JSJaCJingle:single] _send_session_info > Arguments not provided.', 1);
           return;
         }
 
@@ -1167,7 +1167,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         }
 
         if(!args) {
-          this.get_debug().log('[JSJaCJingle:single] _send_session_initiate > Argument not provided.', 1);
+          this.get_debug().log('[JSJaCJingle:single] _send_session_initiate > Arguments not provided.', 1);
           return;
         }
 
@@ -1222,7 +1222,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         }
 
         if(!args) {
-          this.get_debug().log('[JSJaCJingle:single] _send_session_terminate > Argument not provided.', 1);
+          this.get_debug().log('[JSJaCJingle:single] _send_session_terminate > Arguments not provided.', 1);
           return;
         }
 
@@ -1298,7 +1298,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         }
 
         if(!args) {
-          this.get_debug().log('[JSJaCJingle:single] _send_transport_info > Argument not provided.', 1);
+          this.get_debug().log('[JSJaCJingle:single] _send_transport_info > Arguments not provided.', 1);
           return;
         }
 
@@ -2721,7 +2721,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this._set_remote_stream(null);
 
       // Close the media stream
-      if(this.get_peer_connection())
+      if(this.get_peer_connection()  && 
+         (typeof this.get_peer_connection().close == 'function'))
         this.get_peer_connection().close();
 
       // Remove this session from router
