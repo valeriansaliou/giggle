@@ -495,8 +495,7 @@ var JSJaCJingleUtils = ring.create(
      */
     stanza_username: function(stanza) {
       try {
-        var from = stanza.getFrom();
-        return (new JSJaCJID(from)).getResource();
+        return this.extract_username(stanza.getFrom());
       } catch(e) {
         this.parent.get_debug().log('[JSJaCJingle:utils] stanza_username > ' + e, 1);
       }
@@ -2072,6 +2071,22 @@ var JSJaCJingleUtils = ring.create(
       }
 
       return network_obj;
+    },
+
+    /**
+     * Extracts username from full JID
+     * @public
+     * @param {String} full_jid
+     * @returns {String|Object} Username
+     */
+    extract_username: function(full_jid) {
+      try {
+        return (new JSJaCJID(full_jid)).getResource();
+      } catch(e) {
+        this.parent.get_debug().log('[JSJaCJingle:utils] extract_username > ' + e, 1);
+      }
+
+      return null;
     },
 
     /**

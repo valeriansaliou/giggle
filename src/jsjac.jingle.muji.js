@@ -425,7 +425,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         // Common vars
         var i, cur_name;
 
-        // Trigger init pending custom callback
+        // Trigger session prepare pending custom callback
         /* @function */
         (this.get_session_prepare_pending())(this);
 
@@ -502,7 +502,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         // Change session status
         this._set_status(JSJAC_JINGLE_MUJI_STATUS_LEAVING);
 
-        // Trigger terminate pending custom callback
+        // Trigger session leave pending custom callback
         /* @function */
         (this.get_session_leave_pending())(this);
 
@@ -696,9 +696,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
 
         // Submit to registered handler
         if(stanza.getType() == JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE) {
+          this._handle_participant_leave(stanza);
+
           /* @function */
           this.get_participant_leave()(stanza);
-          this._handle_participant_leave(stanza);
         } else {
           var muji = this.utils.stanza_muji(stanza);
 
@@ -715,25 +716,28 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
 
           if(this._stanza_has_preparing(muji)) {
             if(!status || status === JSJAC_JINGLE_MUJI_STATUS_INACTIVE) {
-              /* @function */
-              this.get_participant_prepare()(stanza);
               this._handle_participant_prepare(stanza);
+
+              /* @function */
+              this.get_participant_prepare()(this, stanza);
             } else {
               fn_log_drop();
             }
           } else if(this._stanza_has_content(muji)) {
             if(!status || status === JSJAC_JINGLE_MUJI_STATUS_INACTIVE || status === JSJAC_JINGLE_MUJI_STATUS_PREPARED) {
-              /* @function */
-              this.get_participant_initiate()(stanza);
               this._handle_participant_initiate(stanza);
+
+              /* @function */
+              this.get_participant_initiate()(this, stanza);
             } else {
               fn_log_drop();
             }
           } else if(this.is_stanza_from_participant(stanza)) {
             if(!status || status === JSJAC_JINGLE_MUJI_STATUS_INACTIVE || status === JSJAC_JINGLE_MUJI_STATUS_INITIATED) {
-              /* @function */
-              this.get_participant_leave()(stanza);
               this._handle_participant_leave(stanza);
+
+              /* @function */
+              this.get_participant_leave()(this, stanza);
             } else {
               fn_log_drop();
             }
@@ -1155,6 +1159,10 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
             _this._peer_connection_create(function() {
               _this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_success > Ready to begin Muji initiation.', 2);
 
+              // Trigger session initiate pending custom callback
+              /* @function */
+              (_this.get_session_initiate_pending())(_this);
+
               // Build content (local)
               _this.utils.build_content_local();
 
@@ -1353,7 +1361,8 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         }
 
         this._set_participants(username, {
-          status: JSJAC_JINGLE_MUJI_STATUS_PREPARED
+          status: JSJAC_JINGLE_MUJI_STATUS_PREPARED,
+          view: this._shortcut_participant_view(username)
         });
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _handle_participant_prepare > ' + e, 1);
@@ -1408,7 +1417,8 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
           this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate > [' + username + '] Waiting for participant Jingle initiation request...', 2);
 
           this._set_participants(username, {
-            status: JSJAC_JINGLE_MUJI_STATUS_INITIATED
+            status: JSJAC_JINGLE_MUJI_STATUS_INITIATED,
+            view: this._shortcut_participant_view(username)
           });
         }
       } catch(e) {
@@ -2047,6 +2057,19 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       return this.get_candidates_local();
     },
 
+    /**
+     * Gets participant view (or create it)
+     * @private
+     * @param {String} username
+     * @returns {Object} View
+     */
+    _shortcut_participant_view: function(username) {
+      if((this.get_participants(username) || {}).view)
+        return this.get_participants(username).view;
+      
+      return this.get_add_remote_view()(this, username, this.get_media());
+    },
+
 
 
     /**
@@ -2166,13 +2189,14 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
 
       try {
         // Create Jingle session
-        session = new JSJaCJingleSingle(
-          this._generate_participant_session_args(username)
-        );
+        var session_args = this._generate_participant_session_args(username);
+
+        session = new JSJaCJingleSingle(session_args);
 
         this._set_participants(username, {
           status: JSJAC_JINGLE_MUJI_STATUS_INITIATED,
-          session: session
+          session: session,
+          view: session_args.remote_view
         });
 
         // Configure Jingle session
@@ -2200,7 +2224,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         args.connection             = this.get_connection();
         args.to                     = this.get_to() + '/' + username;
         args.local_view             = this.get_local_view();
-        args.remote_view            = this.get_add_remote_view()(this, username, this.get_media());
+        args.remote_view            = this._shortcut_participant_view(username);
         args.local_stream_readonly  = true;
 
         // Propagate values

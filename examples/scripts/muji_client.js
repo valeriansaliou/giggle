@@ -216,42 +216,138 @@ var ARGS = {
         $('#form_live').find('button').removeAttr('disabled');
     },
     
-    participant_prepare: function(_this) {
+    participant_prepare: function(_this, stanza) {
         console.log('participant_prepare');
 
-        // TODO: add participant <video> / <audio> element with "preparing" text
+        var username = _this.utils.stanza_username(stanza);
+        var container_sel = $('#room_container .video_remote_container').filter(function() {
+            return ($(this).attr('data-username') + '') === (username + '');
+        });
+
+        if(container_sel.size() && !container_sel.find('.load').size()) {
+            container_sel.append('<span class="load"></span>');
+        }
     },
     
-    participant_initiate: function(_this) {
+    participant_initiate: function(_this, stanza) {
         console.log('participant_initiate');
 
-        // TODO: remove "preparing" text
-        // TODO: wait for video/audio stream
+        var username = _this.utils.stanza_username(stanza);
+        var container_sel = $('#room_container .video_remote_container').filter(function() {
+            return ($(this).attr('data-username') + '') === (username + '');
+        });
+
+        if(container_sel.size() && !container_sel.find('.load').size()) {
+            container_sel.append('<span class="load"></span>');
+        }
     },
     
-    participant_leave: function(_this) {
+    participant_leave: function(_this, stanza) {
         console.log('participant_leave');
+    },
+    
+    participant_session_initiate_pending: function(_this, session) {
+        console.log('participant_session_initiate_pending');
+
+        var username = session.utils.extract_username(session.get_to());
+        var container_sel = $('#room_container .video_remote_container').filter(function() {
+            return ($(this).attr('data-username') + '') === (username + '');
+        });
+
+        if(container_sel.size() && !container_sel.find('.load').size()) {
+            container_sel.append('<span class="load"></span>');
+        }
+    },
+    
+    participant_session_initiate_success: function(_this, session, stanza) {
+        console.log('participant_session_initiate_success');
+    },
+    
+    participant_session_initiate_error: function(_this, session, stanza) {
+        console.log('participant_session_initiate_error');
+    },
+    
+    participant_session_initiate_request: function(_this, session, stanza) {
+        console.log('participant_session_initiate_request');
+    },
+    
+    participant_session_accept_pending: function(_this, session) {
+        console.log('participant_session_accept_pending');
+    },
+    
+    participant_session_accept_success: function(_this, session, stanza) {
+        console.log('participant_session_accept_success');
+
+        var username = _this.utils.stanza_username(stanza);
+        var container_sel = $('#room_container .video_remote_container').filter(function() {
+            return ($(this).attr('data-username') + '') === (username + '');
+        });
+
+        container_sel.find('.load').remove();
+    },
+    
+    participant_session_accept_error: function(_this, session, stanza) {
+        console.log('participant_session_accept_error');
+    },
+    
+    participant_session_accept_request: function(_this, session, stanza) {
+        console.log('participant_session_accept_request');
+    },
+    
+    participant_session_info_pending: function(_this, session) {
+        console.log('participant_session_info_pending');
+    },
+    
+    participant_session_info_success: function(_this, session, stanza) {
+        console.log('participant_session_info_success');
+    },
+    
+    participant_session_info_error: function(_this, session, stanza) {
+        console.log('participant_session_info_error');
+    },
+    
+    participant_session_info_request: function(_this, session, stanza) {
+        console.log('participant_session_info_request');
+    },
+    
+    participant_session_terminate_pending: function(_this, session) {
+        console.log('participant_session_terminate_pending');
+    },
+    
+    participant_session_terminate_success: function(_this, session, stanza) {
+        console.log('participant_session_terminate_success');
+    },
+    
+    participant_session_terminate_error: function(_this, session, stanza) {
+        console.log('participant_session_terminate_error');
+    },
+    
+    participant_session_terminate_request: function(_this, session, stanza) {
+        console.log('participant_session_terminate_request');
     },
     
     add_remote_view: function(_this, username, media) {
         console.log('add_remote_view');
 
         var nobody_sel = $('#room_container h6');
-        var view_sel = $('#room_container video.video_remote').filter(function() {
+        var container_sel = $('#room_container .video_remote_container').filter(function() {
             return ($(this).attr('data-username') + '') === (username + '');
         });
 
         // Not already in view?
-        if(!view_sel.size()) {
+        if(!container_sel.size()) {
             // NOTE: we can use 'media' parameter to either append an 'audio' or a 'video' element
-            view_sel = $(
-                '<video class="video_remote" data-username="' + username + '" src="" alt="" width="320" height="180" poster="./images/video_poster_big.png"></video>'
+            container_sel = $(
+                '<div class="video_remote_container">' + 
+                    '<video class="video_remote" src="" alt="" width="320" height="180" poster="./images/video_poster_big.png"></video>' + 
+                '</div>'
             );
 
-            view_sel.insertBefore('#room_container .clear:last').hide();
+            container_sel.attr('data-username', username);
+            container_sel.insertBefore('#room_container .clear:last').hide();
 
             var fn_reveal_view = function() {
-                view_sel.stop(true).hide().fadeIn(400);
+                container_sel.stop(true).hide().fadeIn(400);
             };
 
             if(nobody_sel.is(':visible')) {
@@ -264,29 +360,33 @@ var ARGS = {
         }
 
         // IMPORTANT: return view selector
-        return view_sel[0];
+        return container_sel.find('video.video_remote')[0];
     },
     
     remove_remote_view: function(_this, username) {
         console.log('remove_remote_view');
 
         var nobody_sel = $('#room_container h6');
-        var view_sel = $('#room_container video.video_remote').filter(function() {
+        var container_sel = $('#room_container .video_remote_container').filter(function() {
             return ($(this).attr('data-username') + '') === (username + '');
         });
 
         // Exists in view?
-        if(view_sel.size()) {
-            view_sel.stop(true).fadeOut(250, function() {
+        if(container_sel.size()) {
+            container_sel.stop(true).fadeOut(250, function() {
                 $(this).remove();
 
-                if(!$('#room_container video.video_remote').size() && nobody_sel.is(':hidden')) {
+                if(!$('#room_container .video_remote_container').size() && nobody_sel.is(':hidden')) {
                     nobody_sel.stop(true).fadeIn(400);
                 }
             });
 
             // IMPORTANT: return view selector
-            return view_sel[0];
+            var view_sel = container_sel.find('video.video_remote');
+
+            if(view_sel.size()) {
+                return view_sel[0];
+            }
         }
 
         return null;
