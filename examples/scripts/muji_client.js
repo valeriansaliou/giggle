@@ -352,17 +352,7 @@ $(document).ready(function() {
                         // Initialize JSJaCJingle router
                         JSJaCJingle.listen({
                             connection: con,
-                            debug: (new JSJaCConsoleLogger(4)),
-                            
-                            initiate: function(stanza) {
-                                // Session values
-                                ARGS.to          = stanza.getFrom() || null;
-                                ARGS.local_view  = document.getElementById('video_local');
-
-                                // Let's go!
-                                JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_MUJI, ARGS);
-                                JINGLE.handle(stanza);
-                            }
+                            debug: (new JSJaCConsoleLogger(4))
                         });
 
                         // Auto-join call?

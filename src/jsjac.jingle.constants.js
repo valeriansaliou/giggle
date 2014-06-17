@@ -1994,6 +1994,16 @@ var JSJAC_JINGLE_MUJI_LEAVE_WAIT                     = 1;
 /**
  * @constant
  * @global
+ * @type {Number}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MUJI_PARTICIPANT_ACCEPT_WAIT        = 0.250;
+
+/**
+ * @constant
+ * @global
  * @type {String}
  * @readonly
  * @default

@@ -881,6 +881,19 @@ var __JSJaCJingleBase = ring.create(
       return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
     },
 
+    /**
+     * Gets function handler for given member
+     * @private
+     * @param {Function|Object} member
+     * @returns {Function} Handler
+     */
+    _shortcut_get_handler: function(member) {
+      if(typeof member == 'function')
+        return member;
+
+      return function() {};
+    },
+
 
 
     /**
@@ -1336,7 +1349,7 @@ var __JSJaCJingleBase = ring.create(
           );
         }
 
-        this._local_stream = local_stream;
+        this._set_local_stream_raw(local_stream);
 
         if(local_stream) {
           this._peer_stream_attach(
@@ -1352,6 +1365,15 @@ var __JSJaCJingleBase = ring.create(
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:base] _set_local_stream > ' + e, 1);
       }
+    },
+
+    /**
+     * Sets the local stream raw object (no further processing)
+     * @private
+     * @param {Object} local_stream
+     */
+    _set_local_stream_raw: function(local_stream) {
+      this._local_stream = local_stream;
     },
 
     /**

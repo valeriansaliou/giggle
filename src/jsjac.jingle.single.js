@@ -34,9 +34,9 @@
  * @property   {Function}  [args.session_accept_success]     - The accept success custom handler.
  * @property   {Function}  [args.session_accept_error]       - The accept error custom handler.
  * @property   {Function}  [args.session_accept_request]     - The accept request custom handler.
+ * @property   {Function}  [args.session_info_pending]       - The info request custom handler.
  * @property   {Function}  [args.session_info_success]       - The info success custom handler.
  * @property   {Function}  [args.session_info_error]         - The info error custom handler.
- * @property   {Function}  [args.session_info_pending]       - The info request custom handler.
  * @property   {Function}  [args.session_info_request]       - The info request custom handler.
  * @property   {Function}  [args.session_terminate_pending]  - The terminate pending custom handler.
  * @property   {Function}  [args.session_terminate_success]  - The terminate success custom handler.
@@ -2245,7 +2245,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
           // Re-generate and store new content data
           this.utils.build_content_remote();
 
-          var sdp_candidates_remote = this.utils.sdp_generate_candidates(
+          var sdp_candidates_remote = this.sdp._generate_candidates(
             this.get_candidates_queue_remote()
           );
 
@@ -2757,10 +2757,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_initiate_pending: function() {
-      if(typeof this._session_initiate_pending == 'function')
-        return this._session_initiate_pending;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_initiate_pending
+      );
     },
 
     /**
@@ -2770,10 +2769,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_initiate_success: function() {
-      if(typeof this._session_initiate_success == 'function')
-        return this._session_initiate_success;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_initiate_success
+      );
     },
 
     /**
@@ -2783,10 +2781,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_initiate_error: function() {
-      if(typeof this._session_initiate_error == 'function')
-        return this._session_initiate_error;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_initiate_error
+      );
     },
 
     /**
@@ -2796,10 +2793,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_initiate_request: function() {
-      if(typeof this._session_initiate_request == 'function')
-        return this._session_initiate_request;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_initiate_request
+      );
     },
 
     /**
@@ -2809,10 +2805,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_accept_pending: function() {
-      if(typeof this._session_accept_pending == 'function')
-        return this._session_accept_pending;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_accept_pending
+      );
     },
 
     /**
@@ -2822,10 +2817,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_accept_success: function() {
-      if(typeof this._session_accept_success == 'function')
-        return this._session_accept_success;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_accept_success
+      );
     },
 
     /**
@@ -2835,10 +2829,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_accept_error: function() {
-      if(typeof this._session_accept_error == 'function')
-        return this._session_accept_error;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_accept_error
+      );
     },
 
     /**
@@ -2848,10 +2841,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_accept_request: function() {
-      if(typeof this._session_accept_request == 'function')
-        return this._session_accept_request;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_accept_request
+      );
     },
 
     /**
@@ -2861,10 +2853,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_info_pending: function() {
-      if(typeof this._session_info_pending == 'function')
-        return this._session_info_pending;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_info_pending
+      );
     },
 
     /**
@@ -2874,10 +2865,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_info_success: function() {
-      if(typeof this._session_info_success == 'function')
-        return this._session_info_success;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_info_success
+      );
     },
 
     /**
@@ -2887,10 +2877,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_info_error: function() {
-      if(typeof this._session_info_error == 'function')
-        return this._session_info_error;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_info_error
+      );
     },
 
     /**
@@ -2900,10 +2889,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_info_request: function() {
-      if(typeof this._session_info_request == 'function')
-        return this._session_info_request;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_info_request
+      );
     },
 
     /**
@@ -2913,10 +2901,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_terminate_pending: function() {
-      if(typeof this._session_terminate_pending == 'function')
-        return this._session_terminate_pending;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_terminate_pending
+      );
     },
 
     /**
@@ -2926,10 +2913,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_terminate_success: function() {
-      if(typeof this._session_terminate_success == 'function')
-        return this._session_terminate_success;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_terminate_success
+      );
     },
 
     /**
@@ -2939,10 +2925,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_terminate_error: function() {
-      if(typeof this._session_terminate_error == 'function')
-        return this._session_terminate_error;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_terminate_error
+      );
     },
 
     /**
@@ -2952,10 +2937,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @returns {Function} Callback function
      */
     get_session_terminate_request: function() {
-      if(typeof this._session_terminate_request == 'function')
-        return this._session_terminate_request;
-
-      return function(stanza) {};
+      return this._shortcut_get_handler(
+        this._session_terminate_request
+      );
     },
 
     /**

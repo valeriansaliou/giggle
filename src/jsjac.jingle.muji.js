@@ -24,27 +24,43 @@
  * @see        {@link http://xmpp.org/extensions/xep-0272.html|XEP-0272: Multiparty Jingle (Muji)}
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
- * @param      {Object}    [args]                           - Muji session arguments.
- * @property   {*}         [args.*]                         - Herits of JSJaCJingle() baseclass prototype.
- * @property   {String}    [args.username]                  - The username when joining room.
- * @property   {Function}  [args.room_message_in]           - The incoming message custom handler.
- * @property   {Function}  [args.room_message_out]          - The outgoing message custom handler.
- * @property   {Function}  [args.room_presence_in]          - The incoming presence custom handler.
- * @property   {Function}  [args.room_presence_out]         - The outgoing presence custom handler.
- * @property   {Function}  [args.session_prepare_pending]   - The session prepare pending custom handler.
- * @property   {Function}  [args.session_prepare_success]   - The session prepare success custom handler.
- * @property   {Function}  [args.session_prepare_error]     - The session prepare error custom handler.
- * @property   {Function}  [args.session_initiate_pending]  - The session initiate pending custom handler.
- * @property   {Function}  [args.session_initiate_success]  - The session initiate success custom handler.
- * @property   {Function}  [args.session_initiate_error]    - The session initiate error custom handler.
- * @property   {Function}  [args.session_leave_pending]     - The session leave pending custom handler.
- * @property   {Function}  [args.session_leave_success]     - The session leave success custom handler.
- * @property   {Function}  [args.session_leave_error]       - The session leave error custom handler.
- * @property   {Function}  [args.participant_prepare]       - The participant prepare custom handler.
- * @property   {Function}  [args.participant_initiate]      - The participant initiate custom handler.
- * @property   {Function}  [args.participant_leave]         - The participant leave custom handler.
- * @property   {Function}  [args.add_remote_view]           - The remote view media add (audio/video) custom handler.
- * @property   {Function}  [args.remove_remote_view]        - The remote view media removal (audio/video) custom handler.
+ * @param      {Object}    [args]                                        - Muji session arguments.
+ * @property   {*}         [args.*]                                      - Herits of JSJaCJingle() baseclass prototype.
+ * @property   {String}    [args.username]                               - The username when joining room.
+ * @property   {Function}  [args.room_message_in]                        - The incoming message custom handler.
+ * @property   {Function}  [args.room_message_out]                       - The outgoing message custom handler.
+ * @property   {Function}  [args.room_presence_in]                       - The incoming presence custom handler.
+ * @property   {Function}  [args.room_presence_out]                      - The outgoing presence custom handler.
+ * @property   {Function}  [args.session_prepare_pending]                - The session prepare pending custom handler.
+ * @property   {Function}  [args.session_prepare_success]                - The session prepare success custom handler.
+ * @property   {Function}  [args.session_prepare_error]                  - The session prepare error custom handler.
+ * @property   {Function}  [args.session_initiate_pending]               - The session initiate pending custom handler.
+ * @property   {Function}  [args.session_initiate_success]               - The session initiate success custom handler.
+ * @property   {Function}  [args.session_initiate_error]                 - The session initiate error custom handler.
+ * @property   {Function}  [args.session_leave_pending]                  - The session leave pending custom handler.
+ * @property   {Function}  [args.session_leave_success]                  - The session leave success custom handler.
+ * @property   {Function}  [args.session_leave_error]                    - The session leave error custom handler.
+ * @property   {Function}  [args.participant_prepare]                    - The participant prepare custom handler.
+ * @property   {Function}  [args.participant_initiate]                   - The participant initiate custom handler.
+ * @property   {Function}  [args.participant_leave]                      - The participant session leave custom handler.
+ * @property   {Function}  [args.participant_session_initiate_pending]   - The participant session initiate pending custom handler.
+ * @property   {Function}  [args.participant_session_initiate_success]   - The participant session initiate success custom handler.
+ * @property   {Function}  [args.participant_session_initiate_error]     - The participant session initiate error custom handler.
+ * @property   {Function}  [args.participant_session_initiate_request]   - The participant session initiate request custom handler.
+ * @property   {Function}  [args.participant_session_accept_pending]     - The participant session accept pending custom handler.
+ * @property   {Function}  [args.participant_session_accept_success]     - The participant session accept success custom handler.
+ * @property   {Function}  [args.participant_session_accept_error]       - The participant session accept error custom handler.
+ * @property   {Function}  [args.participant_session_accept_request]     - The participant session accept request custom handler.
+ * @property   {Function}  [args.participant_session_info_pending]       - The participant session info request custom handler.
+ * @property   {Function}  [args.participant_session_info_success]       - The participant session info success custom handler.
+ * @property   {Function}  [args.participant_session_info_error]         - The participant session info error custom handler.
+ * @property   {Function}  [args.participant_session_info_request]       - The participant session info request custom handler.
+ * @property   {Function}  [args.participant_session_terminate_pending]  - The participant session terminate pending custom handler.
+ * @property   {Function}  [args.participant_session_terminate_success]  - The participant session terminate success custom handler.
+ * @property   {Function}  [args.participant_session_terminate_error]    - The participant session terminate error custom handler.
+ * @property   {Function}  [args.participant_session_terminate_request]  - The participant session terminate request custom handler.
+ * @property   {Function}  [args.add_remote_view]                        - The remote view media add (audio/video) custom handler.
+ * @property   {Function}  [args.remove_remote_view]                     - The remote view media removal (audio/video) custom handler.
  */
 var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
   /** @lends JSJaCJingleMuji.prototype */
@@ -182,6 +198,134 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
          * @private
          */
         this._participant_leave = args.participant_leave;
+
+      if(args && args.participant_session_initiate_pending)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_initiate_pending = args.participant_session_initiate_pending;
+
+      if(args && args.participant_session_initiate_success)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_initiate_success = args.participant_session_initiate_success;
+
+      if(args && args.participant_session_initiate_error)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_initiate_error = args.participant_session_initiate_error;
+
+      if(args && args.participant_session_initiate_request)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_initiate_request = args.participant_session_initiate_request;
+
+      if(args && args.participant_session_accept_pending)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_accept_pending = args.participant_session_accept_pending;
+
+      if(args && args.participant_session_accept_success)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_accept_success = args.participant_session_accept_success;
+
+      if(args && args.participant_session_accept_error)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_accept_error = args.participant_session_accept_error;
+
+      if(args && args.participant_session_accept_request)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_accept_request = args.participant_session_accept_request;
+
+      if(args && args.participant_session_info_pending)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_info_pending = args.participant_session_info_pending;
+
+      if(args && args.participant_session_info_success)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_info_success = args.participant_session_info_success;
+
+      if(args && args.participant_session_info_error)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_info_error = args.participant_session_info_error;
+
+      if(args && args.participant_session_info_request)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_info_request = args.participant_session_info_request;
+
+      if(args && args.participant_session_terminate_pending)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_terminate_pending = args.participant_session_terminate_pending;
+
+      if(args && args.participant_session_terminate_success)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_terminate_success = args.participant_session_terminate_success;
+
+      if(args && args.participant_session_terminate_error)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_terminate_error = args.participant_session_terminate_error;
+
+      if(args && args.participant_session_terminate_request)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_session_terminate_request = args.participant_session_terminate_request;
 
       if(args && args.add_remote_view)
         /**
@@ -976,7 +1120,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         handlers = this.get_deferred_handlers(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA);
 
         if(typeof handlers == 'object' && handlers.length) {
-          this.get_debug().log('[JSJaCJingle:single] _handle_session_prepare_success > Submitted to deferred handlers.', 2);
+          this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_success > Submitted to deferred handlers.', 2);
 
           for(i in handlers) {
             /* @function */
@@ -1162,15 +1306,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
           this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate > [' + username + '] Initiating participant Jingle session...', 2);
 
           // Create Jingle session
-          this._set_participants(username, {
-            status: JSJAC_JINGLE_MUJI_STATUS_INITIATED,
-            session: (new JSJaCJingleSingle(
-              this._generate_session_args(username)
-            ))
-          });
-
-          // Initiate Jingle session
-          this.get_participants(username).session.initiate();
+          this._create_participant_session(username).initiate();
         } else {
           this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate > [' + username + '] Waiting for participant Jingle initiation request...', 2);
 
@@ -1223,8 +1359,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         // Remove participant session
         if(this.get_participants(username).session.get_status() !== JSJAC_JINGLE_STATUS_TERMINATED)
           this.get_participants(username).session.abort();
-        
+
         this._set_participants(username, null);
+        this.get_remove_remote_view()(this, username);
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _handle_participant_leave > ' + e, 1);
       }
@@ -1239,30 +1376,34 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_initiate_pending
+     * @event JSJaCJingleMuji#_handle_participant_session_initiate_pending
      * @param {JSJaCJingleSingle} session
      */
-    _jingle_session_initiate_pending: function(session) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_pending', 4);
+    _handle_participant_session_initiate_pending: function(session) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_initiate_pending', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_initiate_pending())(this, session);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_pending > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_initiate_pending > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_initiate_success
+     * @event JSJaCJingleMuji#_handle_participant_session_initiate_success
      * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_initiate_success: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_success', 4);
+    _handle_participant_session_initiate_success: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_initiate_success', 4);
 
       try {
+        /* @function */
+        (this.get_participant_session_initiate_success())(this, session, stanza);
+
         // Mute participant?
         var cur_media_name;
 
@@ -1275,244 +1416,265 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
             );
           }
         }
+
+        // Auto-accept incoming sessions
+        if(session.is_responder()) {
+          // Accept after a while
+          setTimeout(function() {
+            session.accept();
+          }, (JSJAC_JINGLE_MUJI_PARTICIPANT_ACCEPT_WAIT * 1000));
+        }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_success > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_initiate_success > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_initiate_error
+     * @event JSJaCJingleMuji#_handle_participant_session_initiate_error
      * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_initiate_error: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_error', 4);
+    _handle_participant_session_initiate_error: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_initiate_error', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_initiate_error())(this, session, stanza);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_error > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_initiate_error > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_initiate_request
+     * @event JSJaCJingleMuji#_handle_participant_session_initiate_request
      * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_initiate_request: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_request', 4);
+    _handle_participant_session_initiate_request: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_initiate_request', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_initiate_request())(this, session, stanza);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_initiate_request > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_initiate_request > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_accept_pending
+     * @event JSJaCJingleMuji#_handle_participant_session_accept_pending
      * @param {JSJaCJingleSingle} session
      */
-    _jingle_session_accept_pending: function(session) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_pending', 4);
+    _handle_participant_session_accept_pending: function(session) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_accept_pending', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_accept_pending())(this, session);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_pending > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_accept_pending > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_accept_success
-     * @param {JSJaCJingleSingle} session
-     * @param {JSJaCPacket} stanza
-     */
-    _jingle_session_accept_success: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_success', 4);
-
-      try {
-        // TODO
-      } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_success > ' + e, 1);
-      }
-    },
-
-    /**
-     * Handles the Jingle session prepare success
-     * @private
-     * @event JSJaCJingleMuji#_jingle_session_accept_error
+     * @event JSJaCJingleMuji#_handle_participant_session_accept_success
      * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_accept_error: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_error', 4);
+    _handle_participant_session_accept_success: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_accept_success', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_accept_success())(this, session, stanza);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_error > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_accept_success > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_accept_request
+     * @event JSJaCJingleMuji#_handle_participant_session_accept_error
      * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_accept_request: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_request', 4);
+    _handle_participant_session_accept_error: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_accept_error', 4);
 
       try {
-        // Accept session (no need to ask for user approval in Muji)
-        session.accept();
+        /* @function */
+        (this.get_participant_session_accept_error())(this, session, stanza);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_accept_request > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_accept_error > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_info_pending
-     * @param {JSJaCJingleSingle} session
-     */
-    _jingle_session_info_pending: function(session) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_pending', 4);
-
-      try {
-        // TODO
-      } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_pending > ' + e, 1);
-      }
-    },
-
-    /**
-     * Handles the Jingle session prepare success
-     * @private
-     * @event JSJaCJingleMuji#_jingle_session_info_success
+     * @event JSJaCJingleMuji#_handle_participant_session_accept_request
      * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_info_success: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_success', 4);
+    _handle_participant_session_accept_request: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_accept_request', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_accept_request())(this, session, stanza);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_success > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_accept_request > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_info_error
+     * @event JSJaCJingleMuji#_handle_participant_session_info_pending
+     * @param {JSJaCJingleSingle} session
+     */
+    _handle_participant_session_info_pending: function(session) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_info_pending', 4);
+
+      try {
+        /* @function */
+        (this.get_participant_session_info_pending())(this, session);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_info_pending > ' + e, 1);
+      }
+    },
+
+    /**
+     * Handles the Jingle session prepare success
+     * @private
+     * @event JSJaCJingleMuji#_handle_participant_session_info_success
      * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_info_error: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_error', 4);
+    _handle_participant_session_info_success: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_info_success', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_info_success())(this, session, stanza);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_error > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_info_success > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_info_request
+     * @event JSJaCJingleMuji#_handle_participant_session_info_error
      * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_info_request: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_request', 4);
+    _handle_participant_session_info_error: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_info_error', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_info_error())(this, session, stanza);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_info_request > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_info_error > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_terminate_pending
-     * @param {JSJaCJingleSingle} session
-     */
-    _jingle_session_terminate_pending: function(session) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_pending', 4);
-
-      try {
-        // TODO
-      } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_pending > ' + e, 1);
-      }
-    },
-
-    /**
-     * Handles the Jingle session prepare success
-     * @private
-     * @event JSJaCJingleMuji#_jingle_session_terminate_success
+     * @event JSJaCJingleMuji#_handle_participant_session_info_request
      * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_terminate_success: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_success', 4);
+    _handle_participant_session_info_request: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_info_request', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_info_request())(this, session, stanza);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_success > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_info_request > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_terminate_error
+     * @event JSJaCJingleMuji#_handle_participant_session_terminate_pending
      * @param {JSJaCJingleSingle} session
-     * @param {JSJaCPacket} stanza
      */
-    _jingle_session_terminate_error: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_error', 4);
+    _handle_participant_session_terminate_pending: function(session) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_terminate_pending', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_terminate_pending())(this, session);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_error > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_terminate_pending > ' + e, 1);
       }
     },
 
     /**
      * Handles the Jingle session prepare success
      * @private
-     * @event JSJaCJingleMuji#_jingle_session_terminate_request
+     * @event JSJaCJingleMuji#_handle_participant_session_terminate_success
      * @param {JSJaCJingleSingle} session
      * @param {JSJaCPacket} stanza
      */
-    _jingle_session_terminate_request: function(session, stanza) {
-      this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_request', 4);
+    _handle_participant_session_terminate_success: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_terminate_success', 4);
 
       try {
-        // TODO
+        /* @function */
+        (this.get_participant_session_terminate_success())(this, session, stanza);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _jingle_session_terminate_request > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_terminate_success > ' + e, 1);
+      }
+    },
+
+    /**
+     * Handles the Jingle session prepare success
+     * @private
+     * @event JSJaCJingleMuji#_handle_participant_session_terminate_error
+     * @param {JSJaCJingleSingle} session
+     * @param {JSJaCPacket} stanza
+     */
+    _handle_participant_session_terminate_error: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_terminate_error', 4);
+
+      try {
+        /* @function */
+        (this.get_participant_session_terminate_error())(this, session, stanza);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_terminate_error > ' + e, 1);
+      }
+    },
+
+    /**
+     * Handles the Jingle session prepare success
+     * @private
+     * @event JSJaCJingleMuji#_handle_participant_session_terminate_request
+     * @param {JSJaCJingleSingle} session
+     * @param {JSJaCPacket} stanza
+     */
+    _handle_participant_session_terminate_request: function(session, stanza) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_terminate_request', 4);
+
+      try {
+        /* @function */
+        (this.get_participant_session_terminate_request())(this, session, stanza);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_session_terminate_request > ' + e, 1);
       }
     },
 
@@ -1574,12 +1736,12 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @param {Function} [sdp_message_callback]
      */
     _peer_connection_callbacks: function(sdp_message_callback) {
-      this.get_debug().log('[JSJaCJingle:single] _peer_connection_callbacks', 4);
+      this.get_debug().log('[JSJaCJingle:muji] _peer_connection_callbacks', 4);
 
       try {
         // Not used for Muji
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:single] _peer_connection_callbacks > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _peer_connection_callbacks > ' + e, 1);
       }
     },
 
@@ -1883,44 +2045,87 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     },
 
     /**
-     * Generates Jingle session arguments
+     * Creates participant Jingle session
      * @private
-     * @param {string} username
+     * @param {String} username
+     * @returns {JSJaCJingleSingle|Object} Jingle session instance
+     */
+    _create_participant_session: function(username) {
+      var session = null;
+
+      try {
+        // Create Jingle session
+        session = new JSJaCJingleSingle(
+          this._generate_participant_session_args(username)
+        );
+
+        this._set_participants(username, {
+          status: JSJAC_JINGLE_MUJI_STATUS_INITIATED,
+          session: session
+        });
+
+        // Configure Jingle session
+        this.get_participants(username).session._set_local_stream_raw(
+          this.get_local_stream()
+        );
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _create_participant_session > ' + e, 1);
+      } finally {
+        return session;
+      }
+    },
+
+    /**
+     * Generates participant Jingle session arguments
+     * @private
+     * @param {String} username
      * @returns {Object} Jingle session arguments
      */
-    _generate_session_args: function(username) {
+    _generate_participant_session_args: function(username) {
       args = {};
 
       try {
         // Main values
         args.connection             = this.get_connection();
-        args.to                     = this.get_to() + '/' + this.get_username();
+        args.to                     = this.get_to() + '/' + username;
         args.local_view             = this.get_local_view();
         args.remote_view            = this.get_add_remote_view()(this, username, this.get_media());
         args.local_stream_readonly  = true;
 
+        // Propagate values
+        args.media         = this.get_media();
+        args.video_source  = this.get_video_source();
+        args.resolution    = this.get_resolution();
+        args.bandwidth     = this.get_bandwidth();
+        args.fps           = this.get_fps();
+        args.stun          = this.get_stun();
+        args.turn          = this.get_turn();
+        args.sdp_trace     = this.get_sdp_trace();
+        args.net_trace     = this.get_net_trace();
+        args.debug         = this.get_debug();
+
         // Handlers
-        args.session_initiate_pending   = this._jingle_session_initiate_pending.bind(this);
-        args.session_initiate_success   = this._jingle_session_initiate_success.bind(this);
-        args.session_initiate_error     = this._jingle_session_initiate_error.bind(this);
-        args.session_initiate_request   = this._jingle_session_initiate_request.bind(this);
+        args.session_initiate_pending   = this._handle_participant_session_initiate_pending.bind(this);
+        args.session_initiate_success   = this._handle_participant_session_initiate_success.bind(this);
+        args.session_initiate_error     = this._handle_participant_session_initiate_error.bind(this);
+        args.session_initiate_request   = this._handle_participant_session_initiate_request.bind(this);
 
-        args.session_accept_pending     = this._jingle_session_accept_pending.bind(this);
-        args.session_accept_success     = this._jingle_session_accept_success.bind(this);
-        args.session_accept_error       = this._jingle_session_accept_error.bind(this);
-        args.session_accept_request     = this._jingle_session_accept_request.bind(this);
+        args.session_accept_pending     = this._handle_participant_session_accept_pending.bind(this);
+        args.session_accept_success     = this._handle_participant_session_accept_success.bind(this);
+        args.session_accept_error       = this._handle_participant_session_accept_error.bind(this);
+        args.session_accept_request     = this._handle_participant_session_accept_request.bind(this);
 
-        args.session_info_pending       = this._jingle_session_info_pending.bind(this);
-        args.session_info_success       = this._jingle_session_info_success.bind(this);
-        args.session_info_error         = this._jingle_session_info_error.bind(this);
-        args.session_info_request       = this._jingle_session_info_request.bind(this);
+        args.session_info_pending       = this._handle_participant_session_info_pending.bind(this);
+        args.session_info_success       = this._handle_participant_session_info_success.bind(this);
+        args.session_info_error         = this._handle_participant_session_info_error.bind(this);
+        args.session_info_request       = this._handle_participant_session_info_request.bind(this);
 
-        args.session_terminate_pending  = this._jingle_session_terminate_pending.bind(this);
-        args.session_terminate_success  = this._jingle_session_terminate_success.bind(this);
-        args.session_terminate_error    = this._jingle_session_terminate_error.bind(this);
-        args.session_terminate_request  = this._jingle_session_terminate_request.bind(this);
+        args.session_terminate_pending  = this._handle_participant_session_terminate_pending.bind(this);
+        args.session_terminate_success  = this._handle_participant_session_terminate_success.bind(this);
+        args.session_terminate_error    = this._handle_participant_session_terminate_error.bind(this);
+        args.session_terminate_request  = this._handle_participant_session_terminate_request.bind(this);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _generate_session_args > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _generate_participant_session_args > ' + e, 1);
       } finally {
         return args;
       }
@@ -1961,10 +2166,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Incoming message callback function
      */
     get_room_message_in: function() {
-      if(typeof this._room_message_in == 'function')
-        return this._room_message_in;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._room_message_in
+      );
     },
 
     /**
@@ -1974,10 +2178,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Outgoing message callback function
      */
     get_room_message_out: function() {
-      if(typeof this._room_message_out == 'function')
-        return this._room_message_out;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._room_message_out
+      );
     },
 
     /**
@@ -1987,10 +2190,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Incoming presence callback function
      */
     get_room_presence_in: function() {
-      if(typeof this._room_presence_in == 'function')
-        return this._room_presence_in;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._room_message_in
+      );
     },
 
     /**
@@ -2000,10 +2202,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Outgoing presence callback function
      */
     get_room_presence_out: function() {
-      if(typeof this._room_presence_out == 'function')
-        return this._room_presence_out;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._room_presence_out
+      );
     },
 
     /**
@@ -2013,10 +2214,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Session prepare pending callback function
      */
     get_session_prepare_pending: function() {
-      if(typeof this._session_prepare_pending == 'function')
-        return this._session_prepare_pending;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_prepare_pending
+      );
     },
 
     /**
@@ -2026,10 +2226,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Session prepare success callback function
      */
     get_session_prepare_success: function() {
-      if(typeof this._session_prepare_success == 'function')
-        return this._session_prepare_success;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_prepare_success
+      );
     },
 
     /**
@@ -2039,10 +2238,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Session prepare error callback function
      */
     get_session_prepare_error: function() {
-      if(typeof this._session_prepare_error == 'function')
-        return this._session_prepare_error;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_prepare_error
+      );
     },
 
     /**
@@ -2052,10 +2250,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Session initiate pending callback function
      */
     get_session_initiate_pending: function() {
-      if(typeof this._session_initiate_pending == 'function')
-        return this._session_initiate_pending;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_initiate_pending
+      );
     },
 
     /**
@@ -2065,10 +2262,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Session initiate success callback function
      */
     get_session_initiate_success: function() {
-      if(typeof this._session_initiate_success == 'function')
-        return this._session_initiate_success;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_initiate_success
+      );
     },
 
     /**
@@ -2078,10 +2274,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Session initiate error callback function
      */
     get_session_initiate_error: function() {
-      if(typeof this._session_initiate_error == 'function')
-        return this._session_initiate_error;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_initiate_error
+      );
     },
 
     /**
@@ -2091,10 +2286,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Session leave pending callback function
      */
     get_session_leave_pending: function() {
-      if(typeof this._session_leave_pending == 'function')
-        return this._session_leave_pending;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_leave_pending
+      );
     },
 
     /**
@@ -2104,10 +2298,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Session leave success callback function
      */
     get_session_leave_success: function() {
-      if(typeof this._session_leave_success == 'function')
-        return this._session_leave_success;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_leave_success
+      );
     },
 
     /**
@@ -2117,10 +2310,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Session leave error callback function
      */
     get_session_leave_error: function() {
-      if(typeof this._session_leave_error == 'function')
-        return this._session_leave_error;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._session_leave_error
+      );
     },
 
     /**
@@ -2130,10 +2322,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Participant prepare callback function
      */
     get_participant_prepare: function() {
-      if(typeof this._participant_prepare == 'function')
-        return this._participant_prepare;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._participant_prepare
+      );
     },
 
     /**
@@ -2143,10 +2334,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Participant initiate callback function
      */
     get_participant_initiate: function() {
-      if(typeof this._participant_initiate == 'function')
-        return this._participant_initiate;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._participant_initiate
+      );
     },
 
     /**
@@ -2156,10 +2346,201 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Participant leave callback function
      */
     get_participant_leave: function() {
-      if(typeof this._participant_leave == 'function')
-        return this._participant_leave;
+      return this._shortcut_get_handler(
+        this._participant_leave
+      );
+    },
 
-      return function() {};
+    /**
+     * Gets the participant session initiate pending callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_initiate_pending
+     * @returns {Function} Participant session initiate pending callback function
+     */
+    get_participant_session_initiate_pending: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_initiate_pending
+      );
+    },
+
+    /**
+     * Gets the participant session initiate success callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_initiate_success
+     * @returns {Function} Participant session initiate success callback function
+     */
+    get_participant_session_initiate_success: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_initiate_success
+      );
+    },
+
+    /**
+     * Gets the participant session initiate error callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_initiate_error
+     * @returns {Function} Participant session initiate error callback function
+     */
+    get_participant_session_initiate_error: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_initiate_error
+      );
+    },
+
+    /**
+     * Gets the participant session initiate request callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_initiate_request
+     * @returns {Function} Participant session initiate request callback function
+     */
+    get_participant_session_initiate_request: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_initiate_request
+      );
+    },
+
+    /**
+     * Gets the participant session accept pending callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_accept_pending
+     * @returns {Function} Participant session accept pending callback function
+     */
+    get_participant_session_accept_pending: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_accept_pending
+      );
+    },
+
+    /**
+     * Gets the participant session accept success callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_accept_success
+     * @returns {Function} Participant session accept success callback function
+     */
+    get_participant_session_accept_success: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_accept_success
+      );
+    },
+
+    /**
+     * Gets the participant session accept error callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_accept_error
+     * @returns {Function} Participant session accept error callback function
+     */
+    get_participant_session_accept_error: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_accept_error
+      );
+    },
+
+    /**
+     * Gets the participant session accept request callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_accept_request
+     * @returns {Function} Participant session accept request callback function
+     */
+    get_participant_session_accept_request: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_accept_request
+      );
+    },
+
+    /**
+     * Gets the participant session info pending callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_info_pending
+     * @returns {Function} Participant session info pending callback function
+     */
+    get_participant_session_info_pending: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_info_pending
+      );
+    },
+
+    /**
+     * Gets the participant session info success callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_info_success
+     * @returns {Function} Participant session info success callback function
+     */
+    get_participant_session_info_success: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_info_success
+      );
+    },
+
+    /**
+     * Gets the participant session info error callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_info_error
+     * @returns {Function} Participant session info error callback function
+     */
+    get_participant_session_info_error: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_info_error
+      );
+    },
+
+    /**
+     * Gets the participant session info request callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_info_request
+     * @returns {Function} Participant session info request callback function
+     */
+    get_participant_session_info_request: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_info_request
+      );
+    },
+
+    /**
+     * Gets the participant session terminate pending callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_terminate_pending
+     * @returns {Function} Participant session terminate pending callback function
+     */
+    get_participant_session_terminate_pending: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_terminate_pending
+      );
+    },
+
+    /**
+     * Gets the participant session terminate success callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_terminate_success
+     * @returns {Function} Participant session terminate success callback function
+     */
+    get_participant_session_terminate_success: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_terminate_success
+      );
+    },
+
+    /**
+     * Gets the participant session terminate error callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_terminate_error
+     * @returns {Function} Participant session terminate error callback function
+     */
+    get_participant_session_terminate_error: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_terminate_error
+      );
+    },
+
+    /**
+     * Gets the participant session terminate request callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_session_terminate_request
+     * @returns {Function} Participant session terminate request callback function
+     */
+    get_participant_session_terminate_request: function() {
+      return this._shortcut_get_handler(
+        this._participant_session_terminate_request
+      );
     },
 
     /**
@@ -2169,10 +2550,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Remote view add callback function
      */
     get_add_remote_view: function() {
-      if(typeof this._add_remote_view == 'function')
-        return this._add_remote_view;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._add_remote_view
+      );
     },
 
     /**
@@ -2182,10 +2562,9 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Function} Remote view removal callback function
      */
     get_remove_remote_view: function() {
-      if(typeof this._remove_remote_view == 'function')
-        return this._remove_remote_view;
-
-      return function() {};
+      return this._shortcut_get_handler(
+        this._remove_remote_view
+      );
     },
 
     /**
@@ -2372,6 +2751,150 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      */
     _set_participant_leave: function(participant_leave) {
       this._participant_leave = participant_leave;
+    },
+
+    /**
+     * Sets the participant session initiate pending callback function
+     * @private
+     * @param {Function} participant_session_initiate_pending
+     */
+    _set_participant_session_initiate_pending: function(participant_session_initiate_pending) {
+      this._participant_session_initiate_pending = participant_session_initiate_pending;
+    },
+
+    /**
+     * Sets the participant session initiate success callback function
+     * @private
+     * @param {Function} participant_session_initiate_success
+     */
+    _set_participant_session_initiate_success: function(participant_session_initiate_success) {
+      this._participant_session_initiate_success = participant_session_initiate_success;
+    },
+
+    /**
+     * Sets the participant session initiate error callback function
+     * @private
+     * @param {Function} participant_session_initiate_error
+     */
+    _set_participant_session_initiate_error: function(participant_session_initiate_error) {
+      this._participant_session_initiate_error = participant_session_initiate_error;
+    },
+
+    /**
+     * Sets the participant session initiate request callback function
+     * @private
+     * @param {Function} participant_session_initiate_request
+     */
+    _set_participant_session_initiate_request: function(participant_session_initiate_request) {
+      this._participant_session_initiate_request = participant_session_initiate_request;
+    },
+
+    /**
+     * Sets the participant session accept pending callback function
+     * @private
+     * @param {Function} participant_session_accept_pending
+     */
+    _set_participant_session_accept_pending: function(participant_session_accept_pending) {
+      this._participant_session_accept_pending = participant_session_accept_pending;
+    },
+
+    /**
+     * Sets the participant session accept success callback function
+     * @private
+     * @param {Function} participant_session_accept_success
+     */
+    _set_participant_session_accept_success: function(participant_session_accept_success) {
+      this._participant_session_accept_success = participant_session_accept_success;
+    },
+
+    /**
+     * Sets the participant session accept error callback function
+     * @private
+     * @param {Function} participant_session_accept_error
+     */
+    _set_participant_session_accept_error: function(participant_session_accept_error) {
+      this._participant_session_accept_error = participant_session_accept_error;
+    },
+
+    /**
+     * Sets the participant session accept request callback function
+     * @private
+     * @param {Function} participant_session_accept_request
+     */
+    _set_participant_session_accept_request: function(participant_session_accept_request) {
+      this._participant_session_accept_request = participant_session_accept_request;
+    },
+
+    /**
+     * Sets the participant session info pending callback function
+     * @private
+     * @param {Function} participant_session_info_pending
+     */
+    _set_participant_session_info_pending: function(participant_session_info_pending) {
+      this._participant_session_info_pending = participant_session_info_pending;
+    },
+
+    /**
+     * Sets the participant session info success callback function
+     * @private
+     * @param {Function} participant_session_info_success
+     */
+    _set_participant_session_info_success: function(participant_session_info_success) {
+      this._participant_session_info_success = participant_session_info_success;
+    },
+
+    /**
+     * Sets the participant session info error callback function
+     * @private
+     * @param {Function} participant_session_info_error
+     */
+    _set_participant_session_info_error: function(participant_session_info_error) {
+      this._participant_session_info_error = participant_session_info_error;
+    },
+
+    /**
+     * Sets the participant session info request callback function
+     * @private
+     * @param {Function} participant_session_info_request
+     */
+    _set_participant_session_info_request: function(participant_session_info_request) {
+      this._participant_session_info_request = participant_session_info_request;
+    },
+
+    /**
+     * Sets the participant session terminate pending callback function
+     * @private
+     * @param {Function} participant_session_terminate_pending
+     */
+    _set_participant_session_terminate_pending: function(participant_session_terminate_pending) {
+      this._participant_session_terminate_pending = participant_session_terminate_pending;
+    },
+
+    /**
+     * Sets the participant session terminate success callback function
+     * @private
+     * @param {Function} participant_session_terminate_success
+     */
+    _set_participant_session_terminate_success: function(participant_session_terminate_success) {
+      this._participant_session_terminate_success = participant_session_terminate_success;
+    },
+
+    /**
+     * Sets the participant session terminate error callback function
+     * @private
+     * @param {Function} participant_session_terminate_error
+     */
+    _set_participant_session_terminate_error: function(participant_session_terminate_error) {
+      this._participant_session_terminate_error = participant_session_terminate_error;
+    },
+
+    /**
+     * Sets the participant session terminate request callback function
+     * @private
+     * @param {Function} participant_session_terminate_request
+     */
+    _set_participant_session_terminate_request: function(participant_session_terminate_request) {
+      this._participant_session_terminate_request = participant_session_terminate_request;
     },
 
     /**
