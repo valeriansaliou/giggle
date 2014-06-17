@@ -822,11 +822,13 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
 
     /**
      * Toggles media type in a Jingle session
+     * @todo Code media() (Single version)
      * @public
      * @param {String} [media]
      */
     media: function(media) {
       /* DEV: don't expect this to work as of now! */
+      /* MEDIA() - SINGLE VERSION */
 
       this.get_debug().log('[JSJaCJingle:single] media', 4);
 
@@ -2740,7 +2742,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
      * @private
      * @returns {Object} Candidates
      */
-    _local_user_candidates: function() {
+    _shortcut_local_user_candidates: function() {
       return this.get_candidates_local();
     },
 

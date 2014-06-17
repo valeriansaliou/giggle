@@ -769,7 +769,7 @@ var __JSJaCJingleBase = ring.create(
 
           /* @function */
           sdp_message_callback();
-        } else if(this.utils.count_candidates(this._local_user_candidates()) === 0) {
+        } else if(this.utils.count_candidates(this._shortcut_local_user_candidates()) === 0) {
           this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Waiting for local candidates...', 2);
         }
       } catch(e) {
@@ -860,7 +860,7 @@ var __JSJaCJingleBase = ring.create(
 
 
     /**
-     * JSJSAC JINGLE SHORTCUTS
+     * JSJSAC JINGLE STATES
      */
 
     /**
@@ -880,6 +880,12 @@ var __JSJaCJingleBase = ring.create(
     is_initiator: function() {
       return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
     },
+
+
+
+    /**
+     * JSJSAC JINGLE SHORTCUTS
+     */
 
     /**
      * Gets function handler for given member
