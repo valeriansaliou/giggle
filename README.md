@@ -28,11 +28,23 @@ Made with love by the happy folks at **Jappix** https://jappix.com/ and **French
 
 ## Online Demo
 
-You can try JSJaCJingle.js there: https://demo.frenchtouch.pro/valerian.saliou/jsjac-jingle/examples/single_client.html
+### One-to-one calls (aKa Single)
+
+You can try JSJaCJingle.js one-to-one calls there: https://demo.frenchtouch.pro/valerian.saliou/jsjac-jingle/examples/single_client.html
 
 Open it on 2 separate tabs or 2 different computers, and login with 2 different XMPP accounts (Jappix.com accounts only for this online demo). Then, paste the full JID of the other connected account in the call field.
 
 The call should then be initiated, and after a while the video will come.
+
+### Multiparty calls (aKa Muji)
+
+You can try JSJaCJingle.js multiparty calls there: https://demo.frenchtouch.pro/valerian.saliou/jsjac-jingle/examples/muji_client.html
+
+Open it on 3+ separate tabs or 3+ different computers, and login with 3+ different XMPP accounts (Jappix.com accounts only for this online demo). Then, join the same conference room (you can enter any room even if it doesn't exist, just be sure to use muc.jappix.com as a MUC server - eg: happy-muji-test@muc.jappix.com).
+
+The multiparty conference call should take some time to initiate.
+
+**Note: depending on how powerful your CPU is and how much bandwidth your network can allocated, performances may degrade with many participants.**
 
 ## Notes About Security
 
@@ -41,6 +53,8 @@ Jingle could have been implemented in a dirty-way there, so that "It just works"
 We wanted to avoid such possible security exploits: _imagine a friend of you wants to disturb your call, and send you a session-terminate with a wrong SID. In a quick-and-dirty implementation, the request would have been dropped because the call is already ongoing, but the client-side handlers would still have been fired, thus modifying the UI._
 
 JSJaCJingle.js simply **DOES NOT** fire the custom event handlers that you may have defined, so that you don't have to check yourself that each incoming packet is safe, thus to ensure your client implementation of Jingle is rock-solid (safe: session is authorized **AND** stanza sender is authorized **AND** the Jingle session flow is respected).
+
+Multiparty call can be password-protected, in a completely transparent fashion. JSJaCJingle.js can handle the password generation process, and then transmit it to other potential call participants through the Muji call invites you send to them. [See our API docs](https://demo.frenchtouch.pro/valerian.saliou/jsjac-jingle/doc/) for more about this.
 
 ## Commercial Support
 
@@ -74,224 +88,23 @@ We assume your XMPP Web client is using JSJaC and has an active connection, stor
  */
 ```
 
-**You first need to create the global ARGS object, storing JSJaCJingle configuration:**
+### One-to-one calls
 
-```javascript
-// JSJaCJingle arguments
-// Note: you don't need to pass them all, only the 4 first ones are required
-var ARGS = {
-    // Configuration (required)
-    connection: null,
-    to: null,
-    local_view: null,
-    remote_view: null,
+The one-to-one demo client source code can be found at the following URLs:
 
-    // Custom handlers (optional)
-    session_initiate_pending: function(_this) {
-        // Update your client UI
-        // Waiting to be initialized...
+* **HTML**: https://github.com/valeriansaliou/jsjac-jingle/blob/master/examples/single_client.html
+* **CSS**: https://github.com/valeriansaliou/jsjac-jingle/blob/master/examples/styles/single_client.css
+* **JavaScript**: https://github.com/valeriansaliou/jsjac-jingle/blob/master/examples/scripts/single_client.js
 
-        console.log('session_initiate_pending');
-    },
+### Multiparty calls
 
-    session_initiate_success: function(_this, stanza) {
-        // Update your client UI
-        // Initialized!
+The multiparty demo client source code can be found at the following URLs:
 
-        // This is an incoming call
-        if(_this.is_responder()) {
-            // Request for Jingle session to be accepted
-            if(confirm("Incoming call from " + _this.util_stanza_from(stanza) + "\n\nAccept?"))
-                _this.accept();
-            else
-                _this.terminate(JSJAC_JINGLE_REASON_DECLINE);
-        }
+* **HTML**: https://github.com/valeriansaliou/jsjac-jingle/blob/master/examples/muji_client.html
+* **CSS**: https://github.com/valeriansaliou/jsjac-jingle/blob/master/examples/styles/muji_client.css
+* **JavaScript**: https://github.com/valeriansaliou/jsjac-jingle/blob/master/examples/scripts/muji_client.js
 
-        console.log('session_initiate_success');
-    },
-
-    session_initiate_error: function(_this, stanza) {
-        // Update your client UI
-        // Could not initialize!
-
-        console.log('session_initiate_error');
-    },
-
-    session_initiate_request: function(_this, stanza) {
-        // Update your client UI
-        // Got an initiate request!
-
-        console.log('session_initiate_request');
-    },
-
-    session_accept_pending: function(_this) {
-        // Update your client UI
-        // Waiting to be accepted...
-
-        console.log('session_accept_pending');
-    },
-
-    session_accept_success: function(_this, stanza) {
-        // Update your client UI
-        // Accepted!
-
-        // Request for Jingle session to terminate
-        // You can call this when user press 'end' button
-        // Use: _this.terminate();
-
-        console.log('session_accept_success');
-    },
-
-    session_accept_error: function(_this, stanza) {
-        // Update your client UI
-        // Could not be accepted!
-
-        console.log('session_accept_error');
-    },
-
-    session_accept_request: function(_this, stanza) {
-        // Update your client UI
-        // Got an accept request!
-
-        console.log('session_accept_request');
-    },
-
-    session_info_success: function(_this, stanza) {
-        // Update your client UI
-        // Info successfully sent!
-
-        console.log('session_info_success');
-    },
-
-    session_info_error: function(_this, stanza) {
-        // Update your client UI
-        // Got an info error!
-
-        console.log('session_info_error');
-    },
-
-    session_info_pending: function(_this, stanza) {
-        // Update your client UI
-        // Got an info pending!
-
-        console.log('session_info_pending');
-    },
-
-    session_info_request: function(_this, stanza) {
-        // Update your client UI
-        // Got an info request!
-
-        console.log('session_info_request');
-    },
-
-    session_terminate_pending: function(_this) {
-        // Update your client UI
-        // Waiting to be terminated...
-
-        console.log('session_terminate_pending');
-    },
-
-    session_terminate_success: function(_this, stanza) {
-        // Update your client UI
-        // Terminated!
-
-        console.log('session_terminate_success');
-    },
-
-    session_terminate_error: function(_this, stanza) {
-        // Update your client UI
-        // Could not terminate!
-
-        console.log('session_terminate_error');
-    },
-
-    session_terminate_request: function(_this, stanza) {
-        // Update your client UI
-        // Got a terminate request!
-
-        console.log('session_terminate_request');
-    }
-};
-```
-
-**Then, launch JSJaCJingle listener on JSJaC connect:**
-
-```javascript
-// Call this on JSJaC connect (earlier in your code)
-// Role: listens for incoming Jingle calls
-con.registerHandler('onconnect', function() {
-    // Initialize JSJaCJingle router
-    JSJaCJingle.listen({
-        connection: con,
-
-        single_initiate: function(stanza) {
-            // Session values
-            ARGS.to          = stanza.getFrom() || null;
-            ARGS.local_view  = document.getElementById('video_local');
-            ARGS.remote_view = document.getElementById('video_remote');
-
-            // Let's go!
-            JINGLE = new JSJaCJingle.session(
-                JSJAC_JINGLE_SESSION_SINGLE,
-                ARGS
-            );
-            JINGLE.handle(stanza);
-        }
-    });
-});
-```
-
-**Initiate a new one-to-one call when the user press a button:**
-
-```javascript
-$('button').click(function() {
-    // Session values
-    ARGS.to          = 'julien@jappix.com';
-    ARGS.local_view  = document.getElementById('video_local');
-    ARGS.remote_view = document.getElementById('video_remote');
-
-    // Create the JSJaCJingle object
-    var jingle = new JSJaCJingle.session(
-        JSJAC_JINGLE_SESSION_SINGLE,
-        ARGS
-    );
-
-    // Initialize the Jingle session
-    // See: http://xmpp.org/extensions/xep-0166.html#protocol-initiate
-    jingle.initiate();
-});
-```
-
-**Initiate a new multi-user call when the user press a button:**
-
-```javascript
-$('button').click(function() {
-    // Session values
-    ARGS.to              = 'multiuser_room@muc.jappix.com';
-    ARGS.local_view      = document.getElementById('video_local');
-
-    // Remote view management callbacks
-    ARGS.add_remote_view = function(jid, mode) {
-        // Actions to do when an user joins the room
-    };
-    ARGS.remove_remote_view = function(jid) {
-        // Actions to do when an user quits the room
-    };
-
-    // Create the JSJaCJingle object
-    var jingle_muji = new JSJaCJingle.session(
-        JSJAC_JINGLE_SESSION_MUJI,
-        ARGS
-    );
-
-    // Join the Jingle session
-    // See: http://xmpp.org/extensions/xep-0272.html#joining
-    jingle_muji.join();
-});
-```
-
-Now, refer to the custom handlers that we passed above.
-
-**We worked hard on that lib, now it's your turn to play hard with its features!**
+**We worked hard on that lib, we would appreciate your feedback and bug reports.**
+Plus, if you are using it in your project, we would be glad if you let @valeriansaliou know.
 
 **If you have any enhancement idea or any bug to report:** https://github.com/valeriansaliou/jsjac-jingle/issues
