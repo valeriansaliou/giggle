@@ -964,14 +964,14 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
 
         // Toggle video mode (add/remove)
         if(media == JSJAC_JINGLE_MEDIA_VIDEO) {
-          // TODO: the flow is something like that...
+          /* @todo the flow is something like that... */
           /*this._peer_get_user_media(function() {
             this._peer_connection_create(
               function() {
                 this.get_debug().log('[JSJaCJingle:muji] media > Ready to change media (to: ' + media + ').', 2);
 
                 // 'content-add' >> video
-                // TODO: restart video stream configuration
+                // @todo restart video stream configuration
 
                 // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
 
@@ -980,14 +980,14 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
             )
           });*/
         } else {
-          // TODO: the flow is something like that...
+          /* @todo the flow is something like that... */
           /*this._peer_get_user_media(function() {
             this._peer_connection_create(
               function() {
                 this.get_debug().log('[JSJaCJingle:muji] media > Ready to change media (to: ' + media + ').', 2);
 
                 // 'content-remove' >> video
-                // TODO: remove video stream configuration
+                // @todo remove video stream configuration
 
                 // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
                 //          here, only stop the video stream, do not touch the audio stream
@@ -998,7 +998,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
           });*/
         }
 
-        // TODO: loop on participant sessions and toggle medias individually
+        /* @todo loop on participant sessions and toggle medias individually */
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] media > ' + e, 1);
       }

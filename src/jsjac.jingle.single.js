@@ -878,14 +878,14 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
 
         // Toggle video mode (add/remove)
         if(media == JSJAC_JINGLE_MEDIA_VIDEO) {
-          // TODO: the flow is something like that...
+          /* @todo the flow is something like that... */
           /*this._peer_get_user_media(function() {
             this._peer_connection_create(
               function() {
-                this.get_debug().log('[JSJaCJingle:single] media > Ready to change media (to: ' + media + ').', 2);
+                this.get_debug().log('[JSJaCJingle:muji] media > Ready to change media (to: ' + media + ').', 2);
 
                 // 'content-add' >> video
-                // TODO: restart video stream configuration
+                // @todo restart video stream configuration
 
                 // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
 
@@ -894,14 +894,14 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
             )
           });*/
         } else {
-          // TODO: the flow is something like that...
+          /* @todo the flow is something like that... */
           /*this._peer_get_user_media(function() {
             this._peer_connection_create(
               function() {
-                this.get_debug().log('[JSJaCJingle:single] media > Ready to change media (to: ' + media + ').', 2);
+                this.get_debug().log('[JSJaCJingle:muji] media > Ready to change media (to: ' + media + ').', 2);
 
                 // 'content-remove' >> video
-                // TODO: remove video stream configuration
+                // @todo remove video stream configuration
 
                 // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
                 //          here, only stop the video stream, do not touch the audio stream
@@ -930,8 +930,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _send_content_accept', 4);
 
       try {
-        // TODO: remove from remote 'content-add' queue
-        // TODO: reprocess content_local/content_remote
+        /* @todo remove from remote 'content-add' queue */
+        /* @todo reprocess content_local/content_remote */
 
         // Not implemented for now
         this.get_debug().log('[JSJaCJingle:single] _send_content_accept > Feature not implemented!', 0);
@@ -949,7 +949,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _send_content_add', 4);
 
       try {
-        // TODO: push to local 'content-add' queue
+        /* @todo push to local 'content-add' queue */
 
         // Not implemented for now
         this.get_debug().log('[JSJaCJingle:single] _send_content_add > Feature not implemented!', 0);
@@ -967,7 +967,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _send_content_modify', 4);
 
       try {
-        // TODO: push to local 'content-modify' queue
+        /* @todo push to local 'content-modify' queue */
 
         // Not implemented for now
         this.get_debug().log('[JSJaCJingle:single] _send_content_modify > Feature not implemented!', 0);
@@ -985,7 +985,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _send_content_reject', 4);
 
       try {
-        // TODO: remove from remote 'content-add' queue
+        /* @todo remove from remote 'content-add' queue */
 
         // Not implemented for now
         this.get_debug().log('[JSJaCJingle:single] _send_content_reject > Feature not implemented!', 0);
@@ -1003,7 +1003,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _send_content_remove', 4);
 
       try {
-        // TODO: add to local 'content-remove' queue
+        /* @todo add to local 'content-remove' queue */
 
         // Not implemented for now
         this.get_debug().log('[JSJaCJingle:single] _send_content_remove > Feature not implemented!', 0);
@@ -1444,9 +1444,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _handle_content_accept', 4);
 
       try {
-        // TODO: start to flow accepted stream
-        // TODO: remove accepted content from local 'content-add' queue
-        // TODO: reprocess content_local/content_remote
+        /* @todo start to flow accepted stream */
+        /* @todo remove accepted content from local 'content-add' queue */
+        /* @todo reprocess content_local/content_remote */
 
         // Not implemented for now
         this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
@@ -1465,10 +1465,10 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _handle_content_add', 4);
 
       try {
-        // TODO: request the user to start this content (need a custom handler)
-        //       on accept: send content-accept
-        // TODO: push to remote 'content-add' queue
-        // TODO: reprocess content_local/content_remote
+        /* @todo request the user to start this content (need a custom handler)
+         *       on accept: send content-accept */
+        /* @todo push to remote 'content-add' queue */
+        /* @todo reprocess content_local/content_remote */
 
         // Not implemented for now
         this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
@@ -1487,11 +1487,11 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _handle_content_modify', 4);
 
       try {
-        // TODO: change 'senders' value (direction of the stream)
-        //       if(send:from_me): notify the user that media is requested
-        //       if(unacceptable): terminate the session
-        //       if(accepted):     change local/remote SDP
-        // TODO: reprocess content_local/content_remote
+        /* @todo change 'senders' value (direction of the stream)
+         *       if(send:from_me): notify the user that media is requested
+         *       if(unacceptable): terminate the session
+         *       if(accepted):     change local/remote SDP */
+        /* @todo reprocess content_local/content_remote */
 
         // Not implemented for now
         this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
@@ -1510,7 +1510,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _handle_content_reject', 4);
 
       try {
-        // TODO: remove rejected content from local 'content-add' queue
+        /* @todo remove rejected content from local 'content-add' queue */
 
         // Not implemented for now
         this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);
@@ -1529,8 +1529,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _handle_content_remove', 4);
 
       try {
-        // TODO: stop flowing removed stream
-        // TODO: reprocess content_local/content_remote
+        /* @todo stop flowing removed stream */
+        /* @todo reprocess content_local/content_remote */
 
         // Not implemented for now
         this._send_error(stanza, XMPP_ERROR_FEATURE_NOT_IMPLEMENTED);

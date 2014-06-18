@@ -222,27 +222,13 @@ var ARGS = {
     participant_prepare: function(_this, stanza) {
         console.log('participant_prepare');
 
-        var username = _this.utils.stanza_username(stanza);
-        var container_sel = $('#room_container .video_remote_container').filter(function() {
-            return ($(this).attr('data-username') + '') === (username + '');
-        });
-
-        if(container_sel.size() && !container_sel.find('.load').size()) {
-            container_sel.append('<span class="load"></span>');
-        }
+        helper_video_load(_this, stanza);
     },
     
     participant_initiate: function(_this, stanza) {
         console.log('participant_initiate');
 
-        var username = _this.utils.stanza_username(stanza);
-        var container_sel = $('#room_container .video_remote_container').filter(function() {
-            return ($(this).attr('data-username') + '') === (username + '');
-        });
-
-        if(container_sel.size() && !container_sel.find('.load').size()) {
-            container_sel.append('<span class="load"></span>');
-        }
+        helper_video_load(_this, stanza);
     },
     
     participant_leave: function(_this, stanza) {
@@ -252,14 +238,7 @@ var ARGS = {
     participant_session_initiate_pending: function(_this, session) {
         console.log('participant_session_initiate_pending');
 
-        var username = session.utils.extract_username(session.get_to());
-        var container_sel = $('#room_container .video_remote_container').filter(function() {
-            return ($(this).attr('data-username') + '') === (username + '');
-        });
-
-        if(container_sel.size() && !container_sel.find('.load').size()) {
-            container_sel.append('<span class="load"></span>');
-        }
+        helper_video_load(_this, stanza);
     },
     
     participant_session_initiate_success: function(_this, session, stanza) {
@@ -281,12 +260,7 @@ var ARGS = {
     participant_session_accept_success: function(_this, session, stanza) {
         console.log('participant_session_accept_success');
 
-        var username = _this.utils.stanza_username(stanza);
-        var container_sel = $('#room_container .video_remote_container').filter(function() {
-            return ($(this).attr('data-username') + '') === (username + '');
-        });
-
-        container_sel.find('.load').remove();
+        helper_video_remove(_this, stanza);
     },
     
     participant_session_accept_error: function(_this, session, stanza) {
@@ -319,10 +293,14 @@ var ARGS = {
     
     participant_session_terminate_success: function(_this, session, stanza) {
         console.log('participant_session_terminate_success');
+
+        helper_video_stop(_this, stanza);
     },
     
     participant_session_terminate_error: function(_this, session, stanza) {
         console.log('participant_session_terminate_error');
+
+        helper_video_stop(_this, stanza);
     },
     
     participant_session_terminate_request: function(_this, session, stanza) {
@@ -398,6 +376,43 @@ var ARGS = {
         return null;
     }
 };
+
+// Functions: helpers
+function helper_get_username(_this, stanza) {
+    return _this.utils.stanza_username(stanza);
+}
+
+function helper_select_video(username) {
+    return $('#room_container .video_remote_container').filter(function() {
+        return ($(this).attr('data-username') + '') === (username + '');
+    });
+}
+
+function helper_video_load(_this, stanza) {
+    var username = helper_get_username(_this, stanza);
+    var container_sel = helper_select_video(username);
+
+    if(container_sel.size() && !container_sel.find('.load').size()) {
+        container_sel.append('<span class="load"></span>');
+    }
+}
+
+function helper_video_remove(_this, stanza) {
+    var username = helper_get_username(_this, stanza);
+    var container_sel = helper_select_video(username);
+    
+    container_sel.find('.load').remove();
+}
+
+function helper_video_stop(_this, stanza) {
+    var username = helper_get_username(_this, stanza);
+    var container_sel = helper_select_video(username);
+    
+    container_sel.find('.load').remove();
+    if(container_sel.size() && !container_sel.find('.error').size()) {
+        container_sel.append('<span class="error"></span>');
+    }
+}
 
 $(document).ready(function() {
     // Check for WebRTC support
