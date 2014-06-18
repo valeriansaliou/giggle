@@ -95,8 +95,13 @@
       <div id="call_error" class="error call_notif"></div>
       <div id="call_success" class="success call_notif"></div>
       <div id="call_info" class="info call_notif"></div>
+    </form>
 
-      <ul id="roster_call"></ul>
+    <ul id="roster_call"></ul>
+
+    <form id="form_invite" action="#" disabled>
+        <input name="invite_jid" type="text" placeholder="user@jappix.com" required="" disabled />
+        <button name="invite_submit" type="submit" disabled>Call Invite</button>
     </form>
   </fieldset>
 
@@ -116,7 +121,7 @@
         <div id="chat_messages">
           <p class="message"></div>
 
-        <form id="chat_form" action="#" method="post">
+        <form id="form_chat" action="#" method="post">
           <input name="message" type="text" placeholder="Enter your message..."></textarea>
           <button type="submit">Send</button>
         </form>

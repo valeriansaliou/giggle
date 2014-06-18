@@ -440,6 +440,43 @@ var JSJaCJingleUtils = ring.create(
     },
 
     /**
+     * Gets the error node from a stanza
+     * @private
+     * @param {JSJaCPacket} stanza
+     * @param {Object} [error_match_obj]
+     * @returns {Boolean} Password invalid state
+     */
+    stanza_get_error: function(stanza, error_match_obj) {
+      var matches_result = [];
+
+      try {
+        var i,
+            error_child, cur_error_child;
+        
+        error_child = stanza.getChild('error', NS_CLIENT);
+
+        if(error_child && error_child.length) {
+          for(i = 0; i < error_child.length; i++) {
+            cur_error_child = error_child[i];
+
+            if(typeof error_match_obj == 'object') {
+              if(cur_error_child.getAttribute('type') === error_match_obj.type  &&
+                 cur_error_child.getChild(error_match_obj.xmpp, NS_IETF_XMPP_STANZAS)) {
+                matches_result.push(cur_error_child);
+              }
+            } else {
+              matches_result.push(cur_error_child);
+            }
+          }
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:utils] stanza_get_error > ' + e, 1);
+      }
+
+      return matches_result;
+    },
+
+    /**
      * Gets the Jingle node from a stanza
      * @public
      * @param {JSJaCPacket} stanza
@@ -463,7 +500,7 @@ var JSJaCJingleUtils = ring.create(
      */
     stanza_muji: function(stanza) {    
       try {
-        return stanza.getChild('muji', NS_TELEPATHY_MUJI);
+        return stanza.getChild('muji', NS_MUJI);
       } catch(e) {
         this.parent.get_debug().log('[JSJaCJingle:utils] stanza_muji > ' + e, 1);
       }
@@ -1199,7 +1236,7 @@ var JSJaCJingleUtils = ring.create(
       var muji = null;
 
       try {
-        muji = stanza.getNode().appendChild(stanza.buildNode('muji', { 'xmlns': NS_TELEPATHY_MUJI }));
+        muji = stanza.getNode().appendChild(stanza.buildNode('muji', { 'xmlns': NS_MUJI }));
       } catch(e) {
         this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_muji > ' + e, 1);
       }
@@ -1800,6 +1837,15 @@ var JSJaCJingleUtils = ring.create(
      */
     generate_iid: function() {
       return this.generate_random(24);
+    },
+
+    /**
+     * Generates a random password value
+     * @public
+     * @returns {String} Password value
+     */
+    generate_password: function() {
+      return this.generate_random(64);
     },
 
     /**

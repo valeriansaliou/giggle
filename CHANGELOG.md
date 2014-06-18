@@ -14,6 +14,7 @@ v0.7 (Development)
 
  * **XEP added**
     * **[XEP-0177](http://xmpp.org/extensions/xep-0177.html)** (full support)     @valeriansaliou
+    * **[XEP-0249](http://xmpp.org/extensions/xep-0249.html)** (full support)     @valeriansaliou
     * **[XEP-0272](http://xmpp.org/extensions/xep-0272.html)** (full support)     @valeriansaliou
     * **[XEP-0278](http://xmpp.org/extensions/xep-0278.html)** (partial support)  @valeriansaliou
     * **[XEP-0338](http://xmpp.org/extensions/xep-0338.html)** (full support)     @valeriansaliou

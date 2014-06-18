@@ -95,7 +95,8 @@ fieldset label {
     display: block;
 }
 
-fieldset:disabled label {
+fieldset:disabled label,
+form:disabled label {
     opacity: 0.5;
 }
 
@@ -118,7 +119,8 @@ fieldset button {
     cursor: pointer;
 }
 
-fieldset:disabled button {
+fieldset:disabled button,
+form:disabled button {
     cursor: default;
 }
 

@@ -11,6 +11,7 @@ Here are listed the XMPP Protocol Extensions that JSJaCJingle.js supports, as we
  * XEP-0176: Jingle ICE-UDP Transport Method *v1.0*
  * XEP-0177: Jingle Raw UDP Transport Method *v1.1*
  * XEP-0215: External Service Discovery *v0.5*
+ * XEP-0249: Direct MUC Invitations *v1.2*
  * XEP-0262: Use of ZRTP in Jingle RTP Sessions *v1.0*
  * XEP-0266: Codecs for Jingle Audio *v1.0*
  * XEP-0269: Jingle Early Media *v0.1*

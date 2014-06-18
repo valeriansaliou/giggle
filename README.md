@@ -224,7 +224,7 @@ con.registerHandler('onconnect', function() {
     JSJaCJingle.listen({
         connection: con,
 
-        initiate: function(stanza) {
+        single_initiate: function(stanza) {
             // Session values
             ARGS.to          = stanza.getFrom() || null;
             ARGS.local_view  = document.getElementById('video_local');

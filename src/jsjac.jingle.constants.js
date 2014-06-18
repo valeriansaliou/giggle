@@ -415,7 +415,77 @@ var NS_JABBER_JINGLENODES_CHANNEL                   = 'http://jabber.org/protoco
  * @default
  * @public
  */
-var NS_TELEPATHY_MUJI                               = 'http://telepathy.freedesktop.org/muji';
+var NS_JABBER_MUC                                   = 'http://jabber.org/protocol/muc';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var NS_JABBER_MUC_OWNER                             = 'http://jabber.org/protocol/muc#owner';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var NS_JABBER_MUC_ROOMCONFIG                        = 'http://jabber.org/protocol/muc#roomconfig';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var NS_JABBER_MUC_USER                              = 'http://jabber.org/protocol/muc#user';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var NS_JABBER_CONFERENCE                            = 'jabber:x:conference';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var NS_JABBER_DATA                                  = 'jabber:x:data';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var NS_MUJI                                         = 'urn:xmpp:muji:tmp';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var NS_MUJI_INVITE                                  = 'urn:xmpp:muji:invite:tmp';
 
 /**
  * @constant
@@ -529,7 +599,13 @@ var MAP_DISCO_JINGLE                                = [
   NS_JINGLE_APPS_RTP_ZRTP,
 
   /* http://xmpp.org/extensions/xep-0272.html */
-  NS_TELEPATHY_MUJI,
+  NS_MUJI,
+
+  /* http://xmpp.org/extensions/xep-0272.html#inviting */
+  NS_MUJI_INVITE,
+
+  /* http://xmpp.org/extensions/xep-0249.html */
+  NS_JABBER_CONFERENCE,
 
   /* http://xmpp.org/extensions/xep-0278.html */
   NS_JABBER_JINGLENODES,
@@ -1123,6 +1199,16 @@ var XMPP_ERROR_ITEM_NOT_FOUND                        = { xmpp: 'item-not-found',
  * @public
  */
 var XMPP_ERROR_NOT_ACCEPTABLE                        = { xmpp: 'not-acceptable',           type: 'modify' };
+
+/**
+ * @constant
+ * @global
+ * @type {Object}
+ * @readonly
+ * @default
+ * @public
+ */
+var XMPP_ERROR_NOT_AUTHORIZED                        = { xmpp: 'not-authorized',           type: 'auth' };
 
 /**
  * @constant
@@ -2010,6 +2096,76 @@ var JSJAC_JINGLE_MUJI_PARTICIPANT_ACCEPT_WAIT        = 0.250;
  * @public
  */
 var JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA         = 'get_user_media';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_ADMIN          = 'admin';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_MEMBER         = 'member';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_NONE           = 'none';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_OUTCAST        = 'outcast';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_OWNER          = 'owner';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MUJI_MUC_OWNER_SUBMIT               = 'submit';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MUJI_MUC_CONFIG_SECRET              = 'muc#roomconfig_roomsecret';
 
 
 

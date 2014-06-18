@@ -205,10 +205,10 @@ $(document).ready(function() {
 
             var this_sel = $(this);
 
-            var login_bosh = this_sel.find('input[name="login_bosh"]').val();
-            var login_websocket = this_sel.find('input[name="login_websocket"]').val();
-            var login_jid = this_sel.find('input[name="login_jid"]').val();
-            var login_pwd = this_sel.find('input[name="login_pwd"]').val();
+            var login_bosh = this_sel.find('input[name="login_bosh"]').val().trim();
+            var login_websocket = this_sel.find('input[name="login_websocket"]').val().trim();
+            var login_jid = this_sel.find('input[name="login_jid"]').val().trim();
+            var login_pwd = this_sel.find('input[name="login_pwd"]').val().trim();
 
             if(login_bosh && login_jid && login_pwd) {
                 $('#login_info').text('Connecting...').show();
@@ -250,7 +250,7 @@ $(document).ready(function() {
                             connection: con,
                             debug: (new JSJaCConsoleLogger(4)),
                             
-                            initiate: function(stanza) {
+                            single_initiate: function(stanza) {
                                 // Session values
                                 ARGS.to          = stanza.getFrom() || null;
                                 ARGS.local_view  = document.getElementById('video_local');
@@ -395,7 +395,7 @@ $(document).ready(function() {
 
             $('.call_notif').hide();
 
-            var call_jid  = $(this).find('input[name="call_jid"]').val();
+            var call_jid  = $(this).find('input[name="call_jid"]').val().trim();
 
             // Any JID defined?
             if(call_jid) {

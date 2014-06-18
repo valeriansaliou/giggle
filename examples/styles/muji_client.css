@@ -8,6 +8,24 @@
   @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
+#form_invite {
+    margin-top: 18px;
+}
+
+#form_invite input,
+#form_chat input {
+    padding-top: 2px;
+    padding-bottom: 3px;
+}
+
+#form_invite input {
+    margin-right: 0;
+}
+
+#form_invite button {
+    margin-left: 0;
+}
+
 #room_container {
     margin-left: 21px;
 }
@@ -68,7 +86,7 @@
 }
 
 #chat_messages,
-#chat_form {
+#form_chat {
     position: absolute;
     left: 0;
     right: 0;
@@ -96,17 +114,15 @@
     word-break: break-word;
 }
 
-#chat_form {
+#form_chat {
     bottom: 0;
 }
 
-#chat_form input {
+#form_chat input {
     width: 400px;
-    padding-top: 2px;
-    padding-bottom: 3px;
 }
 
-#chat_form button {
+#form_chat button {
     width: 90px;
 }
 

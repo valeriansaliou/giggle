@@ -15,13 +15,15 @@ var JINGLE = null;
 
 var ARGS = {
     // Configuration (required)
-    connection  : null,
-    to          : null,
-    local_view  : null,
-    resolution  : 'sd',
-    sdp_trace   : (url_param('sdp') == '1'),
-    net_trace   : (url_param('net') == '1'),
-    debug       : (new JSJaCConsoleLogger(4)),
+    connection        : null,
+    to                : null,
+    password          : null,
+    password_protect  : false,
+    local_view        : null,
+    resolution        : 'sd',
+    sdp_trace         : (url_param('sdp') == '1'),
+    net_trace         : (url_param('net') == '1'),
+    debug             : (new JSJaCConsoleLogger(4)),
 
     // Custom handlers (optional)
     room_message_in: function(_this, stanza) {
@@ -140,7 +142,7 @@ var ARGS = {
         $('.call_notif').hide();
         $('#call_success').text('Prepared.').show();
 
-        $('#fieldset_live').removeAttr('disabled');
+        $('#fieldset_live, #form_invite, #form_invite input, #form_invite button').removeAttr('disabled');
     },
     
     session_prepare_error: function(_this, stanza) {
@@ -187,6 +189,7 @@ var ARGS = {
         $('#call_info').text('Leaving...').show();
 
         $('#form_live').find('button').attr('disabled', true);
+        $('#form_invite, #form_invite input, #form_invite button').attr('disabled', true);
     },
     
     session_leave_success: function(_this, stanza) {
@@ -438,10 +441,10 @@ $(document).ready(function() {
 
             var this_sel = $(this);
 
-            var login_bosh = this_sel.find('input[name="login_bosh"]').val();
-            var login_websocket = this_sel.find('input[name="login_websocket"]').val();
-            var login_jid = this_sel.find('input[name="login_jid"]').val();
-            var login_pwd = this_sel.find('input[name="login_pwd"]').val();
+            var login_bosh = this_sel.find('input[name="login_bosh"]').val().trim();
+            var login_websocket = this_sel.find('input[name="login_websocket"]').val().trim();
+            var login_jid = this_sel.find('input[name="login_jid"]').val().trim();
+            var login_pwd = this_sel.find('input[name="login_pwd"]').val().trim();
 
             if(login_bosh && login_jid && login_pwd) {
                 $('#login_info').text('Connecting...').show();
@@ -481,7 +484,40 @@ $(document).ready(function() {
                         // Initialize JSJaCJingle router
                         JSJaCJingle.listen({
                             connection: con,
-                            debug: (new JSJaCConsoleLogger(4))
+                            debug: (new JSJaCConsoleLogger(4)),
+
+                            muji_invite: function(stanza, args) {
+                                console.log('muji_invite');
+
+                                var prompt_text = 'Invite to multiparty ' + args.media + ' call received.\n' + 
+                                                  '\n' + 
+                                                  'From: ' + args.from + '\n' + 
+                                                  'Room: ' + args.jid + '\n' + 
+                                                  'Reason: ' + (args.reason || '[none]') + '\n' + 
+                                                  'Password: ' + (args.password || '[none]') + '\n' + 
+                                                  '\n' + 
+                                                  'Accept?';
+
+                                // Prompt user
+                                if(confirm(prompt_text)) {
+                                    console.log('muji_invite > Invite accepted.');
+
+                                    // Session values
+                                    ARGS.to           = args.jid;
+                                    ARGS.media        = (args.media == JSJAC_JINGLE_MEDIA_VIDEO) ? JSJAC_JINGLE_MEDIA_VIDEO : JSJAC_JINGLE_MEDIA_AUDIO;
+                                    ARGS.local_view   = document.getElementById('video_local');
+
+                                    if(args.password) {
+                                        ARGS.password = args.password;
+                                    }
+
+                                    // Let's go!
+                                    JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_MUJI, ARGS);
+                                    JINGLE.join();
+                                } else {
+                                    console.log('muji_invite > Invite declined.');
+                                }
+                            }
                         });
 
                         // Auto-join call?
@@ -515,7 +551,7 @@ $(document).ready(function() {
                         SC_PRESENCE = {};
                         $('#roster_call').empty();
 
-                        $('#fieldset_call, #fieldset_live').attr('disabled', true);
+                        $('#fieldset_call, #fieldset_live, #form_invite, #form_invite input, #form_invite button').attr('disabled', true);
 
                         SC_CONNECTED = false;
                     } catch(e) {
@@ -557,7 +593,7 @@ $(document).ready(function() {
 
             $('.call_notif').hide();
 
-            var call_room  = $(this).find('input[name="call_room"]').val();
+            var call_room  = $(this).find('input[name="call_room"]').val().trim();
 
             // Any JID defined?
             if(call_room) {
@@ -601,18 +637,35 @@ $(document).ready(function() {
         }
     });
 
+    // Submit invite form
+    $('#form_invite').submit(function() {
+        try {
+            var input_sel = $(this).find('input[name="invite_jid"]');
+            var invite_jid = input_sel.val().trim();
+
+            if(invite_jid) {
+                JINGLE.invite(invite_jid, 'Join me buddy!');
+                input_sel.val('');
+            }
+        } catch(e) {
+            alert('form_invite > ' + e);
+        } finally {
+            return false;
+        }
+    });
+
     // Submit chat form
-    $('#chat_form').submit(function() {
+    $('#form_chat').submit(function() {
         try {
             var input_sel = $(this).find('input[name="message"]');
-            var body = input_sel.val();
+            var body = input_sel.val().trim();
 
             if(body) {
                 JINGLE.send_message(body);
                 input_sel.val('');
             }
         } catch(e) {
-            alert('chat_form > ' + e);
+            alert('form_chat > ' + e);
         } finally {
             return false;
         }

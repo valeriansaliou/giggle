@@ -27,6 +27,8 @@
  * @param      {Object}    [args]                                        - Muji session arguments.
  * @property   {*}         [args.*]                                      - Herits of JSJaCJingle() baseclass prototype.
  * @property   {String}    [args.username]                               - The username when joining room.
+ * @property   {String}    [args.password]                               - The room password.
+ * @property   {Boolean}   [args.password_protect]                       - Automatically password-protect the MUC if first joiner.
  * @property   {Function}  [args.room_message_in]                        - The incoming message custom handler.
  * @property   {Function}  [args.room_message_out]                       - The outgoing message custom handler.
  * @property   {Function}  [args.room_presence_in]                       - The incoming presence custom handler.
@@ -359,6 +361,22 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         this._username = this.utils.connection_username();
       }
 
+      if(args && args.password)
+        /**
+         * @member {String}
+         * @default
+         * @private
+         */
+        this._password = args.password;
+
+      if(args && args.password_protect)
+        /**
+         * @member {Boolean}
+         * @default
+         * @private
+         */
+        this._password_protect = args.password_protect;
+
       /**
        * @member {Object}
        * @default
@@ -374,6 +392,13 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this._iid = '';
 
       /**
+       * @member {Boolean}
+       * @default
+       * @private
+       */
+      this._is_room_owner = false;
+
+      /**
        * @constant
        * @member {String}
        * @default
@@ -387,7 +412,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
        * @default
        * @private
        */
-      this._namespace = NS_TELEPATHY_MUJI;
+      this._namespace = NS_MUJI;
     },
 
 
@@ -537,6 +562,219 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         if(set_lock === true)  this._set_lock(true);
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] abort > ' + e, 1);
+      }
+    },
+
+    /**
+     * Invites people to current Muji session
+     * @public
+     * @param {String|Array} jid
+     * @param {String} [reason]
+     */
+    invite: function(jid, reason) {
+      this.get_debug().log('[JSJaCJingle:muji] invite', 4);
+
+      try {
+        // Locked?
+        if(this.get_lock()) {
+          this.get_debug().log('[JSJaCJingle:muji] invite > Cannot invite, resource locked. Please open another session or check WebRTC support.', 0);
+          return;
+        }
+
+        // Defer?
+        var _this = this;
+
+        if(JSJaCJingle._defer(function() { _this.invite(jid); })) {
+          this.get_debug().log('[JSJaCJingle:muji] invite > Deferred (waiting for the library components to be initiated).', 0);
+          return;
+        }
+
+        if(!jid) {
+          this.get_debug().log('[JSJaCJingle:muji] invite > JID parameter not provided or blank.', 0);
+          return;
+        }
+
+        var i;
+            jid_arr = (jid instanceof Array) ? jid : [jid];
+
+        for(i = 0; i < jid_arr.length; i++)  this._send_invite(jid_arr[i], reason);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] invite > ' + e, 1);
+      }
+    },
+
+    /**
+     * Mutes a Muji session (local)
+     * @public
+     * @param {String} name
+     */
+    mute: function(name) {
+      this.get_debug().log('[JSJaCJingle:muji] mute', 4);
+
+      try {
+        // Locked?
+        if(this.get_lock()) {
+          this.get_debug().log('[JSJaCJingle:muji] mute > Cannot mute, resource locked. Please open another session or check WebRTC support.', 0);
+          return;
+        }
+
+        // Defer?
+        var _this = this;
+
+        if(JSJaCJingle._defer(function() { _this.mute(name); })) {
+          this.get_debug().log('[JSJaCJingle:muji] mute > Deferred (waiting for the library components to be initiated).', 0);
+          return;
+        }
+
+        // Already muted?
+        if(this.get_mute(name) === true) {
+          this.get_debug().log('[JSJaCJingle:muji] mute > Resource already muted.', 0);
+          return;
+        }
+
+        this._peer_sound(false);
+        this._set_mute(name, true);
+
+        // Mute all participants
+        this._toggle_participants_mute(name, JSJAC_JINGLE_SESSION_INFO_MUTE);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] mute > ' + e, 1);
+      }
+    },
+
+    /**
+     * Unmutes a Muji session (local)
+     * @public
+     * @param {String} name
+     */
+    unmute: function(name) {
+      this.get_debug().log('[JSJaCJingle:muji] unmute', 4);
+
+      try {
+        // Locked?
+        if(this.get_lock()) {
+          this.get_debug().log('[JSJaCJingle:muji] unmute > Cannot unmute, resource locked. Please open another session or check WebRTC support.', 0);
+          return;
+        }
+
+        // Defer?
+        var _this = this;
+
+        if(JSJaCJingle._defer(function() { _this.unmute(name); })) {
+          this.get_debug().log('[JSJaCJingle:muji] unmute > Deferred (waiting for the library components to be initiated).', 0);
+          return;
+        }
+
+        // Already unmute?
+        if(this.get_mute(name) === false) {
+          this.get_debug().log('[JSJaCJingle:muji] unmute > Resource already unmuted.', 0);
+          return;
+        }
+
+        this._peer_sound(true);
+        this._set_mute(name, false);
+
+        // Unmute all participants
+        this._toggle_participants_mute(name, JSJAC_JINGLE_SESSION_INFO_UNMUTE);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] unmute > ' + e, 1);
+      }
+    },
+
+    /**
+     * Toggles media type in a Muji session (local)
+     * @todo Code media() (Muji version)
+     * @public
+     * @param {String} [media]
+     */
+    media: function(media) {
+      /* DEV: don't expect this to work as of now! */
+      /* MEDIA() - MUJI VERSION */
+
+      this.get_debug().log('[JSJaCJingle:muji] media', 4);
+
+      try {
+        // Locked?
+        if(this.get_lock()) {
+          this.get_debug().log('[JSJaCJingle:muji] media > Cannot change media, resource locked. Please open another session or check WebRTC support.', 0);
+          return;
+        }
+
+        // Defer?
+        var _this = this;
+
+        if(JSJaCJingle._defer(function() { _this.media(media); })) {
+          this.get_debug().log('[JSJaCJingle:muji] media > Deferred (waiting for the library components to be initiated).', 0);
+          return;
+        }
+
+        // Toggle media?
+        if(!media)
+          media = (this.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
+
+        // Media unknown?
+        if(!(media in JSJAC_JINGLE_MEDIAS)) {
+          this.get_debug().log('[JSJaCJingle:muji] media > No media provided or media unsupported (media: ' + media + ').', 0);
+          return;
+        }
+
+        // Already using provided media?
+        if(this.get_media() == media) {
+          this.get_debug().log('[JSJaCJingle:muji] media > Resource already using this media (media: ' + media + ').', 0);
+          return;
+        }
+
+        // Switch locked for now? (another one is being processed)
+        if(this.get_media_busy()) {
+          this.get_debug().log('[JSJaCJingle:muji] media > Resource already busy switching media (busy: ' + this.get_media() + ', media: ' + media + ').', 0);
+          return;
+        }
+
+        this.get_debug().log('[JSJaCJingle:muji] media > Changing media to: ' + media + '...', 2);
+
+        // Store new media
+        this._set_media(media);
+        this._set_media_busy(true);
+
+        // Toggle video mode (add/remove)
+        if(media == JSJAC_JINGLE_MEDIA_VIDEO) {
+          /* @todo the flow is something like that... */
+          /*this._peer_get_user_media(function() {
+            this._peer_connection_create(
+              function() {
+                this.get_debug().log('[JSJaCJingle:muji] media > Ready to change media (to: ' + media + ').', 2);
+
+                // 'content-add' >> video
+                // @todo restart video stream configuration
+
+                // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
+
+                this.send(JSJAC_JINGLE_IQ_TYPE_SET, { action: JSJAC_JINGLE_ACTION_CONTENT_ADD, name: JSJAC_JINGLE_MEDIA_VIDEO });
+              }
+            )
+          });*/
+        } else {
+          /* @todo the flow is something like that... */
+          /*this._peer_get_user_media(function() {
+            this._peer_connection_create(
+              function() {
+                this.get_debug().log('[JSJaCJingle:muji] media > Ready to change media (to: ' + media + ').', 2);
+
+                // 'content-remove' >> video
+                // @todo remove video stream configuration
+
+                // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
+                //          here, only stop the video stream, do not touch the audio stream
+
+                this.send(JSJAC_JINGLE_IQ_TYPE_SET, { action: JSJAC_JINGLE_ACTION_CONTENT_REMOVE, name: JSJAC_JINGLE_MEDIA_VIDEO });
+              }
+            )
+          });*/
+        }
+
+        /* @todo loop on participant sessions and toggle medias individually */
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] media > ' + e, 1);
       }
     },
 
@@ -832,186 +1070,55 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       }
     },
 
-    /**
-     * Mutes a Muji session (local)
-     * @public
-     * @param {String} name
-     */
-    mute: function(name) {
-      this.get_debug().log('[JSJaCJingle:muji] mute', 4);
-
-      try {
-        // Locked?
-        if(this.get_lock()) {
-          this.get_debug().log('[JSJaCJingle:muji] mute > Cannot mute, resource locked. Please open another session or check WebRTC support.', 0);
-          return;
-        }
-
-        // Defer?
-        var _this = this;
-
-        if(JSJaCJingle._defer(function() { _this.mute(name); })) {
-          this.get_debug().log('[JSJaCJingle:muji] mute > Deferred (waiting for the library components to be initiated).', 0);
-          return;
-        }
-
-        // Already muted?
-        if(this.get_mute(name) === true) {
-          this.get_debug().log('[JSJaCJingle:muji] mute > Resource already muted.', 0);
-          return;
-        }
-
-        this._peer_sound(false);
-        this._set_mute(name, true);
-
-        // Mute all participants
-        this._toggle_participants_mute(name, JSJAC_JINGLE_SESSION_INFO_MUTE);
-      } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] mute > ' + e, 1);
-      }
-    },
-
-    /**
-     * Unmutes a Muji session (local)
-     * @public
-     * @param {String} name
-     */
-    unmute: function(name) {
-      this.get_debug().log('[JSJaCJingle:muji] unmute', 4);
-
-      try {
-        // Locked?
-        if(this.get_lock()) {
-          this.get_debug().log('[JSJaCJingle:muji] unmute > Cannot unmute, resource locked. Please open another session or check WebRTC support.', 0);
-          return;
-        }
-
-        // Defer?
-        var _this = this;
-
-        if(JSJaCJingle._defer(function() { _this.unmute(name); })) {
-          this.get_debug().log('[JSJaCJingle:muji] unmute > Deferred (waiting for the library components to be initiated).', 0);
-          return;
-        }
-
-        // Already unmute?
-        if(this.get_mute(name) === false) {
-          this.get_debug().log('[JSJaCJingle:muji] unmute > Resource already unmuted.', 0);
-          return;
-        }
-
-        this._peer_sound(true);
-        this._set_mute(name, false);
-
-        // Unmute all participants
-        this._toggle_participants_mute(name, JSJAC_JINGLE_SESSION_INFO_UNMUTE);
-      } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] unmute > ' + e, 1);
-      }
-    },
-
-    /**
-     * Toggles media type in a Muji session (local)
-     * @todo Code media() (Muji version)
-     * @public
-     * @param {String} [media]
-     */
-    media: function(media) {
-      /* DEV: don't expect this to work as of now! */
-      /* MEDIA() - MUJI VERSION */
-
-      this.get_debug().log('[JSJaCJingle:muji] media', 4);
-
-      try {
-        // Locked?
-        if(this.get_lock()) {
-          this.get_debug().log('[JSJaCJingle:muji] media > Cannot change media, resource locked. Please open another session or check WebRTC support.', 0);
-          return;
-        }
-
-        // Defer?
-        var _this = this;
-
-        if(JSJaCJingle._defer(function() { _this.media(media); })) {
-          this.get_debug().log('[JSJaCJingle:muji] media > Deferred (waiting for the library components to be initiated).', 0);
-          return;
-        }
-
-        // Toggle media?
-        if(!media)
-          media = (this.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
-
-        // Media unknown?
-        if(!(media in JSJAC_JINGLE_MEDIAS)) {
-          this.get_debug().log('[JSJaCJingle:muji] media > No media provided or media unsupported (media: ' + media + ').', 0);
-          return;
-        }
-
-        // Already using provided media?
-        if(this.get_media() == media) {
-          this.get_debug().log('[JSJaCJingle:muji] media > Resource already using this media (media: ' + media + ').', 0);
-          return;
-        }
-
-        // Switch locked for now? (another one is being processed)
-        if(this.get_media_busy()) {
-          this.get_debug().log('[JSJaCJingle:muji] media > Resource already busy switching media (busy: ' + this.get_media() + ', media: ' + media + ').', 0);
-          return;
-        }
-
-        this.get_debug().log('[JSJaCJingle:muji] media > Changing media to: ' + media + '...', 2);
-
-        // Store new media
-        this._set_media(media);
-        this._set_media_busy(true);
-
-        // Toggle video mode (add/remove)
-        if(media == JSJAC_JINGLE_MEDIA_VIDEO) {
-          /* @todo the flow is something like that... */
-          /*this._peer_get_user_media(function() {
-            this._peer_connection_create(
-              function() {
-                this.get_debug().log('[JSJaCJingle:muji] media > Ready to change media (to: ' + media + ').', 2);
-
-                // 'content-add' >> video
-                // @todo restart video stream configuration
-
-                // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
-
-                this.send(JSJAC_JINGLE_IQ_TYPE_SET, { action: JSJAC_JINGLE_ACTION_CONTENT_ADD, name: JSJAC_JINGLE_MEDIA_VIDEO });
-              }
-            )
-          });*/
-        } else {
-          /* @todo the flow is something like that... */
-          /*this._peer_get_user_media(function() {
-            this._peer_connection_create(
-              function() {
-                this.get_debug().log('[JSJaCJingle:muji] media > Ready to change media (to: ' + media + ').', 2);
-
-                // 'content-remove' >> video
-                // @todo remove video stream configuration
-
-                // WARNING: only change get user media, DO NOT TOUCH THE STREAM THING (don't stop active stream as it's flowing!!)
-                //          here, only stop the video stream, do not touch the audio stream
-
-                this.send(JSJAC_JINGLE_IQ_TYPE_SET, { action: JSJAC_JINGLE_ACTION_CONTENT_REMOVE, name: JSJAC_JINGLE_MEDIA_VIDEO });
-              }
-            )
-          });*/
-        }
-
-        /* @todo loop on participant sessions and toggle medias individually */
-      } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] media > ' + e, 1);
-      }
-    },
-
 
 
     /**
      * JSJSAC JINGLE MUJI SENDERS
      */
+
+    /**
+     * Sends the invite message.
+     * @private
+     * @param {String} jid
+     */
+    _send_invite: function(jid, reason) {
+      this.get_debug().log('[JSJaCJingle:muji] _send_invite', 4);
+
+      try {
+        var cur_participant, participants,
+            stanza, x_invite;
+
+        stanza = new JSJaCMessage();
+        stanza.setTo(jid);
+
+        x_invite = stanza.buildNode('x', {
+          'jid': this.get_to(),
+          'xmlns': NS_JABBER_CONFERENCE
+        });
+
+        if(reason)
+          x_invite.setAttribute('reason', reason);
+        if(this.get_password())
+          x_invite.setAttribute('password', this.get_password());
+
+        stanza.getNode().appendChild(x_invite);
+        
+        stanza.appendNode('x', {
+          'media': this.get_media(),
+          'xmlns': NS_MUJI_INVITE
+        });
+
+        this.get_connection().send(stanza);
+
+        if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:muji] _send_invite > Outgoing packet sent' + '\n\n' + stanza.xml());
+
+        // Trigger custom callback
+        /* @function */
+        (this.get_room_message_out())(this, stanza);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _send_invite > ' + e, 1);
+      }
+    },
 
     /**
      * Sends the session prepare event.
@@ -1040,7 +1147,16 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
 
         // Build Muji stanza
         var muji = this.utils.stanza_generate_muji(stanza);
-        muji.appendChild(stanza.buildNode('preparing', { 'xmlns': NS_TELEPATHY_MUJI }));
+        muji.appendChild(stanza.buildNode('preparing', { 'xmlns': NS_MUJI }));
+
+        // Password-protected room?
+        if(this.get_password()) {
+          var x_muc = stanza.getNode().appendChild(stanza.buildNode('x', { 'xmlns': NS_JABBER_MUC }));
+
+          x_muc.appendChild(
+            stanza.buildNode('password', { 'xmlns': NS_JABBER_MUC }, this.get_password())
+          );
+        }
 
         // Schedule success
         var _this = this;
@@ -1212,8 +1328,21 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
           throw 'No username provided, not accepting session prepare stanza.';
         }
 
-        // Username conflict?
-        if(this._stanza_has_username_conflict(stanza)) {
+        if(this._stanza_has_room_owner(stanza)) {
+          this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_success > Current MUC affiliation is owner.', 2);
+
+          this._set_is_room_owner(true);
+        }
+
+        if(this._stanza_has_password_invalid(stanza)) {
+          // Password protected room?
+          this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_success > Password-protected room, aborting.', 1);
+
+          /* @function */
+          (this.get_session_leave_success())(this, stanza);
+          this._handle_session_leave_success(stanza);
+        } else if(this._stanza_has_username_conflict(stanza)) {
+          // Username conflict
           var alt_username = (this.get_username() + this.utils.generate_random(4));
 
           this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_success > Conflicting username, changing it to: ' + alt_username, 2);
@@ -1291,6 +1420,13 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
 
         // Undefer pending participant handlers
         this._undefer_participant_handlers();
+
+        // Autoconfigure room password if new MUC
+        if(this.get_is_room_owner() === true     &&
+           this.get_password_protect() === true  &&
+           this.utils.object_length(this.get_participants()) === 0) {
+          this._autoconfigure_room_password();
+        }
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _handle_session_initiate_success > ' + e, 1);
       }
@@ -1828,7 +1964,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Boolean} Preparing state
      */
     _stanza_has_preparing: function(muji) {
-      return this.utils.stanza_get_element(muji, 'preparing', NS_TELEPATHY_MUJI).length && true;
+      return this.utils.stanza_get_element(muji, 'preparing', NS_MUJI).length && true;
     },
 
     /**
@@ -1838,7 +1974,46 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Boolean} Content state
      */
     _stanza_has_content: function(muji) {
-      return this.utils.stanza_get_element(muji, 'content', NS_TELEPATHY_MUJI).length && true;
+      return this.utils.stanza_get_element(muji, 'content', NS_MUJI).length && true;
+    },
+
+    /**
+     * Returns whether stanza has the room owner code or not
+     * @private
+     * @param {JSJaCPacket} stanza
+     * @returns {Boolean} Room owner state
+     */
+    _stanza_has_room_owner: function(stanza) {
+      var is_room_owner = false;
+
+      try {
+        var i, items,
+            x_muc_user = stanza.getChild('x', NS_JABBER_MUC_USER);
+
+        if(x_muc_user) {
+          items = this.utils.stanza_get_element(x_muc_user, 'item', NS_JABBER_MUC_USER);
+
+          for(i = 0; i < items.length; i++) {
+            if(items[i].getAttribute('affiliation') === JSJAC_JINGLE_MUJI_MUC_AFFILIATION_OWNER) {
+              is_room_owner = true; break;
+            }
+          }
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _stanza_has_room_owner > ' + e, 1);
+      } finally {
+        return is_room_owner;
+      }
+    },
+
+    /**
+     * Returns whether stanza is a password invalid or not
+     * @private
+     * @param {JSJaCPacket} stanza
+     * @returns {Boolean} Password invalid state
+     */
+    _stanza_has_password_invalid: function(stanza) {
+      return (this.utils.stanza_get_error(stanza, XMPP_ERROR_NOT_AUTHORIZED).length >= 1) && true;
     },
 
     /**
@@ -1848,29 +2023,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      * @returns {Boolean} Local user state
      */
     _stanza_has_username_conflict: function(stanza) {
-      has_username_conflict = false;
-
-      try {
-        var i,
-            error_child, cur_error_child;
-        
-        error_child = stanza.getChild('error', NS_CLIENT);
-
-        if(error_child && error_child.length) {
-          for(i = 0; i < error_child.length; i++) {
-            cur_error_child = error_child[i];
-
-            if(cur_error_child.getAttribute('type') === XMPP_ERROR_CONFLICT.type  &&
-               cur_error_child.getChild(XMPP_ERROR_CONFLICT.xmpp, NS_IETF_XMPP_STANZAS)) {
-              has_username_conflict = true; break;
-            }
-          }
-        }
-      } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _stanza_has_username_conflict > ' + e, 1);
-      } finally {
-        return has_username_conflict;
-      }
+      return (this.utils.stanza_get_error(stanza, XMPP_ERROR_CONFLICT).length >= 1) && true;
     },
 
 
@@ -2326,6 +2479,167 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       }
     },
 
+    /**
+     * Autoconfigures MUC room password
+     * @private
+     */
+    _autoconfigure_room_password: function() {
+      try {
+        // Build stanza
+        stanza = new JSJaCIQ();
+
+        stanza.setTo(this.get_to());
+        stanza.setType(JSJAC_JINGLE_IQ_TYPE_GET);
+
+        stanza.setQuery(NS_JABBER_MUC_OWNER);
+
+        var _this = this;
+
+        this.get_connection().send(stanza, function(_stanza) {
+          if(_this.get_net_trace())  _this.get_debug().log('[JSJaCJingle:muji] _autoconfigure_room_password > Incoming packet received' + '\n\n' + _stanza.xml());
+
+          if(_stanza.getType() === JSJAC_JINGLE_IQ_TYPE_ERROR)
+            _this.get_debug().log('[JSJaCJingle:muji] _autoconfigure_room_password > Could not get room configuration.', 1);
+          else
+            _this._receive_autoconfigure_room_password(_stanza);
+        });
+
+        if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:muji] _autoconfigure_room_password > Outgoing packet sent' + '\n\n' + stanza.xml());
+
+        this.get_debug().log('[JSJaCJingle:muji] _autoconfigure_room_password > Getting room configuration...', 4);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _autoconfigure_room_password > ' + e, 1);
+      }
+    },
+
+    /**
+     * Receives MUC room password configuration
+     * @private
+     * @param {JSJaCPacket} stanza
+     */
+    _receive_autoconfigure_room_password: function(stanza) {
+      try {
+        var parse_obj = this._parse_autoconfigure_room_password(stanza);
+        
+        this._set_password(parse_obj.password);
+
+        if(parse_obj.password != parse_obj.old_password) {
+          this._send_autoconfigure_room_password(stanza, parse_obj);
+        } else {
+          this.get_debug().log('[JSJaCJingle:muji] _parse_autoconfigure_room_password > Room password already configured (password: ' + parse_obj.password + ').', 2);
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _receive_autoconfigure_room_password > ' + e, 1);
+      }
+    },
+
+    /**
+     * Parses MUC room password configuration
+     * @private
+     * @param {JSJaCPacket} stanza
+     * @returns {Object} Parse results
+     */
+    _parse_autoconfigure_room_password: function(stanza) {
+      var i,
+          x_data_sel, field_item_sel, password_field_sel, password_value_sel,
+          old_password, password;
+
+      try {
+        // Get stanza items
+        query_sel = stanza.getQuery(NS_JABBER_MUC_OWNER);
+
+        if(!query_sel)  throw 'No query element received.';
+
+        x_data_sel = this.utils.stanza_get_element(query_sel, 'x', NS_JABBER_DATA);
+        if(!x_data_sel || x_data_sel.length === 0)  throw 'No X data element received.';
+
+        x_data_sel = x_data_sel[0];
+
+        field_item_sel = this.utils.stanza_get_element(x_data_sel, 'field', NS_JABBER_DATA);
+        if(!field_item_sel || field_item_sel.length === 0)  throw 'No field element received.';
+
+        for(i = 0; i < field_item_sel.length; i++) {
+          if(field_item_sel[i].getAttribute('var') === JSJAC_JINGLE_MUJI_MUC_CONFIG_SECRET) {
+            password_field_sel = field_item_sel[i]; break;
+          }
+        }
+
+        if(password_field_sel === undefined)  throw 'No password field element received.';
+
+        password_value_sel = this.utils.stanza_get_element(password_field_sel, 'value', NS_JABBER_DATA);
+        if(!password_value_sel || password_value_sel.length === 0)  throw 'No password field value element received.';
+
+        password_value_sel = password_value_sel[0];
+
+        // Get old password
+        old_password = password_value_sel.nodeValue;
+
+        // Apply password?
+        if(this.get_password() && old_password != this.get_password()) {
+          password = this.get_password();
+        } else if(old_password) {
+          password = old_password;
+        } else {
+          password = this.utils.generate_password();
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _parse_autoconfigure_room_password > ' + e, 1);
+      } finally {
+        return {
+          password           : password,
+          old_password       : old_password,
+          x_data_sel         : x_data_sel,
+          field_item_sel     : field_item_sel,
+          password_field_sel : password_field_sel,
+          password_value_sel : password_value_sel,
+        };
+      }
+    },
+
+    /**
+     * Receives MUC room password configuration
+     * @private
+     * @param {JSJaCPacket} stanza
+     * @param {Object} parse_obj
+     */
+    _send_autoconfigure_room_password: function(stanza, parse_obj) {
+      try {
+        // Change stanza headers
+        stanza.setID(this.get_id_new());
+        stanza.setType(JSJAC_JINGLE_IQ_TYPE_SET);
+        stanza.setTo(stanza.getFrom());
+        stanza.setFrom(null);
+
+        // Change stanza items
+        parse_obj.x_data_sel.setAttribute('type', JSJAC_JINGLE_MUJI_MUC_OWNER_SUBMIT);
+
+        parse_obj.password_value_sel.parentNode.removeChild(parse_obj.password_value_sel);
+        parse_obj.password_field_sel.appendChild(
+          stanza.buildNode('value', { 'xmlns': NS_JABBER_DATA }, parse_obj.password)
+        );
+
+        var _this = this;
+
+        this.get_connection().send(stanza, function(_stanza) {
+          if(_this.get_net_trace())  _this.get_debug().log('[JSJaCJingle:muji] _send_autoconfigure_room_password > Incoming packet received' + '\n\n' + _stanza.xml());
+
+          if(_stanza.getType() === JSJAC_JINGLE_IQ_TYPE_ERROR) {
+            _this._set_password(undefined);
+
+            _this.get_debug().log('[JSJaCJingle:muji] _send_autoconfigure_room_password > Could not autoconfigure room password.', 1);
+          } else {
+            _this.get_debug().log('[JSJaCJingle:muji] _send_autoconfigure_room_password > Successfully autoconfigured room password.', 2);
+          }
+        });
+
+        this.get_debug().log('[JSJaCJingle:muji] _send_autoconfigure_room_password > Autoconfiguring room password (password: ' + parse_obj.password + ')...', 4);
+
+        if(this.get_net_trace())  this.get_debug().log('[JSJaCJingle:muji] _send_autoconfigure_room_password > Outgoing packet sent' + '\n\n' + stanza.xml());
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _send_autoconfigure_room_password > ' + e, 1);
+      }
+    },
+
 
 
     /**
@@ -2772,6 +3086,24 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     },
 
     /**
+     * Gets the room password
+     * @public
+     * @returns {String} Room password
+     */
+    get_password: function() {
+      return this._password;
+    },
+
+    /**
+     * Gets the password protect state
+     * @public
+     * @returns {Boolean} Password protect state
+     */
+    get_password_protect: function() {
+      return this._password_protect;
+    },
+
+    /**
      * Gets the MUC to value
      * @public
      * @returns {String} To value for MUC
@@ -2790,12 +3122,21 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     },
 
     /**
-     * Gets the iid value
+     * Gets the instance ID
      * @public
      * @returns {String} IID value
      */
     get_iid: function() {
       return this._iid;
+    },
+
+    /**
+     * Gets the room owner state
+     * @public
+     * @returns {Boolean} Room owner state
+     */
+    get_is_room_owner: function() {
+      return this._is_room_owner;
     },
 
 
@@ -3137,12 +3478,39 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     },
 
     /**
+     * Sets the room password
+     * @private
+     * @param {String} password
+     */
+    _set_password: function(password) {
+      this._password = password;
+    },
+
+    /**
+     * Sets the password protect state
+     * @private
+     * @param {Boolean} password_protect
+     */
+    _set_password_protect: function(password_protect) {
+      this._password_protect = password_protect;
+    },
+
+    /**
      * Sets the instance ID
      * @private
      * @param {String} iid
      */
     _set_iid: function(iid) {
       this._iid = iid;
+    },
+
+    /**
+     * Sets the room owner state
+     * @private
+     * @param {Boolean} is_room_owner
+     */
+    _set_is_room_owner: function(is_room_owner) {
+      this._is_room_owner = is_room_owner;
     },
   }
 );
