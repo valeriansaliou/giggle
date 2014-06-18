@@ -238,7 +238,7 @@ var ARGS = {
     participant_session_initiate_pending: function(_this, session) {
         console.log('participant_session_initiate_pending');
 
-        helper_video_load(_this, stanza);
+        helper_video_load(_this, null, session);
     },
     
     participant_session_initiate_success: function(_this, session, stanza) {
@@ -388,8 +388,16 @@ function helper_select_video(username) {
     });
 }
 
-function helper_video_load(_this, stanza) {
-    var username = helper_get_username(_this, stanza);
+function helper_video_load(_this, stanza, session) {
+    var username;
+
+    if(session)
+        username = session.utils.extract_username(session.get_to());
+    else if(stanza)
+        username = helper_get_username(_this, stanza);
+    else
+        return;
+    
     var container_sel = helper_select_video(username);
 
     if(container_sel.size() && !container_sel.find('.load').size()) {

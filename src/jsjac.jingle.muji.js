@@ -741,55 +741,58 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
             this.get_debug().log('[JSJaCJingle:muji] handle_presence > Dropped local stanza.', 1);
           }
         } else {
-          // Remote stanza handlers
-          if(stanza.getType() === JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE) {
-            this._handle_participant_leave(stanza);
+          // Defer if user media not ready yet
+          this._defer_participant_handlers(function(is_deferred) {
+            // Remote stanza handlers
+            if(stanza.getType() === JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE) {
+              _this._handle_participant_leave(stanza, is_deferred);
 
-            /* @function */
-            this.get_participant_leave()(stanza);
-          } else {
-            var muji = this.utils.stanza_muji(stanza);
+              /* @function */
+              _this.get_participant_leave()(stanza);
+            } else {
+              var muji = _this.utils.stanza_muji(stanza);
 
-            // Don't handle non-Muji stanzas there...
-            if(!muji) return;
+              // Don't handle non-Muji stanzas there...
+              if(!muji) return;
 
-            // Submit to registered handler
-            var username = this.utils.stanza_username(stanza);
-            var status = this._shortcut_participant_status(username);
+              // Submit to registered handler
+              var username = _this.utils.stanza_username(stanza);
+              var status = _this._shortcut_participant_status(username);
 
-            var fn_log_drop = function() {
-              _this.get_debug().log('[JSJaCJingle:muji] handle_presence > Dropped out-of-order participant stanza with status: ' + status, 1);
-            };
+              var fn_log_drop = function() {
+                _this.get_debug().log('[JSJaCJingle:muji] handle_presence > Dropped out-of-order participant stanza with status: ' + status, 1);
+              };
 
-            if(this._stanza_has_preparing(muji)) {
-              if(!status || status === JSJAC_JINGLE_MUJI_STATUS_INACTIVE) {
-                this._handle_participant_prepare(stanza);
+              if(_this._stanza_has_preparing(muji)) {
+                if(!status || status === JSJAC_JINGLE_MUJI_STATUS_INACTIVE) {
+                  _this._handle_participant_prepare(stanza, is_deferred);
 
-                /* @function */
-                this.get_participant_prepare()(this, stanza);
-              } else {
-                fn_log_drop();
-              }
-            } else if(this._stanza_has_content(muji)) {
-              if(!status || status === JSJAC_JINGLE_MUJI_STATUS_INACTIVE || status === JSJAC_JINGLE_MUJI_STATUS_PREPARED) {
-                this._handle_participant_initiate(stanza);
+                  /* @function */
+                  _this.get_participant_prepare()(_this, stanza);
+                } else {
+                  fn_log_drop();
+                }
+              } else if(_this._stanza_has_content(muji)) {
+                if(!status || status === JSJAC_JINGLE_MUJI_STATUS_INACTIVE || status === JSJAC_JINGLE_MUJI_STATUS_PREPARED) {
+                  _this._handle_participant_initiate(stanza, is_deferred);
 
-                /* @function */
-                this.get_participant_initiate()(this, stanza);
-              } else {
-                fn_log_drop();
-              }
-            } else if(this.is_stanza_from_participant(stanza)) {
-              if(!status || status === JSJAC_JINGLE_MUJI_STATUS_INACTIVE || status === JSJAC_JINGLE_MUJI_STATUS_INITIATED) {
-                this._handle_participant_leave(stanza);
+                  /* @function */
+                  _this.get_participant_initiate()(_this, stanza);
+                } else {
+                  fn_log_drop();
+                }
+              } else if(_this.is_stanza_from_participant(stanza)) {
+                if(!status || status === JSJAC_JINGLE_MUJI_STATUS_INACTIVE || status === JSJAC_JINGLE_MUJI_STATUS_INITIATED) {
+                  _this._handle_participant_leave(stanza, is_deferred);
 
-                /* @function */
-                this.get_participant_leave()(this, stanza);
-              } else {
-                fn_log_drop();
+                  /* @function */
+                  _this.get_participant_leave()(_this, stanza);
+                } else {
+                  fn_log_drop();
+                }
               }
             }
-          }
+          });
         }
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] handle_presence > ' + e, 1);
@@ -1286,20 +1289,8 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         // Change session status
         this._set_status(JSJAC_JINGLE_MUJI_STATUS_INITIATED);
 
-        // Undefer pending handlers
-        var i, handlers;
-        handlers = this.get_deferred_handlers(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA);
-
-        if(typeof handlers == 'object' && handlers.length) {
-          this.get_debug().log('[JSJaCJingle:muji] _handle_session_prepare_success > Submitted to deferred handlers.', 2);
-
-          for(i in handlers) {
-            /* @function */
-            handlers[i]();
-          }
-
-          this.undefer_handler(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA);
-        }
+        // Undefer pending participant handlers
+        this._undefer_participant_handlers();
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _handle_session_initiate_success > ' + e, 1);
       }
@@ -1381,9 +1372,6 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:muji] _handle_participant_prepare', 4);
 
       try {
-        // Defer if user media not ready yet
-        if(this._defer_participant_handler(stanza, this._handle_participant_prepare) === true)  return;
-
         var username = this.utils.stanza_username(stanza);
 
         if(!username) {
@@ -1426,9 +1414,6 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:muji] _handle_participant_initiate', 4);
 
       try {
-        // Defer if user media not ready yet
-        if(this._defer_participant_handler(stanza, this._handle_participant_initiate) === true)  return;
-
         var username = this.utils.stanza_username(stanza);
 
         if(!username) {
@@ -1483,9 +1468,6 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:muji] _handle_participant_leave', 4);
 
       try {
-        // Defer if user media not ready yet
-        if(this._defer_participant_handler(stanza, this._handle_participant_leave) === true)  return;
-
         var username = this.utils.stanza_username(stanza);
 
         if(!username) {
@@ -2199,31 +2181,60 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     },
 
     /**
-     * Returns participant status (even if inexistant)
+     * Defers given participant handler (or executes it)
      * @private
-     * @param {JSJaCPacket} stanza
      * @param {Function} fn
      * @returns {Boolean} Defer status
      */
-    _defer_participant_handler: function(stanza, fn) {
+    _defer_participant_handlers: function(fn) {
       var is_deferred = false;
 
       try {
         var _this = this;
 
-        if(this.is_ready_user_media() === false) {
+        if(this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_INITIATED  &&
+           this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_LEAVING    &&
+           this.get_status() !== JSJAC_JINGLE_MUJI_STATUS_LEFT
+          ) {
           this.defer_handler(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA, function() {
-            fn.bind(_this)(stanza, true);
+            fn.bind(_this)(true);
           });
 
           is_deferred = true;
 
-          this.get_debug().log('[JSJaCJingle:muji] _defer_participant_handler > Deferred participant handler (waiting for user media).', 0);
+          this.get_debug().log('[JSJaCJingle:muji] _defer_participant_handlers > Deferred participant handler (waiting for user media).', 0);
+        } else {
+          fn(false);
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:muji] _defer_participant_handler > ' + e, 1);
+        this.get_debug().log('[JSJaCJingle:muji] _defer_participant_handlers > ' + e, 1);
       } finally {
         return is_deferred;
+      }
+    },
+
+    /**
+     * Undefers participant handlers
+     * @private
+     */
+    _undefer_participant_handlers: function() {
+      try {
+        // Undefer pending handlers
+        var i, handlers;
+        handlers = this.get_deferred_handlers(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA);
+
+        if(typeof handlers == 'object' && handlers.length) {
+          this.get_debug().log('[JSJaCJingle:muji] _undefer_participant_handlers > Submitted to deferred handlers.', 2);
+
+          for(i = 0; i < handlers.length; i++) {
+            /* @function */
+            handlers[i]();
+          }
+
+          this.undefer_handler(JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA);
+        }
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _undefer_participant_handlers > ' + e, 1);
       }
     },
 
