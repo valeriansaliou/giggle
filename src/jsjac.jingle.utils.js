@@ -595,30 +595,30 @@ var JSJaCJingleUtils = ring.create(
      * @public
      * @param {String} t_type
      * @param {String} t_id
-     * @param {Object} handlers
+     * @param {Object} [handlers]
      */
-    stanza_timeout: function(t_type, t_id, handlers) {    
+    stanza_timeout: function(t_node, t_type, t_id, handlers) {    
       try {
-        t_type = t_type || JSJAC_JINGLE_IQ_TYPE_ALL;
-
         var t_sid = this.parent.get_sid();
         var t_status = this.parent.get_status();
 
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Registered (id: ' + t_id + ', status: ' + t_status + ').', 4);
+        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Registered (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + ').', 4);
 
         var _this = this;
-        
+
         setTimeout(function() {
-          _this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Cheking (id: ' + t_id + ', status: ' + t_status + '-' + _this.parent.get_status() + ').', 4);
+          _this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Cheking (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + '-' + _this.parent.get_status() + ').', 4);
 
           // State did not change?
           if(_this.parent.get_sid() == t_sid && _this.parent.get_status() == t_status && !(t_id in _this.parent.get_received_id())) {
             _this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Stanza timeout.', 2);
 
-            _this.parent.unregister_handler(t_type, t_id);
+            _this.parent.unregister_handler(t_node, t_type, t_id);
 
-            if(handlers.external)  (handlers.external)(_this);
-            if(handlers.internal)  (handlers.internal)();
+            if(typeof handlers == 'object') {
+              if(handlers.external)  (handlers.external)(_this);
+              if(handlers.internal)  (handlers.internal)();
+            }
           } else {
             _this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Stanza successful.', 4);
           }

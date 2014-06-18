@@ -373,26 +373,25 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Registers a given handler on a given Jingle stanza
      * @public
+     * @param {String} node
      * @param {String} type
      * @param {String} id
      * @param {Function} fn
      * @returns {Boolean} Success
      */
-    register_handler: function(type, id, fn) {
+    register_handler: function(node, type, id, fn) {
       this.get_debug().log('[JSJaCJingle:base] register_handler', 4);
 
       try {
-        type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
-
         if(typeof fn !== 'function') {
           this.get_debug().log('[JSJaCJingle:base] register_handler > fn parameter not passed or not a function!', 1);
           return false;
         }
 
         if(id) {
-          this._set_registered_handlers(type, id, fn);
+          this._set_registered_handlers(node, type, id, fn);
 
-          this.get_debug().log('[JSJaCJingle:base] register_handler > Registered handler for id: ' + id + ' and type: ' + type, 3);
+          this.get_debug().log('[JSJaCJingle:base] register_handler > Registered handler for node: ' + node + ', id: ' + id + ' and type: ' + type, 3);
           return true;
         } else {
           this.get_debug().log('[JSJaCJingle:base] register_handler > Could not register handler (no ID).', 1);
@@ -408,23 +407,22 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Unregisters the given handler on a given Jingle stanza
      * @public
+     * @param {String} node
      * @param {String} type
      * @param {String} id
      * @returns {Boolean} Success
      */
-    unregister_handler: function(type, id) {
+    unregister_handler: function(node, type, id) {
       this.get_debug().log('[JSJaCJingle:base] unregister_handler', 4);
 
       try {
-        type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
+        if(this.get_registered_handlers(node, type, id).length >= 1) {
+          this._set_registered_handlers(node, type, id, null);
 
-        if(type in this._registered_handlers && id in this._registered_handlers[type]) {
-          this._set_registered_handlers(type, id, null);
-
-          this.get_debug().log('[JSJaCJingle:base] unregister_handler > Unregistered handler for id: ' + id + ' and type: ' + type, 3);
+          this.get_debug().log('[JSJaCJingle:base] unregister_handler > Unregistered handler for node: ' + node + ', id: ' + id + ' and type: ' + type, 3);
           return true;
         } else {
-          this.get_debug().log('[JSJaCJingle:base] unregister_handler > Could not unregister handler with id: ' + id + ' and type: ' + type + ' (not found).', 2);
+          this.get_debug().log('[JSJaCJingle:base] unregister_handler > Could not unregister handler with node: ' + node + ', id: ' + id + ' and type: ' + type + ' (not found).', 2);
           return false;
         }
       } catch(e) {
@@ -1031,20 +1029,16 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Gets the registered stanza handler
      * @public
+     * @param {String} node
      * @param {String} type
      * @param {String} id
      * @returns {Array} Stanza handler
      */
-    get_registered_handlers: function(type, id) {
-      type = type || JSJAC_JINGLE_IQ_TYPE_ALL;
-
-      if(id) {
-        if(type != JSJAC_JINGLE_IQ_TYPE_ALL && type in this._registered_handlers && typeof this._registered_handlers[type][id] == 'object')
-          return this._registered_handlers[type][id];
-
-        if(JSJAC_JINGLE_IQ_TYPE_ALL in this._registered_handlers && typeof this._registered_handlers[JSJAC_JINGLE_IQ_TYPE_ALL][id] == 'object')
-          return this._registered_handlers[type][id];
-      }
+    get_registered_handlers: function(node, type, id) {
+      if(id && node in this._registered_handlers  && 
+         type in this._registered_handlers[node]  && 
+         typeof this._registered_handlers[node][type][id] == 'object')
+        return this._registered_handlers[node][type][id];
 
       return [];
     },
@@ -1504,21 +1498,23 @@ var __JSJaCJingleBase = ring.create(
     /**
      * Sets the registered stanza handlers
      * @private
+     * @param {String} node
      * @param {String} type
      * @param {String|Number} id
      * @param {Function} handler
      */
-    _set_registered_handlers: function(type, id, handler) {
-      if(!(type in this._registered_handlers))  this._registered_handlers[type] = {};
+    _set_registered_handlers: function(node, type, id, handler) {
+      if(!(node in this._registered_handlers))        this._registered_handlers[node] = {};
+      if(!(type in this._registered_handlers[node]))  this._registered_handlers[node][type] = {};
 
       if(handler === null) {
-        if(id in this._registered_handlers[type])
-          delete this._registered_handlers[type][id];
+        if(id in this._registered_handlers[node][type])
+          delete this._registered_handlers[node][type][id];
       } else {
-        if(typeof this._registered_handlers[type][id] != 'object')
-          this._registered_handlers[type][id] = [];
+        if(typeof this._registered_handlers[node][type][id] != 'object')
+          this._registered_handlers[node][type][id] = [];
 
-        this._registered_handlers[type][id].push(handler);
+        this._registered_handlers[node][type][id].push(handler);
       }
     },
 

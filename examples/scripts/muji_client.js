@@ -60,7 +60,7 @@ var ARGS = {
         }
     },
 
-    room_message_out: function(_this) {
+    room_message_out: function(_this, stanza) {
         console.log('room_message_out');
     },
 
@@ -121,7 +121,7 @@ var ARGS = {
         }
     },
 
-    room_presence_out: function(_this) {
+    room_presence_out: function(_this, stanza) {
         console.log('room_presence_out');
     },
     
@@ -146,6 +146,7 @@ var ARGS = {
     session_prepare_error: function(_this, stanza) {
         console.log('session_prepare_error');
 
+        $('.call_notif').hide();
         $('#call_error').text('Could not prepare.').show();
 
         $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
@@ -159,7 +160,7 @@ var ARGS = {
         $('#call_info').text('Initiating...').show();
     },
     
-    session_initiate_success: function(_this) {
+    session_initiate_success: function(_this, stanza) {
         console.log('session_initiate_success');
 
         $('.call_notif').hide();
@@ -168,9 +169,10 @@ var ARGS = {
         $('#form_live').find('button').removeAttr('disabled');
     },
     
-    session_initiate_error: function(_this) {
+    session_initiate_error: function(_this, stanza) {
         console.log('session_initiate_error');
 
+        $('.call_notif').hide();
         $('#call_error').text('Could not initialize.').show();
         $('#chat_messages').empty();
 
@@ -187,7 +189,7 @@ var ARGS = {
         $('#form_live').find('button').attr('disabled', true);
     },
     
-    session_leave_success: function(_this) {
+    session_leave_success: function(_this, stanza) {
         console.log('session_leave_success');
 
         $('.call_notif').hide();
@@ -202,9 +204,10 @@ var ARGS = {
         $('#form_live').find('button').removeAttr('disabled');
     },
     
-    session_leave_error: function(_this) {
+    session_leave_error: function(_this, stanza) {
         console.log('session_leave_error');
 
+        $('.call_notif').hide();
         $('#call_error').text('Could not leave (forced).').show();
 
         $('#fieldset_live').attr('disabled', true);
@@ -351,9 +354,12 @@ var ARGS = {
             };
 
             if(nobody_sel.is(':visible')) {
-                nobody_sel.stop(true).fadeOut(250, function() {
-                    fn_reveal_view();
-                });
+                // If is animated, only delay video container reveal
+                if(nobody_sel.is(':animated')) {
+                    container_sel.oneTime(250, fn_reveal_view);
+                } else {
+                    nobody_sel.stop(true).fadeOut(250, fn_reveal_view);
+                }
             } else {
                 fn_reveal_view();
             }

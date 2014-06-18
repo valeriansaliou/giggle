@@ -488,8 +488,9 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     /**
      * Aborts the Jingle session.
      * @public
+     * @param {Boolean} [set_lock]
      */
-    abort: function() {
+    abort: function(set_lock) {
       this.get_debug().log('[JSJaCJingle:single] abort', 4);
 
       try {
@@ -499,8 +500,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         // Stop WebRTC
         this._peer_stop();
 
-        // Lock session (cannot be used later)
-        this._set_lock(true);
+        // Lock session? (cannot be used later)
+        if(set_lock === true)  this._set_lock(true);
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:single] abort > ' + e, 1);
       }
@@ -667,7 +668,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         if(id && type == JSJAC_JINGLE_IQ_TYPE_RESULT)  this._set_received_id(id);
 
         // Submit to custom handler
-        var i, handlers = this.get_registered_handlers(type, id);
+        var i, handlers = this.get_registered_handlers(JSJAC_JINGLE_STANZA_IQ, type, id);
 
         if(typeof handlers == 'object' && handlers.length) {
           this.get_debug().log('[JSJaCJingle:single] handle > Submitted to custom registered handlers.', 2);
@@ -677,7 +678,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
             handlers[i](stanza);
           }
           
-          this.unregister_handler(type, id);
+          this.unregister_handler(JSJAC_JINGLE_STANZA_IQ, type, id);
 
           return;
         }
@@ -1080,14 +1081,14 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         // Schedule success
         var _this = this;
 
-        this.register_handler(JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
+        this.register_handler(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
           /* @function */
           (_this.get_session_accept_success())(_this, stanza);
           _this._handle_session_accept_success(stanza);
         });
 
         // Schedule error timeout
-        this.utils.stanza_timeout(JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, {
+        this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, {
           /* @function */
           external:   this.get_session_accept_error().bind(this),
           internal:   this._handle_session_accept_error.bind(this)
@@ -1130,14 +1131,14 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         // Schedule success
         var _this = this;
 
-        this.register_handler(JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
+        this.register_handler(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
           /* @function */
           (_this.get_session_info_success())(this, stanza);
           _this._handle_session_info_success(stanza);
         });
 
         // Schedule error timeout
-        this.utils.stanza_timeout(JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, {
+        this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, {
           /* @function */
           external:   this.get_session_info_error().bind(this),
           internal:   this._handle_session_info_error.bind(this)
@@ -1185,14 +1186,14 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         // Schedule success
         var _this = this;
         
-        this.register_handler(JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
+        this.register_handler(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
           /* @function */
           (_this.get_session_initiate_success())(_this, stanza);
           _this._handle_session_initiate_success(stanza);
         });
 
         // Schedule error timeout
-        this.utils.stanza_timeout(JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, {
+        this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, {
           /* @function */
           external:   this.get_session_initiate_error().bind(this),
           internal:   this._handle_session_initiate_error.bind(this)
@@ -1245,14 +1246,14 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         // Schedule success
         var _this = this;
         
-        this.register_handler(JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
+        this.register_handler(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
           /* @function */
           (_this.get_session_terminate_success())(_this, stanza);
           _this._handle_session_terminate_success(stanza);
         });
 
         // Schedule error timeout
-        this.utils.stanza_timeout(JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, {
+        this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, {
           /* @function */
           external:   this.get_session_terminate_error().bind(this),
           internal:   this._handle_session_terminate_error.bind(this)
@@ -1335,12 +1336,12 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         // Schedule success
         var _this = this;
         
-        this.register_handler(JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
+        this.register_handler(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
           _this._handle_transport_info_success(stanza);
         });
 
         // Schedule error timeout
-        this.utils.stanza_timeout(JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, {
+        this.utils.stanza_timeout(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, {
           internal: this._handle_transport_info_error.bind(this)
         });
 
@@ -2128,11 +2129,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_success', 4);
 
       try {
-        // Change session status
-        this._set_status(JSJAC_JINGLE_STATUS_TERMINATED);
-
-        // Stop WebRTC
-        this._peer_stop();
+        this.abort();
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_success > ' + e, 1);
       }
@@ -2148,7 +2145,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_error', 4);
 
       try {
-        this.abort();
+        this.abort(true);
 
         this.get_debug().log('[JSJaCJingle:single] _handle_session_terminate_error > Forced session termination locally.', 0);
       } catch(e) {

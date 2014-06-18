@@ -5,6 +5,7 @@
     "underscore" : "latest",
     "ring" : "latest",
     "jquery" : "latest",
+    "jquery.timers": "patryk/jquery.timers",
     "jsjac": "sstrigler/JSJaC"
   },
 
