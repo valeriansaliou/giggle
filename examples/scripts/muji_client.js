@@ -505,7 +505,7 @@ $(document).ready(function() {
                                     // Session values
                                     ARGS.to           = args.jid;
                                     ARGS.media        = (args.media == JSJAC_JINGLE_MEDIA_VIDEO) ? JSJAC_JINGLE_MEDIA_VIDEO : JSJAC_JINGLE_MEDIA_AUDIO;
-                                    ARGS.local_view   = document.getElementById('video_local');
+                                    ARGS.local_view   = $('video_local')[0];
 
                                     if(args.password) {
                                         ARGS.password = args.password;
@@ -604,7 +604,7 @@ $(document).ready(function() {
                     ARGS.to           = call_room;
                     ARGS.media        = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
                     ARGS.video_source = JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
-                    ARGS.local_view   = document.getElementById('video_local');
+                    ARGS.local_view   = $('video_local')[0];
 
                     // Let's go!
                     JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_MUJI, ARGS);
