@@ -125,98 +125,101 @@ var JSJaCJingle = new (ring.create(
     _route_iq: function(stanza) {
       try {
         var from = stanza.getFrom();
-        var jid_obj = new JSJaCJID(from);
-        var from_bare = (jid_obj.getNode() + '@' + jid_obj.getDomain());
 
-        // Single or Muji?
-        var is_muji   = (this._read(JSJAC_JINGLE_SESSION_MUJI, from_bare) !== null);
-        var is_single = !is_muji;
+        if(from) {
+          var jid_obj = new JSJaCJID(from);
+          var from_bare = (jid_obj.getNode() + '@' + jid_obj.getDomain());
 
-        var action        = null;
-        var sid           = null;
-        var session_route = null;
+          // Single or Muji?
+          var is_muji   = (this._read(JSJAC_JINGLE_SESSION_MUJI, from_bare) !== null);
+          var is_single = !is_muji;
 
-        // Route the incoming stanza
-        var jingle = stanza.getChild('jingle', NS_JINGLE);
+          var action        = null;
+          var sid           = null;
+          var session_route = null;
 
-        if(jingle) {
-          sid = jingle.getAttribute('sid');
-          action = jingle.getAttribute('action');
-        } else {
-          var stanza_id = stanza.getID();
+          // Route the incoming stanza
+          var jingle = stanza.getChild('jingle', NS_JINGLE);
 
-          if(stanza_id) {
-            var is_jingle = stanza_id.indexOf(JSJAC_JINGLE_STANZA_ID_PRE + '_') !== -1;
+          if(jingle) {
+            sid = jingle.getAttribute('sid');
+            action = jingle.getAttribute('action');
+          } else {
+            var stanza_id = stanza.getID();
 
-            if(is_jingle) {
-              var stanza_id_split = stanza_id.split('_');
-              sid = stanza_id_split[1];
+            if(stanza_id) {
+              var is_jingle = stanza_id.indexOf(JSJAC_JINGLE_STANZA_ID_PRE + '_') !== -1;
+
+              if(is_jingle) {
+                var stanza_id_split = stanza_id.split('_');
+                sid = stanza_id_split[1];
+              }
             }
           }
-        }
 
-        // WebRTC not available ATM?
-        if(jingle && !JSJAC_JINGLE_AVAILABLE) {
-          JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Dropped Jingle packet (WebRTC not available).', 0);
+          // WebRTC not available ATM?
+          if(jingle && !JSJAC_JINGLE_AVAILABLE) {
+            JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Dropped Jingle packet (WebRTC not available).', 0);
 
-          (new JSJaCJingleSingle({ to: from })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
-        } else if(is_muji) {
-          var username, participant;
+            (new JSJaCJingleSingle({ to: from })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
+          } else if(is_muji) {
+            var username, participant;
 
-          username       = jid_obj.getResource();
-          session_route  = this._read(JSJAC_JINGLE_SESSION_MUJI, from_bare);
-          participant    = session_route.get_participants(username);
+            username       = jid_obj.getResource();
+            session_route  = this._read(JSJAC_JINGLE_SESSION_MUJI, from_bare);
+            participant    = session_route.get_participants(username);
 
-          // Muji: new session? Or registered one?
-          if(participant && participant.session  &&
-            (participant.session instanceof JSJaCJingleSingle)) {
-            // Route to Single session
-            var session_route_single = this._read(
-              JSJAC_JINGLE_SESSION_SINGLE,
-              participant.session.get_sid()
-            );
+            // Muji: new session? Or registered one?
+            if(participant && participant.session  &&
+              (participant.session instanceof JSJaCJingleSingle)) {
+              // Route to Single session
+              var session_route_single = this._read(
+                JSJAC_JINGLE_SESSION_SINGLE,
+                participant.session.get_sid()
+              );
 
-            if(session_route_single !== null) {
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > [' + username + '] > Routed to Muji participant session (sid: ' + sid + ').', 2);
+              if(session_route_single !== null) {
+                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > [' + username + '] > Routed to Muji participant session (sid: ' + sid + ').', 2);
 
-              session_route_single.handle(stanza);
-            } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Muji participant session route (sid: ' + sid + ').', 0);
+                session_route_single.handle(stanza);
+              } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
+                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Muji participant session route (sid: ' + sid + ').', 0);
 
-              (new JSJaCJingleSingle({ to: from })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+                (new JSJaCJingleSingle({ to: from })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+              }
+            } else if(sid) {
+              if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE) {
+                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > [' + username + '] > New Muji participant session (sid: ' + sid + ').', 2);
+
+                session_route._create_participant_session(username).handle(stanza);
+              } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
+                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Muji participant session (sid: ' + sid + ').', 0);
+
+                (new JSJaCJingleSingle({ to: from })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+              }
             }
-          } else if(sid) {
-            if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE) {
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > [' + username + '] > New Muji participant session (sid: ' + sid + ').', 2);
+          } else if(is_single) {
+            // Single: new session? Or registered one?
+            session_route = this._read(JSJAC_JINGLE_SESSION_SINGLE, sid);
 
-              session_route._create_participant_session(username).handle(stanza);
-            } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Muji participant session (sid: ' + sid + ').', 0);
+            if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route === null) {
+              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > New Jingle session (sid: ' + sid + ').', 2);
 
-              (new JSJaCJingleSingle({ to: from })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+              JSJaCJingleStorage.get_single_initiate()(stanza);
+            } else if(sid) {
+              if(session_route !== null) {
+                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Routed to Jingle session (sid: ' + sid + ').', 2);
+
+                session_route.handle(stanza);
+              } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
+                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Jingle session (sid: ' + sid + ').', 0);
+
+                (new JSJaCJingleSingle({ to: from })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+              }
             }
+          } else {
+            JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > No route to session, not Jingle nor Muji (sid: ' + sid + ').', 0);
           }
-        } else if(is_single) {
-          // Single: new session? Or registered one?
-          session_route = this._read(JSJAC_JINGLE_SESSION_SINGLE, sid);
-
-          if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route === null) {
-            JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > New Jingle session (sid: ' + sid + ').', 2);
-
-            JSJaCJingleStorage.get_single_initiate()(stanza);
-          } else if(sid) {
-            if(session_route !== null) {
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Routed to Jingle session (sid: ' + sid + ').', 2);
-
-              session_route.handle(stanza);
-            } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Jingle session (sid: ' + sid + ').', 0);
-
-              (new JSJaCJingleSingle({ to: from })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
-            }
-          }
-        } else {
-          JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > No route to session, not Jingle nor Muji (sid: ' + sid + ').', 0);
         }
       } catch(e) {
         JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > ' + e, 1);
