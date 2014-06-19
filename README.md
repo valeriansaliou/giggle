@@ -130,7 +130,7 @@ JSJaCJingle.listen({
 });
 
 // 3. Configure our disco#info handler to reply with JSJaCJingle.js features
-var handle_disco_info(iq) {
+var handle_disco_info = function(iq) {
     // Do the parse work there...
 
     // Get my client feature map
@@ -182,7 +182,7 @@ var launch_single_call = function(to, target) {
 // Attach form submit event
 $('form#launch_single_call').submit(function() {
     var to = $(this).find('input[name="to"]').val();
-    var target = ($(this).find('input[name="target"]).val() || 'call_video');
+    var target = ($(this).find('input[name="target"]').val() || 'call_video');
 
     if(to && target) {
         // Launch call...
@@ -239,7 +239,7 @@ var launch_muji_call = function(room, target) {
 // Attach form submit event
 $('form#launch_muji_call').submit(function() {
     var room = $(this).find('input[name="room"]').val();
-    var target = ($(this).find('input[name="target"]).val() || 'call_video');
+    var target = ($(this).find('input[name="target"]').val() || 'call_video');
 
     if(room && target) {
         // Launch conference...
