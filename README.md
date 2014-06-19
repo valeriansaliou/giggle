@@ -75,7 +75,12 @@ We assume your XMPP Web client is using JSJaC and has an active connection, stor
  * JSJaCJingle.js Implementation Example
  */
 
-// 1. Define configuration generators
+// 1. Ensure you are loading the following libraries:
+//    > jQuery
+//    > JSJaC
+//    > JSJaCJingle.js
+
+// 2. Define configuration generators
 var single_config_generator = function() {
     // Return single configuration object
     // Refer to single_client.js source for more
@@ -88,7 +93,7 @@ var muji_config_generator = function() {
     return {};  
 };
 
-// 2. Initiate the listener
+// 3. Initiate the listener
 JSJaCJingle.listen({
     connection: JSJAC_CONNECTION,
     debug: (new JSJaCConsoleLogger(4)),
@@ -129,7 +134,7 @@ JSJaCJingle.listen({
     }
 });
 
-// 3. Configure our disco#info handler to reply with JSJaCJingle.js features
+// 4. Configure our disco#info handler to reply with JSJaCJingle.js features
 var handle_disco_info = function(iq) {
     // Do the parse work there...
 
