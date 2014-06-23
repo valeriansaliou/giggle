@@ -114,7 +114,19 @@ var JSJaCJingle = new (ring.create(
      * @returns {Array} Feature namespaces
      */
     disco: function() {
-      return JSJAC_JINGLE_AVAILABLE ? MAP_DISCO_JINGLE : [];
+      // Check for listen status
+      var has_muji = (typeof JSJaCJingleStorage.get_muji_invite_raw() == 'function' && true);
+      var has_jingle = ((has_muji || (typeof JSJaCJingleStorage.get_single_initiate_raw() == 'function')) && true);
+
+      if(JSJAC_JINGLE_AVAILABLE && has_jingle) {
+        if(has_muji) {
+          return MAP_DISCO_JINGLE.concat(MAP_DISCO_MUJI);
+        } else {
+          return MAP_DISCO_JINGLE;
+        }
+      }
+
+      return [];
     },
 
     /**

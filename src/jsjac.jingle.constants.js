@@ -560,7 +560,7 @@ var R_NS_JINGLE_TRANSPORT                           = /^urn:xmpp:jingle:transpor
 /**
  * @constant
  * @global
- * @type {Arrat}
+ * @type {Array}
  * @readonly
  * @default
  * @public
@@ -598,6 +598,23 @@ var MAP_DISCO_JINGLE                                = [
   /* http://xmpp.org/extensions/xep-0262.html */
   NS_JINGLE_APPS_RTP_ZRTP,
 
+  /* http://xmpp.org/extensions/xep-0278.html */
+  NS_JABBER_JINGLENODES,
+
+  /* http://xmpp.org/extensions/xep-0215.html */
+  NS_EXTDISCO
+];
+
+
+/**
+ * @constant
+ * @global
+ * @type {Array}
+ * @readonly
+ * @default
+ * @public
+ */
+var MAP_DISCO_MUJI                                = [
   /* http://xmpp.org/extensions/xep-0272.html */
   NS_MUJI,
 
@@ -605,13 +622,7 @@ var MAP_DISCO_JINGLE                                = [
   NS_MUJI_INVITE,
 
   /* http://xmpp.org/extensions/xep-0249.html */
-  NS_JABBER_CONFERENCE,
-
-  /* http://xmpp.org/extensions/xep-0278.html */
-  NS_JABBER_JINGLENODES,
-
-  /* http://xmpp.org/extensions/xep-0215.html */
-  NS_EXTDISCO
+  NS_JABBER_CONFERENCE
 ];
 
 

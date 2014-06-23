@@ -52,14 +52,14 @@ var JSJaCJingleStorage = new (ring.create(
        * @default
        * @private
        */
-      this._single_initiate = function(stanza) {};
+      this._single_initiate = undefined;
 
       /**
        * @type {Function}
        * @default
        * @private
        */
-      this._muji_invite     = function(stanza) {};
+      this._muji_invite     = undefined;
 
       /**
        * @type {Object}
@@ -141,6 +141,18 @@ var JSJaCJingleStorage = new (ring.create(
      * @returns {Function} Single initiate
      */
     get_single_initiate: function() {
+      if(typeof this._single_initiate == 'function')
+        return this._single_initiate;
+
+      return function(stanza) {};
+    },
+
+    /**
+     * Gets the Single initiate raw value
+     * @public
+     * @returns {Function} Single initiate raw value
+     */
+    get_single_initiate_raw: function() {
       return this._single_initiate;
     },
 
@@ -150,6 +162,18 @@ var JSJaCJingleStorage = new (ring.create(
      * @returns {Function} Muji invite
      */
     get_muji_invite: function() {
+      if(typeof this._muji_invite == 'function')
+        return this._muji_invite;
+
+      return function(stanza) {};
+    },
+
+    /**
+     * Gets the Muji invite raw value
+     * @public
+     * @returns {Function} Muji invite raw value
+     */
+    get_muji_invite_raw: function() {
       return this._muji_invite;
     },
 
