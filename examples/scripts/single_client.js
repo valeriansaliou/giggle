@@ -253,8 +253,8 @@ $(document).ready(function() {
                             single_initiate: function(stanza) {
                                 // Session values
                                 ARGS.to          = stanza.getFrom() || null;
-                                ARGS.local_view  = $('video_local')[0];
-                                ARGS.remote_view = $('video_remote')[0];
+                                ARGS.local_view  = $('#video_local')[0];
+                                ARGS.remote_view = $('#video_remote')[0];
 
                                 // Let's go!
                                 JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
@@ -406,8 +406,8 @@ $(document).ready(function() {
                     ARGS.to           = call_jid;
                     ARGS.media        = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
                     ARGS.video_source = (submit_target == 'call_screen') ? JSJAC_JINGLE_VIDEO_SOURCE_SCREEN : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
-                    ARGS.local_view   = $('video_local')[0];
-                    ARGS.remote_view  = $('video_remote')[0];
+                    ARGS.local_view   = $('#video_local')[0];
+                    ARGS.remote_view  = $('#video_remote')[0];
 
                     // Let's go!
                     JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);

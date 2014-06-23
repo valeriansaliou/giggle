@@ -628,7 +628,7 @@ var JSJaCJingleSDP = ring.create(
         if(!res_height || !res_width) {
           this.parent.get_debug().log('[JSJaCJingle:sdp] _resolution_payload > Could not get local video resolution, falling back on constraints (local video may not be ready).', 0);
 
-          constraints = this.generate_constraints();
+          constraints = this.parent.utils.generate_constraints();
 
           // Still nothing?!
           if(typeof constraints.video                     !== 'object'  || 
