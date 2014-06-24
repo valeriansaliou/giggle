@@ -275,6 +275,6 @@ $('form#launch_muji_call').submit(function() {
 ## Ah, One More Thing...
 
 **We worked hard on that lib, we would appreciate your feedback and bug reports.**
-Plus, if you are using it in your project, we would be glad if you let @valeriansaliou know.
+Plus, if you are using it in your project, we would be glad if you let [@valeriansaliou](https://valeriansaliou.name/) know.
 
 **If you have any enhancement idea or any bug to report:** https://github.com/valeriansaliou/jsjac-jingle/issues
