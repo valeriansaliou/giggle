@@ -4,8 +4,8 @@ JSJaCJingle.js Changelog
 Here's the log of what has changed over the JSJaCJingle.js releases.
 
 
-v0.7 (Development)
-------------------
+v0.7.0 (Jun 24, 2014)
+---------------------
 
  * **In a nutshell**
     * **Library API changed** to support both Single (one-to-one) + Muji (one-to-many) calls     @valeriansaliou
@@ -21,8 +21,8 @@ v0.7 (Development)
     * **[XEP-0339](http://xmpp.org/extensions/xep-0339.html)** (full support)     @valeriansaliou
 
 
-v0.6 (Dec 26, 2013)
--------------------
+v0.6.0 (Dec 26, 2013)
+---------------------
 
  * **In a nutshell**
     * **Firefox compatibility**                @valeriansaliou
@@ -32,8 +32,8 @@ v0.6 (Dec 26, 2013)
     * **XEPs support file**                    @valeriansaliou
 
 
-v0.5 (Jul 15, 2013)
--------------------
+v0.5.0 (Jul 15, 2013)
+---------------------
 
  * **In a nutshell**
     * **Fix video in Chrome 31+** loaded callback (doubling, tripling, and so forth) bug fixed  @valeriansaliou
@@ -43,8 +43,8 @@ v0.5 (Jul 15, 2013)
     * **Firefox compatibility**
 
 
-v0.4 (Jul 13, 2013)
--------------------
+v0.4.0 (Jul 13, 2013)
+---------------------
 
  * **In a nutshell**
     * Better **code debugging** for issue reporting                                                  @valeriansaliou
@@ -57,8 +57,8 @@ v0.4 (Jul 13, 2013)
     * **Screen sharing** support (still experimental, requires Chrome v26+ and proper flag enabled)  @valeriansaliou
 
 
-v0.3 (Jul 6, 2013)
-------------------
+v0.3.0 (Jul 6, 2013)
+--------------------
 
  * **In a nutshell**
     * Ability to **attach more video views** as the call is going on using _JSJaCJingle.register_view()_  @valeriansaliou
@@ -67,8 +67,8 @@ v0.3 (Jul 6, 2013)
     **[XEP-0262](http://xmpp.org/extensions/xep-0262.html)** (full support)  @valeriansaliou
 
 
-v0.2 (Jul 2, 2013)
-------------------
+v0.2.0 (Jul 2, 2013)
+--------------------
 
  * **In a nutshell**
     * Complex **code split** in separate functions           @valeriansaliou
@@ -76,8 +76,8 @@ v0.2 (Jul 2, 2013)
     * **Full integration debug**, improvements on that side  @valeriansaliou
 
 
-v0.1 (Jun 27, 2013)
--------------------
+v0.1.0 (Jun 27, 2013)
+---------------------
 
  * **In a nutshell**
     * **Initial release**                         @valeriansaliou
