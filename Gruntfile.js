@@ -13,7 +13,7 @@ module.exports = function(grunt) {
   // Map tasks
   var GRUNT_TASKS_BUILD = {
     main: ['clean:reset', 'bower:install', 'concat', 'copy', 'uglify', 'jsdoc', 'clean:temporary'],
-    dev: ['clean:temporary', 'concat', 'copy', 'clean:temporary'],
+    dev: ['clean:temporary', 'bower:install', 'concat', 'copy', 'clean:temporary'],
     test: ['clean:temporary', 'bower:install', 'concat', 'copy', 'clean:temporary']
   };
 
@@ -51,18 +51,18 @@ module.exports = function(grunt) {
 
   // Map functions
   var fn_generate_banner = function(type) {
-    return '/**\n' + 
-           ' * <%= pkg.name %> [' + type + ']\n' + 
-           ' * @fileoverview <%= pkg.description %>\n' + 
-           ' *\n' + 
-           ' * @version <%= pkg.version %>\n' + 
-           ' * @date <%= grunt.template.today("yyyy-mm-dd") %>\n' + 
-           ' * @author <%= pkg.author.name %> <%= pkg.author.url %>\n' + 
-           ' * @license <%= pkg.license %>\n' + 
-           ' *\n' + 
-           ' * @url <%= pkg.homepage %>\n' + 
-           ' * @repository <%= pkg.repository.type %>+<%= pkg.repository.url %>\n' + 
-           ' * @depends https://github.com/sstrigler/JSJaC\n' + 
+    return '/**\n' +
+           ' * <%= pkg.name %> [' + type + ']\n' +
+           ' * @fileoverview <%= pkg.description %>\n' +
+           ' *\n' +
+           ' * @version <%= pkg.version %>\n' +
+           ' * @date <%= grunt.template.today("yyyy-mm-dd") %>\n' +
+           ' * @author <%= pkg.author.name %> <%= pkg.author.url %>\n' +
+           ' * @license <%= pkg.license %>\n' +
+           ' *\n' +
+           ' * @url <%= pkg.homepage %>\n' +
+           ' * @repository <%= pkg.repository.type %>+<%= pkg.repository.url %>\n' +
+           ' * @depends https://github.com/sstrigler/JSJaC\n' +
            ' */\n\n';
   };
 
