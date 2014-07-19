@@ -13,6 +13,7 @@ module.exports = function(grunt) {
   // Map tasks
   var GRUNT_TASKS_BUILD = {
     main: ['clean:reset', 'bower:install', 'concat', 'copy', 'uglify', 'jsdoc', 'clean:temporary'],
+    quick: ['clean:reset', 'bower:install', 'concat', 'copy', 'clean:temporary'],
     dev: ['clean:temporary', 'bower:install', 'concat', 'copy', 'clean:temporary'],
     test: ['clean:temporary', 'bower:install', 'concat', 'copy', 'clean:temporary']
   };
