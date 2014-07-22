@@ -1,7 +1,7 @@
 JSJaCJingle.js
 ==============
 
-**JSJaC Jingle library**, implementation of [XEP-0166 (Jingle)](http://xmpp.org/extensions/xep-0166.html). _XMPP videochat in your Web browser!_
+**JSJaC Jingle library**, implementation of [XEP-0166 (Jingle)](http://xmpp.org/extensions/xep-0166.html). _XMPP audio/video chat in your Web browser!_
 
 To be used with JSJaC from Stefan Strigler, available there: https://github.com/sstrigler/JSJaC
 
@@ -84,13 +84,13 @@ We assume your XMPP Web client is using JSJaC and has an active connection, stor
 var single_config_generator = function() {
     // Return single configuration object
     // Refer to single_client.js source for more
-    return {};  
+    return {};
 };
 
 var muji_config_generator = function() {
     // Return muji configuration object
     // Refer to muji_client.js source for more
-    return {};  
+    return {};
 };
 
 // 3. Initiate the listener
