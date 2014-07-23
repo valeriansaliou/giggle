@@ -4,12 +4,6 @@ JSJaCJingle.js Changelog
 Here's the log of what has changed over the JSJaCJingle.js releases.
 
 
-v0.8.0 (Development)
---------------------
-
- * (...)
-
-
 v0.7.3 (Jul 23, 2014)
 ---------------------
 

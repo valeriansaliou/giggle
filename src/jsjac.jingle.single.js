@@ -2441,18 +2441,20 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
          */
         this.get_peer_connection().oniceconnectionstatechange = function(data) {
           switch(this.iceConnectionState) {
+            case JSJAC_JINGLE_ICE_CONNECTION_STATE_CONNECTED:
             case JSJAC_JINGLE_ICE_CONNECTION_STATE_COMPLETED:
-              if(_this.get_last_ice_state() !== JSJAC_JINGLE_ICE_CONNECTION_STATE_COMPLETED) {
+              if(_this.get_last_ice_state() !== JSJAC_JINGLE_ICE_CONNECTION_STATE_CONNECTED) {
                 /* @function */
                 (_this.get_stream_connected()).bind(this)(_this, data);
-                _this._set_last_ice_state(JSJAC_JINGLE_ICE_CONNECTION_STATE_COMPLETED);
+                _this._set_last_ice_state(JSJAC_JINGLE_ICE_CONNECTION_STATE_CONNECTED);
               } break;
 
+            case JSJAC_JINGLE_ICE_CONNECTION_STATE_DISCONNECTED:
             case JSJAC_JINGLE_ICE_CONNECTION_STATE_CLOSED:
-              if(_this.get_last_ice_state() !== JSJAC_JINGLE_ICE_CONNECTION_STATE_CLOSED) {
+              if(_this.get_last_ice_state() !== JSJAC_JINGLE_ICE_CONNECTION_STATE_DISCONNECTED) {
                 /* @function */
                 (_this.get_stream_disconnected()).bind(this)(_this, data);
-                _this._set_last_ice_state(JSJAC_JINGLE_ICE_CONNECTION_STATE_CLOSED);
+                _this._set_last_ice_state(JSJAC_JINGLE_ICE_CONNECTION_STATE_DISCONNECTED);
               } break;
           }
 
