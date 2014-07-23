@@ -42,6 +42,10 @@
  * @property   {Function}  [args.session_terminate_success]  - The terminate success custom handler.
  * @property   {Function}  [args.session_terminate_error]    - The terminate error custom handler.
  * @property   {Function}  [args.session_terminate_request]  - The terminate request custom handler.
+ * @property   {Function}  [args.stream_add]                 - The stream add custom handler.
+ * @property   {Function}  [args.stream_remove]              - The stream remove custom handler.
+ * @property   {Function}  [args.stream_connected]           - The stream connected custom handler.
+ * @property   {Function}  [args.stream_disconnected]        - The stream disconnected custom handler.
  * @property   {DOM}       [args.remote_view]                - The path to the remote stream view element.
  */
 var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
@@ -181,6 +185,38 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
          */
         this._session_terminate_request = args.session_terminate_request;
 
+      if(args && args.stream_add)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._stream_add = args.stream_add;
+
+      if(args && args.stream_remove)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._stream_remove = args.stream_remove;
+
+      if(args && args.stream_connected)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._stream_connected = args.stream_connected;
+
+      if(args && args.stream_disconnected)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._stream_disconnected = args.stream_disconnected;
+
       if(args && args.remote_view)
         /**
          * @member {Object}
@@ -230,6 +266,13 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
        * @private
        */
       this._candidates_queue_remote = {};
+
+      /**
+       * @member {String|Object}
+       * @default
+       * @private
+       */
+      this._last_ice_state = null;
 
       /**
        * @constant
@@ -677,7 +720,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
             /* @function */
             handlers[i](stanza);
           }
-          
+
           this.unregister_handler(JSJAC_JINGLE_STANZA_IQ, type, id);
 
           return;
@@ -1185,7 +1228,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
 
         // Schedule success
         var _this = this;
-        
+
         this.register_handler(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
           /* @function */
           (_this.get_session_initiate_success())(_this, stanza);
@@ -1245,7 +1288,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
 
         // Schedule success
         var _this = this;
-        
+
         this.register_handler(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
           /* @function */
           (_this.get_session_terminate_success())(_this, stanza);
@@ -1335,7 +1378,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
 
         // Schedule success
         var _this = this;
-        
+
         this.register_handler(JSJAC_JINGLE_STANZA_IQ, JSJAC_JINGLE_IQ_TYPE_RESULT, args.id, function(stanza) {
           _this._handle_transport_info_success(stanza);
         });
@@ -1715,7 +1758,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
 
           // Remote description
           var _this = this;
-          
+
           this.get_peer_connection().setRemoteDescription(
             (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
 
@@ -2397,6 +2440,22 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
          * @type {Function}
          */
         this.get_peer_connection().oniceconnectionstatechange = function(data) {
+          switch(this.iceConnectionState) {
+            case JSJAC_JINGLE_ICE_CONNECTION_STATE_COMPLETED:
+              if(_this.get_last_ice_state() !== JSJAC_JINGLE_ICE_CONNECTION_STATE_COMPLETED) {
+                /* @function */
+                (_this.get_stream_connected()).bind(this)(_this, data);
+                _this._set_last_ice_state(JSJAC_JINGLE_ICE_CONNECTION_STATE_COMPLETED);
+              } break;
+
+            case JSJAC_JINGLE_ICE_CONNECTION_STATE_CLOSED:
+              if(_this.get_last_ice_state() !== JSJAC_JINGLE_ICE_CONNECTION_STATE_CLOSED) {
+                /* @function */
+                (_this.get_stream_disconnected()).bind(this)(_this, data);
+                _this._set_last_ice_state(JSJAC_JINGLE_ICE_CONNECTION_STATE_CLOSED);
+              } break;
+          }
+
           _this._peer_connection_callback_oniceconnectionstatechange.bind(this)(_this, data);
         };
 
@@ -2406,6 +2465,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
          * @type {Function}
          */
         this.get_peer_connection().onaddstream = function(data) {
+          /* @function */
+          (_this.get_stream_add()).bind(this)(_this, data);
           _this._peer_connection_callback_onaddstream.bind(this)(_this, data);
         };
 
@@ -2415,6 +2476,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
          * @type {Function}
          */
         this.get_peer_connection().onremovestream = function(data) {
+          /* @function */
+          (_this.get_stream_remove()).bind(this)(_this, data);
           _this._peer_connection_callback_onremovestream.bind(this)(_this, data);
         };
       } catch(e) {
@@ -2627,7 +2690,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
           function(sdp_local) {
             _this._peer_got_description(sdp_local);
           }.bind(this),
-          
+
           this._peer_fail_description.bind(this),
           WEBRTC_CONFIGURATION.create_answer
         );
@@ -2720,7 +2783,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       this._set_remote_stream(null);
 
       // Close the media stream
-      if(this.get_peer_connection()  && 
+      if(this.get_peer_connection()  &&
          (typeof this.get_peer_connection().close == 'function'))
         this.get_peer_connection().close();
 
@@ -2942,6 +3005,54 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     },
 
     /**
+     * Gets the stream add event callback function
+     * @public
+     * @event JSJaCJingleSingle#stream_add
+     * @returns {Function} Callback function
+     */
+    get_stream_add: function() {
+      return this._shortcut_get_handler(
+        this._stream_add
+      );
+    },
+
+    /**
+     * Gets the stream remove event callback function
+     * @public
+     * @event JSJaCJingleSingle#stream_remove
+     * @returns {Function} Callback function
+     */
+    get_stream_remove: function() {
+      return this._shortcut_get_handler(
+        this._stream_remove
+      );
+    },
+
+    /**
+     * Gets the stream connected event callback function
+     * @public
+     * @event JSJaCJingleSingle#stream_connected
+     * @returns {Function} Callback function
+     */
+    get_stream_connected: function() {
+      return this._shortcut_get_handler(
+        this._stream_connected
+      );
+    },
+
+    /**
+     * Gets the stream disconnected event callback function
+     * @public
+     * @event JSJaCJingleSingle#stream_disconnected
+     * @returns {Function} Callback function
+     */
+    get_stream_disconnected: function() {
+      return this._shortcut_get_handler(
+        this._stream_disconnected
+      );
+    },
+
+    /**
      * Gets the prepended ID
      * @public
      * @returns {String} Prepended ID value
@@ -3040,6 +3151,15 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         return (name in this._candidates_queue_remote) ? this._candidates_queue_remote[name] : {};
 
       return this._candidates_queue_remote;
+    },
+
+    /**
+     * Gets the last ICE state value
+     * @public
+     * @returns {String|Object} Last ICE state value
+     */
+    get_last_ice_state: function() {
+      return this._last_ice_state;
     },
 
 
@@ -3193,6 +3313,42 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
     },
 
     /**
+     * Sets the stream add event callback function
+     * @private
+     * @param {Function} stream_add
+     */
+    _set_stream_add: function(stream_add) {
+      this._stream_add = stream_add;
+    },
+
+    /**
+     * Sets the stream remove event callback function
+     * @private
+     * @param {Function} stream_remove
+     */
+    _set_stream_remove: function(stream_remove) {
+      this._stream_remove = stream_remove;
+    },
+
+    /**
+     * Sets the stream connected event callback function
+     * @private
+     * @param {Function} stream_connected
+     */
+    _set_stream_connected: function(stream_connected) {
+      this._stream_connected = stream_connected;
+    },
+
+    /**
+     * Sets the stream disconnected event callback function
+     * @private
+     * @param {Function} stream_disconnected
+     */
+    _set_stream_disconnected: function(stream_disconnected) {
+      this._stream_disconnected = stream_disconnected;
+    },
+
+    /**
      * Sets the termination reason
      * @private
      * @param {String} reason
@@ -3336,7 +3492,7 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
 
         if(!(name in this._candidates_remote))
           this._set_candidates_remote(name, []);
-     
+
         var c, i;
         var candidate_ids = [];
 
@@ -3350,6 +3506,15 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:single] _set_candidates_remote_add > ' + e, 1);
       }
+    },
+
+    /**
+     * Sets the last ICE state value
+     * @private
+     * @param {String|Object} last_ice_state
+     */
+    _set_last_ice_state: function(last_ice_state) {
+      this._last_ice_state = last_ice_state;
     },
   }
 );

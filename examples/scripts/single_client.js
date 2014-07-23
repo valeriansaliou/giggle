@@ -1,8 +1,8 @@
-/* 
+/*
   JSJaCJingle.js Simple Client
 
   @fileoverview Scripts for the Simple client
-  
+
   @url https://github.com/valeriansaliou/jsjac-jingle
   @author Valérian Saliou https://valeriansaliou.name/
   @license Mozilla Public License v2.0 (MPL v2.0)
@@ -179,13 +179,29 @@ var ARGS = {
         $('#fieldset_live').attr('disabled', true);
         $('#live_mute').show();
         $('#live_unmute').hide();
-        
+
         $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
         $('#roster_call').removeClass('disabled');
     },
 
     session_terminate_request: function(_this, stanza) {
         console.log('session_terminate_request');
+    },
+
+    stream_add: function(_this, stanza) {
+        console.log('stream_add');
+    },
+
+    stream_remove: function(_this, stanza) {
+        console.log('stream_remove');
+    },
+
+    stream_connected: function(_this, stanza) {
+        console.log('stream_connected');
+    },
+
+    stream_disconnected: function(_this, stanza) {
+        console.log('stream_disconnected');
     }
 };
 
@@ -249,7 +265,7 @@ $(document).ready(function() {
                         JSJaCJingle.listen({
                             connection: con,
                             debug: (new JSJaCConsoleLogger(4)),
-                            
+
                             single_initiate: function(stanza) {
                                 // Session values
                                 ARGS.to          = stanza.getFrom() || null;
@@ -358,7 +374,7 @@ $(document).ready(function() {
                         alert('presence > ' + e);
                     }
                 });
-                
+
                 // Connect
                 con.connect({
                     username:  jid_obj.getNode(),

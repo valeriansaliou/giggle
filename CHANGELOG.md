@@ -4,10 +4,11 @@ JSJaCJingle.js Changelog
 Here's the log of what has changed over the JSJaCJingle.js releases.
 
 
-v0.8.0 (Development)
---------------------
+v0.7.2 (Jul 23, 2014)
+---------------------
 
- * (...)
+ * **In a nutshell**
+    * **Stream custom handlers** added to JSJaCJingleSingle  @valeriansaliou
 
 
 v0.7.1 (Jul 19, 2014)
