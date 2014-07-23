@@ -1,8 +1,8 @@
-/* 
+/*
   JSJaCJingle.js Simple Client
 
   @fileoverview Scripts for the Multiparty Jingle (Muji) client
-  
+
   @url https://github.com/valeriansaliou/jsjac-jingle
   @author Valérian Saliou https://valeriansaliou.name/
   @license Mozilla Public License v2.0 (MPL v2.0)
@@ -49,9 +49,9 @@ var ARGS = {
 
             // Display message
             chat_messages_sel.append(
-                '<p class="message">' + 
-                    '<b class="name">' + jid_resource.htmlEnc() + '</b>' + 
-                    '<span class="text">' + body.htmlEnc() + '</span>' + 
+                '<p class="message">' +
+                    '<b class="name">' + jid_resource.htmlEnc() + '</b>' +
+                    '<span class="text">' + body.htmlEnc() + '</span>' +
                 '</p>'
             );
 
@@ -126,7 +126,7 @@ var ARGS = {
     room_presence_out: function(_this, stanza) {
         console.log('room_presence_out');
     },
-    
+
     session_prepare_pending: function(_this, stanza) {
         console.log('session_prepare_pending');
 
@@ -135,7 +135,7 @@ var ARGS = {
 
         $('#form_call').find('input, button:not([data-lock])').attr('disabled', true);
     },
-    
+
     session_prepare_success: function(_this, stanza) {
         console.log('session_prepare_success');
 
@@ -144,7 +144,7 @@ var ARGS = {
 
         $('#fieldset_live, #form_invite, #form_invite input, #form_invite button').removeAttr('disabled');
     },
-    
+
     session_prepare_error: function(_this, stanza) {
         console.log('session_prepare_error');
 
@@ -154,14 +154,14 @@ var ARGS = {
         $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
         $('#form_live').find('button').removeAttr('disabled');
     },
-    
+
     session_initiate_pending: function(_this) {
         console.log('session_initiate_pending');
 
         $('.call_notif').hide();
         $('#call_info').text('Initiating...').show();
     },
-    
+
     session_initiate_success: function(_this, stanza) {
         console.log('session_initiate_success');
 
@@ -170,7 +170,7 @@ var ARGS = {
 
         $('#form_live').find('button').removeAttr('disabled');
     },
-    
+
     session_initiate_error: function(_this, stanza) {
         console.log('session_initiate_error');
 
@@ -181,7 +181,7 @@ var ARGS = {
         $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
         $('#form_live').find('button').removeAttr('disabled');
     },
-    
+
     session_leave_pending: function(_this) {
         console.log('session_leave_pending');
 
@@ -191,7 +191,7 @@ var ARGS = {
         $('#form_live').find('button').attr('disabled', true);
         $('#form_invite, #form_invite input, #form_invite button').attr('disabled', true);
     },
-    
+
     session_leave_success: function(_this, stanza) {
         console.log('session_leave_success');
 
@@ -206,7 +206,7 @@ var ARGS = {
         $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
         $('#form_live').find('button').removeAttr('disabled');
     },
-    
+
     session_leave_error: function(_this, stanza) {
         console.log('session_leave_error');
 
@@ -217,99 +217,115 @@ var ARGS = {
         $('#live_mute').show();
         $('#live_unmute').hide();
         $('#chat_messages').empty();
-        
+
         $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
         $('#form_live').find('button').removeAttr('disabled');
     },
-    
+
     participant_prepare: function(_this, stanza) {
         console.log('participant_prepare');
 
         helper_video_load(_this, stanza);
     },
-    
+
     participant_initiate: function(_this, stanza) {
         console.log('participant_initiate');
 
         helper_video_load(_this, stanza);
     },
-    
+
     participant_leave: function(_this, stanza) {
         console.log('participant_leave');
     },
-    
+
     participant_session_initiate_pending: function(_this, session) {
         console.log('participant_session_initiate_pending');
 
         helper_video_load(_this, null, session);
     },
-    
+
     participant_session_initiate_success: function(_this, session, stanza) {
         console.log('participant_session_initiate_success');
     },
-    
+
     participant_session_initiate_error: function(_this, session, stanza) {
         console.log('participant_session_initiate_error');
     },
-    
+
     participant_session_initiate_request: function(_this, session, stanza) {
         console.log('participant_session_initiate_request');
     },
-    
+
     participant_session_accept_pending: function(_this, session) {
         console.log('participant_session_accept_pending');
     },
-    
+
     participant_session_accept_success: function(_this, session, stanza) {
         console.log('participant_session_accept_success');
 
         helper_video_remove(_this, stanza);
     },
-    
+
     participant_session_accept_error: function(_this, session, stanza) {
         console.log('participant_session_accept_error');
     },
-    
+
     participant_session_accept_request: function(_this, session, stanza) {
         console.log('participant_session_accept_request');
     },
-    
+
     participant_session_info_pending: function(_this, session) {
         console.log('participant_session_info_pending');
     },
-    
+
     participant_session_info_success: function(_this, session, stanza) {
         console.log('participant_session_info_success');
     },
-    
+
     participant_session_info_error: function(_this, session, stanza) {
         console.log('participant_session_info_error');
     },
-    
+
     participant_session_info_request: function(_this, session, stanza) {
         console.log('participant_session_info_request');
     },
-    
+
     participant_session_terminate_pending: function(_this, session) {
         console.log('participant_session_terminate_pending');
     },
-    
+
     participant_session_terminate_success: function(_this, session, stanza) {
         console.log('participant_session_terminate_success');
 
         helper_video_stop(_this, stanza);
     },
-    
+
     participant_session_terminate_error: function(_this, session, stanza) {
         console.log('participant_session_terminate_error');
 
         helper_video_stop(_this, stanza);
     },
-    
+
     participant_session_terminate_request: function(_this, session, stanza) {
         console.log('participant_session_terminate_request');
     },
-    
+
+    participant_stream_add: function(_this, session, data) {
+        console.log('participant_stream_add');
+    },
+
+    participant_stream_remove: function(_this, session, data) {
+        console.log('participant_stream_remove');
+    },
+
+    participant_stream_connected: function(_this, session, data) {
+        console.log('participant_stream_connected');
+    },
+
+    participant_stream_disconnected: function(_this, session, data) {
+        console.log('participant_stream_disconnected');
+    },
+
     add_remote_view: function(_this, username, media) {
         console.log('add_remote_view');
 
@@ -322,8 +338,8 @@ var ARGS = {
         if(!container_sel.size()) {
             // NOTE: we can use 'media' parameter to either append an 'audio' or a 'video' element
             container_sel = $(
-                '<div class="video_remote_container">' + 
-                    '<video class="video_remote" src="" alt="" width="320" height="180" poster="./images/video_poster_big.png"></video>' + 
+                '<div class="video_remote_container">' +
+                    '<video class="video_remote" src="" alt="" width="320" height="180" poster="./images/video_poster_big.png"></video>' +
                 '</div>'
             );
 
@@ -349,7 +365,7 @@ var ARGS = {
         // IMPORTANT: return view selector
         return container_sel.find('video.video_remote')[0];
     },
-    
+
     remove_remote_view: function(_this, username) {
         console.log('remove_remote_view');
 
@@ -400,7 +416,7 @@ function helper_video_load(_this, stanza, session) {
         username = helper_get_username(_this, stanza);
     else
         return;
-    
+
     var container_sel = helper_select_video(username);
 
     if(container_sel.size() && !container_sel.find('.load').size()) {
@@ -411,14 +427,14 @@ function helper_video_load(_this, stanza, session) {
 function helper_video_remove(_this, stanza) {
     var username = helper_get_username(_this, stanza);
     var container_sel = helper_select_video(username);
-    
+
     container_sel.find('.load').remove();
 }
 
 function helper_video_stop(_this, stanza) {
     var username = helper_get_username(_this, stanza);
     var container_sel = helper_select_video(username);
-    
+
     container_sel.find('.load').remove();
     if(container_sel.size() && !container_sel.find('.error').size()) {
         container_sel.append('<span class="error"></span>');
@@ -489,13 +505,13 @@ $(document).ready(function() {
                             muji_invite: function(stanza, args) {
                                 console.log('muji_invite');
 
-                                var prompt_text = 'Invite to multiparty ' + args.media + ' call received.\n' + 
-                                                  '\n' + 
-                                                  'From: ' + args.from + '\n' + 
-                                                  'Room: ' + args.jid + '\n' + 
-                                                  'Reason: ' + (args.reason || '[none]') + '\n' + 
-                                                  'Password: ' + (args.password || '[none]') + '\n' + 
-                                                  '\n' + 
+                                var prompt_text = 'Invite to multiparty ' + args.media + ' call received.\n' +
+                                                  '\n' +
+                                                  'From: ' + args.from + '\n' +
+                                                  'Room: ' + args.jid + '\n' +
+                                                  'Reason: ' + (args.reason || '[none]') + '\n' +
+                                                  'Password: ' + (args.password || '[none]') + '\n' +
+                                                  '\n' +
                                                   'Accept?';
 
                                 // Prompt user

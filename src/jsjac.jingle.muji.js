@@ -61,6 +61,10 @@
  * @property   {Function}  [args.participant_session_terminate_success]  - The participant session terminate success custom handler.
  * @property   {Function}  [args.participant_session_terminate_error]    - The participant session terminate error custom handler.
  * @property   {Function}  [args.participant_session_terminate_request]  - The participant session terminate request custom handler.
+ * @property   {Function}  [args.participant_stream_add]                 - The participant stream add custom handler.
+ * @property   {Function}  [args.participant_stream_remove]              - The participant stream remove custom handler.
+ * @property   {Function}  [args.participant_stream_connected]           - The participant stream connected custom handler.
+ * @property   {Function}  [args.participant_stream_disconnected]        - The participant stream disconnected custom handler.
  * @property   {Function}  [args.add_remote_view]                        - The remote view media add (audio/video) custom handler.
  * @property   {Function}  [args.remove_remote_view]                     - The remote view media removal (audio/video) custom handler.
  */
@@ -328,6 +332,38 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
          * @private
          */
         this._participant_session_terminate_request = args.participant_session_terminate_request;
+
+      if(args && args.participant_stream_add)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_stream_add = args.participant_stream_add;
+
+      if(args && args.participant_stream_remove)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_stream_remove = args.participant_stream_remove;
+
+      if(args && args.participant_stream_connected)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_stream_connected = args.participant_stream_connected;
+
+      if(args && args.participant_stream_disconnected)
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._participant_stream_disconnected = args.participant_stream_disconnected;
 
       if(args && args.add_remote_view)
         /**
@@ -1102,7 +1138,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
           x_invite.setAttribute('password', this.get_password());
 
         stanza.getNode().appendChild(x_invite);
-        
+
         stanza.appendNode('x', {
           'media': this.get_media(),
           'xmlns': NS_MUJI_INVITE
@@ -1951,6 +1987,78 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       }
     },
 
+    /**
+     * Handles the stream add event
+     * @private
+     * @event JSJaCJingleMuji#_handle_participant_stream_add
+     * @param {JSJaCJingleSingle} session
+     * @param {MediaStreamEvent} data
+     */
+    _handle_participant_stream_add: function(session, data) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_stream_add', 4);
+
+      try {
+        /* @function */
+        (this.get_participant_stream_add())(this, session, data);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_stream_add > ' + e, 1);
+      }
+    },
+
+    /**
+     * Handles the stream remove event
+     * @private
+     * @event JSJaCJingleMuji#_handle_participant_stream_remove
+     * @param {JSJaCJingleSingle} session
+     * @param {MediaStreamEvent} data
+     */
+    _handle_participant_stream_remove: function(session, data) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_stream_remove', 4);
+
+      try {
+        /* @function */
+        (this.get_participant_stream_remove())(this, session, data);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_stream_remove > ' + e, 1);
+      }
+    },
+
+    /**
+     * Handles the stream connected event
+     * @private
+     * @event JSJaCJingleMuji#_handle_participant_stream_connected
+     * @param {JSJaCJingleSingle} session
+     * @param {MediaStreamEvent} data
+     */
+    _handle_participant_stream_connected: function(session, data) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_stream_connected', 4);
+
+      try {
+        /* @function */
+        (this.get_participant_stream_connected())(this, session, data);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_stream_connected > ' + e, 1);
+      }
+    },
+
+    /**
+     * Handles the stream disconnected event
+     * @private
+     * @event JSJaCJingleMuji#_handle_participant_stream_disconnected
+     * @param {JSJaCJingleSingle} session
+     * @param {MediaStreamEvent} data
+     */
+    _handle_participant_stream_disconnected: function(session, data) {
+      this.get_debug().log('[JSJaCJingle:muji] _handle_participant_stream_disconnected', 4);
+
+      try {
+        /* @function */
+        (this.get_participant_stream_disconnected())(this, session, data);
+      } catch(e) {
+        this.get_debug().log('[JSJaCJingle:muji] _handle_participant_stream_disconnected > ' + e, 1);
+      }
+    },
+
 
 
     /**
@@ -2169,7 +2277,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
       this._set_local_stream(null);
 
       // Close the media stream
-      if(this.get_peer_connection()  && 
+      if(this.get_peer_connection()  &&
          (typeof this.get_peer_connection().close == 'function'))
         this.get_peer_connection().close();
 
@@ -2247,7 +2355,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     _shortcut_participant_view: function(username) {
       if((this.get_participants(username) || {}).view)
         return this.get_participants(username).view;
-      
+
       return this.get_add_remote_view()(this, username, this.get_media());
     },
 
@@ -2472,6 +2580,11 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
         args.session_terminate_success  = this._handle_participant_session_terminate_success.bind(this);
         args.session_terminate_error    = this._handle_participant_session_terminate_error.bind(this);
         args.session_terminate_request  = this._handle_participant_session_terminate_request.bind(this);
+
+        args.stream_add                 = this._handle_participant_stream_add.bind(this);
+        args.stream_remove              = this._handle_participant_stream_remove.bind(this);
+        args.stream_connected           = this._handle_participant_stream_connected.bind(this);
+        args.stream_disconnected        = this._handle_participant_stream_disconnected.bind(this);
       } catch(e) {
         this.get_debug().log('[JSJaCJingle:muji] _generate_participant_session_args > ' + e, 1);
       } finally {
@@ -2520,7 +2633,7 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     _receive_autoconfigure_room_password: function(stanza) {
       try {
         var parse_obj = this._parse_autoconfigure_room_password(stanza);
-        
+
         this._set_password(parse_obj.password);
 
         if(parse_obj.password != parse_obj.old_password) {
@@ -3053,6 +3166,54 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
     },
 
     /**
+     * Gets the participant stream add event callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_stream_add
+     * @returns {Function} Participant stream add event callback function
+     */
+    get_participant_stream_add: function() {
+      return this._shortcut_get_handler(
+        this._participant_stream_add
+      );
+    },
+
+    /**
+     * Gets the participant stream remove event callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_stream_remove
+     * @returns {Function} Participant stream remove event callback function
+     */
+    get_participant_stream_remove: function() {
+      return this._shortcut_get_handler(
+        this._participant_stream_remove
+      );
+    },
+
+    /**
+     * Gets the participant stream connected event callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_stream_connected
+     * @returns {Function} Participant stream connected event callback function
+     */
+    get_participant_stream_connected: function() {
+      return this._shortcut_get_handler(
+        this._participant_stream_connected
+      );
+    },
+
+    /**
+     * Gets the participant stream disconnected event callback function
+     * @public
+     * @event JSJaCJingleMuji#get_participant_stream_disconnected
+     * @returns {Function} Participant stream disconnected event callback function
+     */
+    get_participant_stream_disconnected: function() {
+      return this._shortcut_get_handler(
+        this._participant_stream_disconnected
+      );
+    },
+
+    /**
      * Gets the remote view add callback function
      * @public
      * @event JSJaCJingleMuji#get_add_remote_view
@@ -3431,6 +3592,42 @@ var JSJaCJingleMuji = ring.create([__JSJaCJingleBase],
      */
     _set_participant_session_terminate_request: function(participant_session_terminate_request) {
       this._participant_session_terminate_request = participant_session_terminate_request;
+    },
+
+    /**
+     * Sets the participant stream add event callback function
+     * @private
+     * @param {Function} participant_stream_add
+     */
+    _set_participant_stream_add: function(participant_stream_add) {
+      this._participant_stream_add = participant_stream_add;
+    },
+
+    /**
+     * Sets the participant stream remove event callback function
+     * @private
+     * @param {Function} participant_stream_remove
+     */
+    _set_participant_stream_remove: function(participant_stream_remove) {
+      this._participant_stream_remove = participant_stream_remove;
+    },
+
+    /**
+     * Sets the participant stream connected event callback function
+     * @private
+     * @param {Function} participant_stream_connected
+     */
+    _set_participant_stream_connected: function(participant_stream_connected) {
+      this._participant_stream_connected = participant_stream_connected;
+    },
+
+    /**
+     * Sets the participant stream disconnected event callback function
+     * @private
+     * @param {Function} participant_stream_disconnected
+     */
+    _set_participant_stream_disconnected: function(participant_stream_disconnected) {
+      this._participant_stream_disconnected = participant_stream_disconnected;
     },
 
     /**
