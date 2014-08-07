@@ -4,10 +4,11 @@ JSJaCJingle.js Changelog
 Here's the log of what has changed over the JSJaCJingle.js releases.
 
 
-v0.8.0 (Development)
+v0.7.4 (Aug 7, 2014)
 --------------------
 
- * (...)
+ * **In a nutshell**
+    * **NodeJS dependencies updated** (fixes broken installer)  @valeriansaliou
 
 
 v0.7.3 (Jul 23, 2014)
