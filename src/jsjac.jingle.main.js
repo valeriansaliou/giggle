@@ -173,7 +173,7 @@ var JSJaCJingle = new (ring.create(
           if(jingle && !JSJAC_JINGLE_AVAILABLE) {
             JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Dropped Jingle packet (WebRTC not available).', 0);
 
-            (new JSJaCJingleSingle({ to: from })).send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
+            (new JSJaCJingleSingle({ to: from }))._send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
           } else if(is_muji) {
             var username, participant;
 
@@ -197,7 +197,7 @@ var JSJaCJingle = new (ring.create(
               } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
                 JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Muji participant session route (sid: ' + sid + ').', 0);
 
-                (new JSJaCJingleSingle({ to: from })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+                (new JSJaCJingleSingle({ to: from }))._send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
               }
             } else if(sid) {
               if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE) {
@@ -207,7 +207,7 @@ var JSJaCJingle = new (ring.create(
               } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
                 JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Muji participant session (sid: ' + sid + ').', 0);
 
-                (new JSJaCJingleSingle({ to: from })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+                (new JSJaCJingleSingle({ to: from }))._send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
               }
             }
           } else if(is_single) {
@@ -226,7 +226,7 @@ var JSJaCJingle = new (ring.create(
               } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
                 JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Jingle session (sid: ' + sid + ').', 0);
 
-                (new JSJaCJingleSingle({ to: from })).send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+                (new JSJaCJingleSingle({ to: from }))._send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
               }
             }
           } else {
