@@ -631,9 +631,9 @@ var JSJaCJingleSDP = ring.create(
           constraints = this.parent.utils.generate_constraints();
 
           // Still nothing?!
-          if(typeof constraints.video                     !== 'object'  || 
-             typeof constraints.video.mandatory           !== 'object'  || 
-             typeof constraints.video.mandatory.minWidth  !== 'number'  || 
+          if(typeof constraints.video                     !== 'object'  ||
+             typeof constraints.video.mandatory           !== 'object'  ||
+             typeof constraints.video.mandatory.minWidth  !== 'number'  ||
              typeof constraints.video.mandatory.minHeight !== 'number'  ) {
             this.parent.get_debug().log('[JSJaCJingle:sdp] _resolution_payload > Could not get local video resolution (not sending it).', 1);
             return payload;
@@ -690,7 +690,7 @@ var JSJaCJingleSDP = ring.create(
         if(!sdp_candidate)  return candidate;
 
         var error     = 0;
-        var matches   = R_WEBRTC_SDP_CANDIDATE.exec(sdp_candidate);
+        var matches   = R_WEBRTC_DATA_CANDIDATE.exec(sdp_candidate);
 
         // Matches!
         if(matches) {
@@ -729,15 +729,16 @@ var JSJaCJingleSDP = ring.create(
 
       // Convert SDP raw data to an object
       var candidate_obj   = this._parse_candidate(candidate_data);
+      var candidate_name  = this.parent.utils.name_generate(candidate_media);
 
       this.parent._set_candidates_local(
-        this.parent.utils.name_generate(candidate_media),
+        candidate_name,
         candidate_obj
       );
 
       // Enqueue candidate
       this.parent._set_candidates_queue_local(
-        this.parent.utils.name_generate(candidate_media),
+        candidate_name,
         candidate_obj
       );
     },
@@ -764,7 +765,7 @@ var JSJaCJingleSDP = ring.create(
      * @param {Object} candidates
      * @returns {Object} SDP object
      */
-    _generate: function(type, group, payloads, candidates) {    
+    _generate: function(type, group, payloads, candidates) {
       try {
         var sdp_obj = {};
 
@@ -867,7 +868,7 @@ var JSJaCJingleSDP = ring.create(
      * @param {Object} sdp_candidates
      * @returns {Object} SDP description payloads
      */
-    _generate_description: function(type, group, payloads, sdp_candidates) {    
+    _generate_description: function(type, group, payloads, sdp_candidates) {
       var payloads_obj = {};
 
       try {
@@ -971,16 +972,16 @@ var JSJaCJingleSDP = ring.create(
           );
           payloads_str += WEBRTC_SDP_LINE_BREAK;
 
-          payloads_str += 'c=' + 
-                          cur_network_obj.scope + ' ' + 
-                          cur_network_obj.protocol + ' ' + 
+          payloads_str += 'c=' +
+                          cur_network_obj.scope + ' ' +
+                          cur_network_obj.protocol + ' ' +
                           cur_network_obj.ip;
           payloads_str += WEBRTC_SDP_LINE_BREAK;
 
-          payloads_str += 'a=rtcp:' + 
-                          cur_network_obj.port + ' ' + 
-                          cur_network_obj.scope + ' ' + 
-                          cur_network_obj.protocol + ' ' + 
+          payloads_str += 'a=rtcp:' +
+                          cur_network_obj.port + ' ' +
+                          cur_network_obj.scope + ' ' +
+                          cur_network_obj.protocol + ' ' +
                           cur_network_obj.ip;
           payloads_str += WEBRTC_SDP_LINE_BREAK;
 
@@ -1041,10 +1042,10 @@ var JSJaCJingleSDP = ring.create(
             for(j in cur_d_encryption.crypto) {
               cur_d_crypto_obj = cur_d_encryption.crypto[j];
 
-              payloads_str += 'a=crypto:'                       + 
-                              cur_d_crypto_obj.tag           + ' ' + 
-                              cur_d_crypto_obj['crypto-suite']  + ' ' + 
-                              cur_d_crypto_obj['key-params']    + 
+              payloads_str += 'a=crypto:'                       +
+                              cur_d_crypto_obj.tag           + ' ' +
+                              cur_d_crypto_obj['crypto-suite']  + ' ' +
+                              cur_d_crypto_obj['key-params']    +
                               (cur_d_crypto_obj['session-params'] ? (' ' + cur_d_crypto_obj['session-params']) : '');
 
               payloads_str += WEBRTC_SDP_LINE_BREAK;
@@ -1054,8 +1055,8 @@ var JSJaCJingleSDP = ring.create(
             for(p in cur_d_encryption['zrtp-hash']) {
               cur_d_zrtp_hash_obj = cur_d_encryption['zrtp-hash'][p];
 
-              payloads_str += 'a=zrtp-hash:'                  + 
-                              cur_d_zrtp_hash_obj.version  + ' ' + 
+              payloads_str += 'a=zrtp-hash:'                  +
+                              cur_d_zrtp_hash_obj.version  + ' ' +
                               cur_d_zrtp_hash_obj.value;
 
               payloads_str += WEBRTC_SDP_LINE_BREAK;
@@ -1224,7 +1225,7 @@ var JSJaCJingleSDP = ring.create(
      * @private
      * @returns {String} SDP origin raw text
      */
-    _generate_origin: function() {    
+    _generate_origin: function() {
       var sdp_origin = '';
 
       try {
@@ -1279,7 +1280,7 @@ var JSJaCJingleSDP = ring.create(
      * @param {Object} fingerprint
      * @returns {String} SDP credentials raw text
      */
-    _generate_credentials: function(ufrag, pwd, fingerprint) {    
+    _generate_credentials: function(ufrag, pwd, fingerprint) {
       var sdp = '';
 
       // ICE credentials
@@ -1307,7 +1308,7 @@ var JSJaCJingleSDP = ring.create(
      * @param {Array} payload
      * @returns {String} SDP media raw text
      */
-    _generate_description_media: function(media, port, crypto, fingerprint, payload) {    
+    _generate_description_media: function(media, port, crypto, fingerprint, payload) {
       var sdp_media = '';
 
       try {

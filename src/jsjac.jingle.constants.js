@@ -138,7 +138,27 @@ var WEBRTC_SDP_TYPE_ANSWER     = 'answer';
  * @default
  * @public
  */
-var R_WEBRTC_SDP_CANDIDATE     = /^a=candidate:(\w{1,32}) (\d{1,5}) (udp|tcp) (\d{1,10}) ([a-zA-Z0-9:\.]{1,45}) (\d{1,5}) (typ) (host|srflx|prflx|relay)( (raddr) ([a-zA-Z0-9:\.]{1,45}) (rport) (\d{1,5}))?( (generation) (\d))?/i;
+var R_WEBRTC_SHORT_CANDIDATE   = 'candidate:(\\w{1,32}) (\\d{1,5}) (udp|tcp) (\\d{1,10}) ([a-zA-Z0-9:\\.]{1,45}) (\\d{1,5}) (typ) (host|srflx|prflx|relay)( (raddr) ([a-zA-Z0-9:\\.]{1,45}) (rport) (\\d{1,5}))?( (generation) (\\d))?';
+
+/**
+ * @constant
+ * @global
+ * @type {RegExp}
+ * @readonly
+ * @default
+ * @public
+ */
+var R_WEBRTC_DATA_CANDIDATE    = new RegExp('^(?:a=)?' + R_WEBRTC_SHORT_CANDIDATE, 'i');
+
+/**
+ * @constant
+ * @global
+ * @type {RegExp}
+ * @readonly
+ * @default
+ * @public
+ */
+var R_WEBRTC_SDP_CANDIDATE     = new RegExp('^a=' + R_WEBRTC_SHORT_CANDIDATE, 'i');
 
 /**
  * @constant
