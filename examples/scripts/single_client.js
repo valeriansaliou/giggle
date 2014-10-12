@@ -11,6 +11,11 @@
 var SC_CONNECTED = false;
 var SC_PRESENCE = {};
 
+var CALL_AUTO_ACCEPT = {
+    'from' : null,
+    'sid'  : null
+};
+
 var JINGLE = null;
 
 var ARGS = {
@@ -71,7 +76,9 @@ var ARGS = {
                 _this.info(JSJAC_JINGLE_SESSION_INFO_RINGING);
 
                 // Request for Jingle session to be accepted
-                if(confirm("Incoming call from " + _this.utils.stanza_from(stanza) + "\n\nAccept?")) {
+                // Note: auto-accept if we previously accepted the associated broadcast request
+                if((CALL_AUTO_ACCEPT.from == _this.get_to() && CALL_AUTO_ACCEPT.sid == _this.get_sid())  ||
+                   confirm("Incoming call from " + _this.utils.stanza_from(stanza) + "\n\nAccept?")) {
                     $('#form_call input[name="call_jid"]').val(_this.get_to());
                     _this.accept();
                 } else {
@@ -275,6 +282,79 @@ $(document).ready(function() {
                                 // Let's go!
                                 JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
                                 JINGLE.handle(stanza);
+                            },
+
+                            single_prepare: function(stanza, proposed_medias) {
+                                var stanza_from = stanza.getFrom() || null;
+                                var call_id = JSJaCJingleBroadcast.get_call_id(stanza);
+
+                                // Request for Jingle session to be accepted
+                                if(stanza_from && call_id) {
+                                    var call_media_main = 'audio';
+
+                                    if(JSJAC_JINGLE_MEDIA_VIDEO in proposed_medias) {
+                                        call_media_main = 'video';
+                                    }
+
+                                    if(confirm("Incoming " + call_media_main + " call from " + stanza_from + "\n\nAccept?")) {
+                                        $('#form_call input[name="call_jid"]').val(stanza_from);
+
+                                        $('.call_notif').hide();
+                                        $('#call_info').text('Waiting for call initiation...').show();
+
+                                        JSJaCJingleBroadcast.accept(stanza_from, call_id, proposed_medias);
+
+                                        // Marker to auto-accept call later
+                                        CALL_AUTO_ACCEPT.from = stanza_from;
+                                        CALL_AUTO_ACCEPT.sid = call_id;
+                                    } else {
+                                        JSJaCJingleBroadcast.reject(stanza_from, call_id, proposed_medias);
+                                    }
+                                }
+                            },
+
+                            single_proceed: function(stanza) {
+                                $('.call_notif').hide();
+                                $('#call_info').text('Call accepted. Proceeding...').show();
+
+                                // Read broadcast parameters
+                                // Important: access ID-related data there as it will be unset right after
+                                var call_to = stanza.getFrom() || null;
+                                var call_id = JSJaCJingleBroadcast.get_call_id(stanza);
+                                var call_medias = JSJaCJingleBroadcast.get_call_medias(call_id);
+
+                                // Wait 1 second for message visibility purposes
+                                setTimeout(function() {
+                                    // Check medias to include
+                                    var has_media_video = false;
+
+                                    for(var i = 0; i < call_medias.length; i++) {
+                                        if(call_medias[i] === JSJAC_JINGLE_MEDIA_VIDEO) {
+                                            has_media_video = true;
+                                            break;
+                                        }
+                                    }
+
+                                    // Session values
+                                    ARGS.to           = call_to;
+                                    ARGS.sid          = call_id;
+                                    ARGS.media        = has_media_video ? JSJAC_JINGLE_MEDIA_VIDEO : JSJAC_JINGLE_MEDIA_AUDIO;
+                                    ARGS.video_source = JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
+                                    ARGS.local_view   = $('#video_local')[0];
+                                    ARGS.remote_view  = $('#video_remote')[0];
+
+                                    // Let's go!
+                                    JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
+                                    JINGLE.initiate();
+                                }, 1000);
+                            },
+
+                            single_reject: function(stanza) {
+                                $('.call_notif').hide();
+                                $('#call_info').text('Call rejected.').show();
+
+                                $('#form_live').find('button').removeAttr('disabled');
+                                $('#fieldset_live').removeAttr('disabled');
                             }
                         });
                     } catch(e) {
@@ -405,31 +485,64 @@ $(document).ready(function() {
 
     $('#form_call').submit(function() {
         try {
+            var this_sel = $(this);
+
             if(!SC_CONNECTED) return false;
 
             $('#roster_call').addClass('disabled');
 
             $('.call_notif').hide();
 
-            var call_jid  = $(this).find('input[name="call_jid"]').val().trim();
+            var call_jid  = this_sel.find('input[name="call_jid"]').val().trim();
 
             // Any JID defined?
             if(call_jid) {
-                $('#call_info').text('Launching...').show();
+                var call_bare = this_sel.find('input[name="call_bare"]').is(':checked') && true;
 
-                try {
-                    // Session values
-                    ARGS.to           = call_jid;
-                    ARGS.media        = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
-                    ARGS.video_source = (submit_target == 'call_screen') ? JSJAC_JINGLE_VIDEO_SOURCE_SCREEN : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
-                    ARGS.local_view   = $('#video_local')[0];
-                    ARGS.remote_view  = $('#video_remote')[0];
+                if(call_bare === true) {
+                    // Call all resources
+                    $('.call_notif').hide();
+                    $('#call_info').text('Proposing call to all resources...').show();
 
-                    // Let's go!
-                    JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
-                    JINGLE.initiate();
-                } catch(e) {
-                    alert('jingle > ' + e);
+                    $('#form_call').find('input, button:not([data-lock])').attr('disabled', true);
+                    $('#roster_call').addClass('disabled');
+
+                    var jid_obj = new JSJaCJID(call_jid);
+                    var medias = [JSJAC_JINGLE_MEDIA_AUDIO];
+
+                    if(submit_target == 'call_video') {
+                        medias.push(JSJAC_JINGLE_MEDIA_VIDEO);
+                    }
+
+                    JSJaCJingleBroadcast.propose(
+                        jid_obj.getBareJID(), medias,
+
+                        function() {
+                            // Timeout callback
+                            $('#call_info').text('The other party did not answer.').show();
+
+                            $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
+                            $('#roster_call').removeClass('disabled');
+                        }
+                    );
+                } else {
+                    // Direct call
+                    $('#call_info').text('Launching...').show();
+
+                    try {
+                        // Session values
+                        ARGS.to           = call_jid;
+                        ARGS.media        = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
+                        ARGS.video_source = (submit_target == 'call_screen') ? JSJAC_JINGLE_VIDEO_SOURCE_SCREEN : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
+                        ARGS.local_view   = $('#video_local')[0];
+                        ARGS.remote_view  = $('#video_remote')[0];
+
+                        // Let's go!
+                        JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
+                        JINGLE.initiate();
+                    } catch(e) {
+                        alert('jingle > ' + e);
+                    }
                 }
             } else {
                 $('#call_error').text('Please fill the form.').show();

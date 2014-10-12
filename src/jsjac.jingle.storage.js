@@ -48,11 +48,39 @@ var JSJaCJingleStorage = new (ring.create(
       this._sessions[JSJAC_JINGLE_SESSION_MUJI]    = {};
 
       /**
+       * @type {Object}
+       * @default
+       * @private
+       */
+      this._broadcast_ids                          = {};
+
+      /**
        * @type {Function}
        * @default
        * @private
        */
       this._single_initiate = undefined;
+
+      /**
+       * @type {Function}
+       * @default
+       * @private
+       */
+      this._single_prepare = undefined;
+
+      /**
+       * @type {Function}
+       * @default
+       * @private
+       */
+      this._single_proceed = undefined;
+
+      /**
+       * @type {Function}
+       * @default
+       * @private
+       */
+      this._single_reject = undefined;
 
       /**
        * @type {Function}
@@ -114,7 +142,7 @@ var JSJaCJingleStorage = new (ring.create(
 
 
     /**
-     * JSJSAC JINGLE GETTERS
+     * JSJSAC JINGLE STORAGE GETTERS
      */
 
     /**
@@ -136,6 +164,18 @@ var JSJaCJingleStorage = new (ring.create(
     },
 
     /**
+     * Gets the broadcast_ids storage
+     * @public
+     * @returns {Object} Broadcast ID medias
+     */
+    get_broadcast_ids: function(id) {
+      if(id in this._broadcast_ids)
+        return this._broadcast_ids[id];
+
+      return null;
+    },
+
+    /**
      * Gets the Single initiate function
      * @public
      * @returns {Function} Single initiate
@@ -154,6 +194,42 @@ var JSJaCJingleStorage = new (ring.create(
      */
     get_single_initiate_raw: function() {
       return this._single_initiate;
+    },
+
+    /**
+     * Gets the Single prepare function
+     * @public
+     * @returns {Function} Single prepare
+     */
+    get_single_prepare: function() {
+      if(typeof this._single_prepare == 'function')
+        return this._single_prepare;
+
+      return function(stanza) {};
+    },
+
+    /**
+     * Gets the Single proceed function
+     * @public
+     * @returns {Function} Single proceed
+     */
+    get_single_proceed: function() {
+      if(typeof this._single_proceed == 'function')
+        return this._single_proceed;
+
+      return function(stanza) {};
+    },
+
+    /**
+     * Gets the Single reject function
+     * @public
+     * @returns {Function} Single reject
+     */
+    get_single_reject: function() {
+      if(typeof this._single_reject == 'function')
+        return this._single_reject;
+
+      return function(stanza) {};
     },
 
     /**
@@ -225,7 +301,7 @@ var JSJaCJingleStorage = new (ring.create(
 
 
     /**
-     * JSJSAC JINGLE SETTERS
+     * JSJSAC JINGLE STORAGE SETTERS
      */
 
     /**
@@ -247,12 +323,53 @@ var JSJaCJingleStorage = new (ring.create(
     },
 
     /**
+     * Sets the broadcast IDs storage
+     * @public
+     * @param {String} id
+     * @param {Object} medias
+     * @param {Boolean} [proceed_unset]
+     */
+    set_broadcast_ids: function(id, medias, proceed_unset) {
+      this._broadcast_ids[id] = medias;
+
+      if(proceed_unset === true && id in this._broadcast_ids)
+        delete this._broadcast_ids[id];
+    },
+
+    /**
      * Sets the Single initiate function
      * @public
      * @param {Function} Single initiate
      */
     set_single_initiate: function(single_initiate) {
       this._single_initiate = single_initiate;
+    },
+
+    /**
+     * Sets the Single prepare function
+     * @public
+     * @param {Function} Single prepare
+     */
+    set_single_prepare: function(single_prepare) {
+      this._single_prepare = single_prepare;
+    },
+
+    /**
+     * Sets the Single proceed function
+     * @public
+     * @param {Function} Single proceed
+     */
+    set_single_proceed: function(single_proceed) {
+      this._single_proceed = single_proceed;
+    },
+
+    /**
+     * Sets the Single reject function
+     * @public
+     * @param {Function} Single reject
+     */
+    set_single_reject: function(single_reject) {
+      this._single_reject = single_reject;
     },
 
     /**

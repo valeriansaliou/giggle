@@ -42,6 +42,7 @@ module.exports = function(grunt) {
     'src/jsjac.jingle.base.js',
     'src/jsjac.jingle.single.js',
     'src/jsjac.jingle.muji.js',
+    'src/jsjac.jingle.broadcast.js',
     'src/jsjac.jingle.init.js',
     'src/jsjac.jingle.main.js'
   ];

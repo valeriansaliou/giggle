@@ -47,6 +47,7 @@
  * @property   {Function}  [args.stream_connected]           - The stream connected custom handler.
  * @property   {Function}  [args.stream_disconnected]        - The stream disconnected custom handler.
  * @property   {DOM}       [args.remote_view]                - The path to the remote stream view element.
+ * @property   {DOM}       [args.sid]                        - The session ID (forced).
  */
 var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
   /** @lends JSJaCJingleSingle.prototype */
@@ -225,6 +226,14 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
          */
         this._remote_view = [args.remote_view];
 
+      if(args && args.sid)
+        /**
+         * @member {String}
+         * @default
+         * @private
+         */
+        this._sid = [args.sid];
+
       /**
        * @member {Object}
        * @default
@@ -342,7 +351,8 @@ var JSJaCJingleSingle = ring.create([__JSJaCJingleBase],
         this._set_status(JSJAC_JINGLE_STATUS_INITIATING);
 
         // Set session values
-        this._set_sid(this.utils.generate_sid());
+        if(!this.get_sid())  this._set_sid(this.utils.generate_sid());
+
         this._set_initiator(this.utils.connection_jid());
         this._set_responder(this.get_to());
 

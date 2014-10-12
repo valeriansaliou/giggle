@@ -1,4 +1,4 @@
-/* 
+/*
   JSJaCJingle.js Simple Client
 
   @fileoverview Stylesheet for the Simple client
@@ -7,6 +7,17 @@
   @author Valérian Saliou https://valeriansaliou.name/
   @license Mozilla Public License v2.0 (MPL v2.0)
  */
+
+#fieldset_call label.call_bare {
+  padding-top: 20px;
+  cursor: pointer;
+}
+
+#fieldset_call label.call_bare input {
+    width: auto;
+    padding: 0;
+    margin-right: 4px;
+}
 
 .video_container {
     width: 642px;

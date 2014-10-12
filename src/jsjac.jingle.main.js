@@ -62,6 +62,7 @@ var JSJaCJingle = new (ring.create(
      * @param     {Object}           [args]
      * @property  {JSJaCConnection}  [args.connection]       - The connection to be attached to.
      * @property  {Function}         [args.single_initiate]  - The Jingle session initiate request custom handler.
+     * @property  {Function}         [args.single_prepare]   - The Jingle session prepare request custom handler.
      * @property  {Function}         [args.muji_invite]      - The Muji session invite message custom handler.
      * @property  {JSJaCDebugger}    [args.debug]            - A reference to a debugger implementing the JSJaCDebugger interface.
      * @property  {Boolean}          [args.extdisco]         - Whether or not to discover external services as per XEP-0215.
@@ -76,6 +77,12 @@ var JSJaCJingle = new (ring.create(
           JSJaCJingleStorage.set_connection(args.connection);
         if(args && args.single_initiate)
           JSJaCJingleStorage.set_single_initiate(args.single_initiate);
+        if(args && args.single_prepare)
+          JSJaCJingleStorage.set_single_prepare(args.single_prepare);
+        if(args && args.single_proceed)
+          JSJaCJingleStorage.set_single_proceed(args.single_proceed);
+        if(args && args.single_reject)
+          JSJaCJingleStorage.set_single_reject(args.single_reject);
         if(args && args.muji_invite)
           JSJaCJingleStorage.set_muji_invite(args.muji_invite);
         if(args && args.debug)
@@ -245,47 +252,56 @@ var JSJaCJingle = new (ring.create(
      */
     _route_message: function(stanza) {
       try {
-        // Muji?
         var from = stanza.getFrom();
 
         if(from) {
           var jid = new JSJaCJID(from);
-          var room = jid.getNode() + '@' + jid.getDomain();
 
-          var session_route = this._read(JSJAC_JINGLE_SESSION_MUJI, room);
+          // Broadcast message?
+          var is_handled_broadcast = JSJaCJingleBroadcast.handle(stanza);
 
-          var x_conference = stanza.getChild('x', NS_JABBER_CONFERENCE);
-          var x_invite = stanza.getChild('x', NS_MUJI_INVITE);
+          if(is_handled_broadcast === true) {
+            // XEP-0353: Jingle Message Initiation
+            // Nothing to do there.
+          } else {
+            // Muji?
+            var room = jid.getNode() + '@' + jid.getDomain();
 
-          var is_invite = (x_conference && x_invite && true);
+            var session_route = this._read(JSJAC_JINGLE_SESSION_MUJI, room);
 
-          if(is_invite === true) {
-            if(session_route === null) {
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Muji invite received (room: ' + room + ').', 2);
+            var x_conference = stanza.getChild('x', NS_JABBER_CONFERENCE);
+            var x_invite = stanza.getChild('x', NS_MUJI_INVITE);
 
-              // Read invite data
-              var err = 0;
-              var args = {
-                from     : (from                                   || err++),
-                jid      : (x_conference.getAttribute('jid')       || err++),
-                password : (x_conference.getAttribute('password')  || null),
-                reason   : (x_conference.getAttribute('reason')    || null),
-                media    : (x_invite.getAttribute('media')         || err++)
-              };
+            var is_invite = (x_conference && x_invite && true);
 
-              if(err === 0) {
-                JSJaCJingleStorage.get_muji_invite()(stanza, args);
+            if(is_invite === true) {
+              if(session_route === null) {
+                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Muji invite received (room: ' + room + ').', 2);
+
+                // Read invite data
+                var err = 0;
+                var args = {
+                  from     : (from                                   || err++),
+                  jid      : (x_conference.getAttribute('jid')       || err++),
+                  password : (x_conference.getAttribute('password')  || null),
+                  reason   : (x_conference.getAttribute('reason')    || null),
+                  media    : (x_invite.getAttribute('media')         || err++)
+                };
+
+                if(err === 0) {
+                  JSJaCJingleStorage.get_muji_invite()(stanza, args);
+                } else {
+                  JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Dropped invite because incomplete (room: ' + room + ').', 0);
+                }
               } else {
-                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Dropped invite because incomplete (room: ' + room + ').', 0);
+                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Dropped invite because Muji already joined (room: ' + room + ').', 0);
               }
             } else {
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Dropped invite because Muji already joined (room: ' + room + ').', 0);
-            }
-          } else {
-            if(session_route !== null) {
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Routed to Jingle session (room: ' + room + ').', 2);
+              if(session_route !== null) {
+                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Routed to Jingle session (room: ' + room + ').', 2);
 
-              session_route.handle_message(stanza);
+                session_route.handle_message(stanza);
+              }
             }
           }
         }

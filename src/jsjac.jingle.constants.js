@@ -415,6 +415,16 @@ var NS_JINGLE_SECURITY_STUB                         = 'urn:xmpp:jingle:security:
  * @default
  * @public
  */
+var NS_JINGLE_MESSAGE                               = 'urn:xmpp:jingle-message:0';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
 var NS_JABBER_JINGLENODES                           = 'http://jabber.org/protocol/jinglenodes';
 
 /**
@@ -618,6 +628,9 @@ var MAP_DISCO_JINGLE                                = [
   /* http://xmpp.org/extensions/xep-0262.html */
   NS_JINGLE_APPS_RTP_ZRTP,
 
+  /* http://xmpp.org/extensions/xep-0353.html */
+  NS_JINGLE_MESSAGE,
+
   /* http://xmpp.org/extensions/xep-0278.html */
   NS_JABBER_JINGLENODES,
 
@@ -760,6 +773,16 @@ var JSJAC_JINGLE_MEDIA_READYSTATE_COMPLETED          = 4;
  * @public
  */
 var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
+
+/**
+ * @constant
+ * @global
+ * @type {Number}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_BROADCAST_TIMEOUT                   = 30;
 
 /**
  * @constant
@@ -1140,6 +1163,56 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_REJECT             = 'transport-reject';
  * @public
  */
 var JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE            = 'transport-replace';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MESSAGE_ACTION_PROPOSE              = 'propose';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MESSAGE_ACTION_RETRACT              = 'retract';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MESSAGE_ACTION_ACCEPT               = 'accept';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MESSAGE_ACTION_PROCEED              = 'proceed';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MESSAGE_ACTION_REJECT               = 'reject';
 
 /**
  * @constant
@@ -2387,6 +2460,21 @@ JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT]                      
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_INFO]                            = 1;
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REJECT]                          = 1;
 JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE]                         = 1;
+
+/**
+ * @constant
+ * @global
+ * @type {Object}
+ * @readonly
+ * @default
+ * @public
+ */
+var JSJAC_JINGLE_MESSAGE_ACTIONS               = {};
+JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_PROPOSE]                   = 1;
+JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_RETRACT]                   = 1;
+JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_ACCEPT]                    = 1;
+JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_PROCEED]                   = 1;
+JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_REJECT]                    = 1;
 
 /**
  * @constant

@@ -43,6 +43,7 @@ var JSJaCJingleLoader = {
       'jsjac.jingle.base',
       'jsjac.jingle.single',
       'jsjac.jingle.muji',
+      'jsjac.jingle.broadcast',
       'jsjac.jingle.init',
       'jsjac.jingle.main'
     ]
