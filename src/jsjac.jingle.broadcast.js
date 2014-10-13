@@ -97,7 +97,6 @@ var JSJaCJingleBroadcast = new (ring.create(
         this._register_id(id, medias);
 
         this._send_local_reject(id);
-        this._send_remote_retract(to, id);
       } catch(e) {
         JSJaCJingleStorage.get_debug().log('[JSJaCJingle:broadcast] reject > ' + e, 1);
       }
