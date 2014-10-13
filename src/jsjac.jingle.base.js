@@ -755,7 +755,10 @@ var __JSJaCJingleBase = ring.create(
           },
 
           function(e) {
-            if(_this.get_sdp_trace())  _this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:error)' + '\n\n' + (e.message || e.name || 'Unknown error'), 4);
+            var error_str = (typeof e == 'string') ? e : null;
+            error_str = (error_str || e.message || e.name || 'Unknown error');
+
+            if(_this.get_sdp_trace())  _this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:error)' + '\n\n' + error_str, 1);
 
             // Error (descriptions are incompatible)
           }
@@ -1035,8 +1038,8 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Array} Stanza handler
      */
     get_registered_handlers: function(node, type, id) {
-      if(id && node in this._registered_handlers  && 
-         type in this._registered_handlers[node]  && 
+      if(id && node in this._registered_handlers  &&
+         type in this._registered_handlers[node]  &&
          typeof this._registered_handlers[node][type][id] == 'object')
         return this._registered_handlers[node][type][id];
 
