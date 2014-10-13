@@ -66,14 +66,21 @@ var JSJaCJingleStorage = new (ring.create(
        * @default
        * @private
        */
-      this._single_prepare = undefined;
+      this._single_propose = undefined;
 
       /**
        * @type {Function}
        * @default
        * @private
        */
-      this._single_proceed = undefined;
+      this._single_retract = undefined;
+
+      /**
+       * @type {Function}
+       * @default
+       * @private
+       */
+      this._single_accept = undefined;
 
       /**
        * @type {Function}
@@ -81,6 +88,13 @@ var JSJaCJingleStorage = new (ring.create(
        * @private
        */
       this._single_reject = undefined;
+
+      /**
+       * @type {Function}
+       * @default
+       * @private
+       */
+      this._single_proceed = undefined;
 
       /**
        * @type {Function}
@@ -197,25 +211,37 @@ var JSJaCJingleStorage = new (ring.create(
     },
 
     /**
-     * Gets the Single prepare function
+     * Gets the Single propose function
      * @public
-     * @returns {Function} Single prepare
+     * @returns {Function} Single propose
      */
-    get_single_prepare: function() {
-      if(typeof this._single_prepare == 'function')
-        return this._single_prepare;
+    get_single_propose: function() {
+      if(typeof this._single_propose == 'function')
+        return this._single_propose;
 
       return function(stanza) {};
     },
 
     /**
-     * Gets the Single proceed function
+     * Gets the Single retract function
      * @public
-     * @returns {Function} Single proceed
+     * @returns {Function} Single retract
      */
-    get_single_proceed: function() {
-      if(typeof this._single_proceed == 'function')
-        return this._single_proceed;
+    get_single_retract: function() {
+      if(typeof this._single_retract == 'function')
+        return this._single_retract;
+
+      return function(stanza) {};
+    },
+
+    /**
+     * Gets the Single accept function
+     * @public
+     * @returns {Function} Single accept
+     */
+    get_single_accept: function() {
+      if(typeof this._single_accept == 'function')
+        return this._single_accept;
 
       return function(stanza) {};
     },
@@ -228,6 +254,18 @@ var JSJaCJingleStorage = new (ring.create(
     get_single_reject: function() {
       if(typeof this._single_reject == 'function')
         return this._single_reject;
+
+      return function(stanza) {};
+    },
+
+    /**
+     * Gets the Single proceed function
+     * @public
+     * @returns {Function} Single proceed
+     */
+    get_single_proceed: function() {
+      if(typeof this._single_proceed == 'function')
+        return this._single_proceed;
 
       return function(stanza) {};
     },
@@ -346,21 +384,30 @@ var JSJaCJingleStorage = new (ring.create(
     },
 
     /**
-     * Sets the Single prepare function
+     * Sets the Single propose function
      * @public
-     * @param {Function} Single prepare
+     * @param {Function} Single propose
      */
-    set_single_prepare: function(single_prepare) {
-      this._single_prepare = single_prepare;
+    set_single_propose: function(single_propose) {
+      this._single_propose = single_propose;
     },
 
     /**
-     * Sets the Single proceed function
+     * Sets the Single retract function
      * @public
-     * @param {Function} Single proceed
+     * @param {Function} Single retract
      */
-    set_single_proceed: function(single_proceed) {
-      this._single_proceed = single_proceed;
+    set_single_retract: function(single_retract) {
+      this._single_retract = single_retract;
+    },
+
+    /**
+     * Sets the Single accept function
+     * @public
+     * @param {Function} Single accept
+     */
+    set_single_accept: function(single_accept) {
+      this._single_accept = single_accept;
     },
 
     /**
@@ -370,6 +417,15 @@ var JSJaCJingleStorage = new (ring.create(
      */
     set_single_reject: function(single_reject) {
       this._single_reject = single_reject;
+    },
+
+    /**
+     * Sets the Single proceed function
+     * @public
+     * @param {Function} Single proceed
+     */
+    set_single_proceed: function(single_proceed) {
+      this._single_proceed = single_proceed;
     },
 
     /**

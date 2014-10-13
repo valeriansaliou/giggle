@@ -274,8 +274,11 @@ $(document).ready(function() {
                             debug: (new JSJaCConsoleLogger(4)),
 
                             single_initiate: function(stanza) {
+                                console.log('single_initiate');
+
                                 // Session values
                                 ARGS.to          = stanza.getFrom() || null;
+                                ARGS.sid         = null;
                                 ARGS.local_view  = $('#video_local')[0];
                                 ARGS.remote_view = $('#video_remote')[0];
 
@@ -284,7 +287,9 @@ $(document).ready(function() {
                                 JINGLE.handle(stanza);
                             },
 
-                            single_prepare: function(stanza, proposed_medias) {
+                            single_propose: function(stanza, proposed_medias) {
+                                console.log('single_propose');
+
                                 var stanza_from = stanza.getFrom() || null;
                                 var call_id = JSJaCJingleBroadcast.get_call_id(stanza);
 
@@ -313,7 +318,27 @@ $(document).ready(function() {
                                 }
                             },
 
+                            single_retract: function(stanza) {
+                                console.log('single_retract');
+                            },
+
+                            single_accept: function(stanza) {
+                               console.log('single_accept');
+                            },
+
+                            single_reject: function(stanza) {
+                                console.log('single_reject');
+
+                                $('.call_notif').hide();
+                                $('#call_info').text('Call rejected.').show();
+
+                                $('#form_live').find('button').removeAttr('disabled');
+                                $('#fieldset_live').removeAttr('disabled');
+                            },
+
                             single_proceed: function(stanza) {
+                                console.log('single_proceed');
+
                                 $('.call_notif').hide();
                                 $('#call_info').text('Call accepted. Proceeding...').show();
 
@@ -347,14 +372,6 @@ $(document).ready(function() {
                                     JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
                                     JINGLE.initiate();
                                 }, 1000);
-                            },
-
-                            single_reject: function(stanza) {
-                                $('.call_notif').hide();
-                                $('#call_info').text('Call rejected.').show();
-
-                                $('#form_live').find('button').removeAttr('disabled');
-                                $('#fieldset_live').removeAttr('disabled');
                             }
                         });
                     } catch(e) {
@@ -532,6 +549,7 @@ $(document).ready(function() {
                     try {
                         // Session values
                         ARGS.to           = call_jid;
+                        ARGS.sid          = null;
                         ARGS.media        = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
                         ARGS.video_source = (submit_target == 'call_screen') ? JSJAC_JINGLE_VIDEO_SOURCE_SCREEN : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
                         ARGS.local_view   = $('#video_local')[0];

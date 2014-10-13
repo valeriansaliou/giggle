@@ -62,7 +62,11 @@ var JSJaCJingle = new (ring.create(
      * @param     {Object}           [args]
      * @property  {JSJaCConnection}  [args.connection]       - The connection to be attached to.
      * @property  {Function}         [args.single_initiate]  - The Jingle session initiate request custom handler.
-     * @property  {Function}         [args.single_prepare]   - The Jingle session prepare request custom handler.
+     * @property  {Function}         [args.single_propose]   - The Jingle session propose request custom handler.
+     * @property  {Function}         [args.single_retract]   - The Jingle session retract request custom handler.
+     * @property  {Function}         [args.single_accept]    - The Jingle session accept request custom handler.
+     * @property  {Function}         [args.single_reject]    - The Jingle session reject request custom handler.
+     * @property  {Function}         [args.single_proceed]   - The Jingle session proceed request custom handler.
      * @property  {Function}         [args.muji_invite]      - The Muji session invite message custom handler.
      * @property  {JSJaCDebugger}    [args.debug]            - A reference to a debugger implementing the JSJaCDebugger interface.
      * @property  {Boolean}          [args.extdisco]         - Whether or not to discover external services as per XEP-0215.
@@ -77,12 +81,16 @@ var JSJaCJingle = new (ring.create(
           JSJaCJingleStorage.set_connection(args.connection);
         if(args && args.single_initiate)
           JSJaCJingleStorage.set_single_initiate(args.single_initiate);
-        if(args && args.single_prepare)
-          JSJaCJingleStorage.set_single_prepare(args.single_prepare);
-        if(args && args.single_proceed)
-          JSJaCJingleStorage.set_single_proceed(args.single_proceed);
+        if(args && args.single_propose)
+          JSJaCJingleStorage.set_single_propose(args.single_propose);
+        if(args && args.single_retract)
+          JSJaCJingleStorage.set_single_retract(args.single_retract);
+        if(args && args.single_accept)
+          JSJaCJingleStorage.set_single_accept(args.single_accept);
         if(args && args.single_reject)
           JSJaCJingleStorage.set_single_reject(args.single_reject);
+        if(args && args.single_proceed)
+          JSJaCJingleStorage.set_single_proceed(args.single_proceed);
         if(args && args.muji_invite)
           JSJaCJingleStorage.set_muji_invite(args.muji_invite);
         if(args && args.debug)

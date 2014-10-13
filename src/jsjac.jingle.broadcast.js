@@ -122,6 +122,13 @@ var JSJaCJingleBroadcast = new (ring.create(
         );
 
         if(stanza_child) {
+          var _this = this;
+
+          var id_unregister_fn = function(stanza) {
+            id = _this.get_call_id(stanza);
+            if(id)  _this._unregister_id(id);
+          };
+
           switch(stanza_child.tagName) {
             case JSJAC_JINGLE_MESSAGE_ACTION_PROPOSE:
               proposed_medias = {};
@@ -142,23 +149,31 @@ var JSJaCJingleBroadcast = new (ring.create(
                 }
               }
 
-              JSJaCJingleStorage.get_single_prepare()(stanza, proposed_medias);
+              JSJaCJingleStorage.get_single_propose()(stanza, proposed_medias);
 
               is_handled = true; break;
 
-            case JSJAC_JINGLE_MESSAGE_ACTION_PROCEED:
-              JSJaCJingleStorage.get_single_proceed()(stanza);
+            case JSJAC_JINGLE_MESSAGE_ACTION_RETRACT:
+              JSJaCJingleStorage.get_single_retract()(stanza);
+              id_unregister_fn(stanza);
 
-              id = this.get_call_id(stanza);
-              if(id)  this._unregister_id(id);
+              is_handled = true; break;
+
+            case JSJAC_JINGLE_MESSAGE_ACTION_ACCEPT:
+              JSJaCJingleStorage.get_single_accept()(stanza);
+              id_unregister_fn(stanza);
 
               is_handled = true; break;
 
             case JSJAC_JINGLE_MESSAGE_ACTION_REJECT:
               JSJaCJingleStorage.get_single_reject()(stanza);
+              id_unregister_fn(stanza);
 
-              id = this.get_call_id(stanza);
-              if(id)  this._unregister_id(id);
+              is_handled = true; break;
+
+            case JSJAC_JINGLE_MESSAGE_ACTION_PROCEED:
+              JSJaCJingleStorage.get_single_proceed()(stanza);
+              id_unregister_fn(stanza);
 
               is_handled = true; break;
           }
