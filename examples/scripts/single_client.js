@@ -534,12 +534,17 @@ $(document).ready(function() {
                     JSJaCJingleBroadcast.propose(
                         jid_obj.getBareJID(), medias,
 
-                        function() {
+                        function(id) {
                             // Timeout callback
                             $('#call_info').text('The other party did not answer.').show();
 
                             $('#form_call').find('input, button:not([data-lock])').removeAttr('disabled');
                             $('#roster_call').removeClass('disabled');
+
+                            // Retract
+                            JSJaCJingleBroadcast.retract(
+                                jid_obj.getBareJID(), id
+                            );
                         }
                     );
                 } else {

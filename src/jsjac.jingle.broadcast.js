@@ -30,11 +30,14 @@ var JSJaCJingleBroadcast = new (ring.create(
      * @public
      * @param {String} to
      * @param {Object} medias
+     * @returns {String} Call ID
      */
     propose: function(to, medias, cb_timeout) {
+      var id, self;
+
       try {
-        var self = this;
-        var id = this._send_remote_propose(to, medias);
+        self = this;
+        id = this._send_remote_propose(to, medias);
 
         if(typeof cb_timeout == 'function') {
           setTimeout(function() {
@@ -42,7 +45,7 @@ var JSJaCJingleBroadcast = new (ring.create(
             if(self._exists_id(id) === false) {
               JSJaCJingleStorage.get_debug().log('[JSJaCJingle:broadcast] propose > Propose successful.', 4);
             } else {
-              cb_timeout();
+              cb_timeout(id);
 
               JSJaCJingleStorage.get_debug().log('[JSJaCJingle:broadcast] propose > Propose timeout.', 2);
             }
@@ -50,6 +53,8 @@ var JSJaCJingleBroadcast = new (ring.create(
         }
       } catch(e) {
         JSJaCJingleStorage.get_debug().log('[JSJaCJingle:broadcast] propose > ' + e, 1);
+      } finally {
+        return id;
       }
     },
 
