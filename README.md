@@ -10,7 +10,7 @@ To be used with JSJaC from Stefan Strigler, available there: https://github.com/
 
 ## How To Build It?
 
-Only JSJaCJingle.js raw sources are provided in this repository. Those are not usable out-of-the-box for production purposes. You first need to build the library components locally.
+Only JSJaCJingle.js raw sources are provided in this repository. Those are not usable out-of-the-box for production purposes. You first need to build the library components on your local machine.
 
 **Important: our automated build system requires that you have NodeJS, NPM, GruntJS, Bower (+ bower-installer) and Java on your machine. UNIX systems (MacOS, Linux) are recommended to proceed build.**
 
