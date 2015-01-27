@@ -1,6 +1,8 @@
 JSJaCJingle.js
 ==============
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/valeriansaliou/jsjac-jingle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 **JSJaC Jingle library**, implementation of [XEP-0166 (Jingle)](http://xmpp.org/extensions/xep-0166.html). _XMPP audio/video chat in your Web browser!_
 
 To be used with JSJaC from Stefan Strigler, available there: https://github.com/sstrigler/JSJaC
