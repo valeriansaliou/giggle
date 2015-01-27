@@ -14,9 +14,16 @@ BASE_DIR="$ABSPATH/../"
 
 echo "Deploying JSJaCJingle.js..."
 
-cd $BASE_DIR
+cd "$BASE_DIR"
 
-npm install
-grunt build
+npm install && grunt build
+rc=$?
 
-echo "Done."
+# Check for errors
+if [ $rc = 0 ]; then
+  echo "Done."
+else
+  echo "Error."
+fi
+
+exit $rc
