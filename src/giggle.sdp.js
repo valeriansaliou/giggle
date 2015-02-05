@@ -2,7 +2,6 @@
  * @fileoverview Giggle library - SDP tools
  *
  * @url https://github.com/valeriansaliou/giggle
- * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
@@ -17,7 +16,7 @@
  * @class
  * @classdesc  SDP helpers class.
  * @requires   nicolas-van/ring.js
- * @requires   sstrigler/JSJaC
+ * @requires   giggle/plug
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @param      {GiggleSingle|GiggleMuji} parent Parent class.
  */

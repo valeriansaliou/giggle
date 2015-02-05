@@ -2,7 +2,6 @@
  * @fileoverview Giggle library - Base call lib
  *
  * @url https://github.com/valeriansaliou/giggle
- * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
@@ -18,7 +17,7 @@
  * @class
  * @classdesc  Abstract base class for XMPP Jingle sessions.
  * @requires   nicolas-van/ring.js
- * @requires   sstrigler/JSJaC
+ * @requires   giggle/plug
  * @requires   giggle/utils
  * @requires   giggle/sdp
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}

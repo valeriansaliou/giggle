@@ -2,7 +2,6 @@
  * @fileoverview Giggle library - Pluggability to the node-xmpp library
  *
  * @url https://github.com/valeriansaliou/giggle
- * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */

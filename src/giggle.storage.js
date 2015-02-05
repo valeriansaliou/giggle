@@ -2,7 +2,6 @@
  * @fileoverview Giggle library - Storage layer
  *
  * @url https://github.com/valeriansaliou/giggle
- * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla private License v2.0 (MPL v2.0)
  */

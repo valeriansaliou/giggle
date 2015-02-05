@@ -2,7 +2,6 @@
  * @fileoverview Giggle library - Multi-user call lib
  *
  * @url https://github.com/valeriansaliou/giggle
- * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
@@ -18,7 +17,7 @@
  * @classdesc  Creates a new XMPP Jingle Muji session.
  * @augments   __GiggleBase
  * @requires   nicolas-van/ring.js
- * @requires   sstrigler/JSJaC
+ * @requires   giggle/plug
  * @requires   giggle/main
  * @requires   giggle/base
  * @see        {@link http://xmpp.org/extensions/xep-0272.html|XEP-0272: Multiparty Jingle (Muji)}

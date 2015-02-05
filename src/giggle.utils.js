@@ -2,7 +2,6 @@
  * @fileoverview Giggle library - Utilities
  *
  * @url https://github.com/valeriansaliou/giggle
- * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
@@ -18,7 +17,7 @@
  * @classdesc  Utilities class.
  * @param      {GiggleSingle|GiggleMuji} parent Parent class.
  * @requires   nicolas-van/ring.js
- * @requires   sstrigler/JSJaC
+ * @requires   giggle/plug
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */

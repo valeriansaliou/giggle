@@ -2,7 +2,6 @@
  * @fileoverview Giggle library - Common components
  *
  * @url https://github.com/valeriansaliou/giggle
- * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
@@ -16,7 +15,7 @@
  * Library main class.
  * @instance
  * @requires   nicolas-van/ring.js
- * @requires   sstrigler/JSJaC
+ * @requires   giggle/plug
  * @requires   giggle/init
  * @requires   giggle/single
  * @requires   giggle/muji

@@ -64,7 +64,6 @@ module.exports = function(grunt) {
            ' *\n' +
            ' * @url <%= pkg.homepage %>\n' +
            ' * @repository <%= pkg.repository.type %>+<%= pkg.repository.url %>\n' +
-           ' * @depends https://github.com/sstrigler/JSJaC\n' +
            ' */\n\n';
   };
 
