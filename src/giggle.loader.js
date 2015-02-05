@@ -68,12 +68,15 @@ var GiggleLoader = {
    * @public
    */
   go: function() {
-    var includes = [], c;
+    var includes = [], c, d;
 
     for(c in this._includes.lib) {
       includes.push('../lib/' + this._includes.lib[c]);
     }
-    includes = includes.concat(this._includes.src);
+
+    for(d in this._includes.src) {
+      includes.push('../src/' + this._includes.src[d]);
+    }
 
     var scripts = document.getElementsByTagName('script');
     var path = './', i, j;
