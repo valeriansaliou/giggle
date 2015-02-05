@@ -26,7 +26,7 @@ Deploy the library in one simple command:
 
 ## Who's Behind It?
 
-Made with love by the happy folks at **Jappix** https://jappix.com/, originally for the awesome guys at **Uno IM** https://uno.im/ and **Virtustructure** http://www.virtustructure.com/
+Made with love by the happy folks at **Jappix** https://jappix.com/, originally for the awesome guys at **Uno IM** https://uno.im/
 
 ## Online Demo
 
