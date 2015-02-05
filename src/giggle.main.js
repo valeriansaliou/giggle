@@ -1,15 +1,15 @@
 /**
- * @fileoverview JSJaC Jingle library - Common components
+ * @fileoverview Giggle library - Common components
  *
- * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @url https://github.com/valeriansaliou/giggle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 
-/** @module jsjac-jingle/main */
-/** @exports JSJaCJingle */
+/** @module giggle/main */
+/** @exports Giggle */
 
 
 /**
@@ -17,40 +17,40 @@
  * @instance
  * @requires   nicolas-van/ring.js
  * @requires   sstrigler/JSJaC
- * @requires   jsjac-jingle/init
- * @requires   jsjac-jingle/single
- * @requires   jsjac-jingle/muji
+ * @requires   giggle/init
+ * @requires   giggle/single
+ * @requires   giggle/muji
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */
-var JSJaCJingle = new (ring.create(
-  /** @lends JSJaCJingle.prototype */
+var Giggle = new (ring.create(
+  /** @lends Giggle.prototype */
   {
     /**
      * Starts a new Jingle session
      * @public
      * @param {String} type
      * @param {Object} [args]
-     * @returns {JSJaCJingleSingle|JSJaCJingleMuji} JSJaCJingle session instance
+     * @returns {GiggleSingle|GiggleMuji} Giggle session instance
      */
     session: function(type, args) {
       var jingle;
 
       try {
         switch(type) {
-          case JSJAC_JINGLE_SESSION_SINGLE:
-            jingle = new JSJaCJingleSingle(args);
+          case GIGGLE_SESSION_SINGLE:
+            jingle = new GiggleSingle(args);
             break;
 
-          case JSJAC_JINGLE_SESSION_MUJI:
-            jingle = new JSJaCJingleMuji(args);
+          case GIGGLE_SESSION_MUJI:
+            jingle = new GiggleMuji(args);
             break;
 
           default:
             throw ('Unknown session type: ' + type);
         }
       } catch(e) {
-        JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] session > ' + e, 1);
+        GiggleStorage.get_debug().log('[giggle:main] session > ' + e, 1);
       } finally {
         return jingle;
       }
@@ -72,54 +72,54 @@ var JSJaCJingle = new (ring.create(
      * @property  {Boolean}          [args.extdisco]         - Whether or not to discover external services as per XEP-0215.
      * @property  {Boolean}          [args.relaynodes]       - Whether or not to discover relay nodes as per XEP-0278.
      * @property  {Boolean}          [args.fallback]         - Whether or not to request STUN/TURN from a fallback URL.
-     * @see {@link https://github.com/valeriansaliou/jsjac-jingle/blob/master/examples/fallback.json|Fallback JSON Sample} - Fallback URL format.
+     * @see {@link https://github.com/valeriansaliou/giggle/blob/master/examples/fallback.json|Fallback JSON Sample} - Fallback URL format.
      */
     listen: function(args) {
       try {
         // Apply arguments
         if(args && args.connection)
-          JSJaCJingleStorage.set_connection(args.connection);
+          GiggleStorage.set_connection(args.connection);
         if(args && args.single_initiate)
-          JSJaCJingleStorage.set_single_initiate(args.single_initiate);
+          GiggleStorage.set_single_initiate(args.single_initiate);
         if(args && args.single_propose)
-          JSJaCJingleStorage.set_single_propose(args.single_propose);
+          GiggleStorage.set_single_propose(args.single_propose);
         if(args && args.single_retract)
-          JSJaCJingleStorage.set_single_retract(args.single_retract);
+          GiggleStorage.set_single_retract(args.single_retract);
         if(args && args.single_accept)
-          JSJaCJingleStorage.set_single_accept(args.single_accept);
+          GiggleStorage.set_single_accept(args.single_accept);
         if(args && args.single_reject)
-          JSJaCJingleStorage.set_single_reject(args.single_reject);
+          GiggleStorage.set_single_reject(args.single_reject);
         if(args && args.single_proceed)
-          JSJaCJingleStorage.set_single_proceed(args.single_proceed);
+          GiggleStorage.set_single_proceed(args.single_proceed);
         if(args && args.muji_invite)
-          JSJaCJingleStorage.set_muji_invite(args.muji_invite);
+          GiggleStorage.set_muji_invite(args.muji_invite);
         if(args && args.debug)
-          JSJaCJingleStorage.set_debug(args.debug);
+          GiggleStorage.set_debug(args.debug);
 
         // Incoming IQs handler
         var cur_type, route_map = {};
-        route_map[JSJAC_JINGLE_STANZA_IQ]        = this._route_iq;
-        route_map[JSJAC_JINGLE_STANZA_MESSAGE]   = this._route_message;
-        route_map[JSJAC_JINGLE_STANZA_PRESENCE]  = this._route_presence;
+        route_map[GIGGLE_STANZA_IQ]        = this._route_iq;
+        route_map[GIGGLE_STANZA_MESSAGE]   = this._route_message;
+        route_map[GIGGLE_STANZA_PRESENCE]  = this._route_presence;
 
         for(cur_type in route_map) {
-          JSJaCJingleStorage.get_connection().registerHandler(
+          GiggleStorage.get_connection().registerHandler(
             cur_type,
             route_map[cur_type].bind(this)
           );
         }
 
-        JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] listen > Listening.', 2);
+        GiggleStorage.get_debug().log('[giggle:main] listen > Listening.', 2);
 
         // Discover available network services
         if(!args || args.extdisco !== false)
-          JSJaCJingleInit._extdisco();
+          GiggleInit._extdisco();
         if(!args || args.relaynodes !== false)
-          JSJaCJingleInit._relaynodes();
+          GiggleInit._relaynodes();
         if(args.fallback && typeof args.fallback === 'string')
-          JSJaCJingleInit._fallback(args.fallback);
+          GiggleInit._fallback(args.fallback);
       } catch(e) {
-        JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] listen > ' + e, 1);
+        GiggleStorage.get_debug().log('[giggle:main] listen > ' + e, 1);
       }
     },
 
@@ -130,10 +130,10 @@ var JSJaCJingle = new (ring.create(
      */
     disco: function() {
       // Check for listen status
-      var has_muji = (typeof JSJaCJingleStorage.get_muji_invite_raw() == 'function' && true);
-      var has_jingle = ((has_muji || (typeof JSJaCJingleStorage.get_single_initiate_raw() == 'function')) && true);
+      var has_muji = (typeof GiggleStorage.get_muji_invite_raw() == 'function' && true);
+      var has_jingle = ((has_muji || (typeof GiggleStorage.get_single_initiate_raw() == 'function')) && true);
 
-      if(JSJAC_JINGLE_AVAILABLE && has_jingle) {
+      if(GIGGLE_AVAILABLE && has_jingle) {
         if(has_muji) {
           return MAP_DISCO_JINGLE.concat(MAP_DISCO_MUJI);
         } else {
@@ -158,7 +158,7 @@ var JSJaCJingle = new (ring.create(
           var from_bare = (jid_obj.getNode() + '@' + jid_obj.getDomain());
 
           // Single or Muji?
-          var is_muji   = (this._read(JSJAC_JINGLE_SESSION_MUJI, from_bare) !== null);
+          var is_muji   = (this._read(GIGGLE_SESSION_MUJI, from_bare) !== null);
           var is_single = !is_muji;
 
           var action        = null;
@@ -175,7 +175,7 @@ var JSJaCJingle = new (ring.create(
             var stanza_id = stanza.getID();
 
             if(stanza_id) {
-              var is_jingle = stanza_id.indexOf(JSJAC_JINGLE_STANZA_ID_PRE + '_') !== -1;
+              var is_jingle = stanza_id.indexOf(GIGGLE_STANZA_ID_PRE + '_') !== -1;
 
               if(is_jingle) {
                 var stanza_id_split = stanza_id.split('_');
@@ -185,71 +185,71 @@ var JSJaCJingle = new (ring.create(
           }
 
           // WebRTC not available ATM?
-          if(jingle && !JSJAC_JINGLE_AVAILABLE) {
-            JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Dropped Jingle packet (WebRTC not available).', 0);
+          if(jingle && !GIGGLE_AVAILABLE) {
+            GiggleStorage.get_debug().log('[giggle:main] _route_iq > Dropped Jingle packet (WebRTC not available).', 0);
 
-            (new JSJaCJingleSingle({ to: from }))._send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
+            (new GiggleSingle({ to: from }))._send_error(stanza, XMPP_ERROR_SERVICE_UNAVAILABLE);
           } else if(is_muji) {
             var username, participant;
 
             username       = jid_obj.getResource();
-            session_route  = this._read(JSJAC_JINGLE_SESSION_MUJI, from_bare);
+            session_route  = this._read(GIGGLE_SESSION_MUJI, from_bare);
             participant    = session_route.get_participants(username);
 
             // Muji: new session? Or registered one?
             if(participant && participant.session  &&
-              (participant.session instanceof JSJaCJingleSingle)) {
+              (participant.session instanceof GiggleSingle)) {
               // Route to Single session
               var session_route_single = this._read(
-                JSJAC_JINGLE_SESSION_SINGLE,
+                GIGGLE_SESSION_SINGLE,
                 participant.session.get_sid()
               );
 
               if(session_route_single !== null) {
-                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > [' + username + '] > Routed to Muji participant session (sid: ' + sid + ').', 2);
+                GiggleStorage.get_debug().log('[giggle:main] _route_iq > [' + username + '] > Routed to Muji participant session (sid: ' + sid + ').', 2);
 
                 session_route_single.handle(stanza);
-              } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
-                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Muji participant session route (sid: ' + sid + ').', 0);
+              } else if(stanza.getType() == GIGGLE_IQ_TYPE_SET && from) {
+                GiggleStorage.get_debug().log('[giggle:main] _route_iq > Unknown Muji participant session route (sid: ' + sid + ').', 0);
 
-                (new JSJaCJingleSingle({ to: from }))._send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+                (new GiggleSingle({ to: from }))._send_error(stanza, GIGGLE_ERROR_UNKNOWN_SESSION);
               }
             } else if(sid) {
-              if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE) {
-                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > [' + username + '] > New Muji participant session (sid: ' + sid + ').', 2);
+              if(action == GIGGLE_ACTION_SESSION_INITIATE) {
+                GiggleStorage.get_debug().log('[giggle:main] _route_iq > [' + username + '] > New Muji participant session (sid: ' + sid + ').', 2);
 
                 session_route._create_participant_session(username).handle(stanza);
-              } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
-                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Muji participant session (sid: ' + sid + ').', 0);
+              } else if(stanza.getType() == GIGGLE_IQ_TYPE_SET && from) {
+                GiggleStorage.get_debug().log('[giggle:main] _route_iq > Unknown Muji participant session (sid: ' + sid + ').', 0);
 
-                (new JSJaCJingleSingle({ to: from }))._send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+                (new GiggleSingle({ to: from }))._send_error(stanza, GIGGLE_ERROR_UNKNOWN_SESSION);
               }
             }
           } else if(is_single) {
             // Single: new session? Or registered one?
-            session_route = this._read(JSJAC_JINGLE_SESSION_SINGLE, sid);
+            session_route = this._read(GIGGLE_SESSION_SINGLE, sid);
 
-            if(action == JSJAC_JINGLE_ACTION_SESSION_INITIATE && session_route === null) {
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > New Jingle session (sid: ' + sid + ').', 2);
+            if(action == GIGGLE_ACTION_SESSION_INITIATE && session_route === null) {
+              GiggleStorage.get_debug().log('[giggle:main] _route_iq > New Jingle session (sid: ' + sid + ').', 2);
 
-              JSJaCJingleStorage.get_single_initiate()(stanza);
+              GiggleStorage.get_single_initiate()(stanza);
             } else if(sid) {
               if(session_route !== null) {
-                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Routed to Jingle session (sid: ' + sid + ').', 2);
+                GiggleStorage.get_debug().log('[giggle:main] _route_iq > Routed to Jingle session (sid: ' + sid + ').', 2);
 
                 session_route.handle(stanza);
-              } else if(stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && from) {
-                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > Unknown Jingle session (sid: ' + sid + ').', 0);
+              } else if(stanza.getType() == GIGGLE_IQ_TYPE_SET && from) {
+                GiggleStorage.get_debug().log('[giggle:main] _route_iq > Unknown Jingle session (sid: ' + sid + ').', 0);
 
-                (new JSJaCJingleSingle({ to: from }))._send_error(stanza, JSJAC_JINGLE_ERROR_UNKNOWN_SESSION);
+                (new GiggleSingle({ to: from }))._send_error(stanza, GIGGLE_ERROR_UNKNOWN_SESSION);
               }
             }
           } else {
-            JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > No route to session, not Jingle nor Muji (sid: ' + sid + ').', 0);
+            GiggleStorage.get_debug().log('[giggle:main] _route_iq > No route to session, not Jingle nor Muji (sid: ' + sid + ').', 0);
           }
         }
       } catch(e) {
-        JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_iq > ' + e, 1);
+        GiggleStorage.get_debug().log('[giggle:main] _route_iq > ' + e, 1);
       }
     },
 
@@ -266,7 +266,7 @@ var JSJaCJingle = new (ring.create(
           var jid = new JSJaCJID(from);
 
           // Broadcast message?
-          var is_handled_broadcast = JSJaCJingleBroadcast.handle(stanza);
+          var is_handled_broadcast = GiggleBroadcast.handle(stanza);
 
           if(is_handled_broadcast === true) {
             // XEP-0353: Jingle Message Initiation
@@ -275,7 +275,7 @@ var JSJaCJingle = new (ring.create(
             // Muji?
             var room = jid.getNode() + '@' + jid.getDomain();
 
-            var session_route = this._read(JSJAC_JINGLE_SESSION_MUJI, room);
+            var session_route = this._read(GIGGLE_SESSION_MUJI, room);
 
             var x_conference = stanza.getChild('x', NS_JABBER_CONFERENCE);
             var x_invite = stanza.getChild('x', NS_MUJI_INVITE);
@@ -284,7 +284,7 @@ var JSJaCJingle = new (ring.create(
 
             if(is_invite === true) {
               if(session_route === null) {
-                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Muji invite received (room: ' + room + ').', 2);
+                GiggleStorage.get_debug().log('[giggle:main] _route_message > Muji invite received (room: ' + room + ').', 2);
 
                 // Read invite data
                 var err = 0;
@@ -297,16 +297,16 @@ var JSJaCJingle = new (ring.create(
                 };
 
                 if(err === 0) {
-                  JSJaCJingleStorage.get_muji_invite()(stanza, args);
+                  GiggleStorage.get_muji_invite()(stanza, args);
                 } else {
-                  JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Dropped invite because incomplete (room: ' + room + ').', 0);
+                  GiggleStorage.get_debug().log('[giggle:main] _route_message > Dropped invite because incomplete (room: ' + room + ').', 0);
                 }
               } else {
-                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Dropped invite because Muji already joined (room: ' + room + ').', 0);
+                GiggleStorage.get_debug().log('[giggle:main] _route_message > Dropped invite because Muji already joined (room: ' + room + ').', 0);
               }
             } else {
               if(session_route !== null) {
-                JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > Routed to Jingle session (room: ' + room + ').', 2);
+                GiggleStorage.get_debug().log('[giggle:main] _route_message > Routed to Jingle session (room: ' + room + ').', 2);
 
                 session_route.handle_message(stanza);
               }
@@ -314,7 +314,7 @@ var JSJaCJingle = new (ring.create(
           }
         }
       } catch(e) {
-        JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_message > ' + e, 1);
+        GiggleStorage.get_debug().log('[giggle:main] _route_message > ' + e, 1);
       }
     },
 
@@ -332,16 +332,16 @@ var JSJaCJingle = new (ring.create(
           var jid = new JSJaCJID(from);
           var room = jid.getNode() + '@' + jid.getDomain();
 
-          var session_route = this._read(JSJAC_JINGLE_SESSION_MUJI, room);
+          var session_route = this._read(GIGGLE_SESSION_MUJI, room);
 
           if(session_route !== null) {
-            JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_presence > Routed to Jingle session (room: ' + room + ').', 2);
+            GiggleStorage.get_debug().log('[giggle:main] _route_presence > Routed to Jingle session (room: ' + room + ').', 2);
 
             session_route.handle_presence(stanza);
           }
         }
       } catch(e) {
-        JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] _route_presence > ' + e, 1);
+        GiggleStorage.get_debug().log('[giggle:main] _route_presence > ' + e, 1);
       }
     },
 
@@ -353,7 +353,7 @@ var JSJaCJingle = new (ring.create(
      * @param {Object} obj
      */
     _add: function(type, sid, obj) {
-      JSJaCJingleStorage.get_sessions()[type][sid] = obj;
+      GiggleStorage.get_sessions()[type][sid] = obj;
     },
 
     /**
@@ -364,7 +364,7 @@ var JSJaCJingle = new (ring.create(
      * @returns {Object} Session
      */
     _read: function(type, sid) {
-      return (sid in JSJaCJingleStorage.get_sessions()[type]) ? JSJaCJingleStorage.get_sessions()[type][sid] : null;
+      return (sid in GiggleStorage.get_sessions()[type]) ? GiggleStorage.get_sessions()[type][sid] : null;
     },
 
     /**
@@ -374,7 +374,7 @@ var JSJaCJingle = new (ring.create(
      * @param {String} sid
      */
     _remove: function(type, sid) {
-      delete JSJaCJingleStorage.get_sessions()[type][sid];
+      delete GiggleStorage.get_sessions()[type][sid];
     },
 
     /**
@@ -386,34 +386,34 @@ var JSJaCJingle = new (ring.create(
       try {
         if(typeof arg == 'function') {
           // Deferring?
-          if(JSJaCJingleStorage.get_defer().deferred) {
-            (JSJaCJingleStorage.get_defer().fn).push(arg);
+          if(GiggleStorage.get_defer().deferred) {
+            (GiggleStorage.get_defer().fn).push(arg);
 
-            JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] defer > Registered a function to be executed once ready.', 2);
+            GiggleStorage.get_debug().log('[giggle:main] defer > Registered a function to be executed once ready.', 2);
           }
 
-          return JSJaCJingleStorage.get_defer().deferred;
+          return GiggleStorage.get_defer().deferred;
         } else if(!arg || typeof arg == 'boolean') {
-          JSJaCJingleStorage.get_defer().deferred = (arg === true);
+          GiggleStorage.get_defer().deferred = (arg === true);
 
-          if(JSJaCJingleStorage.get_defer().deferred === false) {
+          if(GiggleStorage.get_defer().deferred === false) {
             // Execute deferred tasks?
-            if((--JSJaCJingleStorage.get_defer().count) <= 0) {
-              JSJaCJingleStorage.get_defer().count = 0;
+            if((--GiggleStorage.get_defer().count) <= 0) {
+              GiggleStorage.get_defer().count = 0;
 
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] defer > Executing ' + JSJaCJingleStorage.get_defer().fn.length + ' deferred functions...', 2);
+              GiggleStorage.get_debug().log('[giggle:main] defer > Executing ' + GiggleStorage.get_defer().fn.length + ' deferred functions...', 2);
 
-              while(JSJaCJingleStorage.get_defer().fn.length)
-                ((JSJaCJingleStorage.get_defer().fn).shift())();
+              while(GiggleStorage.get_defer().fn.length)
+                ((GiggleStorage.get_defer().fn).shift())();
 
-              JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] defer > Done executing deferred functions.', 2);
+              GiggleStorage.get_debug().log('[giggle:main] defer > Done executing deferred functions.', 2);
             }
           } else {
-            ++JSJaCJingleStorage.get_defer().count;
+            ++GiggleStorage.get_defer().count;
           }
         }
       } catch(e) {
-        JSJaCJingleStorage.get_debug().log('[JSJaCJingle:main] defer > ' + e, 1);
+        GiggleStorage.get_debug().log('[giggle:main] defer > ' + e, 1);
       }
     },
   }

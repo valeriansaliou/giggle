@@ -1,14 +1,14 @@
 /**
- * @fileoverview JSJaC Jingle library - Header
+ * @fileoverview Giggle library - Header
  *
- * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @url https://github.com/valeriansaliou/giggle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 
-/** @module jsjac-jingle/header */
+/** @module giggle/header */
 
 
 /**
@@ -19,7 +19,7 @@
  *
  * Workflow:
  *
- * This negotiation example associates JSJaCJingle.js methods to a real workflow
+ * This negotiation example associates Giggle.js methods to a real workflow
  * We assume in this workflow example remote user accepts the call he gets
  *
  * 1.cmt Local user wants to start a WebRTC session with remote user

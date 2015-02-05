@@ -1,9 +1,9 @@
 /*
-  JSJaCJingle.js Simple Client
+  Giggle.js Simple Client
 
   @fileoverview Scripts for the Multiparty Jingle (Muji) client
 
-  @url https://github.com/valeriansaliou/jsjac-jingle
+  @url https://github.com/valeriansaliou/giggle
   @author Valérian Saliou https://valeriansaliou.name/
   @license Mozilla Public License v2.0 (MPL v2.0)
  */
@@ -443,7 +443,7 @@ function helper_video_stop(_this, stanza) {
 
 $(document).ready(function() {
     // Check for WebRTC support
-    if(!JSJAC_JINGLE_AVAILABLE) {
+    if(!GIGGLE_AVAILABLE) {
         $('#fieldset_login').attr('disabled', true);
         $('#not_supported:hidden').animate({'height': 'toggle', 'opacity': 'toggle'}, 400);
     }
@@ -466,7 +466,7 @@ $(document).ready(function() {
                 $('#login_info').text('Connecting...').show();
 
                 // Generate JID
-                login_jid += '/JSJaCJingle.js (' + (new Date()).getTime() + ')';
+                login_jid += '/Giggle.js (' + (new Date()).getTime() + ')';
                 var jid_obj = new JSJaCJID(login_jid);
 
                 // Configure connection
@@ -497,8 +497,8 @@ $(document).ready(function() {
                         // Initial presence
                         con.send(new JSJaCPresence());
 
-                        // Initialize JSJaCJingle router
-                        JSJaCJingle.listen({
+                        // Initialize Giggle router
+                        Giggle.listen({
                             connection: con,
                             debug: (new JSJaCConsoleLogger(4)),
 
@@ -520,7 +520,7 @@ $(document).ready(function() {
 
                                     // Session values
                                     ARGS.to           = args.jid;
-                                    ARGS.media        = (args.media == JSJAC_JINGLE_MEDIA_VIDEO) ? JSJAC_JINGLE_MEDIA_VIDEO : JSJAC_JINGLE_MEDIA_AUDIO;
+                                    ARGS.media        = (args.media == GIGGLE_MEDIA_VIDEO) ? GIGGLE_MEDIA_VIDEO : GIGGLE_MEDIA_AUDIO;
                                     ARGS.local_view   = $('#video_local')[0];
 
                                     if(args.password) {
@@ -528,7 +528,7 @@ $(document).ready(function() {
                                     }
 
                                     // Let's go!
-                                    JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_MUJI, ARGS);
+                                    JINGLE = Giggle.session(GIGGLE_SESSION_MUJI, ARGS);
                                     JINGLE.join();
                                 } else {
                                     console.log('muji_invite > Invite declined.');
@@ -618,12 +618,12 @@ $(document).ready(function() {
                 try {
                     // Session values
                     ARGS.to           = call_room;
-                    ARGS.media        = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
-                    ARGS.video_source = JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
+                    ARGS.media        = (submit_target == 'call_audio') ? GIGGLE_MEDIA_AUDIO : GIGGLE_MEDIA_VIDEO;
+                    ARGS.video_source = GIGGLE_VIDEO_SOURCE_CAMERA;
                     ARGS.local_view   = $('#video_local')[0];
 
                     // Let's go!
-                    JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_MUJI, ARGS);
+                    JINGLE = Giggle.session(GIGGLE_SESSION_MUJI, ARGS);
                     JINGLE.join();
                 } catch(e) {
                     alert('jingle > ' + e);
@@ -692,7 +692,7 @@ $(document).ready(function() {
         try {
             if(!SC_CONNECTED) return false;
 
-            if(JINGLE !== null) JINGLE.mute(JSJAC_JINGLE_MEDIA_AUDIO);
+            if(JINGLE !== null) JINGLE.mute(GIGGLE_MEDIA_AUDIO);
 
             $(this).hide();
             $('#live_unmute').show();
@@ -708,7 +708,7 @@ $(document).ready(function() {
         try {
             if(!SC_CONNECTED) return false;
 
-            if(JINGLE !== null) JINGLE.unmute(JSJAC_JINGLE_MEDIA_AUDIO);
+            if(JINGLE !== null) JINGLE.unmute(GIGGLE_MEDIA_AUDIO);
 
             $(this).hide();
             $('#live_mute').show();

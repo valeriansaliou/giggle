@@ -1,7 +1,7 @@
-JSJaCJingle.js Protocol Support
+Giggle.js Protocol Support
 ===============================
 
-Here are listed the XMPP Protocol Extensions that JSJaCJingle.js supports, as well as their implementation version.
+Here are listed the XMPP Protocol Extensions that Giggle.js supports, as well as their implementation version.
 
 
 # XMPP Extensions (Standardized)

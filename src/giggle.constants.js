@@ -1,14 +1,14 @@
 /**
- * @fileoverview JSJaC Jingle library - Constants map
+ * @fileoverview Giggle library - Constants map
  *
- * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @url https://github.com/valeriansaliou/giggle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 
-/** @module jsjac-jingle/constants */
+/** @module giggle/constants */
 
 
 /**
@@ -230,7 +230,7 @@ var R_NETWORK_IP               = {
  * @default
  * @public
  */
-var R_JSJAC_JINGLE_SERVICE_URI    = /^(\w+):([^:\?]+)(?::(\d+))?(?:\?transport=(\w+))?/i;
+var R_GIGGLE_SERVICE_URI    = /^(\w+):([^:\?]+)(?::(\d+))?(?:\?transport=(\w+))?/i;
 
 
 /**
@@ -661,7 +661,7 @@ var MAP_DISCO_MUJI                                = [
 
 
 /**
- * JSJAC JINGLE CONSTANTS
+ * GIGGLE CONSTANTS
  */
 
 /**
@@ -672,7 +672,7 @@ var MAP_DISCO_MUJI                                = [
  * @default
  * @public
  */
-var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true : false;
+var GIGGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true : false;
 
 /**
  * @constant
@@ -682,7 +682,7 @@ var JSJAC_JINGLE_AVAILABLE                           = WEBRTC_GET_MEDIA ? true :
  * @default
  * @public
  */
-var JSJAC_JINGLE_SESSION_SINGLE                      = 'single';
+var GIGGLE_SESSION_SINGLE                      = 'single';
 
 /**
  * @constant
@@ -692,7 +692,7 @@ var JSJAC_JINGLE_SESSION_SINGLE                      = 'single';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SESSION_MUJI                        = 'muji';
+var GIGGLE_SESSION_MUJI                        = 'muji';
 
 /**
  * @constant
@@ -702,7 +702,7 @@ var JSJAC_JINGLE_SESSION_MUJI                        = 'muji';
  * @default
  * @public
  */
-var JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT                = 15;
+var GIGGLE_PEER_TIMEOUT_DEFAULT                = 15;
 
 /**
  * @constant
@@ -712,7 +712,7 @@ var JSJAC_JINGLE_PEER_TIMEOUT_DEFAULT                = 15;
  * @default
  * @public
  */
-var JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT             = 5;
+var GIGGLE_PEER_TIMEOUT_DISCONNECT             = 5;
 
 /**
  * @constant
@@ -722,7 +722,7 @@ var JSJAC_JINGLE_PEER_TIMEOUT_DISCONNECT             = 5;
  * @default
  * @public
  */
-var JSJAC_JINGLE_MEDIA_READYSTATE_UNINITIALIZED      = 0;
+var GIGGLE_MEDIA_READYSTATE_UNINITIALIZED      = 0;
 
 /**
  * @constant
@@ -732,7 +732,7 @@ var JSJAC_JINGLE_MEDIA_READYSTATE_UNINITIALIZED      = 0;
  * @default
  * @public
  */
-var JSJAC_JINGLE_MEDIA_READYSTATE_LOADING            = 1;
+var GIGGLE_MEDIA_READYSTATE_LOADING            = 1;
 
 /**
  * @constant
@@ -742,7 +742,7 @@ var JSJAC_JINGLE_MEDIA_READYSTATE_LOADING            = 1;
  * @default
  * @public
  */
-var JSJAC_JINGLE_MEDIA_READYSTATE_LOADED             = 2;
+var GIGGLE_MEDIA_READYSTATE_LOADED             = 2;
 
 /**
  * @constant
@@ -752,7 +752,7 @@ var JSJAC_JINGLE_MEDIA_READYSTATE_LOADED             = 2;
  * @default
  * @public
  */
-var JSJAC_JINGLE_MEDIA_READYSTATE_INTERACTIVE        = 3;
+var GIGGLE_MEDIA_READYSTATE_INTERACTIVE        = 3;
 
 /**
  * @constant
@@ -762,7 +762,7 @@ var JSJAC_JINGLE_MEDIA_READYSTATE_INTERACTIVE        = 3;
  * @default
  * @public
  */
-var JSJAC_JINGLE_MEDIA_READYSTATE_COMPLETED          = 4;
+var GIGGLE_MEDIA_READYSTATE_COMPLETED          = 4;
 
 /**
  * @constant
@@ -772,7 +772,7 @@ var JSJAC_JINGLE_MEDIA_READYSTATE_COMPLETED          = 4;
  * @default
  * @public
  */
-var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
+var GIGGLE_STANZA_TIMEOUT                      = 10;
 
 /**
  * @constant
@@ -782,7 +782,7 @@ var JSJAC_JINGLE_STANZA_TIMEOUT                      = 10;
  * @default
  * @public
  */
-var JSJAC_JINGLE_BROADCAST_TIMEOUT                   = 30;
+var GIGGLE_BROADCAST_TIMEOUT                   = 30;
 
 /**
  * @constant
@@ -792,7 +792,7 @@ var JSJAC_JINGLE_BROADCAST_TIMEOUT                   = 30;
  * @default
  * @public
  */
-var JSJAC_JINGLE_STANZA_ID_PRE                       = 'jj';
+var GIGGLE_STANZA_ID_PRE                       = 'jj';
 
 /**
  * @constant
@@ -802,7 +802,7 @@ var JSJAC_JINGLE_STANZA_ID_PRE                       = 'jj';
  * @default
  * @public
  */
-var JSJAC_JINGLE_NETWORK                             = '0';
+var GIGGLE_NETWORK                             = '0';
 
 /**
  * @constant
@@ -812,7 +812,7 @@ var JSJAC_JINGLE_NETWORK                             = '0';
  * @default
  * @public
  */
-var JSJAC_JINGLE_GENERATION                          = '0';
+var GIGGLE_GENERATION                          = '0';
 
 /**
  * @constant
@@ -822,7 +822,7 @@ var JSJAC_JINGLE_GENERATION                          = '0';
  * @default
  * @public
  */
-var JSJAC_JINGLE_DIRECTION_LOCAL                     = 'local';
+var GIGGLE_DIRECTION_LOCAL                     = 'local';
 
 /**
  * @constant
@@ -832,7 +832,7 @@ var JSJAC_JINGLE_DIRECTION_LOCAL                     = 'local';
  * @default
  * @public
  */
-var JSJAC_JINGLE_DIRECTION_REMOTE                    = 'remote';
+var GIGGLE_DIRECTION_REMOTE                    = 'remote';
 
 /**
  * @constant
@@ -842,7 +842,7 @@ var JSJAC_JINGLE_DIRECTION_REMOTE                    = 'remote';
  * @default
  * @public
  */
-var JSJAC_JINGLE_BROWSER_FIREFOX                     = 'Firefox';
+var GIGGLE_BROWSER_FIREFOX                     = 'Firefox';
 
 /**
  * @constant
@@ -852,7 +852,7 @@ var JSJAC_JINGLE_BROWSER_FIREFOX                     = 'Firefox';
  * @default
  * @public
  */
-var JSJAC_JINGLE_BROWSER_CHROME                      = 'Chrome';
+var GIGGLE_BROWSER_CHROME                      = 'Chrome';
 
 /**
  * @constant
@@ -862,7 +862,7 @@ var JSJAC_JINGLE_BROWSER_CHROME                      = 'Chrome';
  * @default
  * @public
  */
-var JSJAC_JINGLE_BROWSER_SAFARI                      = 'Safari';
+var GIGGLE_BROWSER_SAFARI                      = 'Safari';
 
 /**
  * @constant
@@ -872,7 +872,7 @@ var JSJAC_JINGLE_BROWSER_SAFARI                      = 'Safari';
  * @default
  * @public
  */
-var JSJAC_JINGLE_BROWSER_OPERA                       = 'Opera';
+var GIGGLE_BROWSER_OPERA                       = 'Opera';
 
 /**
  * @constant
@@ -882,7 +882,7 @@ var JSJAC_JINGLE_BROWSER_OPERA                       = 'Opera';
  * @default
  * @public
  */
-var JSJAC_JINGLE_BROWSER_IE                          = 'IE';
+var GIGGLE_BROWSER_IE                          = 'IE';
 
 /**
  * @constant
@@ -892,7 +892,7 @@ var JSJAC_JINGLE_BROWSER_IE                          = 'IE';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SENDERS_BOTH                        = { jingle: 'both',      sdp: 'sendrecv' };
+var GIGGLE_SENDERS_BOTH                        = { jingle: 'both',      sdp: 'sendrecv' };
 
 /**
  * @constant
@@ -902,7 +902,7 @@ var JSJAC_JINGLE_SENDERS_BOTH                        = { jingle: 'both',      sd
  * @default
  * @public
  */
-var JSJAC_JINGLE_SENDERS_INITIATOR                   = { jingle: 'initiator', sdp: 'sendonly' };
+var GIGGLE_SENDERS_INITIATOR                   = { jingle: 'initiator', sdp: 'sendonly' };
 
 /**
  * @constant
@@ -912,7 +912,7 @@ var JSJAC_JINGLE_SENDERS_INITIATOR                   = { jingle: 'initiator', sd
  * @default
  * @public
  */
-var JSJAC_JINGLE_SENDERS_NONE                        = { jingle: 'none',      sdp: 'inactive' };
+var GIGGLE_SENDERS_NONE                        = { jingle: 'none',      sdp: 'inactive' };
 
 /**
  * @constant
@@ -922,7 +922,7 @@ var JSJAC_JINGLE_SENDERS_NONE                        = { jingle: 'none',      sd
  * @default
  * @public
  */
-var JSJAC_JINGLE_SENDERS_RESPONDER                   = { jingle: 'responder', sdp: 'recvonly' };
+var GIGGLE_SENDERS_RESPONDER                   = { jingle: 'responder', sdp: 'recvonly' };
 
 /**
  * @constant
@@ -932,7 +932,7 @@ var JSJAC_JINGLE_SENDERS_RESPONDER                   = { jingle: 'responder', sd
  * @default
  * @public
  */
-var JSJAC_JINGLE_CREATOR_INITIATOR                   = 'initiator';
+var GIGGLE_CREATOR_INITIATOR                   = 'initiator';
 
 /**
  * @constant
@@ -942,7 +942,7 @@ var JSJAC_JINGLE_CREATOR_INITIATOR                   = 'initiator';
  * @default
  * @public
  */
-var JSJAC_JINGLE_CREATOR_RESPONDER                   = 'responder';
+var GIGGLE_CREATOR_RESPONDER                   = 'responder';
 
 /**
  * @constant
@@ -952,7 +952,7 @@ var JSJAC_JINGLE_CREATOR_RESPONDER                   = 'responder';
  * @default
  * @public
  */
-var JSJAC_JINGLE_STATUS_INACTIVE                     = 'inactive';
+var GIGGLE_STATUS_INACTIVE                     = 'inactive';
 
 /**
  * @constant
@@ -962,7 +962,7 @@ var JSJAC_JINGLE_STATUS_INACTIVE                     = 'inactive';
  * @default
  * @public
  */
-var JSJAC_JINGLE_STATUS_INITIATING                   = 'initiating';
+var GIGGLE_STATUS_INITIATING                   = 'initiating';
 
 /**
  * @constant
@@ -972,7 +972,7 @@ var JSJAC_JINGLE_STATUS_INITIATING                   = 'initiating';
  * @default
  * @public
  */
-var JSJAC_JINGLE_STATUS_INITIATED                    = 'initiated';
+var GIGGLE_STATUS_INITIATED                    = 'initiated';
 
 /**
  * @constant
@@ -982,7 +982,7 @@ var JSJAC_JINGLE_STATUS_INITIATED                    = 'initiated';
  * @default
  * @public
  */
-var JSJAC_JINGLE_STATUS_ACCEPTING                    = 'accepting';
+var GIGGLE_STATUS_ACCEPTING                    = 'accepting';
 
 /**
  * @constant
@@ -992,7 +992,7 @@ var JSJAC_JINGLE_STATUS_ACCEPTING                    = 'accepting';
  * @default
  * @public
  */
-var JSJAC_JINGLE_STATUS_ACCEPTED                     = 'accepted';
+var GIGGLE_STATUS_ACCEPTED                     = 'accepted';
 
 /**
  * @constant
@@ -1002,7 +1002,7 @@ var JSJAC_JINGLE_STATUS_ACCEPTED                     = 'accepted';
  * @default
  * @public
  */
-var JSJAC_JINGLE_STATUS_TERMINATING                  = 'terminating';
+var GIGGLE_STATUS_TERMINATING                  = 'terminating';
 
 /**
  * @constant
@@ -1012,7 +1012,7 @@ var JSJAC_JINGLE_STATUS_TERMINATING                  = 'terminating';
  * @default
  * @public
  */
-var JSJAC_JINGLE_STATUS_TERMINATED                   = 'terminated';
+var GIGGLE_STATUS_TERMINATED                   = 'terminated';
 
 /**
  * @constant
@@ -1022,7 +1022,7 @@ var JSJAC_JINGLE_STATUS_TERMINATED                   = 'terminated';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_CONTENT_ACCEPT               = 'content-accept';
+var GIGGLE_ACTION_CONTENT_ACCEPT               = 'content-accept';
 
 /**
  * @constant
@@ -1032,7 +1032,7 @@ var JSJAC_JINGLE_ACTION_CONTENT_ACCEPT               = 'content-accept';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_CONTENT_ADD                  = 'content-add';
+var GIGGLE_ACTION_CONTENT_ADD                  = 'content-add';
 
 /**
  * @constant
@@ -1042,7 +1042,7 @@ var JSJAC_JINGLE_ACTION_CONTENT_ADD                  = 'content-add';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_CONTENT_MODIFY               = 'content-modify';
+var GIGGLE_ACTION_CONTENT_MODIFY               = 'content-modify';
 
 /**
  * @constant
@@ -1052,7 +1052,7 @@ var JSJAC_JINGLE_ACTION_CONTENT_MODIFY               = 'content-modify';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_CONTENT_REJECT               = 'content-reject';
+var GIGGLE_ACTION_CONTENT_REJECT               = 'content-reject';
 
 /**
  * @constant
@@ -1062,7 +1062,7 @@ var JSJAC_JINGLE_ACTION_CONTENT_REJECT               = 'content-reject';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_CONTENT_REMOVE               = 'content-remove';
+var GIGGLE_ACTION_CONTENT_REMOVE               = 'content-remove';
 
 /**
  * @constant
@@ -1072,7 +1072,7 @@ var JSJAC_JINGLE_ACTION_CONTENT_REMOVE               = 'content-remove';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_DESCRIPTION_INFO             = 'description-info';
+var GIGGLE_ACTION_DESCRIPTION_INFO             = 'description-info';
 
 /**
  * @constant
@@ -1082,7 +1082,7 @@ var JSJAC_JINGLE_ACTION_DESCRIPTION_INFO             = 'description-info';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_SECURITY_INFO                = 'security-info';
+var GIGGLE_ACTION_SECURITY_INFO                = 'security-info';
 
 /**
  * @constant
@@ -1092,7 +1092,7 @@ var JSJAC_JINGLE_ACTION_SECURITY_INFO                = 'security-info';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_SESSION_ACCEPT               = 'session-accept';
+var GIGGLE_ACTION_SESSION_ACCEPT               = 'session-accept';
 
 /**
  * @constant
@@ -1102,7 +1102,7 @@ var JSJAC_JINGLE_ACTION_SESSION_ACCEPT               = 'session-accept';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_SESSION_INFO                 = 'session-info';
+var GIGGLE_ACTION_SESSION_INFO                 = 'session-info';
 
 /**
  * @constant
@@ -1112,7 +1112,7 @@ var JSJAC_JINGLE_ACTION_SESSION_INFO                 = 'session-info';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_SESSION_INITIATE             = 'session-initiate';
+var GIGGLE_ACTION_SESSION_INITIATE             = 'session-initiate';
 
 /**
  * @constant
@@ -1122,7 +1122,7 @@ var JSJAC_JINGLE_ACTION_SESSION_INITIATE             = 'session-initiate';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_SESSION_TERMINATE            = 'session-terminate';
+var GIGGLE_ACTION_SESSION_TERMINATE            = 'session-terminate';
 
 /**
  * @constant
@@ -1132,7 +1132,7 @@ var JSJAC_JINGLE_ACTION_SESSION_TERMINATE            = 'session-terminate';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT             = 'transport-accept';
+var GIGGLE_ACTION_TRANSPORT_ACCEPT             = 'transport-accept';
 
 /**
  * @constant
@@ -1142,7 +1142,7 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT             = 'transport-accept';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_TRANSPORT_INFO               = 'transport-info';
+var GIGGLE_ACTION_TRANSPORT_INFO               = 'transport-info';
 
 /**
  * @constant
@@ -1152,7 +1152,7 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_INFO               = 'transport-info';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_TRANSPORT_REJECT             = 'transport-reject';
+var GIGGLE_ACTION_TRANSPORT_REJECT             = 'transport-reject';
 
 /**
  * @constant
@@ -1162,7 +1162,7 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_REJECT             = 'transport-reject';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE            = 'transport-replace';
+var GIGGLE_ACTION_TRANSPORT_REPLACE            = 'transport-replace';
 
 /**
  * @constant
@@ -1172,7 +1172,7 @@ var JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE            = 'transport-replace';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_ACTION_PROPOSE              = 'propose';
+var GIGGLE_MESSAGE_ACTION_PROPOSE              = 'propose';
 
 /**
  * @constant
@@ -1182,7 +1182,7 @@ var JSJAC_JINGLE_MESSAGE_ACTION_PROPOSE              = 'propose';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_ACTION_RETRACT              = 'retract';
+var GIGGLE_MESSAGE_ACTION_RETRACT              = 'retract';
 
 /**
  * @constant
@@ -1192,7 +1192,7 @@ var JSJAC_JINGLE_MESSAGE_ACTION_RETRACT              = 'retract';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_ACTION_ACCEPT               = 'accept';
+var GIGGLE_MESSAGE_ACTION_ACCEPT               = 'accept';
 
 /**
  * @constant
@@ -1202,7 +1202,7 @@ var JSJAC_JINGLE_MESSAGE_ACTION_ACCEPT               = 'accept';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_ACTION_PROCEED              = 'proceed';
+var GIGGLE_MESSAGE_ACTION_PROCEED              = 'proceed';
 
 /**
  * @constant
@@ -1212,7 +1212,7 @@ var JSJAC_JINGLE_MESSAGE_ACTION_PROCEED              = 'proceed';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_ACTION_REJECT               = 'reject';
+var GIGGLE_MESSAGE_ACTION_REJECT               = 'reject';
 
 /**
  * @constant
@@ -1222,7 +1222,7 @@ var JSJAC_JINGLE_MESSAGE_ACTION_REJECT               = 'reject';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ERROR_OUT_OF_ORDER                  = { jingle: 'out-of-order',           xmpp: 'unexpected-request',         type: 'wait'   };
+var GIGGLE_ERROR_OUT_OF_ORDER                  = { jingle: 'out-of-order',           xmpp: 'unexpected-request',         type: 'wait'   };
 
 /**
  * @constant
@@ -1232,7 +1232,7 @@ var JSJAC_JINGLE_ERROR_OUT_OF_ORDER                  = { jingle: 'out-of-order',
  * @default
  * @public
  */
-var JSJAC_JINGLE_ERROR_TIE_BREAK                     = { jingle: 'tie-break',              xmpp: 'conflict',                   type: 'cancel' };
+var GIGGLE_ERROR_TIE_BREAK                     = { jingle: 'tie-break',              xmpp: 'conflict',                   type: 'cancel' };
 
 /**
  * @constant
@@ -1242,7 +1242,7 @@ var JSJAC_JINGLE_ERROR_TIE_BREAK                     = { jingle: 'tie-break',   
  * @default
  * @public
  */
-var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION               = { jingle: 'unknown-session',        xmpp: 'item-not-found',             type: 'cancel' };
+var GIGGLE_ERROR_UNKNOWN_SESSION               = { jingle: 'unknown-session',        xmpp: 'item-not-found',             type: 'cancel' };
 
 /**
  * @constant
@@ -1252,7 +1252,7 @@ var JSJAC_JINGLE_ERROR_UNKNOWN_SESSION               = { jingle: 'unknown-sessio
  * @default
  * @public
  */
-var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO              = { jingle: 'unsupported-info',       xmpp: 'feature-not-implemented',    type: 'modify' };
+var GIGGLE_ERROR_UNSUPPORTED_INFO              = { jingle: 'unsupported-info',       xmpp: 'feature-not-implemented',    type: 'modify' };
 
 /**
  * @constant
@@ -1262,7 +1262,7 @@ var JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO              = { jingle: 'unsupported-in
  * @default
  * @public
  */
-var JSJAC_JINGLE_ERROR_SECURITY_REQUIRED             = { jingle: 'security-required',      xmpp: 'not-acceptable',             type: 'cancel' };
+var GIGGLE_ERROR_SECURITY_REQUIRED             = { jingle: 'security-required',      xmpp: 'not-acceptable',             type: 'cancel' };
 
 /**
  * @constant
@@ -1373,7 +1373,7 @@ var XMPP_ERROR_BAD_REQUEST                           = { xmpp: 'bad-request',   
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION          = 'alternative-session';
+var GIGGLE_REASON_ALTERNATIVE_SESSION          = 'alternative-session';
 
 /**
  * @constant
@@ -1383,7 +1383,7 @@ var JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION          = 'alternative-session';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_BUSY                         = 'busy';
+var GIGGLE_REASON_BUSY                         = 'busy';
 
 /**
  * @constant
@@ -1393,7 +1393,7 @@ var JSJAC_JINGLE_REASON_BUSY                         = 'busy';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_CANCEL                       = 'cancel';
+var GIGGLE_REASON_CANCEL                       = 'cancel';
 
 /**
  * @constant
@@ -1403,7 +1403,7 @@ var JSJAC_JINGLE_REASON_CANCEL                       = 'cancel';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR           = 'connectivity-error';
+var GIGGLE_REASON_CONNECTIVITY_ERROR           = 'connectivity-error';
 
 /**
  * @constant
@@ -1413,7 +1413,7 @@ var JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR           = 'connectivity-error';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_DECLINE                      = 'decline';
+var GIGGLE_REASON_DECLINE                      = 'decline';
 
 /**
  * @constant
@@ -1423,7 +1423,7 @@ var JSJAC_JINGLE_REASON_DECLINE                      = 'decline';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_EXPIRED                      = 'expired';
+var GIGGLE_REASON_EXPIRED                      = 'expired';
 
 /**
  * @constant
@@ -1433,7 +1433,7 @@ var JSJAC_JINGLE_REASON_EXPIRED                      = 'expired';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_FAILED_APPLICATION           = 'failed-application';
+var GIGGLE_REASON_FAILED_APPLICATION           = 'failed-application';
 
 /**
  * @constant
@@ -1443,7 +1443,7 @@ var JSJAC_JINGLE_REASON_FAILED_APPLICATION           = 'failed-application';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_FAILED_TRANSPORT             = 'failed-transport';
+var GIGGLE_REASON_FAILED_TRANSPORT             = 'failed-transport';
 
 /**
  * @constant
@@ -1453,7 +1453,7 @@ var JSJAC_JINGLE_REASON_FAILED_TRANSPORT             = 'failed-transport';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_GENERAL_ERROR                = 'general-error';
+var GIGGLE_REASON_GENERAL_ERROR                = 'general-error';
 
 /**
  * @constant
@@ -1463,7 +1463,7 @@ var JSJAC_JINGLE_REASON_GENERAL_ERROR                = 'general-error';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_GONE                         = 'gone';
+var GIGGLE_REASON_GONE                         = 'gone';
 
 /**
  * @constant
@@ -1473,7 +1473,7 @@ var JSJAC_JINGLE_REASON_GONE                         = 'gone';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS      = 'incompatible-parameters';
+var GIGGLE_REASON_INCOMPATIBLE_PARAMETERS      = 'incompatible-parameters';
 
 /**
  * @constant
@@ -1483,7 +1483,7 @@ var JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS      = 'incompatible-parameters'
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_MEDIA_ERROR                  = 'media-error';
+var GIGGLE_REASON_MEDIA_ERROR                  = 'media-error';
 
 /**
  * @constant
@@ -1493,7 +1493,7 @@ var JSJAC_JINGLE_REASON_MEDIA_ERROR                  = 'media-error';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_SECURITY_ERROR               = 'security-error';
+var GIGGLE_REASON_SECURITY_ERROR               = 'security-error';
 
 /**
  * @constant
@@ -1503,7 +1503,7 @@ var JSJAC_JINGLE_REASON_SECURITY_ERROR               = 'security-error';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_SUCCESS                      = 'success';
+var GIGGLE_REASON_SUCCESS                      = 'success';
 
 /**
  * @constant
@@ -1513,7 +1513,7 @@ var JSJAC_JINGLE_REASON_SUCCESS                      = 'success';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_TIMEOUT                      = 'timeout';
+var GIGGLE_REASON_TIMEOUT                      = 'timeout';
 
 /**
  * @constant
@@ -1523,7 +1523,7 @@ var JSJAC_JINGLE_REASON_TIMEOUT                      = 'timeout';
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS     = 'unsupported-applications';
+var GIGGLE_REASON_UNSUPPORTED_APPLICATIONS     = 'unsupported-applications';
 
 /**
  * @constant
@@ -1533,7 +1533,7 @@ var JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS     = 'unsupported-applications
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS       = 'unsupported-transports';
+var GIGGLE_REASON_UNSUPPORTED_TRANSPORTS       = 'unsupported-transports';
 
 /**
  * @constant
@@ -1543,7 +1543,7 @@ var JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS       = 'unsupported-transports';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SESSION_INFO_ACTIVE                 = 'active';
+var GIGGLE_SESSION_INFO_ACTIVE                 = 'active';
 
 /**
  * @constant
@@ -1553,7 +1553,7 @@ var JSJAC_JINGLE_SESSION_INFO_ACTIVE                 = 'active';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SESSION_INFO_HOLD                   = 'hold';
+var GIGGLE_SESSION_INFO_HOLD                   = 'hold';
 
 /**
  * @constant
@@ -1563,7 +1563,7 @@ var JSJAC_JINGLE_SESSION_INFO_HOLD                   = 'hold';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SESSION_INFO_MUTE                   = 'mute';
+var GIGGLE_SESSION_INFO_MUTE                   = 'mute';
 
 /**
  * @constant
@@ -1573,7 +1573,7 @@ var JSJAC_JINGLE_SESSION_INFO_MUTE                   = 'mute';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SESSION_INFO_RINGING                = 'ringing';
+var GIGGLE_SESSION_INFO_RINGING                = 'ringing';
 
 /**
  * @constant
@@ -1583,7 +1583,7 @@ var JSJAC_JINGLE_SESSION_INFO_RINGING                = 'ringing';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SESSION_INFO_UNHOLD                 = 'unhold';
+var GIGGLE_SESSION_INFO_UNHOLD                 = 'unhold';
 
 /**
  * @constant
@@ -1593,7 +1593,7 @@ var JSJAC_JINGLE_SESSION_INFO_UNHOLD                 = 'unhold';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SESSION_INFO_UNMUTE                 = 'unmute';
+var GIGGLE_SESSION_INFO_UNMUTE                 = 'unmute';
 
 /**
  * @constant
@@ -1603,7 +1603,7 @@ var JSJAC_JINGLE_SESSION_INFO_UNMUTE                 = 'unmute';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MEDIA_AUDIO                         = 'audio';
+var GIGGLE_MEDIA_AUDIO                         = 'audio';
 
 /**
  * @constant
@@ -1613,7 +1613,7 @@ var JSJAC_JINGLE_MEDIA_AUDIO                         = 'audio';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MEDIA_VIDEO                         = 'video';
+var GIGGLE_MEDIA_VIDEO                         = 'video';
 
 /**
  * @constant
@@ -1623,7 +1623,7 @@ var JSJAC_JINGLE_MEDIA_VIDEO                         = 'video';
  * @default
  * @public
  */
-var JSJAC_JINGLE_VIDEO_SOURCE_CAMERA                 = 'camera';
+var GIGGLE_VIDEO_SOURCE_CAMERA                 = 'camera';
 
 /**
  * @constant
@@ -1633,7 +1633,7 @@ var JSJAC_JINGLE_VIDEO_SOURCE_CAMERA                 = 'camera';
  * @default
  * @public
  */
-var JSJAC_JINGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
+var GIGGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
 
 /**
  * @constant
@@ -1643,7 +1643,7 @@ var JSJAC_JINGLE_VIDEO_SOURCE_SCREEN                 = 'screen';
  * @default
  * @public
  */
-var JSJAC_JINGLE_STANZA_IQ                           = 'iq';
+var GIGGLE_STANZA_IQ                           = 'iq';
 
 /**
  * @constant
@@ -1653,7 +1653,7 @@ var JSJAC_JINGLE_STANZA_IQ                           = 'iq';
  * @default
  * @public
  */
-var JSJAC_JINGLE_STANZA_MESSAGE                      = 'message';
+var GIGGLE_STANZA_MESSAGE                      = 'message';
 
 /**
  * @constant
@@ -1663,7 +1663,7 @@ var JSJAC_JINGLE_STANZA_MESSAGE                      = 'message';
  * @default
  * @public
  */
-var JSJAC_JINGLE_STANZA_PRESENCE                     = 'presence';
+var GIGGLE_STANZA_PRESENCE                     = 'presence';
 
 /**
  * @constant
@@ -1673,7 +1673,7 @@ var JSJAC_JINGLE_STANZA_PRESENCE                     = 'presence';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_TYPE_ALL                    = 'all';
+var GIGGLE_MESSAGE_TYPE_ALL                    = 'all';
 
 /**
  * @constant
@@ -1683,7 +1683,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_ALL                    = 'all';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_TYPE_NORMAL                 = 'normal';
+var GIGGLE_MESSAGE_TYPE_NORMAL                 = 'normal';
 
 /**
  * @constant
@@ -1693,7 +1693,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_NORMAL                 = 'normal';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_TYPE_CHAT                   = 'chat';
+var GIGGLE_MESSAGE_TYPE_CHAT                   = 'chat';
 
 /**
  * @constant
@@ -1703,7 +1703,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_CHAT                   = 'chat';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_TYPE_HEADLINE               = 'headline';
+var GIGGLE_MESSAGE_TYPE_HEADLINE               = 'headline';
 
 /**
  * @constant
@@ -1713,7 +1713,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_HEADLINE               = 'headline';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_TYPE_GROUPCHAT              = 'groupchat';
+var GIGGLE_MESSAGE_TYPE_GROUPCHAT              = 'groupchat';
 
 /**
  * @constant
@@ -1723,7 +1723,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_GROUPCHAT              = 'groupchat';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_TYPE_ERROR                  = 'error';
+var GIGGLE_MESSAGE_TYPE_ERROR                  = 'error';
 
 /**
  * @constant
@@ -1733,7 +1733,7 @@ var JSJAC_JINGLE_MESSAGE_TYPE_ERROR                  = 'error';
  * @default
  * @public
  */
-var JSJAC_JINGLE_PRESENCE_TYPE_ALL                   = 'all';
+var GIGGLE_PRESENCE_TYPE_ALL                   = 'all';
 
 /**
  * @constant
@@ -1743,7 +1743,7 @@ var JSJAC_JINGLE_PRESENCE_TYPE_ALL                   = 'all';
  * @default
  * @public
  */
-var JSJAC_JINGLE_PRESENCE_TYPE_AVAILABLE             = 'available';
+var GIGGLE_PRESENCE_TYPE_AVAILABLE             = 'available';
 
 /**
  * @constant
@@ -1753,7 +1753,7 @@ var JSJAC_JINGLE_PRESENCE_TYPE_AVAILABLE             = 'available';
  * @default
  * @public
  */
-var JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE           = 'unavailable';
+var GIGGLE_PRESENCE_TYPE_UNAVAILABLE           = 'unavailable';
 
 /**
  * @constant
@@ -1763,7 +1763,7 @@ var JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE           = 'unavailable';
  * @default
  * @public
  */
-var JSJAC_JINGLE_PRESENCE_TYPE_ERROR                 = 'error';
+var GIGGLE_PRESENCE_TYPE_ERROR                 = 'error';
 
 /**
  * @constant
@@ -1773,7 +1773,7 @@ var JSJAC_JINGLE_PRESENCE_TYPE_ERROR                 = 'error';
  * @default
  * @public
  */
-var JSJAC_JINGLE_IQ_TYPE_ALL                         = 'all';
+var GIGGLE_IQ_TYPE_ALL                         = 'all';
 
 /**
  * @constant
@@ -1783,7 +1783,7 @@ var JSJAC_JINGLE_IQ_TYPE_ALL                         = 'all';
  * @default
  * @public
  */
-var JSJAC_JINGLE_IQ_TYPE_RESULT                      = 'result';
+var GIGGLE_IQ_TYPE_RESULT                      = 'result';
 
 /**
  * @constant
@@ -1793,7 +1793,7 @@ var JSJAC_JINGLE_IQ_TYPE_RESULT                      = 'result';
  * @default
  * @public
  */
-var JSJAC_JINGLE_IQ_TYPE_SET                         = 'set';
+var GIGGLE_IQ_TYPE_SET                         = 'set';
 
 /**
  * @constant
@@ -1803,7 +1803,7 @@ var JSJAC_JINGLE_IQ_TYPE_SET                         = 'set';
  * @default
  * @public
  */
-var JSJAC_JINGLE_IQ_TYPE_GET                         = 'get';
+var GIGGLE_IQ_TYPE_GET                         = 'get';
 
 /**
  * @constant
@@ -1813,7 +1813,7 @@ var JSJAC_JINGLE_IQ_TYPE_GET                         = 'get';
  * @default
  * @public
  */
-var JSJAC_JINGLE_IQ_TYPE_ERROR                       = 'error';
+var GIGGLE_IQ_TYPE_ERROR                       = 'error';
 
 /**
  * @constant
@@ -1823,7 +1823,7 @@ var JSJAC_JINGLE_IQ_TYPE_ERROR                       = 'error';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ICE_CONNECTION_STATE_NEW            = 'new';
+var GIGGLE_ICE_CONNECTION_STATE_NEW            = 'new';
 
 /**
  * @constant
@@ -1833,7 +1833,7 @@ var JSJAC_JINGLE_ICE_CONNECTION_STATE_NEW            = 'new';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ICE_CONNECTION_STATE_CHECKING       = 'checking';
+var GIGGLE_ICE_CONNECTION_STATE_CHECKING       = 'checking';
 
 /**
  * @constant
@@ -1843,7 +1843,7 @@ var JSJAC_JINGLE_ICE_CONNECTION_STATE_CHECKING       = 'checking';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ICE_CONNECTION_STATE_CONNECTED      = 'connected';
+var GIGGLE_ICE_CONNECTION_STATE_CONNECTED      = 'connected';
 
 /**
  * @constant
@@ -1853,7 +1853,7 @@ var JSJAC_JINGLE_ICE_CONNECTION_STATE_CONNECTED      = 'connected';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ICE_CONNECTION_STATE_COMPLETED      = 'completed';
+var GIGGLE_ICE_CONNECTION_STATE_COMPLETED      = 'completed';
 
 /**
  * @constant
@@ -1863,7 +1863,7 @@ var JSJAC_JINGLE_ICE_CONNECTION_STATE_COMPLETED      = 'completed';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ICE_CONNECTION_STATE_FAILED         = 'failed';
+var GIGGLE_ICE_CONNECTION_STATE_FAILED         = 'failed';
 
 /**
  * @constant
@@ -1873,7 +1873,7 @@ var JSJAC_JINGLE_ICE_CONNECTION_STATE_FAILED         = 'failed';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ICE_CONNECTION_STATE_DISCONNECTED   = 'disconnected';
+var GIGGLE_ICE_CONNECTION_STATE_DISCONNECTED   = 'disconnected';
 
 /**
  * @constant
@@ -1883,7 +1883,7 @@ var JSJAC_JINGLE_ICE_CONNECTION_STATE_DISCONNECTED   = 'disconnected';
  * @default
  * @public
  */
-var JSJAC_JINGLE_ICE_CONNECTION_STATE_CLOSED         = 'closed';
+var GIGGLE_ICE_CONNECTION_STATE_CLOSED         = 'closed';
 
 /**
  * @constant
@@ -1893,7 +1893,7 @@ var JSJAC_JINGLE_ICE_CONNECTION_STATE_CLOSED         = 'closed';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST             = 'host';
+var GIGGLE_SDP_CANDIDATE_TYPE_HOST             = 'host';
 
 /**
  * @constant
@@ -1903,7 +1903,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST             = 'host';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX            = 'srflx';
+var GIGGLE_SDP_CANDIDATE_TYPE_SRFLX            = 'srflx';
 
 /**
  * @constant
@@ -1913,7 +1913,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX            = 'srflx';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_PRFLX            = 'prflx';
+var GIGGLE_SDP_CANDIDATE_TYPE_PRFLX            = 'prflx';
 
 /**
  * @constant
@@ -1923,7 +1923,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_PRFLX            = 'prflx';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_RELAY            = 'relay';
+var GIGGLE_SDP_CANDIDATE_TYPE_RELAY            = 'relay';
 
 /**
  * @constant
@@ -1933,7 +1933,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_TYPE_RELAY            = 'relay';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE            = 'ice';
+var GIGGLE_SDP_CANDIDATE_METHOD_ICE            = 'ice';
 
 /**
  * @constant
@@ -1943,7 +1943,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE            = 'ice';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_METHOD_RAW            = 'raw';
+var GIGGLE_SDP_CANDIDATE_METHOD_RAW            = 'raw';
 
 /**
  * @constant
@@ -1953,7 +1953,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_METHOD_RAW            = 'raw';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_MAP_ICEUDP            = [
+var GIGGLE_SDP_CANDIDATE_MAP_ICEUDP            = [
   { n: 'component',  r: 1 },
   { n: 'foundation', r: 1 },
   { n: 'generation', r: 1 },
@@ -1976,7 +1976,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_MAP_ICEUDP            = [
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP            = [
+var GIGGLE_SDP_CANDIDATE_MAP_RAWUDP            = [
   { n: 'component',  r: 1 },
   { n: 'generation', r: 1 },
   { n: 'id',         r: 1 },
@@ -1993,7 +1993,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP            = [
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_LOCAL           = 'IN';
+var GIGGLE_SDP_CANDIDATE_SCOPE_LOCAL           = 'IN';
 
 /**
  * @constant
@@ -2003,7 +2003,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_LOCAL           = 'IN';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE          = 'IN';
+var GIGGLE_SDP_CANDIDATE_SCOPE_REMOTE          = 'IN';
 
 /**
  * @constant
@@ -2013,7 +2013,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE          = 'IN';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V4          = 'IP4';
+var GIGGLE_SDP_CANDIDATE_IPVERSION_V4          = 'IP4';
 
 /**
  * @constant
@@ -2023,7 +2023,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V4          = 'IP4';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V6          = 'IP6';
+var GIGGLE_SDP_CANDIDATE_IPVERSION_V6          = 'IP6';
 
 /**
  * @constant
@@ -2033,7 +2033,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V6          = 'IP6';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_TCP          = 'tcp';
+var GIGGLE_SDP_CANDIDATE_PROTOCOL_TCP          = 'tcp';
 
 /**
  * @constant
@@ -2043,7 +2043,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_TCP          = 'tcp';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_UDP          = 'udp';
+var GIGGLE_SDP_CANDIDATE_PROTOCOL_UDP          = 'udp';
 
 /**
  * @constant
@@ -2053,7 +2053,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_UDP          = 'udp';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_IP_V4                 = '0.0.0.0';
+var GIGGLE_SDP_CANDIDATE_IP_V4                 = '0.0.0.0';
 
 /**
  * @constant
@@ -2063,7 +2063,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IP_V4                 = '0.0.0.0';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_IP_V6                 = '::';
+var GIGGLE_SDP_CANDIDATE_IP_V6                 = '::';
 
 /**
  * @constant
@@ -2073,7 +2073,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IP_V6                 = '::';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT            = JSJAC_JINGLE_SDP_CANDIDATE_IP_V4;
+var GIGGLE_SDP_CANDIDATE_IP_DEFAULT            = GIGGLE_SDP_CANDIDATE_IP_V4;
 
 /**
  * @constant
@@ -2083,7 +2083,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT            = JSJAC_JINGLE_SDP_CANDIDAT
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_PORT_DEFAULT          = '1';
+var GIGGLE_SDP_CANDIDATE_PORT_DEFAULT          = '1';
 
 /**
  * @constant
@@ -2093,7 +2093,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PORT_DEFAULT          = '1';
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT         = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE;
+var GIGGLE_SDP_CANDIDATE_SCOPE_DEFAULT         = GIGGLE_SDP_CANDIDATE_SCOPE_REMOTE;
 
 /**
  * @constant
@@ -2103,7 +2103,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT         = JSJAC_JINGLE_SDP_CANDIDAT
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT     = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V4;
+var GIGGLE_SDP_CANDIDATE_IPVERSION_DEFAULT     = GIGGLE_SDP_CANDIDATE_IPVERSION_V4;
 
 /**
  * @constant
@@ -2113,7 +2113,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT     = JSJAC_JINGLE_SDP_CANDIDAT
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT      = JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_UDP;
+var GIGGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT      = GIGGLE_SDP_CANDIDATE_PROTOCOL_UDP;
 
 /**
  * @constant
@@ -2123,12 +2123,12 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT      = JSJAC_JINGLE_SDP_CANDIDAT
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_PRIORITY_DEFAULT      = '1';
+var GIGGLE_SDP_CANDIDATE_PRIORITY_DEFAULT      = '1';
 
 
 
 /**
- * JSJAC JINGLE MUJI CONSTANTS
+ * GIGGLE MUJI CONSTANTS
  */
 
 /**
@@ -2139,7 +2139,7 @@ var JSJAC_JINGLE_SDP_CANDIDATE_PRIORITY_DEFAULT      = '1';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_ACTION_PREPARE                 = 'prepare';
+var GIGGLE_MUJI_ACTION_PREPARE                 = 'prepare';
 
 /**
  * @constant
@@ -2149,7 +2149,7 @@ var JSJAC_JINGLE_MUJI_ACTION_PREPARE                 = 'prepare';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_ACTION_INITIATE                = 'initiate';
+var GIGGLE_MUJI_ACTION_INITIATE                = 'initiate';
 
 /**
  * @constant
@@ -2159,7 +2159,7 @@ var JSJAC_JINGLE_MUJI_ACTION_INITIATE                = 'initiate';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_ACTION_LEAVE                   = 'leave';
+var GIGGLE_MUJI_ACTION_LEAVE                   = 'leave';
 
 /**
  * @constant
@@ -2169,7 +2169,7 @@ var JSJAC_JINGLE_MUJI_ACTION_LEAVE                   = 'leave';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_STATUS_INACTIVE                = 'inactive';
+var GIGGLE_MUJI_STATUS_INACTIVE                = 'inactive';
 
 /**
  * @constant
@@ -2179,7 +2179,7 @@ var JSJAC_JINGLE_MUJI_STATUS_INACTIVE                = 'inactive';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_STATUS_PREPARING               = 'preparing';
+var GIGGLE_MUJI_STATUS_PREPARING               = 'preparing';
 
 /**
  * @constant
@@ -2189,7 +2189,7 @@ var JSJAC_JINGLE_MUJI_STATUS_PREPARING               = 'preparing';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_STATUS_PREPARED                = 'prepared';
+var GIGGLE_MUJI_STATUS_PREPARED                = 'prepared';
 
 /**
  * @constant
@@ -2199,7 +2199,7 @@ var JSJAC_JINGLE_MUJI_STATUS_PREPARED                = 'prepared';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_STATUS_INITIATING              = 'initiating';
+var GIGGLE_MUJI_STATUS_INITIATING              = 'initiating';
 
 /**
  * @constant
@@ -2209,7 +2209,7 @@ var JSJAC_JINGLE_MUJI_STATUS_INITIATING              = 'initiating';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_STATUS_INITIATED               = 'initiated';
+var GIGGLE_MUJI_STATUS_INITIATED               = 'initiated';
 
 /**
  * @constant
@@ -2219,7 +2219,7 @@ var JSJAC_JINGLE_MUJI_STATUS_INITIATED               = 'initiated';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_STATUS_LEAVING                 = 'leaving';
+var GIGGLE_MUJI_STATUS_LEAVING                 = 'leaving';
 
 /**
  * @constant
@@ -2229,7 +2229,7 @@ var JSJAC_JINGLE_MUJI_STATUS_LEAVING                 = 'leaving';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_STATUS_LEFT                    = 'left';
+var GIGGLE_MUJI_STATUS_LEFT                    = 'left';
 
 /**
  * @constant
@@ -2239,7 +2239,7 @@ var JSJAC_JINGLE_MUJI_STATUS_LEFT                    = 'left';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_INITIATE_WAIT                  = 2;
+var GIGGLE_MUJI_INITIATE_WAIT                  = 2;
 
 /**
  * @constant
@@ -2249,7 +2249,7 @@ var JSJAC_JINGLE_MUJI_INITIATE_WAIT                  = 2;
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_LEAVE_WAIT                     = 1;
+var GIGGLE_MUJI_LEAVE_WAIT                     = 1;
 
 /**
  * @constant
@@ -2259,7 +2259,7 @@ var JSJAC_JINGLE_MUJI_LEAVE_WAIT                     = 1;
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_PARTICIPANT_ACCEPT_WAIT        = 0.250;
+var GIGGLE_MUJI_PARTICIPANT_ACCEPT_WAIT        = 0.250;
 
 /**
  * @constant
@@ -2269,7 +2269,7 @@ var JSJAC_JINGLE_MUJI_PARTICIPANT_ACCEPT_WAIT        = 0.250;
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA         = 'get_user_media';
+var GIGGLE_MUJI_HANDLER_GET_USER_MEDIA         = 'get_user_media';
 
 /**
  * @constant
@@ -2279,7 +2279,7 @@ var JSJAC_JINGLE_MUJI_HANDLER_GET_USER_MEDIA         = 'get_user_media';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_ADMIN          = 'admin';
+var GIGGLE_MUJI_MUC_AFFILIATION_ADMIN          = 'admin';
 
 /**
  * @constant
@@ -2289,7 +2289,7 @@ var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_ADMIN          = 'admin';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_MEMBER         = 'member';
+var GIGGLE_MUJI_MUC_AFFILIATION_MEMBER         = 'member';
 
 /**
  * @constant
@@ -2299,7 +2299,7 @@ var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_MEMBER         = 'member';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_NONE           = 'none';
+var GIGGLE_MUJI_MUC_AFFILIATION_NONE           = 'none';
 
 /**
  * @constant
@@ -2309,7 +2309,7 @@ var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_NONE           = 'none';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_OUTCAST        = 'outcast';
+var GIGGLE_MUJI_MUC_AFFILIATION_OUTCAST        = 'outcast';
 
 /**
  * @constant
@@ -2319,7 +2319,7 @@ var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_OUTCAST        = 'outcast';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_OWNER          = 'owner';
+var GIGGLE_MUJI_MUC_AFFILIATION_OWNER          = 'owner';
 
 /**
  * @constant
@@ -2329,7 +2329,7 @@ var JSJAC_JINGLE_MUJI_MUC_AFFILIATION_OWNER          = 'owner';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_MUC_OWNER_SUBMIT               = 'submit';
+var GIGGLE_MUJI_MUC_OWNER_SUBMIT               = 'submit';
 
 /**
  * @constant
@@ -2339,7 +2339,7 @@ var JSJAC_JINGLE_MUJI_MUC_OWNER_SUBMIT               = 'submit';
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_MUC_CONFIG_SECRET              = 'muc#roomconfig_roomsecret';
+var GIGGLE_MUJI_MUC_CONFIG_SECRET              = 'muc#roomconfig_roomsecret';
 
 
 
@@ -2355,14 +2355,14 @@ var JSJAC_JINGLE_MUJI_MUC_CONFIG_SECRET              = 'muc#roomconfig_roomsecre
  * @default
  * @public
  */
-var JSJAC_JINGLE_ICE_CONNECTION_STATES = {};
-JSJAC_JINGLE_ICE_CONNECTION_STATES[JSJAC_JINGLE_ICE_CONNECTION_STATE_NEW]           = 1;
-JSJAC_JINGLE_ICE_CONNECTION_STATES[JSJAC_JINGLE_ICE_CONNECTION_STATE_CHECKING]      = 1;
-JSJAC_JINGLE_ICE_CONNECTION_STATES[JSJAC_JINGLE_ICE_CONNECTION_STATE_CONNECTED]     = 1;
-JSJAC_JINGLE_ICE_CONNECTION_STATES[JSJAC_JINGLE_ICE_CONNECTION_STATE_COMPLETED]     = 1;
-JSJAC_JINGLE_ICE_CONNECTION_STATES[JSJAC_JINGLE_ICE_CONNECTION_STATE_FAILED]        = 1;
-JSJAC_JINGLE_ICE_CONNECTION_STATES[JSJAC_JINGLE_ICE_CONNECTION_STATE_DISCONNECTED]  = 1;
-JSJAC_JINGLE_ICE_CONNECTION_STATES[JSJAC_JINGLE_ICE_CONNECTION_STATE_CLOSED]        = 1;
+var GIGGLE_ICE_CONNECTION_STATES = {};
+GIGGLE_ICE_CONNECTION_STATES[GIGGLE_ICE_CONNECTION_STATE_NEW]           = 1;
+GIGGLE_ICE_CONNECTION_STATES[GIGGLE_ICE_CONNECTION_STATE_CHECKING]      = 1;
+GIGGLE_ICE_CONNECTION_STATES[GIGGLE_ICE_CONNECTION_STATE_CONNECTED]     = 1;
+GIGGLE_ICE_CONNECTION_STATES[GIGGLE_ICE_CONNECTION_STATE_COMPLETED]     = 1;
+GIGGLE_ICE_CONNECTION_STATES[GIGGLE_ICE_CONNECTION_STATE_FAILED]        = 1;
+GIGGLE_ICE_CONNECTION_STATES[GIGGLE_ICE_CONNECTION_STATE_DISCONNECTED]  = 1;
+GIGGLE_ICE_CONNECTION_STATES[GIGGLE_ICE_CONNECTION_STATE_CLOSED]        = 1;
 
 /**
  * @constant
@@ -2372,11 +2372,11 @@ JSJAC_JINGLE_ICE_CONNECTION_STATES[JSJAC_JINGLE_ICE_CONNECTION_STATE_CLOSED]    
  * @default
  * @public
  */
-var JSJAC_JINGLE_SDP_CANDIDATE_TYPES   = {};
-JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST]              = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE;
-JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX]             = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE;
-JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_PRFLX]             = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_ICE;
-JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_RELAY]             = JSJAC_JINGLE_SDP_CANDIDATE_METHOD_RAW;
+var GIGGLE_SDP_CANDIDATE_TYPES   = {};
+GIGGLE_SDP_CANDIDATE_TYPES[GIGGLE_SDP_CANDIDATE_TYPE_HOST]              = GIGGLE_SDP_CANDIDATE_METHOD_ICE;
+GIGGLE_SDP_CANDIDATE_TYPES[GIGGLE_SDP_CANDIDATE_TYPE_SRFLX]             = GIGGLE_SDP_CANDIDATE_METHOD_ICE;
+GIGGLE_SDP_CANDIDATE_TYPES[GIGGLE_SDP_CANDIDATE_TYPE_PRFLX]             = GIGGLE_SDP_CANDIDATE_METHOD_ICE;
+GIGGLE_SDP_CANDIDATE_TYPES[GIGGLE_SDP_CANDIDATE_TYPE_RELAY]             = GIGGLE_SDP_CANDIDATE_METHOD_RAW;
 
 /**
  * @constant
@@ -2386,12 +2386,12 @@ JSJAC_JINGLE_SDP_CANDIDATE_TYPES[JSJAC_JINGLE_SDP_CANDIDATE_TYPE_RELAY]         
  * @default
  * @public
  */
-var JSJAC_JINGLE_BROWSERS              = {};
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_FIREFOX]                                 = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_CHROME]                                  = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_SAFARI]                                  = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_OPERA]                                   = 1;
-JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_IE]                                      = 1;
+var GIGGLE_BROWSERS              = {};
+GIGGLE_BROWSERS[GIGGLE_BROWSER_FIREFOX]                                 = 1;
+GIGGLE_BROWSERS[GIGGLE_BROWSER_CHROME]                                  = 1;
+GIGGLE_BROWSERS[GIGGLE_BROWSER_SAFARI]                                  = 1;
+GIGGLE_BROWSERS[GIGGLE_BROWSER_OPERA]                                   = 1;
+GIGGLE_BROWSERS[GIGGLE_BROWSER_IE]                                      = 1;
 
 /**
  * @constant
@@ -2401,11 +2401,11 @@ JSJAC_JINGLE_BROWSERS[JSJAC_JINGLE_BROWSER_IE]                                  
  * @default
  * @public
  */
-var JSJAC_JINGLE_SENDERS               = {};
-JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_BOTH.jingle]                              = JSJAC_JINGLE_SENDERS_BOTH.sdp;
-JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_INITIATOR.jingle]                         = JSJAC_JINGLE_SENDERS_INITIATOR.sdp;
-JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_NONE.jingle]                              = JSJAC_JINGLE_SENDERS_NONE.sdp;
-JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_RESPONDER.jingle]                         = JSJAC_JINGLE_SENDERS_RESPONDER.sdp;
+var GIGGLE_SENDERS               = {};
+GIGGLE_SENDERS[GIGGLE_SENDERS_BOTH.jingle]                              = GIGGLE_SENDERS_BOTH.sdp;
+GIGGLE_SENDERS[GIGGLE_SENDERS_INITIATOR.jingle]                         = GIGGLE_SENDERS_INITIATOR.sdp;
+GIGGLE_SENDERS[GIGGLE_SENDERS_NONE.jingle]                              = GIGGLE_SENDERS_NONE.sdp;
+GIGGLE_SENDERS[GIGGLE_SENDERS_RESPONDER.jingle]                         = GIGGLE_SENDERS_RESPONDER.sdp;
 
 /**
  * @constant
@@ -2415,9 +2415,9 @@ JSJAC_JINGLE_SENDERS[JSJAC_JINGLE_SENDERS_RESPONDER.jingle]                     
  * @default
  * @public
  */
-var JSJAC_JINGLE_CREATORS              = {};
-JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_INITIATOR]                               = 1;
-JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_RESPONDER]                               = 1;
+var GIGGLE_CREATORS              = {};
+GIGGLE_CREATORS[GIGGLE_CREATOR_INITIATOR]                               = 1;
+GIGGLE_CREATORS[GIGGLE_CREATOR_RESPONDER]                               = 1;
 
 /**
  * @constant
@@ -2427,14 +2427,14 @@ JSJAC_JINGLE_CREATORS[JSJAC_JINGLE_CREATOR_RESPONDER]                           
  * @default
  * @public
  */
-var JSJAC_JINGLE_STATUSES              = {};
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INACTIVE]                                 = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INITIATING]                               = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_INITIATED]                                = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_ACCEPTING]                                = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_ACCEPTED]                                 = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATING]                              = 1;
-JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATED]                               = 1;
+var GIGGLE_STATUSES              = {};
+GIGGLE_STATUSES[GIGGLE_STATUS_INACTIVE]                                 = 1;
+GIGGLE_STATUSES[GIGGLE_STATUS_INITIATING]                               = 1;
+GIGGLE_STATUSES[GIGGLE_STATUS_INITIATED]                                = 1;
+GIGGLE_STATUSES[GIGGLE_STATUS_ACCEPTING]                                = 1;
+GIGGLE_STATUSES[GIGGLE_STATUS_ACCEPTED]                                 = 1;
+GIGGLE_STATUSES[GIGGLE_STATUS_TERMINATING]                              = 1;
+GIGGLE_STATUSES[GIGGLE_STATUS_TERMINATED]                               = 1;
 
 /**
  * @constant
@@ -2444,22 +2444,22 @@ JSJAC_JINGLE_STATUSES[JSJAC_JINGLE_STATUS_TERMINATED]                           
  * @default
  * @public
  */
-var JSJAC_JINGLE_ACTIONS               = {};
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_ACCEPT]                            = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_ADD]                               = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_MODIFY]                            = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_REJECT]                            = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_CONTENT_REMOVE]                            = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_DESCRIPTION_INFO]                          = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SECURITY_INFO]                             = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_ACCEPT]                            = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_INFO]                              = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_INITIATE]                          = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_SESSION_TERMINATE]                         = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_ACCEPT]                          = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_INFO]                            = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REJECT]                          = 1;
-JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE]                         = 1;
+var GIGGLE_ACTIONS               = {};
+GIGGLE_ACTIONS[GIGGLE_ACTION_CONTENT_ACCEPT]                            = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_CONTENT_ADD]                               = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_CONTENT_MODIFY]                            = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_CONTENT_REJECT]                            = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_CONTENT_REMOVE]                            = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_DESCRIPTION_INFO]                          = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_SECURITY_INFO]                             = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_SESSION_ACCEPT]                            = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_SESSION_INFO]                              = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_SESSION_INITIATE]                          = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_SESSION_TERMINATE]                         = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_TRANSPORT_ACCEPT]                          = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_TRANSPORT_INFO]                            = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_TRANSPORT_REJECT]                          = 1;
+GIGGLE_ACTIONS[GIGGLE_ACTION_TRANSPORT_REPLACE]                         = 1;
 
 /**
  * @constant
@@ -2469,12 +2469,12 @@ JSJAC_JINGLE_ACTIONS[JSJAC_JINGLE_ACTION_TRANSPORT_REPLACE]                     
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_ACTIONS               = {};
-JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_PROPOSE]                   = 1;
-JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_RETRACT]                   = 1;
-JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_ACCEPT]                    = 1;
-JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_PROCEED]                   = 1;
-JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_REJECT]                    = 1;
+var GIGGLE_MESSAGE_ACTIONS               = {};
+GIGGLE_MESSAGE_ACTIONS[GIGGLE_MESSAGE_ACTION_PROPOSE]                   = 1;
+GIGGLE_MESSAGE_ACTIONS[GIGGLE_MESSAGE_ACTION_RETRACT]                   = 1;
+GIGGLE_MESSAGE_ACTIONS[GIGGLE_MESSAGE_ACTION_ACCEPT]                    = 1;
+GIGGLE_MESSAGE_ACTIONS[GIGGLE_MESSAGE_ACTION_PROCEED]                   = 1;
+GIGGLE_MESSAGE_ACTIONS[GIGGLE_MESSAGE_ACTION_REJECT]                    = 1;
 
 /**
  * @constant
@@ -2484,12 +2484,12 @@ JSJAC_JINGLE_MESSAGE_ACTIONS[JSJAC_JINGLE_MESSAGE_ACTION_REJECT]                
  * @default
  * @public
  */
-var JSJAC_JINGLE_ERRORS                = {};
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_OUT_OF_ORDER.jingle]                         = 1;
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_TIE_BREAK.jingle]                            = 1;
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNKNOWN_SESSION.jingle]                      = 1;
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_UNSUPPORTED_INFO.jingle]                     = 1;
-JSJAC_JINGLE_ERRORS[JSJAC_JINGLE_ERROR_SECURITY_REQUIRED.jingle]                    = 1;
+var GIGGLE_ERRORS                = {};
+GIGGLE_ERRORS[GIGGLE_ERROR_OUT_OF_ORDER.jingle]                         = 1;
+GIGGLE_ERRORS[GIGGLE_ERROR_TIE_BREAK.jingle]                            = 1;
+GIGGLE_ERRORS[GIGGLE_ERROR_UNKNOWN_SESSION.jingle]                      = 1;
+GIGGLE_ERRORS[GIGGLE_ERROR_UNSUPPORTED_INFO.jingle]                     = 1;
+GIGGLE_ERRORS[GIGGLE_ERROR_SECURITY_REQUIRED.jingle]                    = 1;
 
 /**
  * @constant
@@ -2518,24 +2518,24 @@ XMPP_ERRORS[XMPP_ERROR_BAD_REQUEST.xmpp]                                        
  * @default
  * @public
  */
-var JSJAC_JINGLE_REASONS               = {};
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_ALTERNATIVE_SESSION]                       = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_BUSY]                                      = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_CANCEL]                                    = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_CONNECTIVITY_ERROR]                        = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_DECLINE]                                   = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_EXPIRED]                                   = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_FAILED_APPLICATION]                        = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_FAILED_TRANSPORT]                          = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_GENERAL_ERROR]                             = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_GONE]                                      = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_INCOMPATIBLE_PARAMETERS]                   = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_MEDIA_ERROR]                               = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_SECURITY_ERROR]                            = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_SUCCESS]                                   = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_TIMEOUT]                                   = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_APPLICATIONS]                  = 1;
-JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS]                    = 1;
+var GIGGLE_REASONS               = {};
+GIGGLE_REASONS[GIGGLE_REASON_ALTERNATIVE_SESSION]                       = 1;
+GIGGLE_REASONS[GIGGLE_REASON_BUSY]                                      = 1;
+GIGGLE_REASONS[GIGGLE_REASON_CANCEL]                                    = 1;
+GIGGLE_REASONS[GIGGLE_REASON_CONNECTIVITY_ERROR]                        = 1;
+GIGGLE_REASONS[GIGGLE_REASON_DECLINE]                                   = 1;
+GIGGLE_REASONS[GIGGLE_REASON_EXPIRED]                                   = 1;
+GIGGLE_REASONS[GIGGLE_REASON_FAILED_APPLICATION]                        = 1;
+GIGGLE_REASONS[GIGGLE_REASON_FAILED_TRANSPORT]                          = 1;
+GIGGLE_REASONS[GIGGLE_REASON_GENERAL_ERROR]                             = 1;
+GIGGLE_REASONS[GIGGLE_REASON_GONE]                                      = 1;
+GIGGLE_REASONS[GIGGLE_REASON_INCOMPATIBLE_PARAMETERS]                   = 1;
+GIGGLE_REASONS[GIGGLE_REASON_MEDIA_ERROR]                               = 1;
+GIGGLE_REASONS[GIGGLE_REASON_SECURITY_ERROR]                            = 1;
+GIGGLE_REASONS[GIGGLE_REASON_SUCCESS]                                   = 1;
+GIGGLE_REASONS[GIGGLE_REASON_TIMEOUT]                                   = 1;
+GIGGLE_REASONS[GIGGLE_REASON_UNSUPPORTED_APPLICATIONS]                  = 1;
+GIGGLE_REASONS[GIGGLE_REASON_UNSUPPORTED_TRANSPORTS]                    = 1;
 
 /**
  * @constant
@@ -2545,13 +2545,13 @@ JSJAC_JINGLE_REASONS[JSJAC_JINGLE_REASON_UNSUPPORTED_TRANSPORTS]                
  * @default
  * @public
  */
-var JSJAC_JINGLE_SESSION_INFOS         = {};
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_ACTIVE]                        = 1;
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_HOLD]                          = 1;
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_MUTE]                          = 1;
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_RINGING]                       = 1;
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNHOLD]                        = 1;
-JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]                        = 1;
+var GIGGLE_SESSION_INFOS         = {};
+GIGGLE_SESSION_INFOS[GIGGLE_SESSION_INFO_ACTIVE]                        = 1;
+GIGGLE_SESSION_INFOS[GIGGLE_SESSION_INFO_HOLD]                          = 1;
+GIGGLE_SESSION_INFOS[GIGGLE_SESSION_INFO_MUTE]                          = 1;
+GIGGLE_SESSION_INFOS[GIGGLE_SESSION_INFO_RINGING]                       = 1;
+GIGGLE_SESSION_INFOS[GIGGLE_SESSION_INFO_UNHOLD]                        = 1;
+GIGGLE_SESSION_INFOS[GIGGLE_SESSION_INFO_UNMUTE]                        = 1;
 
 /**
  * @constant
@@ -2561,9 +2561,9 @@ JSJAC_JINGLE_SESSION_INFOS[JSJAC_JINGLE_SESSION_INFO_UNMUTE]                    
  * @default
  * @public
  */
-var JSJAC_JINGLE_MEDIAS                = {};
-JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_AUDIO]                                       = { label: '0' };
-JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                                       = { label: '1' };
+var GIGGLE_MEDIAS                = {};
+GIGGLE_MEDIAS[GIGGLE_MEDIA_AUDIO]                                       = { label: '0' };
+GIGGLE_MEDIAS[GIGGLE_MEDIA_VIDEO]                                       = { label: '1' };
 
 /**
  * @constant
@@ -2573,9 +2573,9 @@ JSJAC_JINGLE_MEDIAS[JSJAC_JINGLE_MEDIA_VIDEO]                                   
  * @default
  * @public
  */
-var JSJAC_JINGLE_VIDEO_SOURCES         = {};
-JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_CAMERA]                        = 1;
-JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_SCREEN]                        = 1;
+var GIGGLE_VIDEO_SOURCES         = {};
+GIGGLE_VIDEO_SOURCES[GIGGLE_VIDEO_SOURCE_CAMERA]                        = 1;
+GIGGLE_VIDEO_SOURCES[GIGGLE_VIDEO_SOURCE_SCREEN]                        = 1;
 
 /**
  * @constant
@@ -2585,13 +2585,13 @@ JSJAC_JINGLE_VIDEO_SOURCES[JSJAC_JINGLE_VIDEO_SOURCE_SCREEN]                    
  * @default
  * @public
  */
-var JSJAC_JINGLE_MESSAGE_TYPES         = {};
-JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_ALL]                           = 1;
-JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_NORMAL]                        = 1;
-JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_CHAT]                          = 1;
-JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_HEADLINE]                      = 1;
-JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_GROUPCHAT]                     = 1;
-JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_ERROR]                         = 1;
+var GIGGLE_MESSAGE_TYPES         = {};
+GIGGLE_MESSAGE_TYPES[GIGGLE_MESSAGE_TYPE_ALL]                           = 1;
+GIGGLE_MESSAGE_TYPES[GIGGLE_MESSAGE_TYPE_NORMAL]                        = 1;
+GIGGLE_MESSAGE_TYPES[GIGGLE_MESSAGE_TYPE_CHAT]                          = 1;
+GIGGLE_MESSAGE_TYPES[GIGGLE_MESSAGE_TYPE_HEADLINE]                      = 1;
+GIGGLE_MESSAGE_TYPES[GIGGLE_MESSAGE_TYPE_GROUPCHAT]                     = 1;
+GIGGLE_MESSAGE_TYPES[GIGGLE_MESSAGE_TYPE_ERROR]                         = 1;
 
 /**
  * @constant
@@ -2601,11 +2601,11 @@ JSJAC_JINGLE_MESSAGE_TYPES[JSJAC_JINGLE_MESSAGE_TYPE_ERROR]                     
  * @default
  * @public
  */
-var JSJAC_JINGLE_PRESENCE_TYPES        = {};
-JSJAC_JINGLE_PRESENCE_TYPES[JSJAC_JINGLE_PRESENCE_TYPE_ALL]                         = 1;
-JSJAC_JINGLE_PRESENCE_TYPES[JSJAC_JINGLE_PRESENCE_TYPE_AVAILABLE]                   = 1;
-JSJAC_JINGLE_PRESENCE_TYPES[JSJAC_JINGLE_PRESENCE_TYPE_UNAVAILABLE]                 = 1;
-JSJAC_JINGLE_PRESENCE_TYPES[JSJAC_JINGLE_PRESENCE_TYPE_ERROR]                       = 1;
+var GIGGLE_PRESENCE_TYPES        = {};
+GIGGLE_PRESENCE_TYPES[GIGGLE_PRESENCE_TYPE_ALL]                         = 1;
+GIGGLE_PRESENCE_TYPES[GIGGLE_PRESENCE_TYPE_AVAILABLE]                   = 1;
+GIGGLE_PRESENCE_TYPES[GIGGLE_PRESENCE_TYPE_UNAVAILABLE]                 = 1;
+GIGGLE_PRESENCE_TYPES[GIGGLE_PRESENCE_TYPE_ERROR]                       = 1;
 
 /**
  * @constant
@@ -2615,17 +2615,17 @@ JSJAC_JINGLE_PRESENCE_TYPES[JSJAC_JINGLE_PRESENCE_TYPE_ERROR]                   
  * @default
  * @public
  */
-var JSJAC_JINGLE_IQ_TYPES              = {};
-JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_ALL]                                     = 1;
-JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_RESULT]                                  = 1;
-JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_SET]                                     = 1;
-JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_GET]                                     = 1;
-JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_ERROR]                                   = 1;
+var GIGGLE_IQ_TYPES              = {};
+GIGGLE_IQ_TYPES[GIGGLE_IQ_TYPE_ALL]                                     = 1;
+GIGGLE_IQ_TYPES[GIGGLE_IQ_TYPE_RESULT]                                  = 1;
+GIGGLE_IQ_TYPES[GIGGLE_IQ_TYPE_SET]                                     = 1;
+GIGGLE_IQ_TYPES[GIGGLE_IQ_TYPE_GET]                                     = 1;
+GIGGLE_IQ_TYPES[GIGGLE_IQ_TYPE_ERROR]                                   = 1;
 
 
 
 /**
- * JSJAC JINGLE MUJI CONSTANTS MAPPING
+ * GIGGLE MUJI CONSTANTS MAPPING
  */
 
 /**
@@ -2636,10 +2636,10 @@ JSJAC_JINGLE_IQ_TYPES[JSJAC_JINGLE_IQ_TYPE_ERROR]                               
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_ACTIONS          = {};
-JSJAC_JINGLE_MUJI_ACTIONS[JSJAC_JINGLE_MUJI_ACTION_PREPARE]    = 1;
-JSJAC_JINGLE_MUJI_ACTIONS[JSJAC_JINGLE_MUJI_ACTION_INITIATE]   = 1;
-JSJAC_JINGLE_MUJI_ACTIONS[JSJAC_JINGLE_MUJI_ACTION_LEAVE]      = 1;
+var GIGGLE_MUJI_ACTIONS          = {};
+GIGGLE_MUJI_ACTIONS[GIGGLE_MUJI_ACTION_PREPARE]    = 1;
+GIGGLE_MUJI_ACTIONS[GIGGLE_MUJI_ACTION_INITIATE]   = 1;
+GIGGLE_MUJI_ACTIONS[GIGGLE_MUJI_ACTION_LEAVE]      = 1;
 
 /**
  * @constant
@@ -2649,11 +2649,11 @@ JSJAC_JINGLE_MUJI_ACTIONS[JSJAC_JINGLE_MUJI_ACTION_LEAVE]      = 1;
  * @default
  * @public
  */
-var JSJAC_JINGLE_MUJI_STATUS           = {};
-JSJAC_JINGLE_MUJI_STATUS[JSJAC_JINGLE_MUJI_STATUS_INACTIVE]    = 1;
-JSJAC_JINGLE_MUJI_STATUS[JSJAC_JINGLE_MUJI_STATUS_PREPARING]   = 1;
-JSJAC_JINGLE_MUJI_STATUS[JSJAC_JINGLE_MUJI_STATUS_PREPARED]    = 1;
-JSJAC_JINGLE_MUJI_STATUS[JSJAC_JINGLE_MUJI_STATUS_INITIATING]  = 1;
-JSJAC_JINGLE_MUJI_STATUS[JSJAC_JINGLE_MUJI_STATUS_INITIATED]   = 1;
-JSJAC_JINGLE_MUJI_STATUS[JSJAC_JINGLE_MUJI_STATUS_LEAVING]     = 1;
-JSJAC_JINGLE_MUJI_STATUS[JSJAC_JINGLE_MUJI_STATUS_LEFT]        = 1;
+var GIGGLE_MUJI_STATUS           = {};
+GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_INACTIVE]    = 1;
+GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_PREPARING]   = 1;
+GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_PREPARED]    = 1;
+GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_INITIATING]  = 1;
+GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_INITIATED]   = 1;
+GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_LEAVING]     = 1;
+GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_LEFT]        = 1;

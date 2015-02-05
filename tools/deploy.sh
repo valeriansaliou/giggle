@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##
-#  JSJaCJingle.js
+#  Giggle.js
 #  Deployment script
 #
 #  Copyright 2014, FrenchTouch Web Agency
@@ -12,7 +12,7 @@ ABSPATH=$(cd "$(dirname "$0")"; pwd)
 BASE_DIR="$ABSPATH/../"
 
 
-echo "Deploying JSJaCJingle.js..."
+echo "Deploying Giggle.js..."
 
 cd "$BASE_DIR"
 

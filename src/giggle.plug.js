@@ -1,15 +1,15 @@
 /**
- * @fileoverview JSJaC Jingle library - Pluggability to other network libs
+ * @fileoverview Giggle library - Pluggability to other network libs
  *
- * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @url https://github.com/valeriansaliou/giggle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 
-/** @module jsjac-jingle/plug */
-/** @exports __JSJaCJinglePlug */
+/** @module giggle/plug */
+/** @exports __GigglePlug */
 
 
 /**
@@ -17,11 +17,11 @@
  * @class
  * @classdesc  Plugger class.
  * @requires   nicolas-van/ring.js
- * @requires   jsjac-jingle/main
+ * @requires   giggle/main
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  */
-var __JSJaCJinglePlug = ring.create(
-  /** @lends JSJaCJinglePlug.prototype */
+var __GigglePlug = ring.create(
+  /** @lends GigglePlug.prototype */
   {
     // TODO
   }

@@ -1,15 +1,15 @@
 /**
- * @fileoverview JSJaC Jingle library - SDP tools
+ * @fileoverview Giggle library - SDP tools
  *
- * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @url https://github.com/valeriansaliou/giggle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 
-/** @module jsjac-jingle/sdp */
-/** @exports JSJaCJingleSDP */
+/** @module giggle/sdp */
+/** @exports GiggleSDP */
 
 
 /**
@@ -19,10 +19,10 @@
  * @requires   nicolas-van/ring.js
  * @requires   sstrigler/JSJaC
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
- * @param      {JSJaCJingleSingle|JSJaCJingleMuji} parent Parent class.
+ * @param      {GiggleSingle|GiggleMuji} parent Parent class.
  */
-var JSJaCJingleSDP = ring.create(
-  /** @lends JSJaCJingleSDP.prototype */
+var GiggleSDP = ring.create(
+  /** @lends GiggleSDP.prototype */
   {
     /**
      * Constructor
@@ -30,7 +30,7 @@ var JSJaCJingleSDP = ring.create(
     constructor: function(parent) {
       /**
        * @constant
-       * @member {JSJaCJingleSingle|JSJaCJingleMuji}
+       * @member {GiggleSingle|GiggleMuji}
        * @readonly
        * @default
        * @public
@@ -545,7 +545,7 @@ var JSJaCJingleSDP = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:sdp] _parse_payload > ' + e, 1);
+        this.parent.get_debug().log('[giggle:sdp] _parse_payload > ' + e, 1);
       }
 
       return payload;
@@ -589,7 +589,7 @@ var JSJaCJingleSDP = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:sdp] _parse_group > ' + e, 1);
+        this.parent.get_debug().log('[giggle:sdp] _parse_group > ' + e, 1);
       }
 
       return group;
@@ -606,7 +606,7 @@ var JSJaCJingleSDP = ring.create(
         if(!payload || typeof payload !== 'object') return {};
 
         // No video?
-        if(this.parent.get_media_all().indexOf(JSJAC_JINGLE_MEDIA_VIDEO) === -1) return payload;
+        if(this.parent.get_media_all().indexOf(GIGGLE_MEDIA_VIDEO) === -1) return payload;
 
         var i, j, k, cur_media;
         var cur_payload, res_arr, constraints;
@@ -626,7 +626,7 @@ var JSJaCJingleSDP = ring.create(
 
         // Try media constraints? (less reliable)
         if(!res_height || !res_width) {
-          this.parent.get_debug().log('[JSJaCJingle:sdp] _resolution_payload > Could not get local video resolution, falling back on constraints (local video may not be ready).', 0);
+          this.parent.get_debug().log('[giggle:sdp] _resolution_payload > Could not get local video resolution, falling back on constraints (local video may not be ready).', 0);
 
           constraints = this.parent.utils.generate_constraints();
 
@@ -635,7 +635,7 @@ var JSJaCJingleSDP = ring.create(
              typeof constraints.video.mandatory           !== 'object'  ||
              typeof constraints.video.mandatory.minWidth  !== 'number'  ||
              typeof constraints.video.mandatory.minHeight !== 'number'  ) {
-            this.parent.get_debug().log('[JSJaCJingle:sdp] _resolution_payload > Could not get local video resolution (not sending it).', 1);
+            this.parent.get_debug().log('[giggle:sdp] _resolution_payload > Could not get local video resolution (not sending it).', 1);
             return payload;
           }
 
@@ -657,7 +657,7 @@ var JSJaCJingleSDP = ring.create(
         ];
 
         for(cur_media in payload) {
-          if(cur_media != JSJAC_JINGLE_MEDIA_VIDEO) continue;
+          if(cur_media != GIGGLE_MEDIA_VIDEO) continue;
 
           cur_payload = payload[cur_media].descriptions.payload;
 
@@ -669,9 +669,9 @@ var JSJaCJingleSDP = ring.create(
           }
         }
 
-        this.parent.get_debug().log('[JSJaCJingle:sdp] _resolution_payload > Got local video resolution (' + res_width + 'x' + res_height + ').', 2);
+        this.parent.get_debug().log('[giggle:sdp] _resolution_payload > Got local video resolution (' + res_width + 'x' + res_height + ').', 2);
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:sdp] _resolution_payload > ' + e, 1);
+        this.parent.get_debug().log('[giggle:sdp] _resolution_payload > ' + e, 1);
       }
 
       return payload;
@@ -696,10 +696,10 @@ var JSJaCJingleSDP = ring.create(
         if(matches) {
           candidate.component     = matches[2]  || error++;
           candidate.foundation    = matches[1]  || error++;
-          candidate.generation    = matches[16] || JSJAC_JINGLE_GENERATION;
+          candidate.generation    = matches[16] || GIGGLE_GENERATION;
           candidate.id            = this.parent.utils.generate_id();
           candidate.ip            = matches[5]  || error++;
-          candidate.network       = JSJAC_JINGLE_NETWORK;
+          candidate.network       = GIGGLE_NETWORK;
           candidate.port          = matches[6]  || error++;
           candidate.priority      = matches[4]  || error++;
           candidate.protocol      = matches[3]  || error++;
@@ -711,7 +711,7 @@ var JSJaCJingleSDP = ring.create(
         // Incomplete?
         if(error !== 0) return {};
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:sdp] _parse_candidate > ' + e, 1);
+        this.parent.get_debug().log('[giggle:sdp] _parse_candidate > ' + e, 1);
       }
 
       return candidate;
@@ -774,7 +774,7 @@ var JSJaCJingleSDP = ring.create(
 
         return sdp_obj;
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:sdp] _generate > ' + e, 1);
+        this.parent.get_debug().log('[giggle:sdp] _generate > ' + e, 1);
       }
 
       return {};
@@ -801,7 +801,7 @@ var JSJaCJingleSDP = ring.create(
           for(i in cur_c_name) {
             cur_candidate = cur_c_name[i];
 
-            cur_label         = JSJAC_JINGLE_MEDIAS[cur_media].label;
+            cur_label         = GIGGLE_MEDIAS[cur_media].label;
             cur_id            = cur_label;
             cur_candidate_str = '';
 
@@ -810,9 +810,9 @@ var JSJaCJingleSDP = ring.create(
             cur_candidate_str += ' ';
             cur_candidate_str += cur_candidate.component;
             cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate.protocol || JSJAC_JINGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT;
+            cur_candidate_str += cur_candidate.protocol || GIGGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT;
             cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate.priority || JSJAC_JINGLE_SDP_CANDIDATE_PRIORITY_DEFAULT;
+            cur_candidate_str += cur_candidate.priority || GIGGLE_SDP_CANDIDATE_PRIORITY_DEFAULT;
             cur_candidate_str += ' ';
             cur_candidate_str += cur_candidate.ip;
             cur_candidate_str += ' ';
@@ -853,7 +853,7 @@ var JSJaCJingleSDP = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:sdp] _generate_candidates > ' + e, 1);
+        this.parent.get_debug().log('[giggle:sdp] _generate_candidates > ' + e, 1);
       }
 
       return candidates_arr;
@@ -1017,13 +1017,13 @@ var JSJaCJingleSDP = ring.create(
 
           // Senders
           if(cur_senders) {
-            payloads_str += 'a=' + JSJAC_JINGLE_SENDERS[cur_senders];
+            payloads_str += 'a=' + GIGGLE_SENDERS[cur_senders];
             payloads_str += WEBRTC_SDP_LINE_BREAK;
           }
 
           // Name
-          if(cur_media && JSJAC_JINGLE_MEDIAS[cur_media]) {
-            payloads_str += 'a=mid:' + (JSJAC_JINGLE_MEDIAS[cur_media]).label;
+          if(cur_media && GIGGLE_MEDIAS[cur_media]) {
+            payloads_str += 'a=mid:' + (GIGGLE_MEDIAS[cur_media]).label;
             payloads_str += WEBRTC_SDP_LINE_BREAK;
           }
 
@@ -1195,7 +1195,7 @@ var JSJaCJingleSDP = ring.create(
           // Candidates (some browsers require them there, too)
           if(typeof sdp_candidates == 'object') {
             for(c in sdp_candidates) {
-              if((sdp_candidates[c]).label == JSJAC_JINGLE_MEDIAS[cur_media].label)
+              if((sdp_candidates[c]).label == GIGGLE_MEDIAS[cur_media].label)
                 payloads_str += (sdp_candidates[c]).candidate;
             }
           }
@@ -1205,7 +1205,7 @@ var JSJaCJingleSDP = ring.create(
         payloads_obj.type = type;
         payloads_obj.sdp  = payloads_str;
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:sdp] _generate_description > ' + e, 1);
+        this.parent.get_debug().log('[giggle:sdp] _generate_description > ' + e, 1);
       }
 
       return payloads_obj;
@@ -1235,9 +1235,9 @@ var JSJaCJingleSDP = ring.create(
         var username        = jid.getNode() ? jid.getNode() : '-';
         var session_id      = '1';
         var session_version = '1';
-        var nettype         = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT;
-        var addrtype        = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT;
-        var unicast_address = JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT;
+        var nettype         = GIGGLE_SDP_CANDIDATE_SCOPE_DEFAULT;
+        var addrtype        = GIGGLE_SDP_CANDIDATE_IPVERSION_DEFAULT;
+        var unicast_address = GIGGLE_SDP_CANDIDATE_IP_DEFAULT;
 
         // Line content
         sdp_origin += 'o=';
@@ -1248,7 +1248,7 @@ var JSJaCJingleSDP = ring.create(
         sdp_origin += addrtype + ' ';
         sdp_origin += unicast_address;
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:sdp] _generate_origin > ' + e, 1);
+        this.parent.get_debug().log('[giggle:sdp] _generate_origin > ' + e, 1);
       }
 
       return sdp_origin;
@@ -1328,7 +1328,7 @@ var JSJaCJingleSDP = ring.create(
 
         sdp_media += ' ' + type_ids.join(' ');
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:sdp] _generate_description_media > ' + e, 1);
+        this.parent.get_debug().log('[giggle:sdp] _generate_description_media > ' + e, 1);
       }
 
       return sdp_media;

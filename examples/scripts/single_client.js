@@ -1,9 +1,9 @@
 /*
-  JSJaCJingle.js Simple Client
+  Giggle.js Simple Client
 
   @fileoverview Scripts for the Simple client
 
-  @url https://github.com/valeriansaliou/jsjac-jingle
+  @url https://github.com/valeriansaliou/giggle
   @author Valérian Saliou https://valeriansaliou.name/
   @license Mozilla Public License v2.0 (MPL v2.0)
  */
@@ -73,7 +73,7 @@ var ARGS = {
             // Hard-fix: avoids the JSJaC packets group timer (that will delay success reply)
             setTimeout(function() {
                 // Notify the other party that it's ringing there...
-                _this.info(JSJAC_JINGLE_SESSION_INFO_RINGING);
+                _this.info(GIGGLE_SESSION_INFO_RINGING);
 
                 // Request for Jingle session to be accepted
                 // Note: auto-accept if we previously accepted the associated broadcast request
@@ -82,7 +82,7 @@ var ARGS = {
                     $('#form_call input[name="call_jid"]').val(_this.get_to());
                     _this.accept();
                 } else {
-                    _this.terminate(JSJAC_JINGLE_REASON_DECLINE);
+                    _this.terminate(GIGGLE_REASON_DECLINE);
                 }
             }, 1000);
         }
@@ -214,7 +214,7 @@ var ARGS = {
 
 $(document).ready(function() {
     // Check for WebRTC support
-    if(!JSJAC_JINGLE_AVAILABLE) {
+    if(!GIGGLE_AVAILABLE) {
         $('#fieldset_login').attr('disabled', true);
         $('#not_supported:hidden').animate({'height': 'toggle', 'opacity': 'toggle'}, 400);
     }
@@ -237,7 +237,7 @@ $(document).ready(function() {
                 $('#login_info').text('Connecting...').show();
 
                 // Generate JID
-                login_jid += '/JSJaCJingle.js (' + (new Date()).getTime() + ')';
+                login_jid += '/Giggle.js (' + (new Date()).getTime() + ')';
                 var jid_obj = new JSJaCJID(login_jid);
 
                 // Configure connection
@@ -268,8 +268,8 @@ $(document).ready(function() {
                         // Initial presence
                         con.send(new JSJaCPresence());
 
-                        // Initialize JSJaCJingle router
-                        JSJaCJingle.listen({
+                        // Initialize Giggle router
+                        Giggle.listen({
                             connection: con,
                             debug: (new JSJaCConsoleLogger(4)),
 
@@ -283,7 +283,7 @@ $(document).ready(function() {
                                 ARGS.remote_view = $('#video_remote')[0];
 
                                 // Let's go!
-                                JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
+                                JINGLE = Giggle.session(GIGGLE_SESSION_SINGLE, ARGS);
                                 JINGLE.handle(stanza);
                             },
 
@@ -291,13 +291,13 @@ $(document).ready(function() {
                                 console.log('single_propose');
 
                                 var stanza_from = stanza.getFrom() || null;
-                                var call_id = JSJaCJingleBroadcast.get_call_id(stanza);
+                                var call_id = GiggleBroadcast.get_call_id(stanza);
 
                                 // Request for Jingle session to be accepted
                                 if(stanza_from && call_id) {
                                     var call_media_main = 'audio';
 
-                                    if(JSJAC_JINGLE_MEDIA_VIDEO in proposed_medias) {
+                                    if(GIGGLE_MEDIA_VIDEO in proposed_medias) {
                                         call_media_main = 'video';
                                     }
 
@@ -307,13 +307,13 @@ $(document).ready(function() {
                                         $('.call_notif').hide();
                                         $('#call_info').text('Waiting for call initiation...').show();
 
-                                        JSJaCJingleBroadcast.accept(stanza_from, call_id, proposed_medias);
+                                        GiggleBroadcast.accept(stanza_from, call_id, proposed_medias);
 
                                         // Marker to auto-accept call later
                                         CALL_AUTO_ACCEPT.from = stanza_from;
                                         CALL_AUTO_ACCEPT.sid = call_id;
                                     } else {
-                                        JSJaCJingleBroadcast.reject(stanza_from, call_id, proposed_medias);
+                                        GiggleBroadcast.reject(stanza_from, call_id, proposed_medias);
                                     }
                                 }
                             },
@@ -345,8 +345,8 @@ $(document).ready(function() {
                                 // Read broadcast parameters
                                 // Important: access ID-related data there as it will be unset right after
                                 var call_to = stanza.getFrom() || null;
-                                var call_id = JSJaCJingleBroadcast.get_call_id(stanza);
-                                var call_medias = JSJaCJingleBroadcast.get_call_medias(call_id);
+                                var call_id = GiggleBroadcast.get_call_id(stanza);
+                                var call_medias = GiggleBroadcast.get_call_medias(call_id);
 
                                 // Wait 1 second for message visibility purposes
                                 setTimeout(function() {
@@ -354,7 +354,7 @@ $(document).ready(function() {
                                     var has_media_video = false;
 
                                     for(var i = 0; i < call_medias.length; i++) {
-                                        if(call_medias[i] === JSJAC_JINGLE_MEDIA_VIDEO) {
+                                        if(call_medias[i] === GIGGLE_MEDIA_VIDEO) {
                                             has_media_video = true;
                                             break;
                                         }
@@ -363,13 +363,13 @@ $(document).ready(function() {
                                     // Session values
                                     ARGS.to           = call_to;
                                     ARGS.sid          = call_id;
-                                    ARGS.media        = has_media_video ? JSJAC_JINGLE_MEDIA_VIDEO : JSJAC_JINGLE_MEDIA_AUDIO;
-                                    ARGS.video_source = JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
+                                    ARGS.media        = has_media_video ? GIGGLE_MEDIA_VIDEO : GIGGLE_MEDIA_AUDIO;
+                                    ARGS.video_source = GIGGLE_VIDEO_SOURCE_CAMERA;
                                     ARGS.local_view   = $('#video_local')[0];
                                     ARGS.remote_view  = $('#video_remote')[0];
 
                                     // Let's go!
-                                    JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
+                                    JINGLE = Giggle.session(GIGGLE_SESSION_SINGLE, ARGS);
                                     JINGLE.initiate();
                                 }, 1000);
                             }
@@ -525,13 +525,13 @@ $(document).ready(function() {
                     $('#roster_call').addClass('disabled');
 
                     var jid_obj = new JSJaCJID(call_jid);
-                    var medias = [JSJAC_JINGLE_MEDIA_AUDIO];
+                    var medias = [GIGGLE_MEDIA_AUDIO];
 
                     if(submit_target == 'call_video') {
-                        medias.push(JSJAC_JINGLE_MEDIA_VIDEO);
+                        medias.push(GIGGLE_MEDIA_VIDEO);
                     }
 
-                    JSJaCJingleBroadcast.propose(
+                    GiggleBroadcast.propose(
                         jid_obj.getBareJID(), medias,
 
                         function(id) {
@@ -542,7 +542,7 @@ $(document).ready(function() {
                             $('#roster_call').removeClass('disabled');
 
                             // Retract
-                            JSJaCJingleBroadcast.retract(
+                            GiggleBroadcast.retract(
                                 jid_obj.getBareJID(), id
                             );
                         }
@@ -555,13 +555,13 @@ $(document).ready(function() {
                         // Session values
                         ARGS.to           = call_jid;
                         ARGS.sid          = null;
-                        ARGS.media        = (submit_target == 'call_audio') ? JSJAC_JINGLE_MEDIA_AUDIO : JSJAC_JINGLE_MEDIA_VIDEO;
-                        ARGS.video_source = (submit_target == 'call_screen') ? JSJAC_JINGLE_VIDEO_SOURCE_SCREEN : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
+                        ARGS.media        = (submit_target == 'call_audio') ? GIGGLE_MEDIA_AUDIO : GIGGLE_MEDIA_VIDEO;
+                        ARGS.video_source = (submit_target == 'call_screen') ? GIGGLE_VIDEO_SOURCE_SCREEN : GIGGLE_VIDEO_SOURCE_CAMERA;
                         ARGS.local_view   = $('#video_local')[0];
                         ARGS.remote_view  = $('#video_remote')[0];
 
                         // Let's go!
-                        JINGLE = JSJaCJingle.session(JSJAC_JINGLE_SESSION_SINGLE, ARGS);
+                        JINGLE = Giggle.session(GIGGLE_SESSION_SINGLE, ARGS);
                         JINGLE.initiate();
                     } catch(e) {
                         alert('jingle > ' + e);
@@ -597,7 +597,7 @@ $(document).ready(function() {
         try {
             if(!SC_CONNECTED) return false;
 
-            if(JINGLE !== null) JINGLE.mute(JSJAC_JINGLE_MEDIA_AUDIO);
+            if(JINGLE !== null) JINGLE.mute(GIGGLE_MEDIA_AUDIO);
 
             $(this).hide();
             $('#live_unmute').show();
@@ -613,7 +613,7 @@ $(document).ready(function() {
         try {
             if(!SC_CONNECTED) return false;
 
-            if(JINGLE !== null) JINGLE.unmute(JSJAC_JINGLE_MEDIA_AUDIO);
+            if(JINGLE !== null) JINGLE.unmute(GIGGLE_MEDIA_AUDIO);
 
             $(this).hide();
             $('#live_mute').show();

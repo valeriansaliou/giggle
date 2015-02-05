@@ -1,29 +1,29 @@
 /**
- * @fileoverview JSJaC Jingle library - Utilities
+ * @fileoverview Giggle library - Utilities
  *
- * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @url https://github.com/valeriansaliou/giggle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 
-/** @module jsjac-jingle/utils */
-/** @exports JSJaCJingleUtils */
+/** @module giggle/utils */
+/** @exports GiggleUtils */
 
 
 /**
  * Utilities class.
  * @class
  * @classdesc  Utilities class.
- * @param      {JSJaCJingleSingle|JSJaCJingleMuji} parent Parent class.
+ * @param      {GiggleSingle|GiggleMuji} parent Parent class.
  * @requires   nicolas-van/ring.js
  * @requires   sstrigler/JSJaC
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */
-var JSJaCJingleUtils = ring.create(
-  /** @lends JSJaCJingleUtils.prototype */
+var GiggleUtils = ring.create(
+  /** @lends GiggleUtils.prototype */
   {
     /**
      * Constructor
@@ -31,7 +31,7 @@ var JSJaCJingleUtils = ring.create(
     constructor: function(parent) {
       /**
        * @constant
-       * @member {JSJaCJingleSingle|JSJaCJingleMuji}
+       * @member {GiggleSingle|GiggleMuji}
        * @readonly
        * @default
        * @public
@@ -56,7 +56,7 @@ var JSJaCJingleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] array_remove_value > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] array_remove_value > ' + e, 1);
       }
 
       return array;
@@ -77,7 +77,7 @@ var JSJaCJingleUtils = ring.create(
           if(object.hasOwnProperty(key))  l++;
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] object_length > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] object_length > ' + e, 1);
       }
 
       return l;
@@ -201,10 +201,10 @@ var JSJaCJingleUtils = ring.create(
             return copy;
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] object_clone > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] object_clone > ' + e, 1);
       }
 
-      this.parent.get_debug().log('[JSJaCJingle:utils] object_clone > Cannot clone this object.', 1);
+      this.parent.get_debug().log('[giggle:utils] object_clone > Cannot clone this object.', 1);
     },
 
     /**
@@ -221,11 +221,11 @@ var JSJaCJingleUtils = ring.create(
         var user_agent, detect_arr, cur_browser;
 
         detect_arr = {
-          'firefox' : JSJAC_JINGLE_BROWSER_FIREFOX,
-          'chrome'  : JSJAC_JINGLE_BROWSER_CHROME,
-          'safari'  : JSJAC_JINGLE_BROWSER_SAFARI,
-          'opera'   : JSJAC_JINGLE_BROWSER_OPERA,
-          'msie'    : JSJAC_JINGLE_BROWSER_IE
+          'firefox' : GIGGLE_BROWSER_FIREFOX,
+          'chrome'  : GIGGLE_BROWSER_CHROME,
+          'safari'  : GIGGLE_BROWSER_SAFARI,
+          'opera'   : GIGGLE_BROWSER_OPERA,
+          'msie'    : GIGGLE_BROWSER_IE
         };
 
         user_agent = navigator.userAgent.toLowerCase();
@@ -237,7 +237,7 @@ var JSJaCJingleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] browser > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] browser > ' + e, 1);
       }
 
       return browser_info;
@@ -253,15 +253,15 @@ var JSJaCJingleUtils = ring.create(
         // Collect data (user + server)
         var stun_config = this.array_collect(
           this.parent.get_stun(),
-          JSJaCJingleStorage.get_extdisco().stun,
-          JSJaCJingleStorage.get_relaynodes().stun,
-          JSJaCJingleStorage.get_fallback().stun
+          GiggleStorage.get_extdisco().stun,
+          GiggleStorage.get_relaynodes().stun,
+          GiggleStorage.get_fallback().stun
         );
 
         var turn_config = this.array_collect(
           this.parent.get_turn(),
-          JSJaCJingleStorage.get_extdisco().turn,
-          JSJaCJingleStorage.get_fallback().turn
+          GiggleStorage.get_extdisco().turn,
+          GiggleStorage.get_fallback().turn
         );
 
         // Can proceed?
@@ -282,7 +282,7 @@ var JSJaCJingleUtils = ring.create(
             if(cur_stun_obj.port)
               cur_stun_config.url += ':' + cur_stun_obj.port;
 
-            if(cur_stun_obj.transport && this.browser().name != JSJAC_JINGLE_BROWSER_FIREFOX)
+            if(cur_stun_obj.transport && this.browser().name != GIGGLE_BROWSER_FIREFOX)
               cur_stun_config.url += '?transport=' + cur_stun_obj.transport;
 
             (config.iceServers).push(cur_stun_config);
@@ -331,7 +331,7 @@ var JSJaCJingleUtils = ring.create(
           return config;
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] config_ice > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] config_ice > ' + e, 1);
       }
 
       return WEBRTC_CONFIGURATION.peer_connection.config;
@@ -350,7 +350,7 @@ var JSJaCJingleUtils = ring.create(
         try {
           return (stanza[0]).firstChild.nodeValue || null;
         } catch(_e) {
-          this.parent.get_debug().log('[JSJaCJingle:utils] stanza_get_value > ' + _e, 1);
+          this.parent.get_debug().log('[giggle:utils] stanza_get_value > ' + _e, 1);
         }
       }
 
@@ -373,7 +373,7 @@ var JSJaCJingleUtils = ring.create(
         try {
           return (stanza[0]).getAttribute(name) || null;
         } catch(_e) {
-          this.parent.get_debug().log('[JSJaCJingle:utils] stanza_get_attribute > ' + _e, 1);
+          this.parent.get_debug().log('[giggle:utils] stanza_get_attribute > ' + _e, 1);
         }
       }
 
@@ -396,7 +396,7 @@ var JSJaCJingleUtils = ring.create(
         try {
           (stanza[0]).setAttribute(name, value);
         } catch(_e) {
-          this.parent.get_debug().log('[JSJaCJingle:utils] stanza_set_attribute > ' + _e, 1);
+          this.parent.get_debug().log('[giggle:utils] stanza_set_attribute > ' + _e, 1);
         }
       }
     },
@@ -433,7 +433,7 @@ var JSJaCJingleUtils = ring.create(
 
         return matches_result;
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_get_element > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_get_element > ' + e, 1);
       }
 
       return matches_result;
@@ -470,7 +470,7 @@ var JSJaCJingleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:utils] stanza_get_error > ' + e, 1);
+        this.get_debug().log('[giggle:utils] stanza_get_error > ' + e, 1);
       }
 
       return matches_result;
@@ -486,7 +486,7 @@ var JSJaCJingleUtils = ring.create(
       try {
         return stanza.getChild('jingle', this.parent.get_namespace());
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_jingle > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_jingle > ' + e, 1);
       }
 
       return null;
@@ -502,7 +502,7 @@ var JSJaCJingleUtils = ring.create(
       try {
         return stanza.getChild('muji', NS_MUJI);
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_muji > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_muji > ' + e, 1);
       }
 
       return null;
@@ -518,7 +518,7 @@ var JSJaCJingleUtils = ring.create(
       try {
         return stanza.getFrom() || null;
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_from > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_from > ' + e, 1);
       }
 
       return null;
@@ -534,7 +534,7 @@ var JSJaCJingleUtils = ring.create(
       try {
         return this.extract_username(stanza.getFrom());
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_username > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_username > ' + e, 1);
       }
 
       return null;
@@ -553,7 +553,7 @@ var JSJaCJingleUtils = ring.create(
           'sid'
         );
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_sid > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_sid > ' + e, 1);
       }
     },
 
@@ -565,9 +565,9 @@ var JSJaCJingleUtils = ring.create(
      */
     stanza_safe: function(stanza) {
       try {
-        return !((stanza.getType() == JSJAC_JINGLE_IQ_TYPE_SET && this.stanza_sid(stanza) != this.parent.get_sid()) || this.stanza_from(stanza) != this.parent.get_to());
+        return !((stanza.getType() == GIGGLE_IQ_TYPE_SET && this.stanza_sid(stanza) != this.parent.get_sid()) || this.stanza_from(stanza) != this.parent.get_to());
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_safe > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_safe > ' + e, 1);
       }
 
       return false;
@@ -589,14 +589,14 @@ var JSJaCJingleUtils = ring.create(
           if(reason.length) {
             var cur_reason;
 
-            for(cur_reason in JSJAC_JINGLE_REASONS) {
+            for(cur_reason in GIGGLE_REASONS) {
               if(this.stanza_get_element(reason[0], cur_reason, this.parent.get_namespace()).length)
                 return cur_reason;
             }
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_terminate_reason > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_terminate_reason > ' + e, 1);
       }
 
       return null;
@@ -615,13 +615,13 @@ var JSJaCJingleUtils = ring.create(
         if(jingle) {
           var cur_info;
 
-          for(cur_info in JSJAC_JINGLE_SESSION_INFOS) {
+          for(cur_info in GIGGLE_SESSION_INFOS) {
             if(this.stanza_get_element(jingle, cur_info, NS_JINGLE_APPS_RTP_INFO).length)
               return cur_info;
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_session_info > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_session_info > ' + e, 1);
       }
 
       return null;
@@ -639,16 +639,16 @@ var JSJaCJingleUtils = ring.create(
         var t_sid = this.parent.get_sid();
         var t_status = this.parent.get_status();
 
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Registered (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + ').', 4);
+        this.parent.get_debug().log('[giggle:utils] stanza_timeout > Registered (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + ').', 4);
 
         var _this = this;
 
         setTimeout(function() {
-          _this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Cheking (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + '-' + _this.parent.get_status() + ').', 4);
+          _this.parent.get_debug().log('[giggle:utils] stanza_timeout > Cheking (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + '-' + _this.parent.get_status() + ').', 4);
 
           // State did not change?
           if(_this.parent.get_sid() == t_sid && _this.parent.get_status() == t_status && !(t_id in _this.parent.get_received_id())) {
-            _this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Stanza timeout.', 2);
+            _this.parent.get_debug().log('[giggle:utils] stanza_timeout > Stanza timeout.', 2);
 
             _this.parent.unregister_handler(t_node, t_type, t_id);
 
@@ -657,11 +657,11 @@ var JSJaCJingleUtils = ring.create(
               if(handlers.internal)  (handlers.internal)();
             }
           } else {
-            _this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > Stanza successful.', 4);
+            _this.parent.get_debug().log('[giggle:utils] stanza_timeout > Stanza successful.', 4);
           }
-        }, (JSJAC_JINGLE_STANZA_TIMEOUT * 1000));
+        }, (GIGGLE_STANZA_TIMEOUT * 1000));
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_timeout > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_timeout > ' + e, 1);
       }
     },
 
@@ -710,7 +710,7 @@ var JSJaCJingleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_node > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_parse_node > ' + e, 1);
       }
     },
 
@@ -729,11 +729,11 @@ var JSJaCJingleUtils = ring.create(
 
         // Parse initiate stanza
         switch(stanza.name) {
-          case JSJAC_JINGLE_STANZA_IQ:
+          case GIGGLE_STANZA_IQ:
             // Jingle elements are encapsulated into IQs
             jingle = this.stanza_jingle(stanza); break;
 
-          case JSJAC_JINGLE_STANZA_PRESENCE:
+          case GIGGLE_STANZA_PRESENCE:
             // Muji elements are encapsulated into Presences
             jingle = this.stanza_muji(stanza); break;
 
@@ -782,7 +782,7 @@ var JSJaCJingleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_content > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_parse_content > ' + e, 1);
       }
 
       return false;
@@ -839,7 +839,7 @@ var JSJaCJingleUtils = ring.create(
 
         return true;
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_group > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_parse_group > ' + e, 1);
       }
 
       return false;
@@ -919,7 +919,7 @@ var JSJaCJingleUtils = ring.create(
           var cd_ssrc  = this.stanza_get_attribute(description, 'ssrc');
 
           if(!cd_media)
-            this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
+            this.parent.get_debug().log('[giggle:utils] stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
 
           // Initialize current description
           init_content();
@@ -1113,7 +1113,7 @@ var JSJaCJingleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_payload > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_parse_payload > ' + e, 1);
       }
 
       return payload_obj;
@@ -1147,16 +1147,16 @@ var JSJaCJingleUtils = ring.create(
         // Parse ICE-UDP transport candidates
         fn_parse_transport(
           NS_JINGLE_TRANSPORTS_ICEUDP,
-          JSJAC_JINGLE_SDP_CANDIDATE_MAP_ICEUDP
+          GIGGLE_SDP_CANDIDATE_MAP_ICEUDP
         );
 
         // Parse RAW-UDP transport candidates
         fn_parse_transport(
           NS_JINGLE_TRANSPORTS_RAWUDP,
-          JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP
+          GIGGLE_SDP_CANDIDATE_MAP_RAWUDP
         );
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_parse_candidate > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_parse_candidate > ' + e, 1);
       }
 
       return candidate_arr;
@@ -1195,7 +1195,7 @@ var JSJaCJingleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_build_node > name: ' + name + ' > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_build_node > name: ' + name + ' > ' + e, 1);
       }
 
       return node;
@@ -1220,7 +1220,7 @@ var JSJaCJingleUtils = ring.create(
 
         for(cur_attr in attrs) this.stanza_set_attribute(jingle, cur_attr, attrs[cur_attr]);
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_jingle > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_generate_jingle > ' + e, 1);
       }
 
       return jingle;
@@ -1238,7 +1238,7 @@ var JSJaCJingleUtils = ring.create(
       try {
         muji = stanza.getNode().appendChild(stanza.buildNode('muji', { 'xmlns': NS_MUJI }));
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_muji > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_generate_muji > ' + e, 1);
       }
 
       return muji;
@@ -1257,15 +1257,15 @@ var JSJaCJingleUtils = ring.create(
 
         // Info attributes
         switch(args.info) {
-          case JSJAC_JINGLE_SESSION_INFO_MUTE:
-          case JSJAC_JINGLE_SESSION_INFO_UNMUTE:
+          case GIGGLE_SESSION_INFO_MUTE:
+          case GIGGLE_SESSION_INFO_UNMUTE:
             this.stanza_set_attribute(info, 'creator', this.parent.get_creator_this());
             this.stanza_set_attribute(info, 'name',    args.name);
 
             break;
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_session_info > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_generate_session_info > ' + e, 1);
       }
     },
 
@@ -1323,7 +1323,7 @@ var JSJaCJingleUtils = ring.create(
           this.stanza_set_attribute(content, 'senders', cur_content.senders);
 
           // Build description (if action type allows that element)
-          if(this.stanza_get_attribute(jingle, 'action') != JSJAC_JINGLE_ACTION_TRANSPORT_INFO) {
+          if(this.stanza_get_attribute(jingle, 'action') != GIGGLE_ACTION_TRANSPORT_INFO) {
             var cs_description  = cur_content.description;
             var cs_d_attrs      = cs_description.attrs;
             var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
@@ -1518,7 +1518,7 @@ var JSJaCJingleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_content_local > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_generate_content_local > ' + e, 1);
       }
     },
 
@@ -1554,7 +1554,7 @@ var JSJaCJingleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] stanza_generate_group_local > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] stanza_generate_group_local > ' + e, 1);
       }
     },
 
@@ -1607,7 +1607,7 @@ var JSJaCJingleUtils = ring.create(
         if(payloads.transports && payloads.transports.fingerprint)
           content_obj.transport.fingerprint = payloads.transports.fingerprint;
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] generate_content > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] generate_content > ' + e, 1);
       }
 
       return content_obj;
@@ -1632,8 +1632,8 @@ var JSJaCJingleUtils = ring.create(
 
         // Reduce RAW-UDP map object for simpler search
         var rawudp_map = {};
-        for(i in JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP) {
-          rawudp_map[JSJAC_JINGLE_SDP_CANDIDATE_MAP_RAWUDP[i].n] = 1;
+        for(i in GIGGLE_SDP_CANDIDATE_MAP_RAWUDP) {
+          rawudp_map[GIGGLE_SDP_CANDIDATE_MAP_RAWUDP[i].n] = 1;
         }
 
         var fn_init_obj = function(transport_sub_obj) {
@@ -1649,21 +1649,21 @@ var JSJaCJingleUtils = ring.create(
         for(k = 0; k < (transport_init_obj.candidate).length; k++) {
           cur_candidate = this.object_clone(transport_init_obj.candidate[k]);
 
-          if(cur_candidate.type in JSJAC_JINGLE_SDP_CANDIDATE_TYPES) {
+          if(cur_candidate.type in GIGGLE_SDP_CANDIDATE_TYPES) {
             // Remove attributes that are not required by RAW-UDP (XEP-0177 compliance)
-            if(JSJAC_JINGLE_SDP_CANDIDATE_TYPES[cur_candidate.type] === JSJAC_JINGLE_SDP_CANDIDATE_METHOD_RAW) {
+            if(GIGGLE_SDP_CANDIDATE_TYPES[cur_candidate.type] === GIGGLE_SDP_CANDIDATE_METHOD_RAW) {
               for(cur_attr in cur_candidate) {
                 if(typeof rawudp_map[cur_attr] == 'undefined')
                   delete cur_candidate[cur_attr];
               }
             }
 
-            cur_transport = transport_obj[JSJAC_JINGLE_SDP_CANDIDATE_TYPES[cur_candidate.type]];
+            cur_transport = transport_obj[GIGGLE_SDP_CANDIDATE_TYPES[cur_candidate.type]];
             cur_transport.candidate.push(cur_candidate);
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] generate_transport > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] generate_transport > ' + e, 1);
       }
 
       return transport_obj;
@@ -1682,7 +1682,7 @@ var JSJaCJingleUtils = ring.create(
             cur_name,
 
             this.generate_content(
-              JSJAC_JINGLE_SENDERS_INITIATOR.jingle,
+              GIGGLE_SENDERS_INITIATOR.jingle,
               cur_name,
               this.parent.get_senders(cur_name),
               this.parent.get_payloads_local(cur_name),
@@ -1691,7 +1691,7 @@ var JSJaCJingleUtils = ring.create(
           );
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] build_content_local > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] build_content_local > ' + e, 1);
       }
     },
 
@@ -1717,7 +1717,7 @@ var JSJaCJingleUtils = ring.create(
           );
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] build_content_remote > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] build_content_remote > ' + e, 1);
       }
     },
 
@@ -1767,7 +1767,7 @@ var JSJaCJingleUtils = ring.create(
 
         if(!name) name = media;
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] name_generate > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] name_generate > ' + e, 1);
       }
 
       return name;
@@ -1785,13 +1785,13 @@ var JSJaCJingleUtils = ring.create(
 
       try {
         if(typeof name == 'number') {
-          for(cur_media in JSJAC_JINGLE_MEDIAS) {
-            if(name == parseInt(JSJAC_JINGLE_MEDIAS[cur_media].label, 10)) {
+          for(cur_media in GIGGLE_MEDIAS) {
+            if(name == parseInt(GIGGLE_MEDIAS[cur_media].label, 10)) {
               media = cur_media; break;
             }
           }
         } else {
-          for(cur_media in JSJAC_JINGLE_MEDIAS) {
+          for(cur_media in GIGGLE_MEDIAS) {
             if(name == this.name_generate(cur_media)) {
               media = cur_media; break;
             }
@@ -1800,7 +1800,7 @@ var JSJaCJingleUtils = ring.create(
 
         if(!media)  media = name;
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] media_generate > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] media_generate > ' + e, 1);
       }
 
       return media;
@@ -1876,7 +1876,7 @@ var JSJaCJingleUtils = ring.create(
       try {
         // Medias?
         constraints.audio = true;
-        constraints.video = (this.parent.get_media() == JSJAC_JINGLE_MEDIA_VIDEO);
+        constraints.video = (this.parent.get_media() == GIGGLE_MEDIA_VIDEO);
 
         // Video configuration
         if(constraints.video === true) {
@@ -1955,16 +1955,16 @@ var JSJaCJingleUtils = ring.create(
             constraints.video.mandatory.minFrameRate = this.parent.get_fps();
 
           // Custom video source? (screenshare)
-          if(this.parent.get_media()        == JSJAC_JINGLE_MEDIA_VIDEO         &&
-             this.parent.get_video_source() != JSJAC_JINGLE_VIDEO_SOURCE_CAMERA ) {
+          if(this.parent.get_media()        == GIGGLE_MEDIA_VIDEO         &&
+             this.parent.get_video_source() != GIGGLE_VIDEO_SOURCE_CAMERA ) {
             if(document.location.protocol !== 'https:')
-              this.parent.get_debug().log('[JSJaCJingle:utils] generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
+              this.parent.get_debug().log('[giggle:utils] generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
 
             // Unsupported browser? (for that feature)
-            if(this.browser().name != JSJAC_JINGLE_BROWSER_CHROME) {
-              this.parent.get_debug().log('[JSJaCJingle:utils] generate_constraints > Video source not supported by ' + this.browser().name + ' (source: ' + this.parent.get_video_source() + ').', 1);
+            if(this.browser().name != GIGGLE_BROWSER_CHROME) {
+              this.parent.get_debug().log('[giggle:utils] generate_constraints > Video source not supported by ' + this.browser().name + ' (source: ' + this.parent.get_video_source() + ').', 1);
 
-              this.parent.terminate(JSJAC_JINGLE_REASON_MEDIA_ERROR);
+              this.parent.terminate(GIGGLE_REASON_MEDIA_ERROR);
               return;
             }
 
@@ -1975,7 +1975,7 @@ var JSJaCJingleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] generate_constraints > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] generate_constraints > ' + e, 1);
       }
 
       return constraints;
@@ -2010,7 +2010,7 @@ var JSJaCJingleUtils = ring.create(
           prev_credentials = cur_credentials;
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] is_sdp_common_credentials > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] is_sdp_common_credentials > ' + e, 1);
       }
 
       return is_same;
@@ -2032,7 +2032,7 @@ var JSJaCJingleUtils = ring.create(
           count_candidates += (typeof candidates_obj[i] == 'object') ? candidates_obj[i].length : 0;
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] count_candidates > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] count_candidates > ' + e, 1);
       } finally {
         return count_candidates;
       }
@@ -2048,10 +2048,10 @@ var JSJaCJingleUtils = ring.create(
      */
     network_extract_main: function(media, candidates) {
       var network_obj = {
-        'ip': JSJAC_JINGLE_SDP_CANDIDATE_IP_DEFAULT,
-        'port': JSJAC_JINGLE_SDP_CANDIDATE_PORT_DEFAULT,
-        'scope': JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_DEFAULT,
-        'protocol': JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_DEFAULT
+        'ip': GIGGLE_SDP_CANDIDATE_IP_DEFAULT,
+        'port': GIGGLE_SDP_CANDIDATE_PORT_DEFAULT,
+        'scope': GIGGLE_SDP_CANDIDATE_SCOPE_DEFAULT,
+        'protocol': GIGGLE_SDP_CANDIDATE_IPVERSION_DEFAULT
       };
 
       var local_obj, remote_obj;
@@ -2070,21 +2070,21 @@ var JSJaCJingleUtils = ring.create(
 
           if(candidate_eval.ip.match(R_NETWORK_IP.all.v4)) {
             r_lan = R_NETWORK_IP.lan.v4;
-            parse_obj.protocol = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V4;
+            parse_obj.protocol = GIGGLE_SDP_CANDIDATE_IPVERSION_V4;
           } else if(candidate_eval.ip.match(R_NETWORK_IP.all.v6)) {
             r_lan = R_NETWORK_IP.lan.v6;
-            parse_obj.protocol = JSJAC_JINGLE_SDP_CANDIDATE_IPVERSION_V6;
+            parse_obj.protocol = GIGGLE_SDP_CANDIDATE_IPVERSION_V6;
           } else {
             return;
           }
 
-          if((type === JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST) &&
+          if((type === GIGGLE_SDP_CANDIDATE_TYPE_HOST) &&
              candidate_eval.ip.match(r_lan)) {
             // Local
-            parse_obj.scope = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_LOCAL;
-          } else if(type === JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX) {
+            parse_obj.scope = GIGGLE_SDP_CANDIDATE_SCOPE_LOCAL;
+          } else if(type === GIGGLE_SDP_CANDIDATE_TYPE_SRFLX) {
             // Remote
-            parse_obj.scope = JSJAC_JINGLE_SDP_CANDIDATE_SCOPE_REMOTE;
+            parse_obj.scope = GIGGLE_SDP_CANDIDATE_SCOPE_REMOTE;
           } else {
             return;
           }
@@ -2098,15 +2098,15 @@ var JSJaCJingleUtils = ring.create(
           if(cur_candidate.id == media || cur_candidate.label == media) {
             cur_candidate_parse = this.parent.sdp._parse_candidate(cur_candidate.candidate);
 
-            if(cur_candidate_parse.type === JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST) {
+            if(cur_candidate_parse.type === GIGGLE_SDP_CANDIDATE_TYPE_HOST) {
               // Only proceed if no local network yet
               if(typeof local_obj == 'undefined') {
-                local_obj = fn_proceed_parse(JSJAC_JINGLE_SDP_CANDIDATE_TYPE_HOST, cur_candidate_parse);
+                local_obj = fn_proceed_parse(GIGGLE_SDP_CANDIDATE_TYPE_HOST, cur_candidate_parse);
               }
-            } else if(cur_candidate_parse.type === JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX) {
+            } else if(cur_candidate_parse.type === GIGGLE_SDP_CANDIDATE_TYPE_SRFLX) {
               // Only proceed if no remote network yet
               if(typeof remote_obj == 'undefined') {
-                remote_obj = fn_proceed_parse(JSJAC_JINGLE_SDP_CANDIDATE_TYPE_SRFLX, cur_candidate_parse);
+                remote_obj = fn_proceed_parse(GIGGLE_SDP_CANDIDATE_TYPE_SRFLX, cur_candidate_parse);
               }
             }
           }
@@ -2118,7 +2118,7 @@ var JSJaCJingleUtils = ring.create(
           network_obj = local_obj;
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] network_extract_main > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] network_extract_main > ' + e, 1);
       }
 
       return network_obj;
@@ -2134,7 +2134,7 @@ var JSJaCJingleUtils = ring.create(
       try {
         return (new JSJaCJID(full_jid)).getResource();
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] extract_username > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] extract_username > ' + e, 1);
       }
 
       return null;
@@ -2146,7 +2146,7 @@ var JSJaCJingleUtils = ring.create(
      * @returns {String} Negotiation status
      */
     negotiation_status: function() {
-      return (this.parent.get_initiator() == this.connection_jid()) ? JSJAC_JINGLE_SENDERS_INITIATOR.jingle : JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
+      return (this.parent.get_initiator() == this.connection_jid()) ? GIGGLE_SENDERS_INITIATOR.jingle : GIGGLE_SENDERS_RESPONDER.jingle;
     },
 
     /**
@@ -2211,7 +2211,7 @@ var JSJaCJingleUtils = ring.create(
 
       try {
         switch(type) {
-          case JSJAC_JINGLE_DIRECTION_LOCAL:
+          case GIGGLE_DIRECTION_LOCAL:
             fn.type       = type;
             fn.mute       = true;
             fn.view.get   = this.parent.get_local_view;
@@ -2220,7 +2220,7 @@ var JSJaCJingleUtils = ring.create(
             fn.stream.set = this.parent._set_local_stream;
             break;
 
-          case JSJAC_JINGLE_DIRECTION_REMOTE:
+          case GIGGLE_DIRECTION_REMOTE:
             fn.type       = type;
             fn.view.get   = this.parent.get_remote_view;
             fn.view.set   = this.parent._set_remote_view;
@@ -2229,7 +2229,7 @@ var JSJaCJingleUtils = ring.create(
             break;
         }
       } catch(e) {
-        this.parent.get_debug().log('[JSJaCJingle:utils] map_register_view > ' + e, 1);
+        this.parent.get_debug().log('[giggle:utils] map_register_view > ' + e, 1);
       }
 
       return fn;

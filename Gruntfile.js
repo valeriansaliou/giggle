@@ -1,5 +1,5 @@
 /*
- * JSJaCJingle.js
+ * Giggle.js
  * Automated tasks (uses GruntJS)
  *
  * Copyright 2013, FrenchTouch Web Agency
@@ -34,17 +34,17 @@ module.exports = function(grunt) {
   ];
 
   var GRUNT_SRC_FILES = [
-    'src/jsjac.jingle.header.js',
-    'src/jsjac.jingle.constants.js',
-    'src/jsjac.jingle.storage.js',
-    'src/jsjac.jingle.utils.js',
-    'src/jsjac.jingle.sdp.js',
-    'src/jsjac.jingle.base.js',
-    'src/jsjac.jingle.single.js',
-    'src/jsjac.jingle.muji.js',
-    'src/jsjac.jingle.broadcast.js',
-    'src/jsjac.jingle.init.js',
-    'src/jsjac.jingle.main.js'
+    'src/giggle.header.js',
+    'src/giggle.constants.js',
+    'src/giggle.storage.js',
+    'src/giggle.utils.js',
+    'src/giggle.sdp.js',
+    'src/giggle.base.js',
+    'src/giggle.single.js',
+    'src/giggle.muji.js',
+    'src/giggle.broadcast.js',
+    'src/giggle.init.js',
+    'src/giggle.main.js'
   ];
 
   var GRUNT_CONCAT_FILES = GRUNT_LIB_FILES.concat(GRUNT_SRC_FILES);
@@ -147,7 +147,7 @@ module.exports = function(grunt) {
       all: {
         files: [{
           src: GRUNT_CONCAT_FILES,
-          dest: 'tmp/jsjac.jingle.js',
+          dest: 'tmp/giggle.js',
         }]
       }
     },
@@ -157,8 +157,8 @@ module.exports = function(grunt) {
     copy: {
       all: {
         files: [{
-          src: 'tmp/jsjac.jingle.js',
-          dest: 'build/jsjac.jingle.js'
+          src: 'tmp/giggle.js',
+          dest: 'build/giggle.js'
         }]
       }
     },
@@ -173,8 +173,8 @@ module.exports = function(grunt) {
 
       javascripts: {
         files: [{
-          src: 'tmp/jsjac.jingle.js',
-          dest: 'build/jsjac.jingle.min.js'
+          src: 'tmp/giggle.js',
+          dest: 'build/giggle.min.js'
         }]
       }
     },

@@ -1,24 +1,24 @@
 /**
- * @fileoverview JSJaC Jingle library - Library loader
+ * @fileoverview Giggle library - Library loader
  *
- * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @url https://github.com/valeriansaliou/giggle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 
-/** @module jsjac-jingle/loader */
-/** @exports JSJaCJingleLoader */
+/** @module giggle/loader */
+/** @exports GiggleLoader */
 
 
 /**
  * Library loader tool.
- * @requires module:jsjac-jingle/main
+ * @requires module:giggle/main
  * @namespace
  * @global
  */
-var JSJaCJingleLoader = {
+var GiggleLoader = {
   /**
    * Maps library components to load
    * @constant
@@ -35,17 +35,17 @@ var JSJaCJingleLoader = {
     ],
 
     src: [
-      'jsjac.jingle.header',
-      'jsjac.jingle.constants',
-      'jsjac.jingle.storage',
-      'jsjac.jingle.utils',
-      'jsjac.jingle.sdp',
-      'jsjac.jingle.base',
-      'jsjac.jingle.single',
-      'jsjac.jingle.muji',
-      'jsjac.jingle.broadcast',
-      'jsjac.jingle.init',
-      'jsjac.jingle.main'
+      'giggle.header',
+      'giggle.constants',
+      'giggle.storage',
+      'giggle.utils',
+      'giggle.sdp',
+      'giggle.base',
+      'giggle.single',
+      'giggle.muji',
+      'giggle.broadcast',
+      'giggle.init',
+      'giggle.main'
     ]
   },
 
@@ -91,6 +91,6 @@ var JSJaCJingleLoader = {
   },
 };
 
-if(typeof JSJaCJingle == 'undefined') {
-  JSJaCJingleLoader.go();
+if(typeof Giggle == 'undefined') {
+  GiggleLoader.go();
 }

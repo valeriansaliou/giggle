@@ -1,15 +1,15 @@
 /**
- * @fileoverview JSJaC Jingle library - Base call lib
+ * @fileoverview Giggle library - Base call lib
  *
- * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @url https://github.com/valeriansaliou/giggle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 
-/** @module jsjac-jingle/base */
-/** @exports __JSJaCJingleBase */
+/** @module giggle/base */
+/** @exports __GiggleBase */
 
 
 /**
@@ -19,8 +19,8 @@
  * @classdesc  Abstract base class for XMPP Jingle sessions.
  * @requires   nicolas-van/ring.js
  * @requires   sstrigler/JSJaC
- * @requires   jsjac-jingle/utils
- * @requires   jsjac-jingle/sdp
+ * @requires   giggle/utils
+ * @requires   giggle/sdp
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  * @param      {Object}         [args]                        - Jingle session arguments.
@@ -38,8 +38,8 @@
  * @property   {Boolean}        [args.net_trace]              - Log network packet trace in console (requires a debug interface).
  * @property   {JSJaCDebugger}  [args.debug]                  - A reference to a debugger implementing the JSJaCDebugger interface.
  */
-var __JSJaCJingleBase = ring.create(
-  /** @lends __JSJaCJingleBase.prototype */
+var __GiggleBase = ring.create(
+  /** @lends __GiggleBase.prototype */
   {
     /**
      * Constructor
@@ -47,21 +47,21 @@ var __JSJaCJingleBase = ring.create(
     constructor: function(args) {
       /**
        * @constant
-       * @member {JSJaCJingleUtils}
+       * @member {GiggleUtils}
        * @readonly
        * @default
        * @public
        */
-      this.utils = new JSJaCJingleUtils(this);
+      this.utils = new GiggleUtils(this);
 
       /**
        * @constant
-       * @member {JSJaCJingleSDP}
+       * @member {GiggleSDP}
        * @readonly
        * @default
        * @public
        */
-      this.sdp = new JSJaCJingleSDP(this);
+      this.sdp = new GiggleSDP(this);
 
       if(args && args.to)
         /**
@@ -87,7 +87,7 @@ var __JSJaCJingleBase = ring.create(
          * @default
          * @private
          */
-        this._connection = JSJaCJingleStorage.get_connection();
+        this._connection = GiggleStorage.get_connection();
       }
 
       if(args && args.media)
@@ -213,7 +213,7 @@ var __JSJaCJingleBase = ring.create(
          * @default
          * @private
          */
-        this._debug = JSJaCJingleStorage.get_debug();
+        this._debug = GiggleStorage.get_debug();
       }
 
       /**
@@ -380,25 +380,25 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Boolean} Success
      */
     register_handler: function(node, type, id, fn) {
-      this.get_debug().log('[JSJaCJingle:base] register_handler', 4);
+      this.get_debug().log('[giggle:base] register_handler', 4);
 
       try {
         if(typeof fn !== 'function') {
-          this.get_debug().log('[JSJaCJingle:base] register_handler > fn parameter not passed or not a function!', 1);
+          this.get_debug().log('[giggle:base] register_handler > fn parameter not passed or not a function!', 1);
           return false;
         }
 
         if(id) {
           this._set_registered_handlers(node, type, id, fn);
 
-          this.get_debug().log('[JSJaCJingle:base] register_handler > Registered handler for node: ' + node + ', id: ' + id + ' and type: ' + type, 3);
+          this.get_debug().log('[giggle:base] register_handler > Registered handler for node: ' + node + ', id: ' + id + ' and type: ' + type, 3);
           return true;
         } else {
-          this.get_debug().log('[JSJaCJingle:base] register_handler > Could not register handler (no ID).', 1);
+          this.get_debug().log('[giggle:base] register_handler > Could not register handler (no ID).', 1);
           return false;
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] register_handler > ' + e, 1);
+        this.get_debug().log('[giggle:base] register_handler > ' + e, 1);
       }
 
       return false;
@@ -413,20 +413,20 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Boolean} Success
      */
     unregister_handler: function(node, type, id) {
-      this.get_debug().log('[JSJaCJingle:base] unregister_handler', 4);
+      this.get_debug().log('[giggle:base] unregister_handler', 4);
 
       try {
         if(this.get_registered_handlers(node, type, id).length >= 1) {
           this._set_registered_handlers(node, type, id, null);
 
-          this.get_debug().log('[JSJaCJingle:base] unregister_handler > Unregistered handler for node: ' + node + ', id: ' + id + ' and type: ' + type, 3);
+          this.get_debug().log('[giggle:base] unregister_handler > Unregistered handler for node: ' + node + ', id: ' + id + ' and type: ' + type, 3);
           return true;
         } else {
-          this.get_debug().log('[JSJaCJingle:base] unregister_handler > Could not unregister handler with node: ' + node + ', id: ' + id + ' and type: ' + type + ' (not found).', 2);
+          this.get_debug().log('[giggle:base] unregister_handler > Could not unregister handler with node: ' + node + ', id: ' + id + ' and type: ' + type + ' (not found).', 2);
           return false;
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] unregister_handler > ' + e, 1);
+        this.get_debug().log('[giggle:base] unregister_handler > ' + e, 1);
       }
 
       return false;
@@ -440,20 +440,20 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Boolean} Success
      */
     defer_handler: function(ns, fn) {
-      this.get_debug().log('[JSJaCJingle:base] defer_handler', 4);
+      this.get_debug().log('[giggle:base] defer_handler', 4);
 
       try {
         if(typeof fn !== 'function') {
-          this.get_debug().log('[JSJaCJingle:base] defer_handler > fn parameter not passed or not a function!', 1);
+          this.get_debug().log('[giggle:base] defer_handler > fn parameter not passed or not a function!', 1);
           return false;
         }
 
         this._set_deferred_handlers(ns, fn);
 
-        this.get_debug().log('[JSJaCJingle:base] defer_handler > Deferred handler for namespace: ' + ns, 3);
+        this.get_debug().log('[giggle:base] defer_handler > Deferred handler for namespace: ' + ns, 3);
         return true;
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] defer_handler > ' + e, 1);
+        this.get_debug().log('[giggle:base] defer_handler > ' + e, 1);
       }
 
       return false;
@@ -466,20 +466,20 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Boolean} Success
      */
     undefer_handler: function(ns) {
-      this.get_debug().log('[JSJaCJingle:base] undefer_handler', 4);
+      this.get_debug().log('[giggle:base] undefer_handler', 4);
 
       try {
         if(ns in this._deferred_handlers) {
           this._set_deferred_handlers(ns, null);
 
-          this.get_debug().log('[JSJaCJingle:base] undefer_handler > Undeferred handler for namespace: ' + ns, 3);
+          this.get_debug().log('[giggle:base] undefer_handler > Undeferred handler for namespace: ' + ns, 3);
           return true;
         } else {
-          this.get_debug().log('[JSJaCJingle:base] undefer_handler > Could not undefer handler with namespace: ' + ns + ' (not found).', 2);
+          this.get_debug().log('[giggle:base] undefer_handler > Could not undefer handler with namespace: ' + ns + ' (not found).', 2);
           return false;
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] undefer_handler > ' + e, 1);
+        this.get_debug().log('[giggle:base] undefer_handler > ' + e, 1);
       }
 
       return false;
@@ -493,7 +493,7 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Boolean} Success
      */
     register_view: function(type, view) {
-      this.get_debug().log('[JSJaCJingle:base] register_view', 4);
+      this.get_debug().log('[giggle:base] register_view', 4);
 
       try {
         // Get view functions
@@ -505,7 +505,7 @@ var __JSJaCJingleBase = ring.create(
           // Check view is not already registered
           for(i in (fn.view.get)()) {
             if((fn.view.get)()[i] == view) {
-              this.get_debug().log('[JSJaCJingle:base] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
+              this.get_debug().log('[giggle:base] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
               return true;
             }
           }
@@ -519,15 +519,15 @@ var __JSJaCJingleBase = ring.create(
             fn.mute
           );
 
-          this.get_debug().log('[JSJaCJingle:base] register_view > Registered view of type: ' + type, 3);
+          this.get_debug().log('[giggle:base] register_view > Registered view of type: ' + type, 3);
 
           return true;
         } else {
-          this.get_debug().log('[JSJaCJingle:base] register_view > Could not register view of type: ' + type + ' (type unknown).', 1);
+          this.get_debug().log('[giggle:base] register_view > Could not register view of type: ' + type + ' (type unknown).', 1);
           return false;
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] register_view > ' + e, 1);
+        this.get_debug().log('[giggle:base] register_view > ' + e, 1);
       }
 
       return false;
@@ -541,7 +541,7 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Boolean} Success
      */
     unregister_view: function(type, view) {
-      this.get_debug().log('[JSJaCJingle:base] unregister_view', 4);
+      this.get_debug().log('[giggle:base] unregister_view', 4);
 
       try {
         // Get view functions
@@ -563,19 +563,19 @@ var __JSJaCJingleBase = ring.create(
                 view
               );
 
-              this.get_debug().log('[JSJaCJingle:base] unregister_view > Unregistered view of type: ' + type, 3);
+              this.get_debug().log('[giggle:base] unregister_view > Unregistered view of type: ' + type, 3);
               return true;
             }
           }
 
-          this.get_debug().log('[JSJaCJingle:base] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
+          this.get_debug().log('[giggle:base] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
           return true;
         } else {
-          this.get_debug().log('[JSJaCJingle:base] unregister_view > Could not unregister view of type: ' + type + ' (type unknown).', 1);
+          this.get_debug().log('[giggle:base] unregister_view > Could not unregister view of type: ' + type + ' (type unknown).', 1);
           return false;
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] unregister_view > ' + e, 1);
+        this.get_debug().log('[giggle:base] unregister_view > ' + e, 1);
       }
 
       return false;
@@ -593,7 +593,7 @@ var __JSJaCJingleBase = ring.create(
      * @param {Function} sdp_message_callback
      */
     _peer_connection_create: function(sdp_message_callback) {
-      this.get_debug().log('[JSJaCJingle:base] _peer_connection_create', 4);
+      this.get_debug().log('[giggle:base] _peer_connection_create', 4);
 
       try {
         // Create peer connection instance
@@ -608,7 +608,7 @@ var __JSJaCJingleBase = ring.create(
         // Create offer/answer
         this._peer_connection_create_dispatch(sdp_message_callback);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _peer_connection_create > ' + e, 1);
+        this.get_debug().log('[giggle:base] _peer_connection_create > ' + e, 1);
       }
     },
 
@@ -617,14 +617,14 @@ var __JSJaCJingleBase = ring.create(
      * @private
      */
     _peer_connection_create_local_stream: function() {
-      this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_local_stream', 4);
+      this.get_debug().log('[giggle:base] _peer_connection_create_local_stream', 4);
 
       try {
         this.get_peer_connection().addStream(
           this.get_local_stream()
       	);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _peer_connection_create_local_stream > ' + e, 1);
+        this.get_debug().log('[giggle:base] _peer_connection_create_local_stream > ' + e, 1);
       }
     },
 
@@ -634,11 +634,11 @@ var __JSJaCJingleBase = ring.create(
      * @param {Function} callback
      */
     _peer_get_user_media: function(callback) {
-      this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media', 4);
+      this.get_debug().log('[giggle:base] _peer_get_user_media', 4);
 
       try {
         if(this.get_local_stream() === null) {
-          this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media > Getting user media...', 2);
+          this.get_debug().log('[giggle:base] _peer_get_user_media > Getting user media...', 2);
 
           (WEBRTC_GET_MEDIA.bind(navigator))(
             this.utils.generate_constraints(),
@@ -646,12 +646,12 @@ var __JSJaCJingleBase = ring.create(
             this._peer_got_user_media_error.bind(this)
           );
         } else {
-          this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media > User media already acquired.', 2);
+          this.get_debug().log('[giggle:base] _peer_get_user_media > User media already acquired.', 2);
 
           callback();
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _peer_get_user_media > ' + e, 1);
+        this.get_debug().log('[giggle:base] _peer_get_user_media > ' + e, 1);
       }
     },
 
@@ -662,28 +662,28 @@ var __JSJaCJingleBase = ring.create(
      * @param {Object} stream
      */
     _peer_got_user_media_success: function(callback, stream) {
-      this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success', 4);
+      this.get_debug().log('[giggle:base] _peer_got_user_media_success', 4);
 
       try {
-        this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success > Got user media.', 2);
+        this.get_debug().log('[giggle:base] _peer_got_user_media_success > Got user media.', 2);
 
         this._set_local_stream(stream);
 
         if(callback && typeof callback == 'function') {
-          if((this.get_media() == JSJAC_JINGLE_MEDIA_VIDEO) && this.get_local_view().length) {
+          if((this.get_media() == GIGGLE_MEDIA_VIDEO) && this.get_local_view().length) {
             var _this = this;
 
             var fn_loaded = function() {
-              _this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success > Local video loaded.', 2);
+              _this.get_debug().log('[giggle:base] _peer_got_user_media_success > Local video loaded.', 2);
 
               this.removeEventListener('loadeddata', fn_loaded, false);
               callback();
             };
 
-            if(_this.get_local_view()[0].readyState >= JSJAC_JINGLE_MEDIA_READYSTATE_LOADED) {
+            if(_this.get_local_view()[0].readyState >= GIGGLE_MEDIA_READYSTATE_LOADED) {
               fn_loaded();
             } else {
-              this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
+              this.get_debug().log('[giggle:base] _peer_got_user_media_success > Waiting for local video to be loaded...', 2);
 
               _this.get_local_view()[0].addEventListener('loadeddata', fn_loaded, false);
             }
@@ -692,7 +692,7 @@ var __JSJaCJingleBase = ring.create(
           }
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _peer_got_user_media_success > ' + e, 1);
+        this.get_debug().log('[giggle:base] _peer_got_user_media_success > ' + e, 1);
       }
     },
 
@@ -703,12 +703,12 @@ var __JSJaCJingleBase = ring.create(
      * @param {Function} [sdp_message_callback]
      */
     _peer_got_description: function(sdp_local, sdp_message_callback) {
-      this.get_debug().log('[JSJaCJingle:base] _peer_got_description', 4);
+      this.get_debug().log('[giggle:base] _peer_got_description', 4);
 
       try {
-        this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Got local description.', 2);
+        this.get_debug().log('[giggle:base] _peer_got_description > Got local description.', 2);
 
-        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:raw)' + '\n\n' + sdp_local.sdp, 4);
+        if(this.get_sdp_trace())  this.get_debug().log('[giggle:base] _peer_got_description > SDP (local:raw)' + '\n\n' + sdp_local.sdp, 4);
 
         // Convert SDP raw data to an object
         var cur_name;
@@ -743,7 +743,7 @@ var __JSJaCJingleBase = ring.create(
           )
         );
 
-        if(this.get_sdp_trace())  this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
+        if(this.get_sdp_trace())  this.get_debug().log('[giggle:base] _peer_got_description > SDP (local:gen)' + '\n\n' + sdp_local_desc.sdp, 4);
 
         var _this = this;
 
@@ -758,7 +758,7 @@ var __JSJaCJingleBase = ring.create(
             var error_str = (typeof e == 'string') ? e : null;
             error_str = (error_str || e.message || e.name || 'Unknown error');
 
-            if(_this.get_sdp_trace())  _this.get_debug().log('[JSJaCJingle:base] _peer_got_description > SDP (local:error)' + '\n\n' + error_str, 1);
+            if(_this.get_sdp_trace())  _this.get_debug().log('[giggle:base] _peer_got_description > SDP (local:error)' + '\n\n' + error_str, 1);
 
             // Error (descriptions are incompatible)
           }
@@ -766,15 +766,15 @@ var __JSJaCJingleBase = ring.create(
 
         // Need to wait for local candidates?
         if(typeof sdp_message_callback == 'function') {
-          this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Executing SDP message callback.', 2);
+          this.get_debug().log('[giggle:base] _peer_got_description > Executing SDP message callback.', 2);
 
           /* @function */
           sdp_message_callback();
         } else if(this.utils.count_candidates(this._shortcut_local_user_candidates()) === 0) {
-          this.get_debug().log('[JSJaCJingle:base] _peer_got_description > Waiting for local candidates...', 2);
+          this.get_debug().log('[giggle:base] _peer_got_description > Waiting for local candidates...', 2);
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _peer_got_description > ' + e, 1);
+        this.get_debug().log('[giggle:base] _peer_got_description > ' + e, 1);
       }
     },
 
@@ -783,12 +783,12 @@ var __JSJaCJingleBase = ring.create(
      * @private
      */
     _peer_fail_description: function() {
-      this.get_debug().log('[JSJaCJingle:base] _peer_fail_description', 4);
+      this.get_debug().log('[giggle:base] _peer_fail_description', 4);
 
       try {
-        this.get_debug().log('[JSJaCJingle:base] _peer_fail_description > Could not get local description!', 1);
+        this.get_debug().log('[giggle:base] _peer_fail_description > Could not get local description!', 1);
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _peer_fail_description > ' + e, 1);
+        this.get_debug().log('[giggle:base] _peer_fail_description > ' + e, 1);
       }
     },
 
@@ -798,10 +798,10 @@ var __JSJaCJingleBase = ring.create(
      * @param {Boolean} enable
      */
     _peer_sound: function(enable) {
-      this.get_debug().log('[JSJaCJingle:base] _peer_sound', 4);
+      this.get_debug().log('[giggle:base] _peer_sound', 4);
 
       try {
-        this.get_debug().log('[JSJaCJingle:base] _peer_sound > Enable: ' + enable, 2);
+        this.get_debug().log('[giggle:base] _peer_sound > Enable: ' + enable, 2);
 
         var i;
         var audio_tracks = this.get_local_stream().getAudioTracks();
@@ -809,7 +809,7 @@ var __JSJaCJingleBase = ring.create(
         for(i = 0; i < audio_tracks.length; i++)
           audio_tracks[i].enabled = enable;
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _peer_sound > ' + e, 1);
+        this.get_debug().log('[giggle:base] _peer_sound > ' + e, 1);
       }
     },
 
@@ -836,7 +836,7 @@ var __JSJaCJingleBase = ring.create(
           if(typeof mute == 'boolean') element[i].muted = mute;
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _peer_stream_attach > ' + e, 1);
+        this.get_debug().log('[giggle:base] _peer_stream_attach > ' + e, 1);
       }
     },
 
@@ -854,7 +854,7 @@ var __JSJaCJingleBase = ring.create(
           element[i].src = '';
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _peer_stream_detach > ' + e, 1);
+        this.get_debug().log('[giggle:base] _peer_stream_detach > ' + e, 1);
       }
     },
 
@@ -870,7 +870,7 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Boolean} Receiver state
      */
     is_responder: function() {
-      return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_RESPONDER.jingle;
+      return this.utils.negotiation_status() == GIGGLE_SENDERS_RESPONDER.jingle;
     },
 
     /**
@@ -879,7 +879,7 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Boolean} Initiator state
      */
     is_initiator: function() {
-      return this.utils.negotiation_status() == JSJAC_JINGLE_SENDERS_INITIATOR.jingle;
+      return this.utils.negotiation_status() == GIGGLE_SENDERS_INITIATOR.jingle;
     },
 
 
@@ -1074,7 +1074,7 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Boolean} Lock value
      */
     get_lock: function() {
-      return this._lock || !JSJAC_JINGLE_AVAILABLE;
+      return this._lock || !GIGGLE_AVAILABLE;
     },
 
     /**
@@ -1160,7 +1160,7 @@ var __JSJaCJingleBase = ring.create(
      * @returns {String} Creator value
      */
     get_creator_this: function(name) {
-      return this.get_responder() == this.get_to() ? JSJAC_JINGLE_CREATOR_INITIATOR : JSJAC_JINGLE_CREATOR_RESPONDER;
+      return this.get_responder() == this.get_to() ? GIGGLE_CREATOR_INITIATOR : GIGGLE_CREATOR_RESPONDER;
     },
 
     /**
@@ -1182,7 +1182,7 @@ var __JSJaCJingleBase = ring.create(
      * @returns {String} Media value
      */
     get_media: function() {
-      return (this._media && this._media in JSJAC_JINGLE_MEDIAS) ? this._media : JSJAC_JINGLE_MEDIA_VIDEO;
+      return (this._media && this._media in GIGGLE_MEDIAS) ? this._media : GIGGLE_MEDIA_VIDEO;
     },
 
     /**
@@ -1191,10 +1191,10 @@ var __JSJaCJingleBase = ring.create(
      * @returns {Object} Media list
      */
     get_media_all: function() {
-      if(this.get_media() == JSJAC_JINGLE_MEDIA_AUDIO)
-        return [JSJAC_JINGLE_MEDIA_AUDIO];
+      if(this.get_media() == GIGGLE_MEDIA_AUDIO)
+        return [GIGGLE_MEDIA_AUDIO];
 
-      return [JSJAC_JINGLE_MEDIA_AUDIO, JSJAC_JINGLE_MEDIA_VIDEO];
+      return [GIGGLE_MEDIA_AUDIO, GIGGLE_MEDIA_VIDEO];
     },
 
     /**
@@ -1203,7 +1203,7 @@ var __JSJaCJingleBase = ring.create(
      * @returns {String} Video source value
      */
     get_video_source: function() {
-      return (this._video_source && this._video_source in JSJAC_JINGLE_VIDEO_SOURCES) ? this._video_source : JSJAC_JINGLE_VIDEO_SOURCE_CAMERA;
+      return (this._video_source && this._video_source in GIGGLE_VIDEO_SOURCES) ? this._video_source : GIGGLE_VIDEO_SOURCE_CAMERA;
     },
 
     /**
@@ -1341,7 +1341,7 @@ var __JSJaCJingleBase = ring.create(
     _set_local_stream: function(local_stream) {
       try {
         if(this.get_local_stream_readonly() === true) {
-          this.get_debug().log('[JSJaCJingle:base] _set_local_stream > Local stream is read-only, not setting it.', 0); return;
+          this.get_debug().log('[giggle:base] _set_local_stream > Local stream is read-only, not setting it.', 0); return;
         }
 
         if(!local_stream && this._local_stream) {
@@ -1366,7 +1366,7 @@ var __JSJaCJingleBase = ring.create(
           );
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _set_local_stream > ' + e, 1);
+        this.get_debug().log('[giggle:base] _set_local_stream > ' + e, 1);
       }
     },
 
@@ -1448,7 +1448,7 @@ var __JSJaCJingleBase = ring.create(
           (this._candidates_queue_local[name]).push(candidate_data);
         }
       } catch(e) {
-        this.get_debug().log('[JSJaCJingle:base] _set_candidates_queue_local > ' + e, 1);
+        this.get_debug().log('[giggle:base] _set_candidates_queue_local > ' + e, 1);
       }
     },
 
@@ -1630,7 +1630,7 @@ var __JSJaCJingleBase = ring.create(
      * @param {String} creator
      */
     _set_creator: function(name, creator) {
-      if(!(creator in JSJAC_JINGLE_CREATORS)) creator = JSJAC_JINGLE_CREATOR_INITIATOR;
+      if(!(creator in GIGGLE_CREATORS)) creator = GIGGLE_CREATOR_INITIATOR;
 
       this._creator[name] = creator;
     },
@@ -1642,7 +1642,7 @@ var __JSJaCJingleBase = ring.create(
      * @param {String} senders
      */
     _set_senders: function(name, senders) {
-      if(!(senders in JSJAC_JINGLE_SENDERS)) senders = JSJAC_JINGLE_SENDERS_BOTH.jingle;
+      if(!(senders in GIGGLE_SENDERS)) senders = GIGGLE_SENDERS_BOTH.jingle;
 
       this._senders[name] = senders;
     },

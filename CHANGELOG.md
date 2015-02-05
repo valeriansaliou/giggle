@@ -1,13 +1,16 @@
-JSJaCJingle.js Changelog
-========================
+Giggle.js Changelog
+===================
 
-Here's the log of what has changed over the JSJaCJingle.js releases.
+Here's the log of what has changed over the Giggle.js releases.
 
 
 v0.8.0 (Development)
 --------------------
 
- * (...)
+ * **In a nutshell**
+    * **Giggle.js is now Giggle.js**                                     @valeriansaliou
+    * **Support for other XMPP libraries** (StropheJS, Stanza.io and others)  @valeriansaliou
+    * (...)
 
 
 v0.7.6 (Oct 13, 2014)
@@ -36,14 +39,14 @@ v0.7.3 (Jul 23, 2014)
 ---------------------
 
  * **In a nutshell**
-    * **Participant stream custom handlers** added to JSJaCJingleMuji  @valeriansaliou
+    * **Participant stream custom handlers** added to GiggleMuji  @valeriansaliou
 
 
 v0.7.2 (Jul 23, 2014)
 ---------------------
 
  * **In a nutshell**
-    * **Stream custom handlers** added to JSJaCJingleSingle  @valeriansaliou
+    * **Stream custom handlers** added to GiggleSingle  @valeriansaliou
 
 
 v0.7.1 (Jul 19, 2014)
@@ -110,7 +113,7 @@ v0.3.0 (Jul 6, 2013)
 --------------------
 
  * **In a nutshell**
-    * Ability to **attach more video views** as the call is going on using _JSJaCJingle.register_view()_  @valeriansaliou
+    * Ability to **attach more video views** as the call is going on using _Giggle.register_view()_  @valeriansaliou
 
  * **XEP added**
     **[XEP-0262](http://xmpp.org/extensions/xep-0262.html)** (full support)  @valeriansaliou
@@ -142,4 +145,4 @@ v0.1.0 (Jun 27, 2013)
     * **[XEP-0320](http://xmpp.org/extensions/xep-0320.html)** (full support)     @valeriansaliou
 
 
-**For more information about what changed through time, check the changes made to our source code on GitHub: https://github.com/valeriansaliou/jsjac-jingle/commits/master**
+**For more information about what changed through time, check the changes made to our source code on GitHub: https://github.com/valeriansaliou/giggle/commits/master**

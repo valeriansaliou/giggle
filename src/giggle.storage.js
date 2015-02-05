@@ -1,34 +1,34 @@
 /**
- * @fileoverview JSJaC Jingle library - Storage layer
+ * @fileoverview Giggle library - Storage layer
  *
- * @url https://github.com/valeriansaliou/jsjac-jingle
+ * @url https://github.com/valeriansaliou/giggle
  * @depends https://github.com/sstrigler/JSJaC
  * @author Valérian Saliou https://valeriansaliou.name/
  * @license Mozilla private License v2.0 (MPL v2.0)
  */
 
 
-/** @module jsjac-jingle/storage */
-/** @exports JSJaCJingleStorage */
+/** @module giggle/storage */
+/** @exports GiggleStorage */
 
 
 /**
  * Storage layer wrapper.
  * @instance
  * @requires   nicolas-van/ring.js
- * @requires   jsjac-jingle/constants
+ * @requires   giggle/constants
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */
-var JSJaCJingleStorage = new (ring.create(
-  /** @lends JSJaCJingleStorage.prototype */
+var GiggleStorage = new (ring.create(
+  /** @lends GiggleStorage.prototype */
   {
     /**
      * Constructor
      */
     constructor: function() {
       /**
-       * JSJAC JINGLE STORAGE
+       * GIGGLE STORAGE
        */
 
       /**
@@ -44,8 +44,8 @@ var JSJaCJingleStorage = new (ring.create(
        * @private
        */
       this._sessions                               = {};
-      this._sessions[JSJAC_JINGLE_SESSION_SINGLE]  = {};
-      this._sessions[JSJAC_JINGLE_SESSION_MUJI]    = {};
+      this._sessions[GIGGLE_SESSION_SINGLE]  = {};
+      this._sessions[GIGGLE_SESSION_MUJI]    = {};
 
       /**
        * @type {Object}
