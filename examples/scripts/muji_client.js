@@ -441,7 +441,7 @@ function helper_video_stop(_this, stanza) {
     }
 }
 
-$(document).ready(function() {
+GiggleLoader.on_ready(function() {
     // Check for WebRTC support
     if(!GIGGLE_AVAILABLE) {
         $('#fieldset_login').attr('disabled', true);

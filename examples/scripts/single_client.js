@@ -212,7 +212,7 @@ var ARGS = {
     }
 };
 
-$(document).ready(function() {
+GiggleLoader.on_ready(function() {
     // Check for WebRTC support
     if(!GIGGLE_AVAILABLE) {
         $('#fieldset_login').attr('disabled', true);

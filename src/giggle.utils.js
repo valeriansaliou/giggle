@@ -76,17 +76,17 @@ var GiggleUtils = ring.create(
 
       try {
         /**
-         *@private
+         * @private
          */
         jid._node = '';
 
         /**
-         *@private
+         * @private
          */
         jid._domain = '';
 
         /**
-         *@private
+         * @private
          */
         jid._resource = '';
 

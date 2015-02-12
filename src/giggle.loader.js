@@ -19,6 +19,18 @@
  */
 var GiggleLoader = {
   /**
+   * @private
+   */
+  _ready_check_interval: 200,
+
+
+  /**
+   * @private
+   */
+  _ready_callbacks: [],
+
+
+  /**
    * Maps library components to load
    * @constant
    * @type {Object}
@@ -48,6 +60,20 @@ var GiggleLoader = {
     ]
   },
 
+
+  /**
+   * Handles the ready state event
+   * @static
+   * @private
+   */
+   _fire_ready: function() {
+    // Executes all pending ready callbacks
+    for(var i = 0; i < this._ready_callbacks.length; i++) {
+      // Fire, fire, fire!
+      this._ready_callbacks[i]().bind(window);
+    }
+  },
+
   /**
    * Requires library component
    * @static
@@ -60,7 +86,7 @@ var GiggleLoader = {
     script.setAttribute('type', 'text/javascript');
     script.setAttribute('src', library_name);
 
-    document.getElementsByTagName('body').appendChild(script);
+    document.getElementsByTagName('head')[0].appendChild(script);
   },
 
 
@@ -70,15 +96,12 @@ var GiggleLoader = {
    * @public
    */
   go: function() {
-    var includes = [], c, d;
+    var includes = [], c;
 
     for(c in this._includes.lib) {
       includes.push('../lib/' + this._includes.lib[c]);
     }
-
-    for(d in this._includes.src) {
-      includes.push('../src/' + this._includes.src[d]);
-    }
+    includes = includes.concat(this._includes.src);
 
     var scripts = document.getElementsByTagName('script');
     var path = './', i, j;
@@ -93,7 +116,21 @@ var GiggleLoader = {
     for(j = 0; j < includes.length; j++) {
       this._require(path + includes[j] + '.js');
     }
+
+    this._fire_ready();
   },
+
+
+  /**
+   * Handles the ready state event
+   * @static
+   * @public
+   */
+   on_ready: function(handler) {
+    this._ready_callbacks.push(
+      handler
+    );
+   },
 };
 
 if(typeof Giggle == 'undefined') {
