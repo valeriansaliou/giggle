@@ -21,7 +21,6 @@
  * @requires   giggle/utils
  * @requires   giggle/sdp
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
- * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  * @param      {Object}         [args]                        - Jingle session arguments.
  * @property   {DOM}            [args.local_view]             - The path to the local stream view element.
  * @property   {Boolean}        [args.local_stream_readonly]  - Whether the local stream is read-only or not.
@@ -35,7 +34,7 @@
  * @property   {Array}          [args.turn]                   - A list of TURN servers to use.
  * @property   {Boolean}        [args.sdp_trace]              - Log SDP trace in console (requires a debug interface).
  * @property   {Boolean}        [args.net_trace]              - Log network packet trace in console (requires a debug interface).
- * @property   {JSJaCDebugger}  [args.debug]                  - A reference to a debugger implementing the JSJaCDebugger interface.
+ * @property   {Console}  [args.debug]                        - A reference to a debugger implementing the Console interface.
  */
 var __GiggleBase = ring.create(
   /** @lends __GiggleBase.prototype */
@@ -62,6 +61,15 @@ var __GiggleBase = ring.create(
        */
       this.sdp = new GiggleSDP(this);
 
+      /**
+       * @constant
+       * @member {GigglePlug}
+       * @readonly
+       * @default
+       * @public
+       */
+      this.plug = new GigglePlug(this);
+
       if(args && args.to)
         /**
          * @constant
@@ -74,7 +82,7 @@ var __GiggleBase = ring.create(
       if(args && args.connection) {
         /**
          * @constant
-         * @member {JSJaCConnection}
+         * @member {Object}
          * @default
          * @private
          */
@@ -82,7 +90,7 @@ var __GiggleBase = ring.create(
       } else {
         /**
          * @constant
-         * @member {JSJaCConnection}
+         * @member {Object}
          * @default
          * @private
          */
@@ -201,7 +209,7 @@ var __GiggleBase = ring.create(
 
       if(args && args.debug && args.debug.log) {
         /**
-         * @member {JSJaCDebugger}
+         * @member {Console}
          * @default
          * @private
          */
@@ -366,7 +374,7 @@ var __GiggleBase = ring.create(
 
 
     /**
-     * JSJSAC JINGLE REGISTERS
+     * GIGGLE REGISTERS
      */
 
     /**
@@ -583,7 +591,7 @@ var __GiggleBase = ring.create(
 
 
     /**
-     * JSJSAC JINGLE PEER TOOLS
+     * GIGGLE PEER TOOLS
      */
 
     /**
@@ -860,7 +868,7 @@ var __GiggleBase = ring.create(
 
 
     /**
-     * JSJSAC JINGLE STATES
+     * GIGGLE STATES
      */
 
     /**
@@ -884,7 +892,7 @@ var __GiggleBase = ring.create(
 
 
     /**
-     * JSJSAC JINGLE SHORTCUTS
+     * GIGGLE SHORTCUTS
      */
 
     /**
@@ -903,7 +911,7 @@ var __GiggleBase = ring.create(
 
 
     /**
-     * JSJSAC JINGLE GETTERS
+     * GIGGLE GETTERS
      */
 
     /**
@@ -1106,7 +1114,7 @@ var __GiggleBase = ring.create(
     /**
      * Gets the connection value
      * @public
-     * @returns {JSJaCConnection} Connection value
+     * @returns {Object} Connection value
      */
     get_connection: function() {
       return this._connection;
@@ -1311,7 +1319,7 @@ var __GiggleBase = ring.create(
     /**
      * Gets the debug value
      * @public
-     * @returns {JSJaCDebugger} Debug value
+     * @returns {Console} Debug value
      */
     get_debug: function() {
       return this._debug;
@@ -1320,7 +1328,7 @@ var __GiggleBase = ring.create(
 
 
     /**
-     * JSJSAC JINGLE SETTERS
+     * GIGGLE SETTERS
      */
 
     /**
@@ -1598,7 +1606,7 @@ var __GiggleBase = ring.create(
     /**
      * Sets the session connection value
      * @private
-     * @param {JSJaCConnection} connection
+     * @param {Object} connection
      */
     _set_connection: function(connection) {
       this._connection = connection;
@@ -1750,7 +1758,7 @@ var __GiggleBase = ring.create(
     /**
      * Sets the debugging wrapper
      * @public
-     * @param {JSJaCDebugger} debug
+     * @param {Console} debug
      */
     set_debug: function(debug) {
       this._debug = debug;

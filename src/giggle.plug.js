@@ -22,6 +22,22 @@
 var __GigglePlug = ring.create(
   /** @lends GigglePlug.prototype */
   {
-    // TODO
+    build: function(object) {
+      /*
+        {
+          'message': [
+            {
+              'body': {
+
+              }
+            }
+          ]
+        }
+       */
+    },
+
+    send: function(packet) {
+
+    }
   }
 );

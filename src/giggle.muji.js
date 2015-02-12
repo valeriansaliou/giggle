@@ -22,7 +22,6 @@
  * @requires   giggle/base
  * @see        {@link http://xmpp.org/extensions/xep-0272.html|XEP-0272: Multiparty Jingle (Muji)}
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
- * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  * @param      {Object}    [args]                                        - Muji session arguments.
  * @property   {*}         [args.*]                                      - Herits of Giggle() baseclass prototype.
  * @property   {String}    [args.username]                               - The username when joining room.
@@ -841,11 +840,11 @@ var GiggleMuji = ring.create([__GiggleBase],
         if(typeof args !== 'object') args = {};
 
         // Build stanza
-        var stanza = new JSJaCPresence();
-        stanza.setTo(this.get_muc_to());
+        var stanza = new this.plug.presence();
+        stanza.to(this.get_muc_to());
 
         if(!args.id) args.id = this.get_id_new();
-        stanza.setID(args.id);
+        stanza.id(args.id);
 
         // Submit to registered handler
         switch(args.action) {
@@ -866,7 +865,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
         this._set_sent_id(args.id);
 
-        this.get_connection().send(stanza);
+        stanza.send();
 
         if(this.get_net_trace())  this.get_debug().log('[giggle:muji] send_presence > Outgoing packet sent' + '\n\n' + stanza.xml());
 
@@ -914,13 +913,13 @@ var GiggleMuji = ring.create([__GiggleBase],
         }
 
         // Build stanza
-        var stanza = new JSJaCMessage();
+        var stanza = new this.plug.message();
 
-        stanza.setTo(this.get_to());
-        stanza.setType(GIGGLE_MESSAGE_TYPE_GROUPCHAT);
-        stanza.setBody(body);
+        stanza.to(this.get_to());
+        stanza.type(GIGGLE_MESSAGE_TYPE_GROUPCHAT);
+        stanza.body(body);
 
-        this.get_connection().send(stanza);
+        stanza.send();
 
         if(this.get_net_trace())  this.get_debug().log('[giggle:muji] send_message > Outgoing packet sent' + '\n\n' + stanza.xml());
 
@@ -946,7 +945,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @fires GiggleMuji#get_participant_prepare
      * @fires GiggleMuji#get_participant_initiate
      * @fires GiggleMuji#get_participant_leave
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     handle_presence: function(stanza) {
       this.get_debug().log('[giggle:muji] handle_presence', 4);
@@ -1076,7 +1075,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * Handles a Muji message stanza
      * @public
      * @fires GiggleMuji#get_room_message_in
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     handle_message: function(stanza) {
       this.get_debug().log('[giggle:muji] handle_message', 4);
@@ -1108,7 +1107,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE MUJI SENDERS
+     * GIGGLE MUJI SENDERS
      */
 
     /**
@@ -1123,27 +1122,25 @@ var GiggleMuji = ring.create([__GiggleBase],
         var cur_participant, participants,
             stanza, x_invite;
 
-        stanza = new JSJaCMessage();
-        stanza.setTo(jid);
+        stanza = new this.plug.message();
+        stanza.to(jid);
 
-        x_invite = stanza.buildNode('x', {
+        x_invite = stanza.child('x', {
           'jid': this.get_to(),
           'xmlns': NS_JABBER_CONFERENCE
         });
 
         if(reason)
-          x_invite.setAttribute('reason', reason);
+          x_invite.attribute('reason', reason);
         if(this.get_password())
-          x_invite.setAttribute('password', this.get_password());
+          x_invite.attribute('password', this.get_password());
 
-        stanza.getNode().appendChild(x_invite);
-
-        stanza.appendNode('x', {
+        stanza.child('x', {
           'media': this.get_media(),
           'xmlns': NS_MUJI_INVITE
         });
 
-        this.get_connection().send(stanza);
+        stanza.send();
 
         if(this.get_net_trace())  this.get_debug().log('[giggle:muji] _send_invite > Outgoing packet sent' + '\n\n' + stanza.xml());
 
@@ -1163,7 +1160,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @fires GiggleMuji#get_session_prepare_success
      * @fires GiggleMuji#get_session_prepare_error
      * @fires GiggleMuji#get_session_prepare_pending
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} args
      */
     _send_session_prepare: function(stanza, args) {
@@ -1182,14 +1179,22 @@ var GiggleMuji = ring.create([__GiggleBase],
 
         // Build Muji stanza
         var muji = this.utils.stanza_generate_muji(stanza);
-        muji.appendChild(stanza.buildNode('preparing', { 'xmlns': NS_MUJI }));
+        muji.child('preparing', {
+          'xmlns': NS_MUJI
+        });
 
         // Password-protected room?
         if(this.get_password()) {
-          var x_muc = stanza.getNode().appendChild(stanza.buildNode('x', { 'xmlns': NS_JABBER_MUC }));
+          var x_muc = stanza.child('x', {
+            'xmlns': NS_JABBER_MUC
+          });
 
-          x_muc.appendChild(
-            stanza.buildNode('password', { 'xmlns': NS_JABBER_MUC }, this.get_password())
+          x_muc.child(
+            'password',
+            {
+              'xmlns': NS_JABBER_MUC
+            },
+            this.get_password()
           );
         }
 
@@ -1229,7 +1234,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @fires GiggleMuji#_handle_session_initiate_error
      * @fires GiggleMuji#get_session_initiate_success
      * @fires GiggleMuji#get_session_initiate_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} args
      */
     _send_session_initiate: function(stanza, args) {
@@ -1288,7 +1293,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @fires GiggleMuji#_handle_session_leave_error
      * @fires GiggleMuji#get_session_leave_success
      * @fires GiggleMuji#get_session_leave_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} args
      */
     _send_session_leave: function(stanza, args) {
@@ -1339,14 +1344,14 @@ var GiggleMuji = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE MUJI HANDLERS
+     * GIGGLE MUJI HANDLERS
      */
 
     /**
      * Handles the Jingle session prepare success
      * @private
      * @event GiggleMuji#_handle_session_prepare_success
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_prepare_success: function(stanza) {
       this.get_debug().log('[giggle:muji] _handle_session_prepare_success', 4);
@@ -1418,7 +1423,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * Handles the Jingle session prepare error
      * @private
      * @event GiggleMuji#_handle_session_prepare_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_prepare_error: function(stanza) {
       this.get_debug().log('[giggle:muji] _handle_session_prepare_error', 4);
@@ -1439,7 +1444,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * Handles the Jingle session initiate success
      * @private
      * @event GiggleMuji#_handle_session_initiate_success
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_initiate_success: function(stanza) {
       this.get_debug().log('[giggle:muji] _handle_session_initiate_success', 4);
@@ -1471,7 +1476,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * Handles the Jingle session initiate error
      * @private
      * @event GiggleMuji#_handle_session_initiate_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_initiate_error: function(stanza) {
       this.get_debug().log('[giggle:muji] _handle_session_initiate_error', 4);
@@ -1492,7 +1497,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * Handles the Jingle session leave success
      * @private
      * @event GiggleMuji#_handle_session_leave_success
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_leave_success: function(stanza) {
       this.get_debug().log('[giggle:muji] _handle_session_leave_success', 4);
@@ -1513,7 +1518,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * Handles the Jingle session leave error
      * @private
      * @event GiggleMuji#_handle_session_leave_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_leave_error: function(stanza) {
       this.get_debug().log('[giggle:muji] _handle_session_leave_error', 4);
@@ -1536,7 +1541,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * Handles the participant prepare event.
      * @private
      * @event GiggleMuji#_handle_participant_prepare
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Boolean} [is_deferred]
      */
     _handle_participant_prepare: function(stanza, is_deferred) {
@@ -1578,7 +1583,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * Handles the participant initiate event.
      * @private
      * @event GiggleMuji#_handle_participant_initiate
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Boolean} [is_deferred]
      */
     _handle_participant_initiate: function(stanza, is_deferred) {
@@ -1632,7 +1637,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * Handles the participant leave event.
      * @private
      * @event GiggleMuji#_handle_participant_leave
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Boolean} [is_deferred]
      */
     _handle_participant_leave: function(stanza, is_deferred) {
@@ -1678,7 +1683,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE SESSION HANDLERS
+     * GIGGLE SESSION HANDLERS
      */
 
     /**
@@ -1703,7 +1708,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_initiate_success
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_initiate_success: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_initiate_success', 4);
@@ -1742,7 +1747,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_initiate_error
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_initiate_error: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_initiate_error', 4);
@@ -1760,7 +1765,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_initiate_request
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_initiate_request: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_initiate_request', 4);
@@ -1795,7 +1800,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_accept_success
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_accept_success: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_accept_success', 4);
@@ -1813,7 +1818,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_accept_error
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_accept_error: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_accept_error', 4);
@@ -1831,7 +1836,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_accept_request
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_accept_request: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_accept_request', 4);
@@ -1866,7 +1871,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_info_success
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_info_success: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_info_success', 4);
@@ -1884,7 +1889,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_info_error
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_info_error: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_info_error', 4);
@@ -1902,7 +1907,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_info_request
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_info_request: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_info_request', 4);
@@ -1937,7 +1942,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_terminate_success
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_terminate_success: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_terminate_success', 4);
@@ -1955,7 +1960,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_terminate_error
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_terminate_error: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_terminate_error', 4);
@@ -1973,7 +1978,7 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @private
      * @event GiggleMuji#_handle_participant_session_terminate_request
      * @param {GiggleSingle} session
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_participant_session_terminate_request: function(session, stanza) {
       this.get_debug().log('[giggle:muji] _handle_participant_session_terminate_request', 4);
@@ -2061,7 +2066,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE STANZA PARSERS
+     * GIGGLE STANZA PARSERS
      */
 
     /**
@@ -2087,7 +2092,7 @@ var GiggleMuji = ring.create([__GiggleBase],
     /**
      * Returns whether stanza has the room owner code or not
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {Boolean} Room owner state
      */
     _stanza_has_room_owner: function(stanza) {
@@ -2116,7 +2121,7 @@ var GiggleMuji = ring.create([__GiggleBase],
     /**
      * Returns whether stanza is a password invalid or not
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {Boolean} Password invalid state
      */
     _stanza_has_password_invalid: function(stanza) {
@@ -2126,7 +2131,7 @@ var GiggleMuji = ring.create([__GiggleBase],
     /**
      * Returns whether stanza is an username conflict or not
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {Boolean} Local user state
      */
     _stanza_has_username_conflict: function(stanza) {
@@ -2136,7 +2141,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE PEER TOOLS
+     * GIGGLE PEER TOOLS
      */
 
     /**
@@ -2287,7 +2292,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE STATES
+     * GIGGLE STATES
      */
 
     /**
@@ -2302,7 +2307,7 @@ var GiggleMuji = ring.create([__GiggleBase],
     /**
      * Is this stanza from a participant?
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {Boolean} Participant state
      */
     is_stanza_from_participant: function(stanza) {
@@ -2313,7 +2318,7 @@ var GiggleMuji = ring.create([__GiggleBase],
     /**
      * Is this stanza from local user?
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {Boolean} Local user state
      */
     is_stanza_from_local: function(stanza) {
@@ -2323,7 +2328,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE SHORTCUTS
+     * GIGGLE SHORTCUTS
      */
 
     /**
@@ -2361,7 +2366,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE VARIOUS TOOLS
+     * GIGGLE VARIOUS TOOLS
      */
 
     /**
@@ -2598,16 +2603,16 @@ var GiggleMuji = ring.create([__GiggleBase],
     _autoconfigure_room_password: function() {
       try {
         // Build stanza
-        stanza = new JSJaCIQ();
+        stanza = new this.plug.iq();
 
-        stanza.setTo(this.get_to());
-        stanza.setType(GIGGLE_IQ_TYPE_GET);
+        stanza.to(this.get_to());
+        stanza.type(GIGGLE_IQ_TYPE_GET);
 
-        stanza.setQuery(NS_JABBER_MUC_OWNER);
+        stanza.query(NS_JABBER_MUC_OWNER);
 
         var _this = this;
 
-        this.get_connection().send(stanza, function(_stanza) {
+        stanza.send(function(_stanza) {
           if(_this.get_net_trace())  _this.get_debug().log('[giggle:muji] _autoconfigure_room_password > Incoming packet received' + '\n\n' + _stanza.xml());
 
           if(_stanza.getType() === GIGGLE_IQ_TYPE_ERROR)
@@ -2627,7 +2632,7 @@ var GiggleMuji = ring.create([__GiggleBase],
     /**
      * Receives MUC room password configuration
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _receive_autoconfigure_room_password: function(stanza) {
       try {
@@ -2648,7 +2653,7 @@ var GiggleMuji = ring.create([__GiggleBase],
     /**
      * Parses MUC room password configuration
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {Object} Parse results
      */
     _parse_autoconfigure_room_password: function(stanza) {
@@ -2711,7 +2716,7 @@ var GiggleMuji = ring.create([__GiggleBase],
     /**
      * Receives MUC room password configuration
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} parse_obj
      */
     _send_autoconfigure_room_password: function(stanza, parse_obj) {
@@ -2723,11 +2728,18 @@ var GiggleMuji = ring.create([__GiggleBase],
         stanza.setFrom(null);
 
         // Change stanza items
-        parse_obj.x_data_sel.setAttribute('type', GIGGLE_MUJI_MUC_OWNER_SUBMIT);
+        parse_obj.x_data_sel.attribute('type', GIGGLE_MUJI_MUC_OWNER_SUBMIT);
 
-        parse_obj.password_value_sel.parentNode.removeChild(parse_obj.password_value_sel);
-        parse_obj.password_field_sel.appendChild(
-          stanza.buildNode('value', { 'xmlns': NS_JABBER_DATA }, parse_obj.password)
+        parse_obj.password_value_sel.parent().remove(
+          parse_obj.password_value_sel
+        );
+
+        parse_obj.password_field_sel.child(
+          'value',
+          {
+            'xmlns': NS_JABBER_DATA
+          },
+          parse_obj.password
         );
 
         var _this = this;
@@ -2755,7 +2767,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE MUJI GETTERS
+     * GIGGLE MUJI GETTERS
      */
 
     /**
@@ -3302,7 +3314,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE MUJI SETTERS
+     * GIGGLE MUJI SETTERS
      */
 
     /**

@@ -18,7 +18,6 @@
  * @requires   nicolas-van/ring.js
  * @requires   giggle/main
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
- * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */
 var GiggleInit = new (ring.create(
   /** @lends GiggleInit.prototype */
@@ -35,14 +34,16 @@ var GiggleInit = new (ring.create(
         Giggle._defer(true);
 
         // Build request
-        var request = new JSJaCIQ();
+        var request = this.plug.iq();
 
-        request.setTo(GiggleStorage.get_connection().domain);
-        request.setType(GIGGLE_IQ_TYPE_GET);
+        request.to(GiggleStorage.get_connection().domain);
+        request.type(GIGGLE_IQ_TYPE_GET);
 
-        request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_EXTDISCO }));
+        request.child('services', {
+          'xmlns': NS_EXTDISCO
+        });
 
-        GiggleStorage.get_connection().send(request, function(response) {
+        request.send(function(response) {
           try {
             // Parse response
             if(response.getType() == GIGGLE_IQ_TYPE_RESULT) {
@@ -125,14 +126,16 @@ var GiggleInit = new (ring.create(
         Giggle._defer(true);
 
         // Build request
-        var request = new JSJaCIQ();
+        var request = this.plug.iq();
 
-        request.setTo(GiggleStorage.get_connection().domain);
-        request.setType(GIGGLE_IQ_TYPE_GET);
+        request.to(GiggleStorage.get_connection().domain);
+        request.type(GIGGLE_IQ_TYPE_GET);
 
-        request.getNode().appendChild(request.buildNode('services', { 'xmlns': NS_JABBER_JINGLENODES }));
+        request.child('services', {
+          'xmlns': NS_JABBER_JINGLENODES
+        });
 
-        GiggleStorage.get_connection().send(request, function(response) {
+        request.send(function(response) {
           try {
             // Parse response
             if(response.getType() == GIGGLE_IQ_TYPE_RESULT) {

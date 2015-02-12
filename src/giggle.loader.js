@@ -55,9 +55,12 @@ var GiggleLoader = {
    * @param {String} library_name
    */
   _require: function(library_name) {
-    document.write(
-      '<script type="text/javascript" src="' + library_name + '"></script>'
-    );
+    var script = document.createElement('script');
+
+    script.setAttribute('type', 'text/javascript');
+    script.setAttribute('src', library_name);
+
+    document.getElementsByTagName('body').appendChild(script);
   },
 
 
@@ -81,8 +84,8 @@ var GiggleLoader = {
     var path = './', i, j;
 
     for(i = 0; i < scripts.length; i++) {
-      if(scripts.item(i).src && scripts.item(i).src.match(/jsjac\.jingle\.loader\.js$/)) {
-        path = scripts.item(i).src.replace(/jsjac\.jingle\.loader\.js$/, '');
+      if(scripts.item(i).src && scripts.item(i).src.match(/giggle\.loader\.js$/)) {
+        path = scripts.item(i).src.replace(/giggle\.loader\.js$/, '');
         break;
       }
     }

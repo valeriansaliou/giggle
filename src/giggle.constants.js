@@ -2343,7 +2343,7 @@ var GIGGLE_MUJI_MUC_CONFIG_SECRET              = 'muc#roomconfig_roomsecret';
 
 
 /**
- * JSJSAC JINGLE CONSTANTS MAPPING
+ * GIGGLE CONSTANTS MAPPING
  */
 
 /**

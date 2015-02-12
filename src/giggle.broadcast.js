@@ -18,12 +18,25 @@
  * @requires   nicolas-van/ring.js
  * @requires   giggle/main
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
- * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  * @see        {@link http://xmpp.org/extensions/xep-0353.html|XEP-0353: Jingle Message Initiation}
  */
 var GiggleBroadcast = new (ring.create(
   /** @lends GiggleBroadcast.prototype */
   {
+    /**
+     * Constructor
+     */
+    constructor: function(args) {
+      /**
+       * @constant
+       * @member {GiggleUtils}
+       * @readonly
+       * @default
+       * @public
+       */
+      this.utils = new GiggleUtils(this);
+    },
+
     /**
      * Proposes a call
      * @public
@@ -109,7 +122,7 @@ var GiggleBroadcast = new (ring.create(
     /**
      * Handles a call
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     handle: function(stanza) {
       var i,
@@ -192,7 +205,7 @@ var GiggleBroadcast = new (ring.create(
     /**
      * Returns the call ID
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {String} Call ID
      */
     get_call_id: function(stanza) {
@@ -250,12 +263,10 @@ var GiggleBroadcast = new (ring.create(
             cur_media = medias[i];
 
             if(cur_media) {
-              propose[1].appendChild(
-                propose[0].buildNode('description', {
-                  'xmlns': NS_JINGLE_APPS_RTP,
-                  'media': cur_media
-                })
-              );
+              propose[1].child('description', {
+                'xmlns': NS_JINGLE_APPS_RTP,
+                'media': cur_media
+              });
             }
           }
         }
@@ -367,7 +378,7 @@ var GiggleBroadcast = new (ring.create(
       try {
         var connection, stanza, node;
 
-        stanza = new JSJaCMessage();
+        stanza = new this.plug.message();
 
         // Set to connection user?
         if(to === null) {
@@ -375,13 +386,13 @@ var GiggleBroadcast = new (ring.create(
           to = (connection.username + '@' + connection.domain);
         }
 
-        stanza.setTo(to);
+        stanza.to(to);
 
-        node = stanza.getNode().appendChild(
-          stanza.buildNode(action, {
+        node = stanza.child(
+          action, {
             'xmlns': NS_JINGLE_MESSAGE,
             'id': id
-          })
+          }
         );
 
         stanza_arr = [stanza, node];
@@ -428,7 +439,7 @@ var GiggleBroadcast = new (ring.create(
      */
     _register_id: function(id, medias) {
       try {
-        id = id || JSJaCUtils.cnonce(16);
+        id = id || this.utils.nonce(16);
 
         GiggleStorage.set_broadcast_ids(id, medias);
       } catch(e) {

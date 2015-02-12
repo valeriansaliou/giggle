@@ -1229,9 +1229,11 @@ var GiggleSDP = ring.create(
 
       try {
         // Values
-        var jid = new JSJaCJID(this.parent.get_initiator());
+        var jid = new this.utils.jid(
+          this.parent.get_initiator()
+        );
 
-        var username        = jid.getNode() ? jid.getNode() : '-';
+        var username        = jid.node() ? jid.node() : '-';
         var session_id      = '1';
         var session_version = '1';
         var nettype         = GIGGLE_SDP_CANDIDATE_SCOPE_DEFAULT;

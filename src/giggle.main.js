@@ -20,7 +20,6 @@
  * @requires   giggle/single
  * @requires   giggle/muji
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
- * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */
 var Giggle = new (ring.create(
   /** @lends Giggle.prototype */
@@ -59,7 +58,7 @@ var Giggle = new (ring.create(
      * Listens for Jingle events
      * @public
      * @param     {Object}           [args]
-     * @property  {JSJaCConnection}  [args.connection]       - The connection to be attached to.
+     * @property  {Object}           [args.connection]       - The connection to be attached to.
      * @property  {Function}         [args.single_initiate]  - The Jingle session initiate request custom handler.
      * @property  {Function}         [args.single_propose]   - The Jingle session propose request custom handler.
      * @property  {Function}         [args.single_retract]   - The Jingle session retract request custom handler.
@@ -67,7 +66,7 @@ var Giggle = new (ring.create(
      * @property  {Function}         [args.single_reject]    - The Jingle session reject request custom handler.
      * @property  {Function}         [args.single_proceed]   - The Jingle session proceed request custom handler.
      * @property  {Function}         [args.muji_invite]      - The Muji session invite message custom handler.
-     * @property  {JSJaCDebugger}    [args.debug]            - A reference to a debugger implementing the JSJaCDebugger interface.
+     * @property  {Console}          [args.debug]            - A reference to a debugger implementing the Console interface.
      * @property  {Boolean}          [args.extdisco]         - Whether or not to discover external services as per XEP-0215.
      * @property  {Boolean}          [args.relaynodes]       - Whether or not to discover relay nodes as per XEP-0278.
      * @property  {Boolean}          [args.fallback]         - Whether or not to request STUN/TURN from a fallback URL.
@@ -146,15 +145,15 @@ var Giggle = new (ring.create(
     /**
      * Routes Jingle IQ stanzas
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _route_iq: function(stanza) {
       try {
         var from = stanza.getFrom();
 
         if(from) {
-          var jid_obj = new JSJaCJID(from);
-          var from_bare = (jid_obj.getNode() + '@' + jid_obj.getDomain());
+          var jid_obj = new (new GiggleUtils()).jid(from);
+          var from_bare = (jid_obj.node() + '@' + jid_obj.domain());
 
           // Single or Muji?
           var is_muji   = (this._read(GIGGLE_SESSION_MUJI, from_bare) !== null);
@@ -191,7 +190,7 @@ var Giggle = new (ring.create(
           } else if(is_muji) {
             var username, participant;
 
-            username       = jid_obj.getResource();
+            username       = jid_obj.resource();
             session_route  = this._read(GIGGLE_SESSION_MUJI, from_bare);
             participant    = session_route.get_participants(username);
 
@@ -255,14 +254,14 @@ var Giggle = new (ring.create(
     /**
      * Routes Jingle message stanzas
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _route_message: function(stanza) {
       try {
         var from = stanza.getFrom();
 
         if(from) {
-          var jid = new JSJaCJID(from);
+          var jid = new (new GiggleUtils()).jid(from);
 
           // Broadcast message?
           var is_handled_broadcast = GiggleBroadcast.handle(stanza);
@@ -272,7 +271,7 @@ var Giggle = new (ring.create(
             // Nothing to do there.
           } else {
             // Muji?
-            var room = jid.getNode() + '@' + jid.getDomain();
+            var room = jid.node() + '@' + jid.domain();
 
             var session_route = this._read(GIGGLE_SESSION_MUJI, room);
 
@@ -320,7 +319,7 @@ var Giggle = new (ring.create(
     /**
      * Routes Jingle presence stanzas
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _route_presence: function(stanza) {
       try {
@@ -328,8 +327,8 @@ var Giggle = new (ring.create(
         var from = stanza.getFrom();
 
         if(from) {
-          var jid = new JSJaCJID(from);
-          var room = jid.getNode() + '@' + jid.getDomain();
+          var jid = new (new GiggleUtils()).jid(from);
+          var room = jid.node() + '@' + jid.domain();
 
           var session_route = this._read(GIGGLE_SESSION_MUJI, room);
 

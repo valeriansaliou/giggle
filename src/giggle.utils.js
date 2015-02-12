@@ -19,7 +19,6 @@
  * @requires   nicolas-van/ring.js
  * @requires   giggle/plug
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
- * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */
 var GiggleUtils = ring.create(
   /** @lends GiggleUtils.prototype */
@@ -36,6 +35,126 @@ var GiggleUtils = ring.create(
        * @public
        */
       this.parent = parent;
+    },
+
+    /**
+     * Creates a nonce value of given size
+     * @public
+     * @param {Number} size
+     * @return {String} Generated nonce
+     */
+    nonce: function(size) {
+      var nonce = null;
+
+      try {
+        var tab = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+        for(var i = 0; i < size; i++) {
+          nonce += tab.charAt(
+            Math.round(
+              Math.random(
+                new Date().getTime()
+              ) * (tab.length - 1)
+            )
+          );
+        }
+      } catch(e) {
+        this.parent.get_debug().log('[giggle:utils] nonce > ' + e, 1);
+      }
+
+      return nonce;
+    },
+
+    /**
+     * Constructs a JID object
+     * @public
+     * @param {String} jid_string
+     * @return {Object} Generated JID object
+     */
+    jid: function(jid_string) {
+      var jid = {};
+
+      try {
+        /**
+         *@private
+         */
+        jid._node = '';
+
+        /**
+         *@private
+         */
+        jid._domain = '';
+
+        /**
+         *@private
+         */
+        jid._resource = '';
+
+        // Proceeds JID parsing & populate JID object
+        if(typeof(jid_string) == 'string') {
+            if(jid_string.indexOf('@') != -1) {
+                jid._node = jid_string.substring(
+                  0, jid_string.indexOf('@')
+                );
+
+                jid_string = jid_string.substring(
+                  jid_string.indexOf('@') + 1
+                );
+            }
+
+            if(jid_string.indexOf('/') != -1) {
+                jid._resource = jid_string.substring(
+                  jid_string.indexOf('/') + 1
+                );
+
+                jid_string = jid_string.substring(
+                  0, jid_string.indexOf('/')
+                );
+            }
+
+            jid.setDomain(jid_string);
+        } else {
+            jid._node      = jid_string.node;
+            jid._domain    = jid_string.domain;
+            jid._resource  = jid_string.resource;
+        }
+
+        /**
+         * Gets the bare JID (i.e. the JID without resource)
+         * @return {String} Bare JID
+         */
+        jid.bare = function() {
+          return jid.node() + '@' + jid.domain();
+        };
+
+        /**
+         * Gets the node part of the JID
+         * @return {String} JID node
+         */
+        jid.node = function() {
+          return jid._node;
+        };
+
+        /**
+         * Gets the domain part of the JID
+         * @return {String} JID domain
+         */
+        jid.domain = function() {
+          return jid._domain;
+        };
+
+        /**
+         * Gets the resource part of the JID
+         * @return {String} JID resource
+         */
+        jid.resource = function() {
+          return jid._resource;
+        };
+      } catch(e) {
+        this.parent.get_debug().log('[giggle:utils] jid > ' + e, 1);
+      }
+
+      return jid;
     },
 
     /**
@@ -390,10 +509,10 @@ var GiggleUtils = ring.create(
       if(!(name && value && stanza)) return;
 
       try {
-        stanza.setAttribute(name, value);
+        stanza.attribute(name, value);
       } catch(e) {
         try {
-          (stanza[0]).setAttribute(name, value);
+          (stanza[0]).attribute(name, value);
         } catch(_e) {
           this.parent.get_debug().log('[giggle:utils] stanza_set_attribute > ' + _e, 1);
         }
@@ -441,7 +560,7 @@ var GiggleUtils = ring.create(
     /**
      * Gets the error node from a stanza
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} [error_match_obj]
      * @returns {Boolean} Password invalid state
      */
@@ -478,7 +597,7 @@ var GiggleUtils = ring.create(
     /**
      * Gets the Jingle node from a stanza
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {DOM|Object} Jingle node
      */
     stanza_jingle: function(stanza) {
@@ -494,7 +613,7 @@ var GiggleUtils = ring.create(
     /**
      * Gets the Jingle Muji node from a stanza
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {DOM|Object} Jingle node
      */
     stanza_muji: function(stanza) {
@@ -510,7 +629,7 @@ var GiggleUtils = ring.create(
     /**
      * Gets the from value from a stanza
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {String|Object} From value
      */
     stanza_from: function(stanza) {
@@ -526,7 +645,7 @@ var GiggleUtils = ring.create(
     /**
      * Extracts username from stanza
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {String|Object} Username
      */
     stanza_username: function(stanza) {
@@ -542,7 +661,7 @@ var GiggleUtils = ring.create(
     /**
      * Gets the SID value from a stanza
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {String|Object} SID value
      */
     stanza_sid: function(stanza) {
@@ -559,7 +678,7 @@ var GiggleUtils = ring.create(
     /**
      * Checks if a stanza is safe (known SID + sender)
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {Boolean} Safety state
      */
     stanza_safe: function(stanza) {
@@ -575,7 +694,7 @@ var GiggleUtils = ring.create(
     /**
      * Gets a stanza terminate reason
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {String|Object} Reason code
      */
     stanza_terminate_reason: function(stanza) {
@@ -604,7 +723,7 @@ var GiggleUtils = ring.create(
     /**
      * Gets a stanza session info
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {String|Object} Info code
      */
     stanza_session_info: function(stanza) {
@@ -716,7 +835,7 @@ var GiggleUtils = ring.create(
     /**
      * Parses stanza content
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {Boolean} Success
      */
     stanza_parse_content: function(stanza) {
@@ -790,7 +909,7 @@ var GiggleUtils = ring.create(
     /**
      * Parses stanza group
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {Boolean} Success
      */
     stanza_parse_group: function(stanza) {
@@ -1163,7 +1282,7 @@ var GiggleUtils = ring.create(
 
     /*
      * Builds stanza node
-     * @param {JSJaCPacket} doc
+     * @param {Object} doc
      * @param {DOM} parent
      * @param {Array} children
      * @param {String} name
@@ -1183,11 +1302,13 @@ var GiggleUtils = ring.create(
 
             if(!child) continue;
 
-            node = parent.appendChild(doc.buildNode(
+            node = parent.child(
               name,
-              { 'xmlns': ns },
+              {
+                'xmlns': ns
+              },
               (value && child[value]) ? child[value] : null
-            ));
+            );
 
             for(attr in child)
               if(attr != value)  this.stanza_set_attribute(node, attr, child[attr]);
@@ -1203,7 +1324,7 @@ var GiggleUtils = ring.create(
     /**
      * Generates stanza Jingle node
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} attrs
      * @returns {DOM} Jingle node
      */
@@ -1213,7 +1334,9 @@ var GiggleUtils = ring.create(
       try {
         var cur_attr;
 
-        jingle = stanza.getNode().appendChild(stanza.buildNode('jingle', { 'xmlns': this.parent.get_namespace() }));
+        jingle = stanza.child('jingle', {
+          'xmlns': this.parent.get_namespace()
+        });
 
         if(!attrs.sid) attrs.sid = this.parent.get_sid();
 
@@ -1228,14 +1351,16 @@ var GiggleUtils = ring.create(
     /**
      * Generates stanza Muji node
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @returns {DOM} Muji node
      */
     stanza_generate_muji: function(stanza) {
       var muji = null;
 
       try {
-        muji = stanza.getNode().appendChild(stanza.buildNode('muji', { 'xmlns': NS_MUJI }));
+        muji = stanza.child('muji', {
+          'xmlns': NS_MUJI
+        });
       } catch(e) {
         this.parent.get_debug().log('[giggle:utils] stanza_generate_muji > ' + e, 1);
       }
@@ -1246,13 +1371,15 @@ var GiggleUtils = ring.create(
     /**
      * Generates stanza session info
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {DOM} jingle
      * @param {Object} args
      */
     stanza_generate_session_info: function(stanza, jingle, args) {
       try {
-        var info = jingle.appendChild(stanza.buildNode(args.info, { 'xmlns': NS_JINGLE_APPS_RTP_INFO }));
+        var info = jingle.child(args.info, {
+          'xmlns': NS_JINGLE_APPS_RTP_INFO
+        });
 
         // Info attributes
         switch(args.info) {
@@ -1271,7 +1398,7 @@ var GiggleUtils = ring.create(
     /**
      * Generates stanza local content
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {DOM} jingle
      * @param {Boolean} has_transport
      * @param {Object} [override_content]
@@ -1315,7 +1442,9 @@ var GiggleUtils = ring.create(
         for(cur_media in content_local) {
           var cur_content = content_local[cur_media];
 
-          var content = jingle.appendChild(stanza.buildNode('content', { 'xmlns': this.parent.get_namespace() }));
+          var content = jingle.child('content', {
+            'xmlns': this.parent.get_namespace()
+          });
 
           this.stanza_set_attribute(content, 'creator', cur_content.creator);
           this.stanza_set_attribute(content, 'name',    cur_content.name);
@@ -1394,10 +1523,10 @@ var GiggleUtils = ring.create(
                     cur_cs_d_ssrc_group_semantics_sub = cs_d_ssrc_group[cur_cs_d_ssrc_group_semantics][j];
 
                     if(cur_cs_d_ssrc_group_semantics_sub !== undefined) {
-                      var ssrc_group = description.appendChild(stanza.buildNode('ssrc-group', {
+                      var ssrc_group = description.child('ssrc-group', {
                         'semantics': cur_cs_d_ssrc_group_semantics,
                         'xmlns': NS_JINGLE_APPS_RTP_SSMA
-                      }));
+                      });
 
                       this.stanza_build_node(
                         stanza,
@@ -1414,10 +1543,10 @@ var GiggleUtils = ring.create(
               // SSRC
               if(cs_d_ssrc) {
                 for(cur_ssrc_id in cs_d_ssrc) {
-                  var ssrc = description.appendChild(stanza.buildNode('source', {
+                  var ssrc = description.child('source', {
                     'ssrc': cur_ssrc_id,
                     'xmlns': NS_JINGLE_APPS_RTP_SSMA
-                  }));
+                  });
 
                   this.stanza_build_node(
                     stanza,
@@ -1434,7 +1563,9 @@ var GiggleUtils = ring.create(
                 if(cs_d_encryption &&
                    (cs_d_encryption.crypto && cs_d_encryption.crypto.length ||
                     cs_d_encryption['zrtp-hash'] && cs_d_encryption['zrtp-hash'].length)) {
-                  var encryption = description.appendChild(stanza.buildNode('encryption', { 'xmlns': NS_JINGLE_APPS_RTP }));
+                  var encryption = description.child('encryption', {
+                    'xmlns': NS_JINGLE_APPS_RTP
+                  });
 
                   this.stanza_set_attribute(encryption, 'required', (cs_d_encryption.attrs.required || '0'));
 
@@ -1488,8 +1619,11 @@ var GiggleUtils = ring.create(
               );
 
               // RTCP-MUX
-              if(cs_d_rtcp_mux)
-                description.appendChild(stanza.buildNode('rtcp-mux', { 'xmlns': NS_JINGLE_APPS_RTP }));
+              if(cs_d_rtcp_mux) {
+                description.child('rtcp-mux', {
+                  'xmlns': NS_JINGLE_APPS_RTP
+                });
+              }
             }
           }
 
@@ -1524,7 +1658,7 @@ var GiggleUtils = ring.create(
     /**
      * Generates stanza local group
      * @public
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {DOM} jingle
      */
     stanza_generate_group_local: function(stanza, jingle) {
@@ -1538,18 +1672,18 @@ var GiggleUtils = ring.create(
         for(cur_semantics in group_local) {
           cur_group = group_local[cur_semantics];
 
-          group = jingle.appendChild(stanza.buildNode('group', {
+          group = jingle.child('group', {
             'xmlns': NS_JINGLE_APPS_GROUPING,
             'semantics': cur_semantics
-          }));
+          });
 
           for(i in cur_group) {
             cur_group_name = cur_group[i];
 
-            group.appendChild(stanza.buildNode('content', {
+            group.child('content', {
               'xmlns': NS_JINGLE_APPS_GROUPING,
               'name': cur_group_name
-            }));
+            });
           }
         }
       } catch(e) {
@@ -1822,7 +1956,7 @@ var GiggleUtils = ring.create(
      * @returns {String} Random value
      */
     generate_random: function(i) {
-      return JSJaCUtils.cnonce(i);
+      return this.nonce(i);
     },
 
     /**
@@ -2131,7 +2265,7 @@ var GiggleUtils = ring.create(
      */
     extract_username: function(full_jid) {
       try {
-        return (new JSJaCJID(full_jid)).getResource();
+        return (new this.jid(full_jid)).resource();
       } catch(e) {
         this.parent.get_debug().log('[giggle:utils] extract_username > ' + e, 1);
       }

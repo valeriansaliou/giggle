@@ -17,7 +17,6 @@
  * @requires   nicolas-van/ring.js
  * @requires   giggle/constants
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
- * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  */
 var GiggleStorage = new (ring.create(
   /** @lends GiggleStorage.prototype */
@@ -31,7 +30,7 @@ var GiggleStorage = new (ring.create(
        */
 
       /**
-       * @member {JSJaCConnection}
+       * @member {Object}
        * @default
        * @private
        */
@@ -155,13 +154,13 @@ var GiggleStorage = new (ring.create(
 
 
     /**
-     * JSJSAC JINGLE STORAGE GETTERS
+     * GIGGLE STORAGE GETTERS
      */
 
     /**
      * Gets the connection object
      * @public
-     * @returns {JSJaCConnection} Connection
+     * @returns {Object} Connection
      */
     get_connection: function() {
       return this._connection;
@@ -338,13 +337,13 @@ var GiggleStorage = new (ring.create(
 
 
     /**
-     * JSJSAC JINGLE STORAGE SETTERS
+     * GIGGLE STORAGE SETTERS
      */
 
     /**
      * Sets the connection object
      * @public
-     * @param {JSJaCConnection} Connection
+     * @param {Object} Connection
      */
     set_connection: function(connection) {
       this._connection = connection;

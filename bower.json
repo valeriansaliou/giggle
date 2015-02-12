@@ -3,6 +3,7 @@
 
   "dependencies" : {
     "underscore" : "latest",
+    "promise": "latest",
     "ring" : "latest",
     "jquery" : "latest",
     "jquery.timers": "patryk/jquery.timers",

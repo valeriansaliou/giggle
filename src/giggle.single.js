@@ -22,7 +22,6 @@
  * @requires   giggle/base
  * @see        {@link http://xmpp.org/extensions/xep-0166.html|XEP-0166: Jingle}
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
- * @see        {@link http://stefan-strigler.de/jsjac-1.3.4/doc/|JSJaC Documentation}
  * @param      {Object}    [args]                            - Jingle session arguments.
  * @property   {*}         [args.*]                          - Herits of Giggle() baseclass prototype.
  * @property   {Function}  [args.session_initiate_pending]   - The initiate pending custom handler.
@@ -588,13 +587,13 @@ var GiggleSingle = ring.create([__GiggleBase],
         if(typeof args !== 'object') args = {};
 
         // Build stanza
-        var stanza = new JSJaCIQ();
-        stanza.setTo(this.get_to());
+        var stanza = new this.plug.iq();
+        stanza.to(this.get_to());
 
-        if(type) stanza.setType(type);
+        if(type) stanza.type(type);
 
         if(!args.id) args.id = this.get_id_new();
-        stanza.setID(args.id);
+        stanza.id(args.id);
 
         if(type == GIGGLE_IQ_TYPE_SET) {
           if(!(args.action && args.action in GIGGLE_ACTIONS)) {
@@ -692,7 +691,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#_handle_transport_info
      * @fires GiggleSingle#_handle_transport_reject
      * @fires GiggleSingle#_handle_transport_replace
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     handle: function(stanza) {
       this.get_debug().log('[giggle:single] handle', 4);
@@ -970,13 +969,13 @@ var GiggleSingle = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE SENDERS
+     * GIGGLE SENDERS
      */
 
     /**
      * Sends the Jingle content accept
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _send_content_accept: function(stanza) {
       this.get_debug().log('[giggle:single] _send_content_accept', 4);
@@ -995,7 +994,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     /**
      * Sends the Jingle content add
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _send_content_add: function(stanza) {
       this.get_debug().log('[giggle:single] _send_content_add', 4);
@@ -1013,7 +1012,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     /**
      * Sends the Jingle content modify
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _send_content_modify: function(stanza) {
       this.get_debug().log('[giggle:single] _send_content_modify', 4);
@@ -1031,7 +1030,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     /**
      * Sends the Jingle content reject
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _send_content_reject: function(stanza) {
       this.get_debug().log('[giggle:single] _send_content_reject', 4);
@@ -1049,7 +1048,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     /**
      * Sends the Jingle content remove
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _send_content_remove: function(stanza) {
       this.get_debug().log('[giggle:single] _send_content_remove', 4);
@@ -1067,7 +1066,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     /**
      * Sends the Jingle description info
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _send_description_info: function(stanza) {
       this.get_debug().log('[giggle:single] _send_description_info', 4);
@@ -1083,7 +1082,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     /**
      * Sends the Jingle security info
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _send_security_info: function(stanza) {
       this.get_debug().log('[giggle:single] _send_security_info', 4);
@@ -1103,7 +1102,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#_handle_session_accept_error
      * @fires GiggleSingle#get_session_accept_success
      * @fires GiggleSingle#get_session_accept_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} args
      */
     _send_session_accept: function(stanza, args) {
@@ -1157,7 +1156,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @private
      * @fires GiggleSingle#_handle_session_info_success
      * @fires GiggleSingle#_handle_session_info_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} args
      */
     _send_session_info: function(stanza, args) {
@@ -1209,7 +1208,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#_handle_initiate_info_error
      * @fires GiggleSingle#get_session_initiate_success
      * @fires GiggleSingle#get_session_initiate_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} args
      */
     _send_session_initiate: function(stanza, args) {
@@ -1264,7 +1263,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#_handle_session_terminate_error
      * @fires GiggleSingle#get_session_terminate_success
      * @fires GiggleSingle#get_session_terminate_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} args
      */
     _send_session_terminate: function(stanza, args) {
@@ -1292,8 +1291,13 @@ var GiggleSingle = ring.create([__GiggleBase],
           'action': GIGGLE_ACTION_SESSION_TERMINATE
         });
 
-        var jingle_reason = jingle.appendChild(stanza.buildNode('reason', {'xmlns': this.get_namespace()}));
-        jingle_reason.appendChild(stanza.buildNode(args.reason, {'xmlns': this.get_namespace()}));
+        var jingle_reason = jingle.child('reason', {
+          'xmlns': this.get_namespace()
+        });
+
+        jingle_reason.child(args.reason, {
+          'xmlns': this.get_namespace()
+        });
 
         // Schedule success
         var _this = this;
@@ -1320,7 +1324,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     /**
      * Sends the Jingle transport accept
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _send_transport_accept: function(stanza) {
       this.get_debug().log('[giggle:single] _send_transport_accept', 4);
@@ -1338,7 +1342,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @private
      * @fires GiggleSingle#_handle_transport_info_success
      * @fires GiggleSingle#_handle_transport_info_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} args
      */
     _send_transport_info: function(stanza, args) {
@@ -1406,7 +1410,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     /**
      * Sends the Jingle transport reject
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _send_transport_reject: function(stanza) {
       this.get_debug().log('[giggle:single] _send_transport_reject', 4);
@@ -1422,7 +1426,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     /**
      * Sends the Jingle transport replace
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _send_transport_replace: function(stanza) {
       this.get_debug().log('[giggle:single] _send_transport_replace', 4);
@@ -1438,7 +1442,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     /**
      * Sends the Jingle transport replace
      * @private
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      * @param {Object} error
      */
     _send_error: function(stanza, error) {
@@ -1461,18 +1465,36 @@ var GiggleSingle = ring.create([__GiggleBase],
           return;
         }
 
-        var stanza_error = new JSJaCIQ();
+        var stanza_error = this.plug.iq();
 
-        stanza_error.setType('error');
-        stanza_error.setID(stanza.getID());
-        stanza_error.setTo(this.get_to());
+        stanza_error.type('error');
+        stanza_error.id(stanza.getID());
+        stanza_error.to(this.get_to());
 
-        var error_node = stanza_error.getNode().appendChild(stanza_error.buildNode('error', {'xmlns': NS_CLIENT, 'type': error.type}));
+        var error_node = stanza_error.child(
+          'error', {
+            'xmlns': NS_CLIENT,
+            'type': error.type
+          }
+        );
 
-        if('xmpp'   in error) error_node.appendChild(stanza_error.buildNode(error.xmpp,   { 'xmlns': NS_STANZAS       }));
-        if('jingle' in error) error_node.appendChild(stanza_error.buildNode(error.jingle, { 'xmlns': NS_JINGLE_ERRORS }));
+        if('xmpp'   in error) {
+          error_node.child(
+            error.xmpp, {
+              'xmlns': NS_STANZAS
+            }
+          );
+        }
 
-        this.get_connection().send(stanza_error);
+        if('jingle' in error) {
+          error_node.child(
+            error.jingle, {
+              'xmlns': NS_JINGLE_ERRORS
+            }
+          );
+        }
+
+        stanza_error.send();
 
         this.get_debug().log('[giggle:single] _send_error > Sent: ' + (error.jingle || error.xmpp), 2);
       } catch(e) {
@@ -1483,14 +1505,14 @@ var GiggleSingle = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE HANDLERS
+     * GIGGLE HANDLERS
      */
 
     /**
      * Handles the Jingle content accept
      * @private
      * @event GiggleSingle#_handle_content_accept
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_content_accept: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_content_accept', 4);
@@ -1511,7 +1533,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle content add
      * @private
      * @event GiggleSingle#_handle_content_add
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_content_add: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_content_add', 4);
@@ -1533,7 +1555,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle content modify
      * @private
      * @event GiggleSingle#_handle_content_modify
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_content_modify: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_content_modify', 4);
@@ -1556,7 +1578,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle content reject
      * @private
      * @event GiggleSingle#_handle_content_reject
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_content_reject: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_content_reject', 4);
@@ -1575,7 +1597,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle content remove
      * @private
      * @event GiggleSingle#_handle_content_remove
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_content_remove: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_content_remove', 4);
@@ -1595,7 +1617,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle description info
      * @private
      * @event GiggleSingle#_handle_description_info
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_description_info: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_description_info', 4);
@@ -1612,7 +1634,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle security info
      * @private
      * @event GiggleSingle#_handle_security_info
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_security_info: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_security_info', 4);
@@ -1634,7 +1656,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#get_session_accept_success
      * @fires GiggleSingle#get_session_accept_error
      * @fires GiggleSingle#get_session_accept_request
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_accept: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_accept', 4);
@@ -1684,7 +1706,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle session accept success
      * @private
      * @event GiggleSingle#_handle_session_accept_success
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_accept_success: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_accept_success', 4);
@@ -1701,7 +1723,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle session accept error
      * @private
      * @event GiggleSingle#_handle_session_accept_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_accept_error: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_accept_error', 4);
@@ -1722,7 +1744,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#_handle_session_accept_error
      * @fires GiggleSingle#get_session_accept_success
      * @fires GiggleSingle#get_session_accept_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_accept_request: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_accept_request', 4);
@@ -1826,7 +1848,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#get_session_info_success
      * @fires GiggleSingle#get_session_info_error
      * @fires GiggleSingle#get_session_info_request
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_info: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_info', 4);
@@ -1875,7 +1897,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle session info success
      * @private
      * @event GiggleSingle#_handle_session_info_success
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_info_success: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_info_success', 4);
@@ -1885,7 +1907,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle session info error
      * @private
      * @event GiggleSingle#_handle_session_info_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_info_error: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_info_error', 4);
@@ -1899,7 +1921,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#_handle_session_info_error
      * @fires GiggleSingle#get_session_info_success
      * @fires GiggleSingle#get_session_info_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_info_request: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_info_request', 4);
@@ -1953,7 +1975,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#get_session_initiate_success
      * @fires GiggleSingle#get_session_initiate_error
      * @fires GiggleSingle#get_session_initiate_request
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_initiate: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_initiate', 4);
@@ -1993,7 +2015,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle session initiate success
      * @private
      * @event GiggleSingle#_handle_session_initiate_success
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_initiate_success: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_initiate_success', 4);
@@ -2010,7 +2032,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle session initiate error
      * @private
      * @event GiggleSingle#_handle_session_initiate_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_initiate_error: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_initiate_error', 4);
@@ -2037,7 +2059,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#_handle_session_initiate_error
      * @fires GiggleSingle#get_session_initiate_success
      * @fires GiggleSingle#get_session_initiate_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_initiate_request: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_initiate_request', 4);
@@ -2124,7 +2146,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @fires GiggleSingle#get_session_terminate_success
      * @fires GiggleSingle#get_session_terminate_error
      * @fires GiggleSingle#get_session_terminate_request
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_terminate: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_terminate', 4);
@@ -2175,7 +2197,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle session terminate success
      * @private
      * @event GiggleSingle#_handle_session_terminate_success
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_terminate_success: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_terminate_success', 4);
@@ -2191,7 +2213,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle session terminate error
      * @private
      * @event GiggleSingle#_handle_session_terminate_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_terminate_error: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_terminate_error', 4);
@@ -2211,7 +2233,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @event GiggleSingle#_handle_session_terminate_request
      * @fires GiggleSingle#_handle_session_terminate_success
      * @fires GiggleSingle#get_session_terminate_success
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_session_terminate_request: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_session_terminate_request', 4);
@@ -2249,7 +2271,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle transport accept
      * @private
      * @event GiggleSingle#_handle_transport_accept
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_transport_accept: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_transport_accept', 4);
@@ -2266,7 +2288,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle transport info
      * @private
      * @event GiggleSingle#_handle_transport_info
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_transport_info: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_transport_info', 4);
@@ -2332,7 +2354,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle transport info success
      * @private
      * @event GiggleSingle#_handle_transport_info_success
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_transport_info_success: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_transport_info_success', 4);
@@ -2342,7 +2364,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle transport info error
      * @private
      * @event GiggleSingle#_handle_transport_info_error
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_transport_info_error: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_transport_info_error', 4);
@@ -2352,7 +2374,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle transport reject
      * @private
      * @event GiggleSingle#_handle_transport_reject
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_transport_reject: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_transport_reject', 4);
@@ -2369,7 +2391,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * Handles the Jingle transport replace
      * @private
      * @event GiggleSingle#_handle_transport_replace
-     * @param {JSJaCPacket} stanza
+     * @param {Object} stanza
      */
     _handle_transport_replace: function(stanza) {
       this.get_debug().log('[giggle:single] _handle_transport_replace', 4);
@@ -2385,7 +2407,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE PEER TOOLS
+     * GIGGLE PEER TOOLS
      */
 
     /**
@@ -2805,7 +2827,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE SHORTCUTS
+     * GIGGLE SHORTCUTS
      */
 
     /**
@@ -2820,7 +2842,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE GETTERS
+     * GIGGLE GETTERS
      */
 
     /**
@@ -3176,7 +3198,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
 
     /**
-     * JSJSAC JINGLE SETTERS
+     * GIGGLE SETTERS
      */
 
     /**
