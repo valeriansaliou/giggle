@@ -149,7 +149,7 @@ var Giggle = new (ring.create(
      */
     _route_iq: function(stanza) {
       try {
-        var from = stanza.getFrom();
+        var from = stanza.from();
 
         if(from) {
           var jid_obj = new (new GiggleUtils()).jid(from);
@@ -170,7 +170,7 @@ var Giggle = new (ring.create(
             sid = jingle.getAttribute('sid');
             action = jingle.getAttribute('action');
           } else {
-            var stanza_id = stanza.getID();
+            var stanza_id = stanza.id();
 
             if(stanza_id) {
               var is_jingle = stanza_id.indexOf(GIGGLE_STANZA_ID_PRE + '_') !== -1;
@@ -207,7 +207,7 @@ var Giggle = new (ring.create(
                 GiggleStorage.get_debug().log('[giggle:main] _route_iq > [' + username + '] > Routed to Muji participant session (sid: ' + sid + ').', 2);
 
                 session_route_single.handle(stanza);
-              } else if(stanza.getType() == GIGGLE_IQ_TYPE_SET && from) {
+              } else if(stanza.type() == GIGGLE_IQ_TYPE_SET && from) {
                 GiggleStorage.get_debug().log('[giggle:main] _route_iq > Unknown Muji participant session route (sid: ' + sid + ').', 0);
 
                 (new GiggleSingle({ to: from }))._send_error(stanza, GIGGLE_ERROR_UNKNOWN_SESSION);
@@ -217,7 +217,7 @@ var Giggle = new (ring.create(
                 GiggleStorage.get_debug().log('[giggle:main] _route_iq > [' + username + '] > New Muji participant session (sid: ' + sid + ').', 2);
 
                 session_route._create_participant_session(username).handle(stanza);
-              } else if(stanza.getType() == GIGGLE_IQ_TYPE_SET && from) {
+              } else if(stanza.type() == GIGGLE_IQ_TYPE_SET && from) {
                 GiggleStorage.get_debug().log('[giggle:main] _route_iq > Unknown Muji participant session (sid: ' + sid + ').', 0);
 
                 (new GiggleSingle({ to: from }))._send_error(stanza, GIGGLE_ERROR_UNKNOWN_SESSION);
@@ -236,7 +236,7 @@ var Giggle = new (ring.create(
                 GiggleStorage.get_debug().log('[giggle:main] _route_iq > Routed to Jingle session (sid: ' + sid + ').', 2);
 
                 session_route.handle(stanza);
-              } else if(stanza.getType() == GIGGLE_IQ_TYPE_SET && from) {
+              } else if(stanza.type() == GIGGLE_IQ_TYPE_SET && from) {
                 GiggleStorage.get_debug().log('[giggle:main] _route_iq > Unknown Jingle session (sid: ' + sid + ').', 0);
 
                 (new GiggleSingle({ to: from }))._send_error(stanza, GIGGLE_ERROR_UNKNOWN_SESSION);
@@ -258,7 +258,7 @@ var Giggle = new (ring.create(
      */
     _route_message: function(stanza) {
       try {
-        var from = stanza.getFrom();
+        var from = stanza.from();
 
         if(from) {
           var jid = new (new GiggleUtils()).jid(from);
@@ -324,7 +324,7 @@ var Giggle = new (ring.create(
     _route_presence: function(stanza) {
       try {
         // Muji?
-        var from = stanza.getFrom();
+        var from = stanza.from();
 
         if(from) {
           var jid = new (new GiggleUtils()).jid(from);

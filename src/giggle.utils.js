@@ -634,7 +634,7 @@ var GiggleUtils = ring.create(
      */
     stanza_from: function(stanza) {
       try {
-        return stanza.getFrom() || null;
+        return stanza.from() || null;
       } catch(e) {
         this.parent.get_debug().log('[giggle:utils] stanza_from > ' + e, 1);
       }
@@ -650,7 +650,7 @@ var GiggleUtils = ring.create(
      */
     stanza_username: function(stanza) {
       try {
-        return this.extract_username(stanza.getFrom());
+        return this.extract_username(stanza.from());
       } catch(e) {
         this.parent.get_debug().log('[giggle:utils] stanza_username > ' + e, 1);
       }
@@ -683,7 +683,7 @@ var GiggleUtils = ring.create(
      */
     stanza_safe: function(stanza) {
       try {
-        return !((stanza.getType() == GIGGLE_IQ_TYPE_SET && this.stanza_sid(stanza) != this.parent.get_sid()) || this.stanza_from(stanza) != this.parent.get_to());
+        return !((stanza.type() == GIGGLE_IQ_TYPE_SET && this.stanza_sid(stanza) != this.parent.get_sid()) || this.stanza_from(stanza) != this.parent.get_to());
       } catch(e) {
         this.parent.get_debug().log('[giggle:utils] stanza_safe > ' + e, 1);
       }

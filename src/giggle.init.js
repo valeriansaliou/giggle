@@ -46,7 +46,7 @@ var GiggleInit = new (ring.create(
         request.send(function(response) {
           try {
             // Parse response
-            if(response.getType() == GIGGLE_IQ_TYPE_RESULT) {
+            if(response.type() == GIGGLE_IQ_TYPE_RESULT) {
               var i,
                   service_arr, cur_service,
                   cur_host, cur_password, cur_port, cur_transport, cur_type, cur_username,
@@ -138,7 +138,7 @@ var GiggleInit = new (ring.create(
         request.send(function(response) {
           try {
             // Parse response
-            if(response.getType() == GIGGLE_IQ_TYPE_RESULT) {
+            if(response.type() == GIGGLE_IQ_TYPE_RESULT) {
               var i,
                   stun_arr, cur_stun,
                   cur_policy, cur_address, cur_protocol;

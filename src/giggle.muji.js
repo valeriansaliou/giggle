@@ -971,8 +971,8 @@ var GiggleMuji = ring.create([__GiggleBase],
         /* @function */
         (this.get_room_presence_in())(this, stanza);
 
-        var id = stanza.getID();
-        var type = (stanza.getType() || GIGGLE_PRESENCE_TYPE_AVAILABLE);
+        var id = stanza.id();
+        var type = (stanza.type() || GIGGLE_PRESENCE_TYPE_AVAILABLE);
 
         if(id)  this._set_received_id(id);
 
@@ -997,7 +997,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
         // Local stanza?
         if(is_stanza_from_local === true) {
-          if(stanza.getType() === GIGGLE_PRESENCE_TYPE_UNAVAILABLE) {
+          if(stanza.type() === GIGGLE_PRESENCE_TYPE_UNAVAILABLE) {
             this.get_debug().log('[giggle:muji] handle_presence > Conference room going offline, forcing termination...', 1);
 
             // Change session status
@@ -1016,7 +1016,7 @@ var GiggleMuji = ring.create([__GiggleBase],
           // Defer if user media not ready yet
           this._defer_participant_handlers(function(is_deferred) {
             // Remote stanza handlers
-            if(stanza.getType() === GIGGLE_PRESENCE_TYPE_UNAVAILABLE) {
+            if(stanza.type() === GIGGLE_PRESENCE_TYPE_UNAVAILABLE) {
               _this._handle_participant_leave(stanza, is_deferred);
 
               /* @function */
@@ -1081,7 +1081,7 @@ var GiggleMuji = ring.create([__GiggleBase],
       this.get_debug().log('[giggle:muji] handle_message', 4);
 
       try {
-        var stanza_type = stanza.getType();
+        var stanza_type = stanza.type();
 
         if(stanza_type != GIGGLE_MESSAGE_TYPE_GROUPCHAT) {
           this.get_debug().log('[giggle:muji] handle_message > Dropped invalid stanza type: ' + stanza_type, 0);
@@ -2615,7 +2615,7 @@ var GiggleMuji = ring.create([__GiggleBase],
         stanza.send(function(_stanza) {
           if(_this.get_net_trace())  _this.get_debug().log('[giggle:muji] _autoconfigure_room_password > Incoming packet received' + '\n\n' + _stanza.xml());
 
-          if(_stanza.getType() === GIGGLE_IQ_TYPE_ERROR)
+          if(_stanza.type() === GIGGLE_IQ_TYPE_ERROR)
             _this.get_debug().log('[giggle:muji] _autoconfigure_room_password > Could not get room configuration.', 1);
           else
             _this._receive_autoconfigure_room_password(_stanza);
@@ -2724,7 +2724,7 @@ var GiggleMuji = ring.create([__GiggleBase],
         // Change stanza headers
         stanza.setID(this.get_id_new());
         stanza.setType(GIGGLE_IQ_TYPE_SET);
-        stanza.setTo(stanza.getFrom());
+        stanza.setTo(stanza.from());
         stanza.setFrom(null);
 
         // Change stanza items
@@ -2747,7 +2747,7 @@ var GiggleMuji = ring.create([__GiggleBase],
         this.get_connection().send(stanza, function(_stanza) {
           if(_this.get_net_trace())  _this.get_debug().log('[giggle:muji] _send_autoconfigure_room_password > Incoming packet received' + '\n\n' + _stanza.xml());
 
-          if(_stanza.getType() === GIGGLE_IQ_TYPE_ERROR) {
+          if(_stanza.type() === GIGGLE_IQ_TYPE_ERROR) {
             _this._set_password(undefined);
 
             _this.get_debug().log('[giggle:muji] _send_autoconfigure_room_password > Could not autoconfigure room password.', 1);

@@ -713,8 +713,8 @@ var GiggleSingle = ring.create([__GiggleBase],
           return;
         }
 
-        var id   = stanza.getID();
-        var type = stanza.getType();
+        var id   = stanza.id();
+        var type = stanza.type();
 
         if(id && type == GIGGLE_IQ_TYPE_RESULT)  this._set_received_id(id);
 
@@ -1468,7 +1468,7 @@ var GiggleSingle = ring.create([__GiggleBase],
         var stanza_error = this.plug.iq();
 
         stanza_error.type('error');
-        stanza_error.id(stanza.getID());
+        stanza_error.id(stanza.id());
         stanza_error.to(this.get_to());
 
         var error_node = stanza_error.child(
@@ -1671,7 +1671,7 @@ var GiggleSingle = ring.create([__GiggleBase],
         }
 
         // Can now safely dispatch the stanza
-        switch(stanza.getType()) {
+        switch(stanza.type()) {
           case GIGGLE_IQ_TYPE_RESULT:
             /* @function */
             (this.get_session_accept_success())(this, stanza);
@@ -1821,7 +1821,7 @@ var GiggleSingle = ring.create([__GiggleBase],
           this._set_candidates_queue_remote(null);
 
           // Success reply
-          this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.getID() });
+          this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.id() });
         } else {
           // Trigger accept error callback
           /* @function */
@@ -1863,7 +1863,7 @@ var GiggleSingle = ring.create([__GiggleBase],
         }
 
         // Can now safely dispatch the stanza
-        switch(stanza.getType()) {
+        switch(stanza.type()) {
           case GIGGLE_IQ_TYPE_RESULT:
             /* @function */
             (this.get_session_info_success())(this, stanza);
@@ -1943,7 +1943,7 @@ var GiggleSingle = ring.create([__GiggleBase],
           this.get_debug().log('[giggle:single] _handle_session_info_request > (name: ' + (info_name || 'undefined') + ').', 3);
 
           // Process info actions
-          this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.getID() });
+          this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.id() });
 
           // Trigger info success custom callback
           /* @function */
@@ -1981,7 +1981,7 @@ var GiggleSingle = ring.create([__GiggleBase],
       this.get_debug().log('[giggle:single] _handle_session_initiate', 4);
 
       try {
-        switch(stanza.getType()) {
+        switch(stanza.type()) {
           case GIGGLE_IQ_TYPE_RESULT:
             /* @function */
             (this.get_session_initiate_success())(this, stanza);
@@ -2119,7 +2119,7 @@ var GiggleSingle = ring.create([__GiggleBase],
           (this.get_session_initiate_success())(this, stanza);
           this._handle_session_initiate_success(stanza);
 
-          this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.getID() });
+          this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.id() });
         } else {
           // Session initiation not done
             /* @function */
@@ -2152,7 +2152,7 @@ var GiggleSingle = ring.create([__GiggleBase],
       this.get_debug().log('[giggle:single] _handle_session_terminate', 4);
 
       try {
-        var type = stanza.getType();
+        var type = stanza.type();
 
         // Security preconditions
         if(!this.utils.stanza_safe(stanza)) {
@@ -2163,7 +2163,7 @@ var GiggleSingle = ring.create([__GiggleBase],
         }
 
         // Can now safely dispatch the stanza
-        switch(stanza.getType()) {
+        switch(stanza.type()) {
           case GIGGLE_IQ_TYPE_RESULT:
             /* @function */
             (this.get_session_terminate_success())(this, stanza);
@@ -2259,7 +2259,7 @@ var GiggleSingle = ring.create([__GiggleBase],
         this._handle_session_terminate_success(stanza);
 
         // Process terminate actions
-        this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.getID() });
+        this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.id() });
 
         this.get_debug().log('[giggle:single] _handle_session_terminate_request > (reason: ' + this.get_reason() + ').', 3);
       } catch(e) {
@@ -2338,7 +2338,7 @@ var GiggleSingle = ring.create([__GiggleBase],
           this._set_candidates_queue_remote(null);
 
           // Success reply
-          this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.getID() });
+          this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.id() });
         } else {
           // Send error reply
           this._send_error(stanza, XMPP_ERROR_BAD_REQUEST);
