@@ -1,16 +1,16 @@
 {
-  "name" : "giggle",
+  "name": "giggle",
 
   "dependencies" : {
-    "underscore" : "latest",
-    "promise": "latest",
-    "ring" : "latest",
-    "jquery" : "latest",
-    "jquery.timers": "patryk/jquery.timers",
-    "jsjac": "sstrigler/JSJaC"
+    "underscore"    : "latest",
+    "promise"       : "latest",
+    "ring"          : "latest",
+    "jquery"        : "latest",
+    "jquery.timers" : "patryk/jquery.timers",
+    "jsjac"         : "sstrigler/JSJaC"
   },
 
   "install" : {
-    "path" : "lib/"
+    "path": "lib/"
   }
 }
