@@ -93,22 +93,19 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Packet object
      */
     build: function(object) {
-      /* Data structure example */
-      /*
-        [
-          {'message': {
-            e: [
-              {'body': {
-                // {DESC}
-              }
-            ],
-
-            a: {
-              'key': 'value'
-            }
-          }}
-        ]
-      */
+      /* @example
+       * [
+       *   {'element_name': {
+       *     e: [
+       *       // Sub elements
+       *     ],
+       *
+       *     a: {
+       *       'attribute_name': 'attribute_value'
+       *     }
+       *   }}
+       * ]
+       */
 
       this.parent.get_debug().log('[giggle:plug] build > Method not implemented.', 1);
     },
@@ -141,6 +138,8 @@ var __GigglePlug = ring.create(
       this.parent.get_debug().log('[giggle:plug] element > Method not implemented.', 1);
     },
 
+
+
     /**
      * Gets or sets the 'to' attribute
      * @public
@@ -148,7 +147,15 @@ var __GigglePlug = ring.create(
      * @returns {String} 'to' value
      */
     to: function(to) {
-      this.parent.get_debug().log('[giggle:plug] to > Method not implemented.', 1);
+      try {
+        if(typeof to != 'undefined') {
+          return this.attribute('to', to);
+        }
+
+        return this.attribute('to');
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] to > ' + e, 1);
+      }
     },
 
     /**
@@ -158,7 +165,15 @@ var __GigglePlug = ring.create(
      * @returns {String} 'from' value
      */
     from: function(from) {
-      this.parent.get_debug().log('[giggle:plug] from > Method not implemented.', 1);
+      try {
+        if(typeof from != 'undefined') {
+          return this.attribute('to', from);
+        }
+
+        return this.attribute('to');
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] to > ' + e, 1);
+      }
     },
 
     /**
@@ -168,7 +183,15 @@ var __GigglePlug = ring.create(
      * @returns {String} 'type' value
      */
     type: function(type) {
-      this.parent.get_debug().log('[giggle:plug] type > Method not implemented.', 1);
+      try {
+        if(typeof type != 'undefined') {
+          return this.attribute('to', type);
+        }
+
+        return this.attribute('to');
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] to > ' + e, 1);
+      }
     },
 
     /**
@@ -178,7 +201,15 @@ var __GigglePlug = ring.create(
      * @returns {String} 'id' value
      */
     id: function(id) {
-      this.parent.get_debug().log('[giggle:plug] id > Method not implemented.', 1);
+      try {
+        if(typeof id != 'undefined') {
+          return this.attribute('to', id);
+        }
+
+        return this.attribute('to');
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] to > ' + e, 1);
+      }
     },
 
     /**
@@ -188,13 +219,15 @@ var __GigglePlug = ring.create(
      * @returns {String} 'body' value
      */
     body: function(body) {
-      /*if (typeof body != 'undefined') {
-        this.body = body;
+      try {
+        if(typeof body != 'undefined') {
+          return this.element('body', body);
+        }
+
+        return this.element('body');
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] to > ' + e, 1);
       }
-
-      return this.body || null;*/
-
-      this.parent.get_debug().log('[giggle:plug] body > Method not implemented.', 1);
     },
 
 
@@ -219,23 +252,22 @@ var __GigglePlug = ring.create(
      */
 
     /**
+     * Selects an object in the existing node tree
+     * @public
+     * @param {String} name
+     * @param {String} ns
+     * @returns {__GigglePlug} Selected object
+     */
+    select: function(name, ns) {
+      this.parent.get_debug().log('[giggle:plug] select > Method not implemented.', 1);
+    },
+
+    /**
      * Sends the packet
      * @public
      * @param {...Function} [callback]
      */
     send: function(callback) {
-      /*var self = this;
-
-      var response_data;
-
-      // Callback executor
-      var on_packet_response = function() {
-        // Execute callbacks
-        for(var i = 0; i < arguments.length; i++) {
-          arguments[i].bind(this)(response_data);
-        }
-      };*/
-
       this.parent.get_debug().log('[giggle:plug] send > Method not implemented.', 1);
     },
 

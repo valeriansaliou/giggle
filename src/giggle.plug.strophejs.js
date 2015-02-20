@@ -43,7 +43,19 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Constructed object
      */
     message: function() {
-      this.parent.get_debug().log('[giggle:plug:strophejs] message > Method not implemented.', 1);
+      try {
+        this._set_packet(
+          $msg({})
+        );
+
+        this._set_node(
+          this._get_packet()
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:strophejs] message > ' + e, 1);
+      } finally {
+        return this;
+      }
     },
 
     /**
@@ -52,7 +64,19 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Constructed object
      */
     presence: function() {
-      this.parent.get_debug().log('[giggle:plug:strophejs] presence > Method not implemented.', 1);
+      try {
+        this._set_packet(
+          $pres({})
+        );
+
+        this._set_node(
+          this._get_packet()
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:strophejs] presence > ' + e, 1);
+      } finally {
+        return this;
+      }
     },
 
     /**
@@ -61,7 +85,19 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Constructed object
      */
     iq: function() {
-      this.parent.get_debug().log('[giggle:plug:strophejs] iq > Method not implemented.', 1);
+      try {
+        this._set_packet(
+          $iq({})
+        );
+
+        this._set_node(
+          this._get_packet()
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:strophejs] iq > ' + e, 1);
+      } finally {
+        return this;
+      }
     },
 
     /**
@@ -72,19 +108,75 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Packet object
      */
     build: function(object) {
-      /*
-        {
-          'message': [
-            {
-              'body': {
+      var i, k;
+      var parent_node;
+      var cur_name, cur_value, cur_elements, cur_attrs;
 
+      try {
+        var descend_node = function(_object, _parent_node) {
+          for(i = 0; i < _object.length; i++) {
+            for(k in _object[i]) {
+              // No such property?
+              if(!_object[i].hasOwnProperty(k)) {
+                continue;
               }
-            }
-          ]
-        }
-       */
 
-      this.parent.get_debug().log('[giggle:plug:strophejs] build > Method not implemented.', 1);
+              // Read name
+              cur_name = k;
+
+              // Read attributes
+              if(typeof _object[i][k].a == 'object' &&
+                 _object[i][k].a.length) {
+                cur_attrs = _object[i][k].a;
+              } else {
+                cur_attrs = {};
+              }
+
+              // Read value/elements
+              if(typeof _object[i][k].e == 'string' ||
+                 typeof _object[i][k].e == 'number') {
+                cur_value = _object[i][k].e;
+                cur_elements = [];
+              } else if(typeof _object[i][k].e == 'object' ||
+                        _object[i][k].e.length) {
+                cur_value = null;
+                cur_elements = _object[i][k].e;
+              }
+
+              // Parse it.
+              if(typeof _parent_node != 'undefined') {
+                parent_node = this._get_node().appendChild(
+                  this._get_packet().buildNode(
+                    cur_name, cur_attrs, cur_value
+                  )
+                );
+              } else {
+                parent_node = this._get_node().appendNode(
+                  cur_name, cur_attrs, cur_value
+                );
+              }
+
+              // Move to direct childs
+              if(typeof _object[i][k].e == 'object' &&
+                 _object[i][k].e.length) {
+                descend_node.bind(this)(
+                  _object[i][k].e, parent_node
+                );
+              }
+
+              // Should be an unique key
+              break;
+            }
+          }
+        };
+
+        // First direct parents
+        descend_node.bind(this)(object);
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:strophejs] build > ' + e, 1);
+      } finally {
+        return this;
+      }
     },
 
 
@@ -101,7 +193,11 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Packet object
      */
     attribute: function(name, value) {
-      this.parent.get_debug().log('[giggle:plug:strophejs] attribute > Method not implemented.', 1);
+      try {
+        // TODO
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:strophejs] attribute > ' + e, 1);
+      }
     },
 
     /**
@@ -112,63 +208,11 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Packet object
      */
     element: function(element, value) {
-      this.parent.get_debug().log('[giggle:plug:strophejs] element > Method not implemented.', 1);
-    },
-
-    /**
-     * Gets or sets the 'to' attribute
-     * @public
-     * @param   {String} [to]
-     * @returns {String} 'to' value
-     */
-    to: function(to) {
-      this.parent.get_debug().log('[giggle:plug:strophejs] to > Method not implemented.', 1);
-    },
-
-    /**
-     * Gets or sets the 'from' attribute
-     * @public
-     * @param   {String} [from]
-     * @returns {String} 'from' value
-     */
-    from: function(from) {
-      this.parent.get_debug().log('[giggle:plug:strophejs] from > Method not implemented.', 1);
-    },
-
-    /**
-     * Gets or sets the 'type' attribute
-     * @public
-     * @param   {String} [type]
-     * @returns {String} 'type' value
-     */
-    type: function(type) {
-      this.parent.get_debug().log('[giggle:plug:strophejs] type > Method not implemented.', 1);
-    },
-
-    /**
-     * Gets or sets the 'id' attribute
-     * @public
-     * @param   {String} [id]
-     * @returns {String} 'id' value
-     */
-    id: function(id) {
-      this.parent.get_debug().log('[giggle:plug:strophejs] id > Method not implemented.', 1);
-    },
-
-    /**
-     * Gets or sets the 'body' element content
-     * @public
-     * @param   {String} [body]
-     * @returns {String} 'body' value
-     */
-    body: function(body) {
-      /*if (typeof body != 'undefined') {
-        this.body = body;
+      try {
+        // TODO
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:strophejs] element > ' + e, 1);
       }
-
-      return this.body || null;*/
-
-      this.parent.get_debug().log('[giggle:plug:strophejs] body > Method not implemented.', 1);
     },
 
 
@@ -183,7 +227,11 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
      * @returns {String} Raw XML data
      */
     xml: function() {
-      this.parent.get_debug().log('[giggle:plug:strophejs] xml > Method not implemented.', 1);
+      try {
+        return this._get_packet().serialize();
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:strophejs] xml > ' + e, 1);
+      }
     },
 
 
@@ -193,24 +241,49 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
      */
 
     /**
+     * Selects an object in the existing node tree
+     * @public
+     * @param {String} name
+     * @param {String} ns
+     * @returns {__GigglePlug} Selected object
+     */
+    select: function(name, ns) {
+      try {
+        // TODO
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:strophejs] select > ' + e, 1);
+      } finally {
+        return this.node;
+      }
+    },
+
+    /**
      * Sends the packet
      * @public
      * @param {...Function} [callback]
+     * @returns {__GigglePlug} Packet object
      */
     send: function(callback) {
-      /*var self = this;
-
       var response_data;
 
-      // Callback executor
-      var on_packet_response = function() {
-        // Execute callbacks
-        for(var i = 0; i < arguments.length; i++) {
-          arguments[i].bind(this)(response_data);
-        }
-      };*/
+      try {
+        // Callback executor
+        var on_packet_response = function(response_data) {
+          // Execute callbacks
+          for(var i = 0; i < arguments.length; i++) {
+            arguments[i].bind(this)(response_data);
+          }
+        };
 
-      this.parent.get_debug().log('[giggle:plug:strophejs] send > Method not implemented.', 1);
+        // Send packet
+        this.parent.get_connection().send(
+          this._get_packet().tree(), on_packet_response
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:strophejs] send > ' + e, 1);
+      } finally {
+        return this;
+      }
     }
   }
 );

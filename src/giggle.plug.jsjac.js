@@ -44,15 +44,19 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Constructed object
      */
     message: function() {
-      this._set_packet(
-        new JSJaCMessage()
-      );
+      try {
+        this._set_packet(
+          new JSJaCMessage()
+        );
 
-      this._set_node(
-        this._get_packet()
-      );
-
-      return this;
+        this._set_node(
+          this._get_packet()
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] message > ' + e, 1);
+      } finally {
+        return this;
+      }
     },
 
     /**
@@ -61,15 +65,19 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Constructed object
      */
     presence: function() {
-      this._set_packet(
-        new JSJaCPresence()
-      );
+      try {
+        this._set_packet(
+          new JSJaCPresence()
+        );
 
-      this._set_node(
-        this._get_packet()
-      );
-
-      return this;
+        this._set_node(
+          this._get_packet()
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] presence > ' + e, 1);
+      } finally {
+        return this;
+      }
     },
 
     /**
@@ -78,15 +86,19 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Constructed object
      */
     iq: function() {
-      this._set_packet(
-        new JSJaCIQ()
-      );
+      try {
+        this._set_packet(
+          new JSJaCIQ()
+        );
 
-      this._set_node(
-        this._get_packet()
-      );
-
-      return this;
+        this._set_node(
+          this._get_packet()
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] iq > ' + e, 1);
+      } finally {
+        return this;
+      }
     },
 
     /**
@@ -101,67 +113,71 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
       var parent_node;
       var cur_name, cur_value, cur_elements, cur_attrs;
 
-      var descend_node = function(_object, _parent_node) {
-        for(i = 0; i < _object.length; i++) {
-          for(k in _object[i]) {
-            // No such property?
-            if(!_object[i].hasOwnProperty(k)) {
-              continue;
-            }
+      try {
+        var descend_node = function(_object, _parent_node) {
+          for(i = 0; i < _object.length; i++) {
+            for(k in _object[i]) {
+              // No such property?
+              if(!_object[i].hasOwnProperty(k)) {
+                continue;
+              }
 
-            // Read name
-            cur_name = k;
+              // Read name
+              cur_name = k;
 
-            // Read attributes
-            if(typeof _object[i][k].a == 'object' &&
-               _object[i][k].a.length) {
-              cur_attrs = _object[i][k].a;
-            } else {
-              cur_attrs = {};
-            }
+              // Read attributes
+              if(typeof _object[i][k].a == 'object' &&
+                 _object[i][k].a.length) {
+                cur_attrs = _object[i][k].a;
+              } else {
+                cur_attrs = {};
+              }
 
-            // Read value/elements
-            if(typeof _object[i][k].e == 'string' ||
-               typeof _object[i][k].e == 'number') {
-              cur_value = _object[i][k].e;
-              cur_elements = [];
-            } else if(typeof _object[i][k].e == 'object' ||
-                      _object[i][k].e.length) {
-              cur_value = null;
-              cur_elements = _object[i][k].e;
-            }
+              // Read value/elements
+              if(typeof _object[i][k].e == 'string' ||
+                 typeof _object[i][k].e == 'number') {
+                cur_value = _object[i][k].e;
+                cur_elements = [];
+              } else if(typeof _object[i][k].e == 'object' ||
+                        _object[i][k].e.length) {
+                cur_value = null;
+                cur_elements = _object[i][k].e;
+              }
 
-            // Parse it.
-            if(typeof _parent_node != 'undefined') {
-              parent_node = this._get_node().appendChild(
-                this._get_packet().buildNode(
+              // Parse it.
+              if(typeof _parent_node != 'undefined') {
+                parent_node = this._get_node().appendChild(
+                  this._get_packet().buildNode(
+                    cur_name, cur_attrs, cur_value
+                  )
+                );
+              } else {
+                parent_node = this._get_node().appendNode(
                   cur_name, cur_attrs, cur_value
-                )
-              );
-            } else {
-              parent_node = this._get_node().appendNode(
-                cur_name, cur_attrs, cur_value
-              );
-            }
+                );
+              }
 
-            // Move to direct childs
-            if(typeof _object[i][k].e == 'object' &&
-               _object[i][k].e.length) {
-              descend_node.bind(this)(
-                _object[i][k].e, parent_node
-              );
-            }
+              // Move to direct childs
+              if(typeof _object[i][k].e == 'object' &&
+                 _object[i][k].e.length) {
+                descend_node.bind(this)(
+                  _object[i][k].e, parent_node
+                );
+              }
 
-            // Should be an unique key
-            break;
+              // Should be an unique key
+              break;
+            }
           }
-        }
-      };
+        };
 
-      // First direct parents
-      descend_node.bind(this)(object);
-
-      return this;
+        // First direct parents
+        descend_node.bind(this)(object);
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] build > ' + e, 1);
+      } finally {
+        return this;
+      }
     },
 
 
@@ -178,14 +194,18 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Packet object
      */
     attribute: function(name, value) {
-      // Sets?
-      if(typeof value != 'undefined') {
-        this._get_node().setAttribute(name, value);
+      try {
+        // Sets?
+        if(typeof value != 'undefined') {
+          this._get_node().setAttribute(name, value);
 
-        return this;
+          return this;
+        }
+
+        return this._get_node().getAttribute(name);
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] attribute > ' + e, 1);
       }
-
-      return this._get_node().getAttribute(name);
     },
 
     /**
@@ -196,84 +216,18 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Packet object
      */
     element: function(element, value) {
-      // Sets?
-      if(typeof value != 'undefined') {
-        this._get_node().getChild(name).setValue(value);
+      try {
+        // Sets?
+        if(typeof value != 'undefined') {
+          this._get_node().getChild(name).setValue(value);
 
-        return this;
+          return this;
+        }
+
+        return this._get_node().getChild(name).getValue();
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] element > ' + e, 1);
       }
-
-      return this._get_node().getChild(name).getValue();
-    },
-
-    /**
-     * Gets or sets the 'to' attribute
-     * @public
-     * @param   {String} [to]
-     * @returns {String} 'to' value
-     */
-    to: function(to) {
-      if(typeof to != 'undefined') {
-        return this.attribute('to', to);
-      }
-
-      return this.attribute('to');
-    },
-
-    /**
-     * Gets or sets the 'from' attribute
-     * @public
-     * @param   {String} [from]
-     * @returns {String} 'from' value
-     */
-    from: function(from) {
-      if(typeof from != 'undefined') {
-        return this.attribute('to', from);
-      }
-
-      return this.attribute('to');
-    },
-
-    /**
-     * Gets or sets the 'type' attribute
-     * @public
-     * @param   {String} [type]
-     * @returns {String} 'type' value
-     */
-    type: function(type) {
-      if(typeof type != 'undefined') {
-        return this.attribute('to', type);
-      }
-
-      return this.attribute('to');
-    },
-
-    /**
-     * Gets or sets the 'id' attribute
-     * @public
-     * @param   {String} [id]
-     * @returns {String} 'id' value
-     */
-    id: function(id) {
-      if(typeof id != 'undefined') {
-        return this.attribute('to', id);
-      }
-
-      return this.attribute('to');
-    },
-
-    /**
-     * Gets or sets the 'body' element content
-     * @public
-     * @param   {String} [body]
-     * @returns {String} 'body' value
-     */
-    body: function(body) {
-      if(typeof body != 'undefined') {
-        return this.element('body', body);
-      }
-
-      return this.element('body');
     },
 
 
@@ -288,7 +242,11 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {String} Raw XML data
      */
     xml: function() {
-      return this._get_node().xml();
+      try {
+        return this._get_node().xml();
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] xml > ' + e, 1);
+      }
     },
 
 
@@ -298,30 +256,51 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      */
 
     /**
+     * Selects an object in the existing node tree
+     * @public
+     * @param {String} name
+     * @param {String} ns
+     * @returns {__GigglePlug} Selected object
+     */
+    select: function(name, ns) {
+      try {
+        this.node = this.packet.getNode().getChild(
+          name, ns
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] select > ' + e, 1);
+      } finally {
+        return this.node;
+      }
+    },
+
+    /**
      * Sends the packet
      * @public
      * @param {...Function} [callback]
      * @returns {__GigglePlug} Packet object
      */
     send: function(callback) {
-      var self = this;
-
       var response_data;
 
-      // Callback executor
-      var on_packet_response = function(response_data) {
-        // Execute callbacks
-        for(var i = 0; i < arguments.length; i++) {
-          arguments[i].bind(this)(response_data);
-        }
-      };
+      try {
+        // Callback executor
+        var on_packet_response = function(response_data) {
+          // Execute callbacks
+          for(var i = 0; i < arguments.length; i++) {
+            arguments[i].bind(this)(response_data);
+          }
+        };
 
-      // Send packet
-      this._get_node().send(
-        on_packet_response
-      );
-
-      return this;
+        // Send packet
+        this.parent.get_connection().send(
+          this._get_packet(), on_packet_response
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] send > ' + e, 1);
+      } finally {
+        return this;
+      }
     }
   }
 );
