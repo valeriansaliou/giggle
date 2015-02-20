@@ -58,6 +58,7 @@ var Giggle = new (ring.create(
      * Listens for Jingle events
      * @public
      * @param     {Object}           [args]
+     * @property  {String}           [args.plug]             - The XMPP library to be plugged to.
      * @property  {Object}           [args.connection]       - The connection to be attached to.
      * @property  {Function}         [args.single_initiate]  - The Jingle session initiate request custom handler.
      * @property  {Function}         [args.single_propose]   - The Jingle session propose request custom handler.
@@ -75,6 +76,8 @@ var Giggle = new (ring.create(
     listen: function(args) {
       try {
         // Apply arguments
+        if(args && args.plug)
+          GiggleStorage.set_plug(args.plug);
         if(args && args.connection)
           GiggleStorage.set_connection(args.connection);
         if(args && args.single_initiate)

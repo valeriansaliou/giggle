@@ -54,6 +54,9 @@ var GiggleLoader = {
       'giggle.base',
       'giggle.single',
       'giggle.muji',
+      'giggle.plug',
+      'giggle.plug.jsjac',
+      'giggle.plug.strophejs',
       'giggle.broadcast',
       'giggle.init',
       'giggle.main'

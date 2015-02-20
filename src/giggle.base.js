@@ -25,6 +25,7 @@
  * @property   {DOM}            [args.local_view]             - The path to the local stream view element.
  * @property   {Boolean}        [args.local_stream_readonly]  - Whether the local stream is read-only or not.
  * @property   {String}         [args.to]                     - The full JID to start the Jingle session with.
+ * @property   {String}         [args.plug]                   - The XMPP library to be plugged to.
  * @property   {String}         [args.connection]             - The connection to be attached to.
  * @property   {String}         [args.media]                  - The media type to be used in the Jingle session.
  * @property   {String}         [args.resolution]             - The resolution to be used for video in the Jingle session.
@@ -78,6 +79,24 @@ var __GiggleBase = ring.create(
          * @private
          */
         this._to = args.to;
+
+      if(args && args.plug) {
+        /**
+         * @constant
+         * @member {Object}
+         * @default
+         * @private
+         */
+        this._plug = args.plug;
+      } else {
+        /**
+         * @constant
+         * @member {Object}
+         * @default
+         * @private
+         */
+        this._plug = GiggleStorage.get_plug();
+      }
 
       if(args && args.connection) {
         /**
@@ -1112,6 +1131,15 @@ var __GiggleBase = ring.create(
     },
 
     /**
+     * Gets the plug value
+     * @public
+     * @returns {Object} plug value
+     */
+    get_plug: function() {
+      return this._plug;
+    },
+
+    /**
      * Gets the connection value
      * @public
      * @returns {Object} Connection value
@@ -1601,6 +1629,15 @@ var __GiggleBase = ring.create(
      */
     _set_to: function(to) {
       this._to = to;
+    },
+
+    /**
+     * Sets the session plug value
+     * @private
+     * @param {Object} plug
+     */
+    _set_plug: function(plug) {
+      this._plug = plug;
     },
 
     /**

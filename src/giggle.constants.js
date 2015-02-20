@@ -821,6 +821,26 @@ var GIGGLE_GENERATION                          = '0';
  * @default
  * @public
  */
+var GIGGLE_PLUG_JSJAC                          = 'jsjac';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
+var GIGGLE_PLUG_STROPHEJS                      = 'strophejs';
+
+/**
+ * @constant
+ * @global
+ * @type {String}
+ * @readonly
+ * @default
+ * @public
+ */
 var GIGGLE_DIRECTION_LOCAL                     = 'local';
 
 /**
@@ -2345,6 +2365,18 @@ var GIGGLE_MUJI_MUC_CONFIG_SECRET              = 'muc#roomconfig_roomsecret';
 /**
  * GIGGLE CONSTANTS MAPPING
  */
+
+/**
+ * @constant
+ * @global
+ * @type {Object}
+ * @readonly
+ * @default
+ * @public
+ */
+var GIGGLE_PLUGS                 = {};
+GIGGLE_PLUGS[GIGGLE_PLUG_JSJAC]                                         = 1;
+GIGGLE_PLUGS[GIGGLE_PLUG_STROPHEJS]                                     = 1;
 
 /**
  * @constant

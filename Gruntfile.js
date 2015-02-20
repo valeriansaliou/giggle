@@ -43,6 +43,9 @@ module.exports = function(grunt) {
     'src/giggle.base.js',
     'src/giggle.single.js',
     'src/giggle.muji.js',
+    'src/giggle.plug.js',
+    'src/giggle.plug.jsjac.js',
+    'src/giggle.plug.strophejs.js',
     'src/giggle.broadcast.js',
     'src/giggle.init.js',
     'src/giggle.main.js'

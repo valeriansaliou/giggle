@@ -34,6 +34,13 @@ var GiggleStorage = new (ring.create(
        * @default
        * @private
        */
+      this._plug = null;
+
+      /**
+       * @member {Object}
+       * @default
+       * @private
+       */
       this._connection = null;
 
       /**
@@ -156,6 +163,15 @@ var GiggleStorage = new (ring.create(
     /**
      * GIGGLE STORAGE GETTERS
      */
+
+    /**
+     * Gets the plug value
+     * @public
+     * @returns {String} Plug value
+     */
+    get_plug: function() {
+      return this._plug;
+    },
 
     /**
      * Gets the connection object
@@ -339,6 +355,15 @@ var GiggleStorage = new (ring.create(
     /**
      * GIGGLE STORAGE SETTERS
      */
+
+    /**
+     * Sets the plug value
+     * @public
+     * @param {String} Plug
+     */
+    set_plug: function(plug) {
+      this._plug = plug;
+    },
 
     /**
      * Sets the connection object
