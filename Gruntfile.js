@@ -97,6 +97,8 @@ module.exports = function(grunt) {
            ' * @version <%= pkg.version %>\n' +
            ' * @date <%= grunt.template.today("yyyy-mm-dd") %>\n' +
            ' * @author <%= pkg.author.name %> <%= pkg.author.url %>\n' +
+           ' *\n' +
+           ' * @copyright <%= pkg.copyright %>\n' +
            ' * @license <%= pkg.license %>\n' +
            ' *\n' +
            ' * @url <%= pkg.homepage %>\n' +

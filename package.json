@@ -3,6 +3,8 @@
   "description": "Giggle Jingle library for XMPP, implementation of XEP-0166.",
   "version": "0.8.0",
   "homepage": "https://github.com/valeriansaliou/giggle",
+
+  "copyright": "2015, Hakuma Holdings Ltd.",
   "license": "MPL 2.0",
 
   "repository": {
