@@ -39,8 +39,9 @@ var ARGS = {
     var jid_resource = jid_obj.getResource();
 
     // Not our chatroom!
-    if(jid_bare != $('#form_call input[name="call_room"]').val().trim())
+    if(jid_bare != $('#form_call input[name="call_room"]').val().trim()) {
       return;
+    }
 
     var body = stanza.getBody();
 
@@ -71,19 +72,20 @@ var ARGS = {
 
     var pr_from = stanza.getFrom();
 
-    if(!pr_from)
-      return;
+    if(!pr_from) return;
 
     var jid_obj = new JSJaCJID(pr_from);
     var jid_bare = jid_obj.getBareJID();
     var jid_resource = jid_obj.getResource();
 
-    if(jid_obj.toString() == con.username + '@' + con.domain + '/' + con.resource)
+    if(jid_obj.toString() == con.username + '@' + con.domain + '/' + con.resource) {
       return;
+    }
 
     // Not our chatroom!
-    if(jid_bare != $('#form_call input[name="call_room"]').val().trim())
+    if(jid_bare != $('#form_call input[name="call_room"]').val().trim()) {
       return;
+    }
 
     // Online buddy: show it!
     if(stanza.getType() == 'unavailable') {

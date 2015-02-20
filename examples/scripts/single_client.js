@@ -384,10 +384,11 @@ GiggleLoader.on_ready(function() {
           try {
             $('.login_notif').hide();
 
-            if(SC_CONNECTED)
+            if(SC_CONNECTED) {
               $('#login_error').text('Disconnected.').show();
-            else
+            } else {
               $('#login_error').text('Invalid credentials.').show();
+            }
 
             if(SC_CONNECTED && JINGLE !== null) JINGLE.terminate();
 
@@ -410,13 +411,13 @@ GiggleLoader.on_ready(function() {
           try {
             var pr_from = presence.getFrom();
 
-            if(!pr_from)
-              return;
+            if(!pr_from) return;
 
             var jid_obj = new JSJaCJID(pr_from);
 
-            if(jid_obj.toString() == con.username + '@' + con.domain + '/' + con.resource)
+            if(jid_obj.toString() == con.username + '@' + con.domain + '/' + con.resource) {
               return;
+            }
 
             // Online buddy: show it!
             var jid_bare = jid_obj.getBareJID();
