@@ -51,7 +51,7 @@ var __GiggleBase = ring.create(
        * @default
        * @public
        */
-      this.utils = new GiggleUtils(this);
+      this.utils = {};
 
       /**
        * @constant
@@ -60,16 +60,16 @@ var __GiggleBase = ring.create(
        * @default
        * @public
        */
-      this.sdp = new GiggleSDP(this);
+      this.sdp = {};
 
       /**
        * @constant
-       * @member {GigglePlug}
+       * @member {__GigglePlug}
        * @readonly
        * @default
        * @public
        */
-      this.plug = new GigglePlug(this);
+      this.plug = {};
 
       if(args && args.to)
         /**
@@ -388,6 +388,64 @@ var __GiggleBase = ring.create(
        * @private
        */
       this._name = {};
+
+      /* @function */
+      instanciate_utils();
+
+      /* @function */
+      instanciate_sdp();
+
+      /* @function */
+      instanciate_plug();
+    },
+
+
+
+    /**
+     * GIGGLE INSTANCIATORS
+     */
+
+    /**
+     * Instanciates the utils wrapper
+     * @public
+     * @returns {Boolean} Success
+     */
+    instanciate_utils: function() {
+      this.utils = new GiggleUtils(this);
+
+      return true;
+    },
+
+    /**
+     * Instanciates the SDP wrapper
+     * @public
+     * @returns {Boolean} Success
+     */
+    instanciate_sdp: function() {
+      this.sdp = new GiggleSDP(this);
+
+      return true;
+    },
+
+    /**
+     * Instanciates the plug wrapper
+     * @public
+     * @returns {Boolean} Success
+     */
+    instanciate_plug: function() {
+      // Instanciate the
+      switch(this.get_plug()) {
+        case GIGGLE_PLUG_JSJAC:
+          this.plug = (new GigglePlugJSJaC(this)); break;
+
+        case GIGGLE_PLUG_STROPHEJS:
+          this.plug = (new GigglePlugStropheJS(this)); break;
+
+        default:
+          return false;
+      }
+
+      return true;
     },
 
 
