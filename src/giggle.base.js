@@ -390,13 +390,13 @@ var __GiggleBase = ring.create(
       this._name = {};
 
       /* @function */
-      instanciate_utils();
-
-      /* @function */
-      instanciate_sdp();
-
-      /* @function */
-      instanciate_plug();
+      if(instanciate_utils() === true  &&
+         instanciate_sdp()   === true  &&
+         instanciate_plug()  === true) {
+        this.get_debug().log('[giggle:base] constructor > All components successfully instanciated.', 3);
+      } else {
+        this.get_debug().log('[giggle:base] constructor > Could not instanciate some components!', 1);
+      }
     },
 
 
@@ -433,17 +433,16 @@ var __GiggleBase = ring.create(
      * @returns {Boolean} Success
      */
     instanciate_plug: function() {
-      // Instanciate the
       switch(this.get_plug()) {
         case GIGGLE_PLUG_JSJAC:
           this.plug = (new GigglePlugJSJaC(this)); break;
 
-        case GIGGLE_PLUG_STROPHEJS:
-          this.plug = (new GigglePlugStropheJS(this)); break;
-
         default:
+          this.get_debug().log('[giggle:base] instanciate_plug > Unknown plug wrapper!', 1);
           return false;
       }
+
+      this.get_debug().log('[giggle:base] instanciate_plug > Using plug wrapper: ' + this.get_plug(), 3);
 
       return true;
     },

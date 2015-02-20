@@ -6,6 +6,7 @@ Giggle.js
 **Giggle library**, implementation of [XEP-0166 (Jingle)](http://xmpp.org/extensions/xep-0166.html). _XMPP audio/video chat in your Web browser!_
 
 To be used with JSJaC from Stefan Strigler, available there: https://github.com/sstrigler/JSJaC
+Giggle is pluggable to other third-party XMPP libraries, please refer to `./src/giggle.plug.js`. We'll happily accept your Pull Requests.
 
 [![build status](https://ci.hakuma.holdings/projects/8/status.png?ref=master)](https://ci.hakuma.holdings/projects/8?ref=master)
 
@@ -70,7 +71,7 @@ We are running a **commercial support service** for Jappix, that you can also us
 
 API documentation: https://demo.hakuma.holdings/valerian.saliou/giggle/doc/
 
-We assume your XMPP Web client is using JSJaC and has an active connection, stored in the *JSJAC_CONNECTION* global object.
+We assume your XMPP Web client is using a supported XMPP library and has an active connection, stored in the *GIGGLE_CONNECTION* global object.
 
 ```javascript
 /*
@@ -79,7 +80,7 @@ We assume your XMPP Web client is using JSJaC and has an active connection, stor
 
 // 1. Ensure you are loading the following libraries:
 //    > jQuery
-//    > JSJaC
+//    > JSJaC (or any other supported XMPP library)
 //    > Giggle.js
 
 // 2. Define configuration generators
@@ -96,8 +97,9 @@ var muji_config_generator = function() {
 };
 
 // 3. Initiate the listener
+// Note: here using 'JSJaCConsoleLogger' from JSJaC as a console wrapper
 Giggle.listen({
-    connection: JSJAC_CONNECTION,
+    connection: GIGGLE_CONNECTION,
     debug: (new JSJaCConsoleLogger(4)),
 
     // Receive a one-to-one (Single) call
