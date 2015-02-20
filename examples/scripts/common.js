@@ -1,11 +1,13 @@
 /*
-  Giggle.js Simple Client
-
-  @fileoverview Scripts (commons)
-
-  @url https://github.com/valeriansaliou/giggle
-  @author Valérian Saliou https://valeriansaliou.name/
-  @license Mozilla Public License v2.0 (MPL v2.0)
+ * Giggle.js Simple Client
+ *
+ * @fileoverview Scripts (commons)
+ *
+ * @url https://github.com/valeriansaliou/giggle
+ * @author Valérian Saliou https://valeriansaliou.name/
+ *
+ * @copyright 2015, Hakuma Holdings Ltd.
+ * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
 function url_param(name) {

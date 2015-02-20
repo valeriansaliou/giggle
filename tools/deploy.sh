@@ -4,8 +4,10 @@
 #  Giggle.js
 #  Deployment script
 #
-#  Copyright 2015, Hakuma Holdings Ltd.
 #  Author: Valérian Saliou https://valeriansaliou.name/
+#
+#  Copyright: 2015, Hakuma Holdings Ltd.
+#  License: Mozilla Public License v2.0 (MPL v2.0)
 ##
 
 ABSPATH=$(cd "$(dirname "$0")"; pwd)
