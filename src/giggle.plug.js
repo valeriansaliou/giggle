@@ -20,8 +20,23 @@
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  */
 var __GigglePlug = ring.create(
-  /** @lends GigglePlug.prototype */
+  /** @lends __GigglePlug.prototype */
   {
+    /**
+     * Constructor
+     */
+    constructor: function(parent) {
+      /**
+       * @constant
+       * @member {GiggleSingle|GiggleMuji}
+       * @readonly
+       * @default
+       * @public
+       */
+      this.parent = parent;
+    },
+
+
     /* Packet frame builders */
 
     /**
@@ -30,11 +45,7 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Constructed object
      */
     message: function() {
-      var message;
-
-      // TODO
-
-      return message;
+      this.parent.get_debug().log('[giggle:plug] message > Method not implemented.', 1);
     },
 
     /**
@@ -43,11 +54,7 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Constructed object
      */
     presence: function() {
-      var presence;
-
-      // TODO
-
-      return presence;
+      this.parent.get_debug().log('[giggle:plug] presence > Method not implemented.', 1);
     },
 
     /**
@@ -56,11 +63,7 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Constructed object
      */
     iq: function() {
-      var iq;
-
-      // TODO
-
-      return iq;
+      this.parent.get_debug().log('[giggle:plug] iq > Method not implemented.', 1);
     },
 
 
@@ -72,30 +75,24 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Packet object
      */
     build: function(object) {
+      /* Data structure example */
       /*
-        {
-          'message': [
-            {
-              'body': {
-
+        [
+          {'message': {
+            e: [
+              {'body': {
+                // {DESC}
               }
+            ],
+
+            a: {
+              'key': 'value'
             }
-          ]
-        }
-       */
-    },
+          }}
+        ]
+      */
 
-
-    /* Packet browsing tool */
-
-    /**
-     * Returns selected node in packet
-     * @public
-     * @param   {String} path
-     * @returns {__GigglePlug} Selected packet path object
-     */
-    select: function(path) {
-      // TODO
+      this.parent.get_debug().log('[giggle:plug] build > Method not implemented.', 1);
     },
 
 
@@ -109,9 +106,7 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Packet object
      */
     attribute: function(name, value) {
-      value = (value || null);
-
-      // TODO
+      this.parent.get_debug().log('[giggle:plug] attribute > Method not implemented.', 1);
     },
 
     /**
@@ -121,11 +116,7 @@ var __GigglePlug = ring.create(
      * @returns {String} 'to' value
      */
     to: function(to) {
-      if (typeof to != 'undefined') {
-        this.to = to;
-      }
-
-      return this.to || null;
+      this.parent.get_debug().log('[giggle:plug] to > Method not implemented.', 1);
     },
 
     /**
@@ -135,11 +126,7 @@ var __GigglePlug = ring.create(
      * @returns {String} 'from' value
      */
     from: function(from) {
-      if (typeof from != 'undefined') {
-        this.from = from;
-      }
-
-      return this.from || null;
+      this.parent.get_debug().log('[giggle:plug] from > Method not implemented.', 1);
     },
 
     /**
@@ -149,11 +136,7 @@ var __GigglePlug = ring.create(
      * @returns {String} 'type' value
      */
     type: function(type) {
-      if (typeof type != 'undefined') {
-        this.type = type;
-      }
-
-      return this.type || null;
+      this.parent.get_debug().log('[giggle:plug] type > Method not implemented.', 1);
     },
 
     /**
@@ -163,11 +146,7 @@ var __GigglePlug = ring.create(
      * @returns {String} 'id' value
      */
     id: function(id) {
-      if (typeof id != 'undefined') {
-        this.id = id;
-      }
-
-      return this.id || null;
+      this.parent.get_debug().log('[giggle:plug] id > Method not implemented.', 1);
     },
 
 
@@ -180,11 +159,13 @@ var __GigglePlug = ring.create(
      * @returns {String} 'body' value
      */
     body: function(body) {
-      if (typeof body != 'undefined') {
+      /*if (typeof body != 'undefined') {
         this.body = body;
       }
 
-      return this.body || null;
+      return this.body || null;*/
+
+      this.parent.get_debug().log('[giggle:plug] body > Method not implemented.', 1);
     },
 
 
@@ -196,7 +177,7 @@ var __GigglePlug = ring.create(
      * @returns {String} Raw XML data
      */
     xml: function() {
-
+      this.parent.get_debug().log('[giggle:plug] xml > Method not implemented.', 1);
     },
 
 
@@ -208,7 +189,7 @@ var __GigglePlug = ring.create(
      * @param {...Function} [callback]
      */
     send: function(callback) {
-      var self = this;
+      /*var self = this;
 
       var response_data;
 
@@ -218,7 +199,9 @@ var __GigglePlug = ring.create(
         for(var i = 0; i < arguments.length; i++) {
           arguments[i].bind(this)(response_data);
         }
-      };
+      };*/
+
+      this.parent.get_debug().log('[giggle:plug] send > Method not implemented.', 1);
     }
   }
 );

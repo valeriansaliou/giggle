@@ -25,6 +25,280 @@
 var GigglePlugJSJaC = ring.create([__GigglePlug],
   /** @lends GigglePlugJSJaC.prototype */
   {
-    // TODO
+    /**
+     * Constructor
+     */
+    constructor: function(args) {
+      this.$super(args);
+    },
+
+
+    /* Packet frame builders */
+
+    /**
+     * Builds a message packet
+     * @public
+     * @returns {__GigglePlug} Constructed object
+     */
+    message: function() {
+      this.packet = (new JSJaCMessage());
+      this.node = this.packet;
+
+      return this;
+    },
+
+    /**
+     * Builds a presence packet
+     * @public
+     * @returns {__GigglePlug} Constructed object
+     */
+    presence: function() {
+      this.packet = (new JSJaCPresence());
+      this.node = this.packet;
+
+      return this;
+    },
+
+    /**
+     * Builds an IQ packet
+     * @public
+     * @returns {__GigglePlug} Constructed object
+     */
+    iq: function() {
+      this.packet = (new JSJaCIQ());
+      this.node = this.packet;
+
+      return this;
+    },
+
+
+    /**
+     * Builds the packet with passed elements
+     * @public
+     * @param   {String} name
+     * @param   {String} [value]
+     * @returns {__GigglePlug} Packet object
+     */
+    build: function(object) {
+      var i, k;
+      var parent_node;
+      var cur_name, cur_value, cur_elements, cur_attrs;
+
+      var descend_node = function(_object, _parent_node) {
+        for(i = 0; i < _object.length; i++) {
+          for(k in _object[i]) {
+            // No such property?
+            if(!_object[i].hasOwnProperty(k)) {
+              continue;
+            }
+
+            // Read name
+            cur_name = k;
+
+            // Read attributes
+            if(typeof _object[i][k].a == 'object' &&
+               _object[i][k].a.length) {
+              cur_attrs = _object[i][k].a;
+            } else {
+              cur_attrs = {};
+            }
+
+            // Read value/elements
+            if(typeof _object[i][k].e == 'string' ||
+               typeof _object[i][k].e == 'number') {
+              cur_value = _object[i][k].e;
+              cur_elements = [];
+            } else if(typeof _object[i][k].e == 'object' ||
+                      _object[i][k].e.length) {
+              cur_value = null;
+              cur_elements = _object[i][k].e;
+            }
+
+            // Parse it.
+            if(typeof _parent_node != 'undefined') {
+              parent_node = this.node.appendChild(
+                packet.buildNode(
+                  cur_name, cur_attrs, cur_value
+                )
+              );
+            } else {
+              parent_node = this.node.appendNode(
+                cur_name, cur_attrs, cur_value
+              );
+            }
+
+            // Move to direct childs
+            if(typeof _object[i][k].e == 'object' &&
+               _object[i][k].e.length) {
+              descend_node.bind(this)(
+                _object[i][k].e, parent_node
+              );
+            }
+
+            // Should be an unique key
+            break;
+          }
+        }
+      };
+
+      // First direct parents
+      descend_node.bind(this)(object);
+
+      return this;
+    },
+
+
+    /* Main element accessor/setters methods */
+
+    /**
+     * Sets/gets an attribute on an element
+     * @public
+     * @param   {String} name
+     * @param   {String} [value]
+     * @returns {__GigglePlug} Packet object
+     */
+    attribute: function(name, value) {
+      // Sets?
+      if(typeof value != 'undefined') {
+        this.node.setAttribute(name, value);
+
+        return this;
+      }
+
+      return this.node.getAttribute(name);
+    },
+
+    /**
+     * Sets/gets an element value
+     * @public
+     * @param   {String} element
+     * @param   {String} [value]
+     * @returns {__GigglePlug} Packet object
+     */
+    element: function(element, value) {
+      // Sets?
+      if(typeof value != 'undefined') {
+        this.node.getChild(name).setValue(value);
+
+        return this;
+      }
+
+      return this.node.getChild(name).getValue();
+    },
+
+    /**
+     * Gets or sets the 'to' attribute
+     * @public
+     * @param   {String} [to]
+     * @returns {String} 'to' value
+     */
+    to: function(to) {
+      if(typeof to != 'undefined') {
+        return this.attribute('to', to);
+      }
+
+      return this.attribute('to');
+    },
+
+    /**
+     * Gets or sets the 'from' attribute
+     * @public
+     * @param   {String} [from]
+     * @returns {String} 'from' value
+     */
+    from: function(from) {
+      if(typeof from != 'undefined') {
+        return this.attribute('to', from);
+      }
+
+      return this.attribute('to');
+    },
+
+    /**
+     * Gets or sets the 'type' attribute
+     * @public
+     * @param   {String} [type]
+     * @returns {String} 'type' value
+     */
+    type: function(type) {
+      if(typeof type != 'undefined') {
+        return this.attribute('to', type);
+      }
+
+      return this.attribute('to');
+    },
+
+    /**
+     * Gets or sets the 'id' attribute
+     * @public
+     * @param   {String} [id]
+     * @returns {String} 'id' value
+     */
+    id: function(id) {
+      if(typeof id != 'undefined') {
+        return this.attribute('to', id);
+      }
+
+      return this.attribute('to');
+    },
+
+
+    /* Main data accessor/setters methods */
+
+    /**
+     * Gets or sets the 'body' element content
+     * @public
+     * @param   {String} [body]
+     * @returns {String} 'body' value
+     */
+    body: function(body) {
+      if(typeof body != 'undefined') {
+        return this.element('body', body);
+      }
+
+      return this.element('body');
+    },
+
+
+    /* Serializers */
+
+    /**
+     * Serializes the packet object to raw XML data
+     * @public
+     * @returns {String} Raw XML data
+     */
+    xml: function() {
+      return this.node.xml();
+    },
+
+
+    /* Network tools */
+
+    /**
+     * Sends the packet
+     * @public
+     * @param {...Function} [callback]
+     * @returns {__GigglePlug} Packet object
+     */
+    send: function(callback) {
+      var self = this;
+
+      var response_data;
+
+      // Callback executor
+      var on_packet_response = function(response_data) {
+        // Execute callbacks
+        for(var i = 0; i < arguments.length; i++) {
+          arguments[i].bind(this)(response_data);
+        }
+      };
+
+      // Send packet
+      this.node.send(
+        on_packet_response
+      );
+
+      return this;
+    }
   }
 );
