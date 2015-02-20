@@ -99,6 +99,7 @@ var muji_config_generator = function() {
 // 3. Initiate the listener
 // Note: here using 'JSJaCConsoleLogger' from JSJaC as a console wrapper
 Giggle.listen({
+    plug: GIGGLE_PLUG_JSJAC,
     connection: GIGGLE_CONNECTION,
     debug: (new JSJaCConsoleLogger(4)),
 
