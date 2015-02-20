@@ -12,14 +12,46 @@ module.exports = function(grunt) {
 
   // Map tasks
   var GRUNT_TASKS_BUILD = {
-    main: ['clean:reset', 'bower:install', 'concat', 'copy', 'uglify', 'jsdoc', 'clean:temporary'],
-    quick: ['clean:reset', 'bower:install', 'concat', 'copy', 'clean:temporary'],
-    dev: ['clean:temporary', 'bower:install', 'concat', 'copy', 'clean:temporary'],
-    test: ['clean:temporary', 'bower:install', 'concat', 'copy', 'clean:temporary']
+    main: [
+      'clean:reset',
+      'bower:install',
+      'concat',
+      'copy',
+      'uglify',
+      'jsdoc',
+      'clean:temporary'
+    ],
+
+    quick: [
+      'clean:reset',
+      'bower:install',
+      'concat',
+      'copy',
+      'clean:temporary'
+    ],
+
+    dev: [
+      'clean:temporary',
+      'bower:install',
+      'concat',
+      'copy',
+      'clean:temporary'
+    ],
+
+    test: [
+      'clean:temporary',
+      'bower:install',
+      'concat',
+      'copy',
+      'clean:temporary'
+    ]
   };
 
   var GRUNT_TASKS_TEST = {
-    main: ['build:test', 'lint']
+    main: [
+      'build:test',
+      'lint'
+    ]
   };
 
   var GRUNT_TASKS_LINT = {
@@ -45,7 +77,6 @@ module.exports = function(grunt) {
     'src/giggle.muji.js',
     'src/giggle.plug.js',
     'src/giggle.plug.jsjac.js',
-    'src/giggle.plug.strophejs.js',
     'src/giggle.broadcast.js',
     'src/giggle.init.js',
     'src/giggle.main.js'
@@ -119,7 +150,14 @@ module.exports = function(grunt) {
     // Task: Clean
     clean: {
       temporary: ['tmp/'],
-      reset: ['tmp/', 'lib/*', 'build/*', 'doc/*', 'bower_components/']
+
+      reset: [
+        'tmp/',
+        'lib/*',
+        'build/*',
+        'doc/*',
+        'bower_components/'
+      ]
     },
 
 

@@ -9,138 +9,138 @@
  */
 
 #form_invite {
-    margin-top: 18px;
+  margin-top: 18px;
 }
 
 #form_invite input,
 #form_chat input {
-    padding-top: 2px;
-    padding-bottom: 3px;
+  padding-top: 2px;
+  padding-bottom: 3px;
 }
 
 #form_invite input {
-    margin-right: 0;
+  margin-right: 0;
 }
 
 #form_invite button {
-    margin-left: 0;
+  margin-left: 0;
 }
 
 #room_container {
-    margin-left: 21px;
+  margin-left: 21px;
 }
 
 #room_container h6 {
-    margin-bottom: 48px;
+  margin-bottom: 48px;
 }
 
 #room_container .video_remote_container {
-    margin: 0 3px 6px 3px;
-    float: left;
-    position: relative;
+  margin: 0 3px 6px 3px;
+  float: left;
+  position: relative;
 }
 
 #room_container .video_remote_container .load,
 #room_container .video_remote_container .error {
-    display: block;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    bottom: 50%;
-    right: 50%;
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  bottom: 50%;
+  right: 50%;
 }
 
 #room_container .video_remote_container .load {
-    background-image: url(../images/video_remote_load.gif);
-    width: 24px;
-    height: 24px;
-    margin-top: -12px;
-    margin-left: -12px;
+  background-image: url(../images/video_remote_load.gif);
+  width: 24px;
+  height: 24px;
+  margin-top: -12px;
+  margin-left: -12px;
 }
 
 #room_container .video_remote_container .error {
-    background-image: url(../images/video_remote_error.png);
-    width: 27px;
-    height: 24px;
-    margin-top: -12px;
-    margin-left: -14px;
+  background-image: url(../images/video_remote_error.png);
+  width: 27px;
+  height: 24px;
+  margin-top: -12px;
+  margin-left: -14px;
 }
 
 #chat_container {
-    border-width: 1px 0;
-    border-style: solid;
-    border-color: #e6e6e6;
-    text-align: left;
-    height: 108px;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    position: relative;
+  border-width: 1px 0;
+  border-style: solid;
+  border-color: #e6e6e6;
+  text-align: left;
+  height: 108px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  position: relative;
 }
 
 #chat_box {
-    position: absolute;
-    left: 188px;
-    right: 8px;
-    top: 8px;
-    bottom: 8px;
+  position: absolute;
+  left: 188px;
+  right: 8px;
+  top: 8px;
+  bottom: 8px;
 }
 
 #chat_messages,
 #form_chat {
-    position: absolute;
-    left: 0;
-    right: 0;
+  position: absolute;
+  left: 0;
+  right: 0;
 }
 
 #chat_messages {
-    border-bottom: 1px solid #e5e5e5;
-    overflow: auto;
-    bottom: 30px;
-    top: 0;
+  border-bottom: 1px solid #e5e5e5;
+  overflow: auto;
+  bottom: 30px;
+  top: 0;
 }
 
 #chat_messages p.message {
-    font-size: 12px;
-    margin: 0 0 2px 0;
+  font-size: 12px;
+  margin: 0 0 2px 0;
 }
 
 #chat_messages p.message b.name {
-    border-right: 1px solid #e5e5e5;
-    margin-right: 8px;
-    padding-right: 8px;
+  border-right: 1px solid #e5e5e5;
+  margin-right: 8px;
+  padding-right: 8px;
 }
 
 #chat_messages p.message span.text {
-    word-break: break-word;
+  word-break: break-word;
 }
 
 #form_chat {
-    bottom: 0;
+  bottom: 0;
 }
 
 #form_chat input {
-    width: 400px;
+  width: 400px;
 }
 
 #form_chat button {
-    width: 90px;
+  width: 90px;
 }
 
 #video_local {
-    position: absolute;
-    left: 8px;
-    bottom: 8px;
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
 }
 
 #live_unmute {
-    display: none;
+  display: none;
 }
 
 fieldset:disabled #room_container,
 fieldset:disabled #chat_container {
-    opacity: 0.4;
+  opacity: 0.4;
 }
 
 fieldset:disabled video {
-    opacity: 0.5 !important;
+  opacity: 0.5 !important;
 }

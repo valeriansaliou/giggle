@@ -9,7 +9,7 @@ v0.8.0 (Development)
 
  * **In a nutshell**
     * **Giggle.js is now Giggle.js**                                     @valeriansaliou
-    * **Support for other XMPP libraries** (StropheJS, Stanza.io and others)  @valeriansaliou
+    * **Pluggability module** to other XMPP libraries                    @valeriansaliou
     * (...)
 
 

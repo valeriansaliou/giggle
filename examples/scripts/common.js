@@ -9,15 +9,15 @@
  */
 
 function url_param(name) {
-    try {
-        var uri_param = (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [,null])[1];
+  try {
+    var uri_param = (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [,null])[1];
 
-        if(uri_param) {
-            return decodeURI(uri_param);
-        }
-
-        return null;
-    } catch(e) {
-        return null;
+    if(uri_param) {
+      return decodeURI(uri_param);
     }
+
+    return null;
+  } catch(e) {
+    return null;
+  }
 }
