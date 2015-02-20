@@ -33,11 +33,30 @@ var __GigglePlug = ring.create(
        * @default
        * @public
        */
-      this.parent = parent;
+      this._parent = parent;
+
+      /**
+       * @constant
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._node   = null;
+
+      /**
+       * @constant
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._packet = null;
     },
 
 
-    /* Packet frame builders */
+
+    /**
+     * GIGGLE PLUG BUILDERS
+     */
 
     /**
      * Builds a message packet
@@ -65,7 +84,6 @@ var __GigglePlug = ring.create(
     iq: function() {
       this.parent.get_debug().log('[giggle:plug] iq > Method not implemented.', 1);
     },
-
 
     /**
      * Builds the packet with passed elements
@@ -96,7 +114,10 @@ var __GigglePlug = ring.create(
     },
 
 
-    /* Main attribute accessor/setters methods */
+
+    /**
+     * GIGGLE PLUG MODIFIERS
+     */
 
     /**
      * Sets an attribute on an element
@@ -107,6 +128,17 @@ var __GigglePlug = ring.create(
      */
     attribute: function(name, value) {
       this.parent.get_debug().log('[giggle:plug] attribute > Method not implemented.', 1);
+    },
+
+    /**
+     * Sets/gets an element value
+     * @public
+     * @param   {String} element
+     * @param   {String} [value]
+     * @returns {__GigglePlug} Packet object
+     */
+    element: function(element, value) {
+      this.parent.get_debug().log('[giggle:plug] element > Method not implemented.', 1);
     },
 
     /**
@@ -149,9 +181,6 @@ var __GigglePlug = ring.create(
       this.parent.get_debug().log('[giggle:plug] id > Method not implemented.', 1);
     },
 
-
-    /* Main data accessor/setters methods */
-
     /**
      * Gets or sets the 'body' element content
      * @public
@@ -169,7 +198,10 @@ var __GigglePlug = ring.create(
     },
 
 
-    /* Serializers */
+
+    /**
+     * GIGGLE PLUG SERIALIZERS
+     */
 
     /**
      * Serializes the packet object to raw XML data
@@ -181,7 +213,10 @@ var __GigglePlug = ring.create(
     },
 
 
-    /* Network tools */
+
+    /**
+     * GIGGLE PLUG HELPERS
+     */
 
     /**
      * Sends the packet
@@ -202,6 +237,54 @@ var __GigglePlug = ring.create(
       };*/
 
       this.parent.get_debug().log('[giggle:plug] send > Method not implemented.', 1);
+    },
+
+
+
+    /**
+     * GIGGLE PLUG GETTERS
+     */
+
+    /**
+     * Gets the packet
+     * @private
+     * @returns {Object} Packet object
+     */
+    _get_packet: function(packet) {
+      this._packet = packet;
+    },
+
+    /**
+     * Gets the node
+     * @private
+     * @returns {Object} Node object
+     */
+    _get_node: function(node) {
+      this._node = node;
+    },
+
+
+
+    /**
+     * GIGGLE PLUG SETTERS
+     */
+
+    /**
+     * Sets the packet
+     * @private
+     * @param {Object} packet
+     */
+    _set_packet: function(packet) {
+      this._packet = packet;
+    },
+
+    /**
+     * Sets the node
+     * @private
+     * @param {Object} node
+     */
+    _set_node: function(node) {
+      this._node = node;
     }
   }
 );

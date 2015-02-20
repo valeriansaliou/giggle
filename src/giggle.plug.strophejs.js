@@ -32,7 +32,10 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
     },
 
 
-    /* Packet frame builders */
+
+    /**
+     * GIGGLE PLUG BUILDERS
+     */
 
     /**
      * Builds a message packet
@@ -61,7 +64,6 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
       this.parent.get_debug().log('[giggle:plug:strophejs] iq > Method not implemented.', 1);
     },
 
-
     /**
      * Builds the packet with passed elements
      * @public
@@ -86,7 +88,10 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
     },
 
 
-    /* Main attribute accessor/setters methods */
+
+    /**
+     * GIGGLE PLUG MODIFIERS
+     */
 
     /**
      * Sets an attribute on an element
@@ -97,6 +102,17 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
      */
     attribute: function(name, value) {
       this.parent.get_debug().log('[giggle:plug:strophejs] attribute > Method not implemented.', 1);
+    },
+
+    /**
+     * Sets/gets an element value
+     * @public
+     * @param   {String} element
+     * @param   {String} [value]
+     * @returns {__GigglePlug} Packet object
+     */
+    element: function(element, value) {
+      this.parent.get_debug().log('[giggle:plug:strophejs] element > Method not implemented.', 1);
     },
 
     /**
@@ -139,9 +155,6 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
       this.parent.get_debug().log('[giggle:plug:strophejs] id > Method not implemented.', 1);
     },
 
-
-    /* Main data accessor/setters methods */
-
     /**
      * Gets or sets the 'body' element content
      * @public
@@ -159,7 +172,10 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
     },
 
 
-    /* Serializers */
+
+    /**
+     * GIGGLE PLUG SERIALIZERS
+     */
 
     /**
      * Serializes the packet object to raw XML data
@@ -171,7 +187,10 @@ var GigglePlugStropheJS = ring.create([__GigglePlug],
     },
 
 
-    /* Network tools */
+
+    /**
+     * GIGGLE PLUG HELPERS
+     */
 
     /**
      * Sends the packet

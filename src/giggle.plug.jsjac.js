@@ -33,7 +33,10 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
     },
 
 
-    /* Packet frame builders */
+
+    /**
+     * GIGGLE PLUG BUILDERS
+     */
 
     /**
      * Builds a message packet
@@ -41,8 +44,13 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Constructed object
      */
     message: function() {
-      this.packet = (new JSJaCMessage());
-      this.node = this.packet;
+      this._set_packet(
+        new JSJaCMessage()
+      );
+
+      this._set_node(
+        this._get_packet()
+      );
 
       return this;
     },
@@ -53,8 +61,13 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Constructed object
      */
     presence: function() {
-      this.packet = (new JSJaCPresence());
-      this.node = this.packet;
+      this._set_packet(
+        new JSJaCPresence()
+      );
+
+      this._set_node(
+        this._get_packet()
+      );
 
       return this;
     },
@@ -65,12 +78,16 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Constructed object
      */
     iq: function() {
-      this.packet = (new JSJaCIQ());
-      this.node = this.packet;
+      this._set_packet(
+        new JSJaCIQ()
+      );
+
+      this._set_node(
+        this._get_packet()
+      );
 
       return this;
     },
-
 
     /**
      * Builds the packet with passed elements
@@ -116,13 +133,13 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
 
             // Parse it.
             if(typeof _parent_node != 'undefined') {
-              parent_node = this.node.appendChild(
-                packet.buildNode(
+              parent_node = this._get_node().appendChild(
+                this._get_packet().buildNode(
                   cur_name, cur_attrs, cur_value
                 )
               );
             } else {
-              parent_node = this.node.appendNode(
+              parent_node = this._get_node().appendNode(
                 cur_name, cur_attrs, cur_value
               );
             }
@@ -148,7 +165,10 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
     },
 
 
-    /* Main element accessor/setters methods */
+
+    /**
+     * GIGGLE PLUG MODIFIERS
+     */
 
     /**
      * Sets/gets an attribute on an element
@@ -160,12 +180,12 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
     attribute: function(name, value) {
       // Sets?
       if(typeof value != 'undefined') {
-        this.node.setAttribute(name, value);
+        this._get_node().setAttribute(name, value);
 
         return this;
       }
 
-      return this.node.getAttribute(name);
+      return this._get_node().getAttribute(name);
     },
 
     /**
@@ -178,12 +198,12 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
     element: function(element, value) {
       // Sets?
       if(typeof value != 'undefined') {
-        this.node.getChild(name).setValue(value);
+        this._get_node().getChild(name).setValue(value);
 
         return this;
       }
 
-      return this.node.getChild(name).getValue();
+      return this._get_node().getChild(name).getValue();
     },
 
     /**
@@ -242,9 +262,6 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
       return this.attribute('to');
     },
 
-
-    /* Main data accessor/setters methods */
-
     /**
      * Gets or sets the 'body' element content
      * @public
@@ -260,7 +277,10 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
     },
 
 
-    /* Serializers */
+
+    /**
+     * GIGGLE PLUG SERIALIZERS
+     */
 
     /**
      * Serializes the packet object to raw XML data
@@ -268,11 +288,14 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {String} Raw XML data
      */
     xml: function() {
-      return this.node.xml();
+      return this._get_node().xml();
     },
 
 
-    /* Network tools */
+
+    /**
+     * GIGGLE PLUG HELPERS
+     */
 
     /**
      * Sends the packet
@@ -294,7 +317,7 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
       };
 
       // Send packet
-      this.node.send(
+      this._get_node().send(
         on_packet_response
       );
 
