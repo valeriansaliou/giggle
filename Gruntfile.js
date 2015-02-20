@@ -2,7 +2,7 @@
  * Giggle.js
  * Automated tasks (uses GruntJS)
  *
- * Copyright 2013, FrenchTouch Web Agency
+ * Copyright 2015, Hakuma Holdings Ltd.
  * Author: Valérian Saliou https://valeriansaliou.name/
  */
 

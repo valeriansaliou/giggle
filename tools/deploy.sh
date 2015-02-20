@@ -4,7 +4,7 @@
 #  Giggle.js
 #  Deployment script
 #
-#  Copyright 2014, FrenchTouch Web Agency
+#  Copyright 2015, Hakuma Holdings Ltd.
 #  Author: Valérian Saliou https://valeriansaliou.name/
 ##
 
