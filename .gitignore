@@ -8,6 +8,6 @@ bower_components/
 node_modules/
 
 # Excluded subfiles
-lib/*
-build/*
-doc/*
+lib/
+build/
+doc/
