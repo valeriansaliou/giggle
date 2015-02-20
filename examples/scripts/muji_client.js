@@ -499,6 +499,7 @@ GiggleLoader.on_ready(function() {
 
                         // Initialize Giggle router
                         Giggle.listen({
+                            plug: GIGGLE_PLUG_JSJAC,
                             connection: con,
                             debug: (new JSJaCConsoleLogger(4)),
 
