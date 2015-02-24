@@ -20,6 +20,9 @@
  * @requires   nicolas-van/ring.js
  * @requires   giggle/main
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
+ * @param      {Object}   [args]              - Plug arguments.
+ * @property   {Object}   [args.connection]   - The connection to be attached to.
+ * @property   {Console}  [args.debug]        - A reference to a debugger implementing the Console interface.
  */
 var __GigglePlug = ring.create(
   /** @lends __GigglePlug.prototype */
@@ -27,15 +30,40 @@ var __GigglePlug = ring.create(
     /**
      * Constructor
      */
-    constructor: function(parent) {
-      /**
-       * @constant
-       * @member {GiggleSingle|GiggleMuji}
-       * @readonly
-       * @default
-       * @public
-       */
-      this._parent = parent;
+    constructor: function(args) {
+      if(args && args.connection) {
+        /**
+         * @constant
+         * @member {Object}
+         * @default
+         * @private
+         */
+        this._connection = args.connection;
+      } else {
+        /**
+         * @constant
+         * @member {Object}
+         * @default
+         * @private
+         */
+        this._connection = GiggleStorage.get_connection();
+      }
+
+      if(args && args.debug && args.debug.log) {
+        /**
+         * @member {Console}
+         * @default
+         * @private
+         */
+        this._debug = args.debug;
+      } else {
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this._debug = GiggleStorage.get_debug();
+      }
 
       /**
        * @constant
@@ -66,7 +94,7 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Constructed object
      */
     message: function() {
-      this.parent.get_debug().log('[giggle:plug] message > Method not implemented.', 1);
+      this.get_debug().log('[giggle:plug] message > Method not implemented.', 1);
     },
 
     /**
@@ -75,7 +103,7 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Constructed object
      */
     presence: function() {
-      this.parent.get_debug().log('[giggle:plug] presence > Method not implemented.', 1);
+      this.get_debug().log('[giggle:plug] presence > Method not implemented.', 1);
     },
 
     /**
@@ -84,7 +112,7 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Constructed object
      */
     iq: function() {
-      this.parent.get_debug().log('[giggle:plug] iq > Method not implemented.', 1);
+      this.get_debug().log('[giggle:plug] iq > Method not implemented.', 1);
     },
 
     /**
@@ -109,7 +137,7 @@ var __GigglePlug = ring.create(
        * ]
        */
 
-      this.parent.get_debug().log('[giggle:plug] build > Method not implemented.', 1);
+      this.get_debug().log('[giggle:plug] build > Method not implemented.', 1);
     },
 
 
@@ -126,7 +154,7 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Packet object
      */
     attribute: function(name, value) {
-      this.parent.get_debug().log('[giggle:plug] attribute > Method not implemented.', 1);
+      this.get_debug().log('[giggle:plug] attribute > Method not implemented.', 1);
     },
 
     /**
@@ -137,7 +165,7 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Packet object
      */
     element: function(element, value) {
-      this.parent.get_debug().log('[giggle:plug] element > Method not implemented.', 1);
+      this.get_debug().log('[giggle:plug] element > Method not implemented.', 1);
     },
 
 
@@ -244,7 +272,7 @@ var __GigglePlug = ring.create(
      * @returns {String} Raw XML data
      */
     xml: function() {
-      this.parent.get_debug().log('[giggle:plug] xml > Method not implemented.', 1);
+      this.get_debug().log('[giggle:plug] xml > Method not implemented.', 1);
     },
 
 
@@ -261,7 +289,7 @@ var __GigglePlug = ring.create(
      * @returns {__GigglePlug} Selected object
      */
     select: function(name, ns) {
-      this.parent.get_debug().log('[giggle:plug] select > Method not implemented.', 1);
+      this.get_debug().log('[giggle:plug] select > Method not implemented.', 1);
     },
 
     /**
@@ -270,7 +298,7 @@ var __GigglePlug = ring.create(
      * @param {...Function} [callback]
      */
     send: function(callback) {
-      this.parent.get_debug().log('[giggle:plug] send > Method not implemented.', 1);
+      this.get_debug().log('[giggle:plug] send > Method not implemented.', 1);
     },
 
 
@@ -280,20 +308,38 @@ var __GigglePlug = ring.create(
      */
 
     /**
+     * Gets the connection value
+     * @public
+     * @returns {Object} Connection value
+     */
+    get_connection: function() {
+      return this._connection;
+    },
+
+    /**
+     * Gets the debug value
+     * @public
+     * @returns {Console} Debug value
+     */
+    get_debug: function() {
+      return this._debug;
+    },
+
+    /**
      * Gets the packet
-     * @private
+     * @public
      * @returns {Object} Packet object
      */
-    _get_packet: function(packet) {
+    get_packet: function(packet) {
       this._packet = packet;
     },
 
     /**
      * Gets the node
-     * @private
+     * @public
      * @returns {Object} Node object
      */
-    _get_node: function(node) {
+    get_node: function(node) {
       this._node = node;
     },
 
@@ -302,6 +348,24 @@ var __GigglePlug = ring.create(
     /**
      * GIGGLE PLUG SETTERS
      */
+
+    /**
+     * Sets the session connection value
+     * @private
+     * @param {Object} connection
+     */
+    _set_connection: function(connection) {
+      this._connection = connection;
+    },
+
+    /**
+     * Sets the debugging wrapper
+     * @public
+     * @param {Console} debug
+     */
+    set_debug: function(debug) {
+      this._debug = debug;
+    },
 
     /**
      * Sets the packet

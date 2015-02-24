@@ -27,6 +27,47 @@ var Giggle = new (ring.create(
   /** @lends Giggle.prototype */
   {
     /**
+     * Constructor
+     */
+    constructor: function(args) {
+      /**
+       * @constant
+       * @member {GiggleUtils}
+       * @readonly
+       * @default
+       * @public
+       */
+      this.utils = new GiggleUtils(this);
+
+      /**
+       * @constant
+       * @member {__GigglePlug}
+       * @readonly
+       * @default
+       * @public
+       */
+      this.plug = {};
+
+      /**
+       * @constant
+       * @member {GiggleBroadcast}
+       * @readonly
+       * @default
+       * @public
+       */
+      this.broadcast = {};
+
+      /**
+       * @constant
+       * @member {GiggleInit}
+       * @readonly
+       * @default
+       * @public
+       */
+      this.init = {};
+    },
+
+    /**
      * Starts a new Jingle session
      * @public
      * @param {String} type
@@ -99,6 +140,26 @@ var Giggle = new (ring.create(
         if(args && args.debug)
           GiggleStorage.set_debug(args.debug);
 
+        // Instanciate plug
+        switch(GiggleStorage.get_plug()) {
+          case GIGGLE_PLUG_JSJAC:
+            this.plug = (new GigglePlugJSJaC()); break;
+
+          default:
+            GiggleStorage.get_debug().log('[giggle:main] listen > Unknown plug wrapper!', 1);
+            return false;
+        }
+
+        // Instanciate broadcast
+        this.broadcast = new GiggleBroadcast({
+          plug: this.plug
+        });
+
+        // Instanciate initializer
+        this.init = new GiggleInit({
+          plug: this.plug
+        });
+
         // Incoming IQs handler
         var cur_type, route_map = {};
         route_map[GIGGLE_STANZA_IQ]        = this._route_iq;
@@ -116,11 +177,11 @@ var Giggle = new (ring.create(
 
         // Discover available network services
         if(!args || args.extdisco !== false)
-          GiggleInit._extdisco();
+          this.init._extdisco();
         if(!args || args.relaynodes !== false)
-          GiggleInit._relaynodes();
+          this.init._relaynodes();
         if(args.fallback && typeof args.fallback === 'string')
-          GiggleInit._fallback(args.fallback);
+          this.init._fallback(args.fallback);
       } catch(e) {
         GiggleStorage.get_debug().log('[giggle:main] listen > ' + e, 1);
       }
@@ -157,7 +218,7 @@ var Giggle = new (ring.create(
         var from = stanza.from();
 
         if(from) {
-          var jid_obj = new (new GiggleUtils()).jid(from);
+          var jid_obj = new this.utils.jid(from);
           var from_bare = (jid_obj.node() + '@' + jid_obj.domain());
 
           // Single or Muji?
@@ -266,10 +327,10 @@ var Giggle = new (ring.create(
         var from = stanza.from();
 
         if(from) {
-          var jid = new (new GiggleUtils()).jid(from);
+          var jid = new this.utils.jid(from);
 
           // Broadcast message?
-          var is_handled_broadcast = GiggleBroadcast.handle(stanza);
+          var is_handled_broadcast = this.broadcast.handle(stanza);
 
           if(is_handled_broadcast === true) {
             // XEP-0353: Jingle Message Initiation
@@ -332,7 +393,7 @@ var Giggle = new (ring.create(
         var from = stanza.from();
 
         if(from) {
-          var jid = new (new GiggleUtils()).jid(from);
+          var jid = new this.utils.jid(from);
           var room = jid.node() + '@' + jid.domain();
 
           var session_route = this._read(GIGGLE_SESSION_MUJI, room);

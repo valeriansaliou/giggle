@@ -21,8 +21,10 @@
  * @requires   giggle/main
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
  * @see        {@link http://xmpp.org/extensions/xep-0353.html|XEP-0353: Jingle Message Initiation}
+ * @param      {Object}        [args]        - Broadcast arguments.
+ * @property   {__GigglePlug}  [args.plug]   - The plug instance.
  */
-var GiggleBroadcast = new (ring.create(
+var GiggleBroadcast = ring.create(
   /** @lends GiggleBroadcast.prototype */
   {
     /**
@@ -37,6 +39,19 @@ var GiggleBroadcast = new (ring.create(
        * @public
        */
       this.utils = new GiggleUtils(this);
+
+      if(args && args.plug) {
+        /**
+         * @constant
+         * @member {__GigglePlug}
+         * @readonly
+         * @default
+         * @public
+         */
+        this.plug = args.plug;
+      } else {
+        this.plug = {};
+      }
     },
 
     /**
@@ -463,4 +478,4 @@ var GiggleBroadcast = new (ring.create(
       }
     },
   }
-))();
+);

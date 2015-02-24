@@ -28,7 +28,7 @@
  * @property   {Boolean}        [args.local_stream_readonly]  - Whether the local stream is read-only or not.
  * @property   {String}         [args.to]                     - The full JID to start the Jingle session with.
  * @property   {String}         [args.plug]                   - The XMPP library to be plugged to.
- * @property   {String}         [args.connection]             - The connection to be attached to.
+ * @property   {Object}         [args.connection]             - The connection to be attached to.
  * @property   {String}         [args.media]                  - The media type to be used in the Jingle session.
  * @property   {String}         [args.resolution]             - The resolution to be used for video in the Jingle session.
  * @property   {String}         [args.bandwidth]              - The bandwidth to be limited for video in the Jingle session.
@@ -437,7 +437,10 @@ var __GiggleBase = ring.create(
     instanciate_plug: function() {
       switch(this.get_plug()) {
         case GIGGLE_PLUG_JSJAC:
-          this.plug = (new GigglePlugJSJaC(this)); break;
+          this.plug = (new GigglePlugJSJaC({
+            connection : this.get_connection(),
+            debug      : this.get_debug()
+          })); break;
 
         default:
           this.get_debug().log('[giggle:base] instanciate_plug > Unknown plug wrapper!', 1);

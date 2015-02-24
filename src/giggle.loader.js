@@ -74,23 +74,58 @@ var GiggleLoader = {
     // Executes all pending ready callbacks
     for(var i = 0; i < this._ready_callbacks.length; i++) {
       // Fire, fire, fire!
-      this._ready_callbacks[i]().bind(window);
+      this._ready_callbacks[i].bind(window)();
     }
   },
 
   /**
-   * Requires library component
+   * Requires a single library component
    * @static
    * @private
-   * @param {String} library_name
+   * @param {String} path
+   * @param {Object} includes
+   * @param {Number} index
    */
-  _require: function(library_name) {
+  _require_single: function(path, includes, index) {
+    var self = this;
+
     var script = document.createElement('script');
 
     script.setAttribute('type', 'text/javascript');
-    script.setAttribute('src', library_name);
+    script.setAttribute(
+      'src',
+      (path + includes[index] + '.js')
+    );
+
+    if(index < (includes.length - 1)) {
+      script.onload = function() {
+        // Load libraries sequentially
+        self._require_single(
+          path,
+          includes,
+          ++index
+        );
+      };
+    } else {
+      this._fire_ready();
+    }
 
     document.getElementsByTagName('head')[0].appendChild(script);
+  },
+
+  /**
+   * Requires all library components
+   * @static
+   * @private
+   * @param {String} path
+   * @param {Object} includes
+   */
+  _require: function(path, includes) {
+    if(includes.length > 0) {
+      this._require_single(path, includes, 0);
+    } else {
+      this._fire_ready();
+    }
   },
 
 
@@ -105,7 +140,10 @@ var GiggleLoader = {
     for(c in this._includes.lib) {
       includes.push('../lib/' + this._includes.lib[c]);
     }
-    includes = includes.concat(this._includes.src);
+
+    includes = includes.concat(
+      this._includes.src
+    );
 
     var scripts = document.getElementsByTagName('script');
     var path = './', i, j;
@@ -117,11 +155,7 @@ var GiggleLoader = {
       }
     }
 
-    for(j = 0; j < includes.length; j++) {
-      this._require(path + includes[j] + '.js');
-    }
-
-    this._fire_ready();
+    this._require(path, includes);
   },
 
 

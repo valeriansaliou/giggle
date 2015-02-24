@@ -52,7 +52,7 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
         );
 
         this._set_node(
-          this._get_packet()
+          this.get_packet()
         );
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] message > ' + e, 1);
@@ -73,7 +73,7 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
         );
 
         this._set_node(
-          this._get_packet()
+          this.get_packet()
         );
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] presence > ' + e, 1);
@@ -94,7 +94,7 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
         );
 
         this._set_node(
-          this._get_packet()
+          this.get_packet()
         );
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] iq > ' + e, 1);
@@ -148,13 +148,13 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
 
               // Parse it.
               if(typeof _parent_node != 'undefined') {
-                parent_node = this._get_node().appendChild(
-                  this._get_packet().buildNode(
+                parent_node = this.get_node().appendChild(
+                  this.get_packet().buildNode(
                     cur_name, cur_attrs, cur_value
                   )
                 );
               } else {
-                parent_node = this._get_node().appendNode(
+                parent_node = this.get_node().appendNode(
                   cur_name, cur_attrs, cur_value
                 );
               }
@@ -199,12 +199,12 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
       try {
         // Sets?
         if(typeof value != 'undefined') {
-          this._get_node().setAttribute(name, value);
+          this.get_node().setAttribute(name, value);
 
           return this;
         }
 
-        return this._get_node().getAttribute(name);
+        return this.get_node().getAttribute(name);
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] attribute > ' + e, 1);
       }
@@ -221,12 +221,12 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
       try {
         // Sets?
         if(typeof value != 'undefined') {
-          this._get_node().getChild(name).setValue(value);
+          this.get_node().getChild(name).setValue(value);
 
           return this;
         }
 
-        return this._get_node().getChild(name).getValue();
+        return this.get_node().getChild(name).getValue();
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] element > ' + e, 1);
       }
@@ -245,7 +245,7 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      */
     xml: function() {
       try {
-        return this._get_node().xml();
+        return this.get_node().xml();
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] xml > ' + e, 1);
       }
@@ -295,8 +295,8 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
         };
 
         // Send packet
-        this.parent.get_connection().send(
-          this._get_packet(), on_packet_response
+        this.get_connection().send(
+          this.get_packet(), on_packet_response
         );
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] send > ' + e, 1);

@@ -20,10 +20,30 @@
  * @requires   nicolas-van/ring.js
  * @requires   giggle/main
  * @see        {@link http://ringjs.neoname.eu/|Ring.js}
+ * @param      {Object}        [args]        - Initialization arguments.
+ * @property   {__GigglePlug}  [args.plug]   - The plug instance.
  */
-var GiggleInit = new (ring.create(
+var GiggleInit = ring.create(
   /** @lends GiggleInit.prototype */
   {
+    /**
+     * Constructor
+     */
+    constructor: function(args) {
+      if(args && args.plug) {
+        /**
+         * @constant
+         * @member {__GigglePlug}
+         * @readonly
+         * @default
+         * @public
+         */
+        this.plug = args.plug;
+      } else {
+        this.plug = {};
+      }
+    },
+
     /**
      * Query the server for external services
      * @private
@@ -295,4 +315,4 @@ var GiggleInit = new (ring.create(
       }
     },
   }
-))();
+);
