@@ -114,6 +114,9 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
     child: function(name, attributes, value) {
       var child = this.clone();
 
+      // Set reference to child
+      this.set_children(child);
+
       child.set_parent(this);
 
       try {
@@ -303,6 +306,43 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
         this.get_debug().log('[giggle:plug:jsjac] send > ' + e, 1);
       } finally {
         return this;
+      }
+    },
+
+    /**
+     * Selects an element
+     * @public
+     * @param {String} name
+     * @param {String} [namespace]
+     * @return {__GigglePlug} Selected element
+     */
+    select_element: function(name, namespace) {
+      var selected_element = null;
+
+      try {
+        var i,
+            elements;
+
+        // Wanted element?
+        if(this.get_node().elementName == name &&
+          (!namespace || (namespace && this.get_node().getAttribute('xmlns') == namespace))
+        ) {
+          selected_element = this;
+        } else {
+          elements = this.get_children();
+
+          for(i = 0; i < elements.length; i++) {
+            selected_element = elements[i].select_element(
+              name, namespace
+            );
+
+            if(selected_element !== null) break;
+          }
+        }
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] select_element > ' + e, 1);
+      } finally {
+        return selected_element;
       }
     }
   }

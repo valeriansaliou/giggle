@@ -2102,13 +2102,13 @@ var GiggleMuji = ring.create([__GiggleBase],
 
       try {
         var i, items,
-            x_muc_user = stanza.getChild('x', NS_JABBER_MUC_USER);
+            x_muc_user = stanza.select_element('x', NS_JABBER_MUC_USER);
 
         if(x_muc_user) {
           items = this.utils.stanza_get_element(x_muc_user, 'item', NS_JABBER_MUC_USER);
 
           for(i = 0; i < items.length; i++) {
-            if(items[i].getAttribute('affiliation') === GIGGLE_MUJI_MUC_AFFILIATION_OWNER) {
+            if(items[i].attribute('affiliation') === GIGGLE_MUJI_MUC_AFFILIATION_OWNER) {
               is_room_owner = true; break;
             }
           }
@@ -2678,7 +2678,7 @@ var GiggleMuji = ring.create([__GiggleBase],
         if(!field_item_sel || field_item_sel.length === 0)  throw 'No field element received.';
 
         for(i = 0; i < field_item_sel.length; i++) {
-          if(field_item_sel[i].getAttribute('var') === GIGGLE_MUJI_MUC_CONFIG_SECRET) {
+          if(field_item_sel[i].attribute('var') === GIGGLE_MUJI_MUC_CONFIG_SECRET) {
             password_field_sel = field_item_sel[i]; break;
           }
         }

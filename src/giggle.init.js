@@ -74,21 +74,21 @@ var GiggleInit = ring.create(
                   cur_host, cur_password, cur_port, cur_transport, cur_type, cur_username,
                   store_obj;
 
-              var services = response.getChild('services', NS_EXTDISCO);
+              var services = response.select_element('services', NS_EXTDISCO);
 
               if(services) {
-                service_arr = services.getElementsByTagNameNS(NS_EXTDISCO, 'service');
+                service_arr = services.select_element(NS_EXTDISCO, 'service');
 
                 for(i = 0; i < service_arr.length; i++) {
                   cur_service = service_arr[i];
 
-                  cur_host      = cur_service.getAttribute('host')       || null;
-                  cur_port      = cur_service.getAttribute('port')       || null;
-                  cur_transport = cur_service.getAttribute('transport')  || null;
-                  cur_type      = cur_service.getAttribute('type')       || null;
+                  cur_host      = cur_service.attribute('host')       || null;
+                  cur_port      = cur_service.attribute('port')       || null;
+                  cur_transport = cur_service.attribute('transport')  || null;
+                  cur_type      = cur_service.attribute('type')       || null;
 
-                  cur_username  = cur_service.getAttribute('username')   || null;
-                  cur_password  = cur_service.getAttribute('password')   || null;
+                  cur_username  = cur_service.attribute('username')   || null;
+                  cur_password  = cur_service.attribute('password')   || null;
 
                   if(!cur_host || !cur_type)  continue;
 
@@ -165,19 +165,19 @@ var GiggleInit = ring.create(
                   stun_arr, cur_stun,
                   cur_policy, cur_address, cur_protocol;
 
-              var services = response.getChild('services', NS_JABBER_JINGLENODES);
+              var services = response.select_element('services', NS_JABBER_JINGLENODES);
 
               if(services) {
                 // Parse STUN servers
-                stun_arr = services.getElementsByTagNameNS(NS_JABBER_JINGLENODES, 'stun');
+                stun_arr = services.select_element(NS_JABBER_JINGLENODES, 'stun');
 
                 for(i = 0; i < stun_arr.length; i++) {
                   cur_stun = stun_arr[i];
 
-                  cur_policy    = cur_stun.getAttribute('policy')    || null;
-                  cur_address   = cur_stun.getAttribute('address')   || null;
-                  cur_port      = cur_stun.getAttribute('port')      || null;
-                  cur_protocol  = cur_stun.getAttribute('protocol')  || null;
+                  cur_policy    = cur_stun.attribute('policy')    || null;
+                  cur_address   = cur_stun.attribute('address')   || null;
+                  cur_port      = cur_stun.attribute('port')      || null;
+                  cur_protocol  = cur_stun.attribute('protocol')  || null;
 
                   if(!cur_address || !cur_protocol || !cur_policy || (cur_policy && cur_policy != 'public'))  continue;
 

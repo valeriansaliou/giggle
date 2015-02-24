@@ -79,6 +79,14 @@ var __GigglePlug = ring.create(
        * @default
        * @private
        */
+      this._children = [];
+
+      /**
+       * @constant
+       * @member {Object}
+       * @default
+       * @private
+       */
       this._packet = null;
 
       /**
@@ -311,6 +319,16 @@ var __GigglePlug = ring.create(
     },
 
     /**
+     * Selects an element
+     * @public
+     * @param {String} name
+     * @param {String} [namespace]
+     */
+    select_element: function(name, namespace) {
+      this.get_debug().log('[giggle:plug] select_element > Method not implemented.', 1);
+    },
+
+    /**
      * Clones the current object
      * @public
      * @returns {__GigglePlug} Cloned object
@@ -358,6 +376,15 @@ var __GigglePlug = ring.create(
      */
     get_parent: function() {
       return this._parent;
+    },
+
+    /**
+     * Gets the children
+     * @public
+     * @returns {Object} Reference to children objects
+     */
+    get_children: function() {
+      return this._children;
     },
 
     /**
@@ -409,6 +436,21 @@ var __GigglePlug = ring.create(
      */
     set_parent: function(parent) {
       this._parent = parent;
+    },
+
+    /**
+     * Sets the reference to children objects
+     * @public
+     * @param {Object} children
+     */
+    set_children: function(children) {
+      if(children === null) {
+        this._children = [];
+      } else {
+        this._children.push(
+          children
+        );
+      }
     },
 
     /**

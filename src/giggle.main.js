@@ -233,11 +233,11 @@ var Giggle = new (ring.create(
           var session_route = null;
 
           // Route the incoming stanza
-          var jingle = stanza.getChild('jingle', NS_JINGLE);
+          var jingle = stanza.select_element('jingle', NS_JINGLE);
 
           if(jingle) {
-            sid = jingle.getAttribute('sid');
-            action = jingle.getAttribute('action');
+            sid = jingle.attribute('sid');
+            action = jingle.attribute('action');
           } else {
             var stanza_id = stanza.id();
 
@@ -344,8 +344,8 @@ var Giggle = new (ring.create(
 
             var session_route = this._read(GIGGLE_SESSION_MUJI, room);
 
-            var x_conference = stanza.getChild('x', NS_JABBER_CONFERENCE);
-            var x_invite = stanza.getChild('x', NS_MUJI_INVITE);
+            var x_conference = stanza.select_element('x', NS_JABBER_CONFERENCE);
+            var x_invite = stanza.select_element('x', NS_MUJI_INVITE);
 
             var is_invite = (x_conference && x_invite && true);
 
@@ -357,10 +357,10 @@ var Giggle = new (ring.create(
                 var err = 0;
                 var args = {
                   from     : (from                                   || err++),
-                  jid      : (x_conference.getAttribute('jid')       || err++),
-                  password : (x_conference.getAttribute('password')  || null),
-                  reason   : (x_conference.getAttribute('reason')    || null),
-                  media    : (x_invite.getAttribute('media')         || err++)
+                  jid      : (x_conference.attribute('jid')          || err++),
+                  password : (x_conference.attribute('password')     || null),
+                  reason   : (x_conference.attribute('reason')       || null),
+                  media    : (x_invite.attribute('media')            || err++)
                 };
 
                 if(err === 0) {

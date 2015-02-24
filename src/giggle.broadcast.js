@@ -169,7 +169,7 @@ var GiggleBroadcast = ring.create(
       try {
         is_handled = false;
 
-        stanza_child = stanza.getChild(
+        stanza_child = stanza.select_element(
           '*', NS_JINGLE_MESSAGE
         );
 
@@ -185,7 +185,7 @@ var GiggleBroadcast = ring.create(
             case GIGGLE_MESSAGE_ACTION_PROPOSE:
               proposed_medias = {};
 
-              description = stanza_child.getElementsByTagNameNS(
+              description = stanza_child.select_element(
                 NS_JINGLE_APPS_RTP, 'description'
               );
 
@@ -193,7 +193,7 @@ var GiggleBroadcast = ring.create(
                 cur_description = description[i];
 
                 if(cur_description) {
-                  cur_media = cur_description.getAttribute('media');
+                  cur_media = cur_description.attribute('media');
 
                   if(cur_media && cur_media in GIGGLE_MEDIAS) {
                     proposed_medias[cur_media] = 1;
@@ -247,12 +247,12 @@ var GiggleBroadcast = ring.create(
       var call_id = null;
 
       try {
-        var stanza_child = stanza.getChild(
+        var stanza_child = stanza.select_element(
           '*', NS_JINGLE_MESSAGE
         );
 
         if(stanza_child) {
-          call_id = stanza_child.getAttribute('id') || null;
+          call_id = stanza_child.attribute('id') || null;
         }
       } catch(e) {
         GiggleStorage.get_debug().log('[giggle:broadcast] get_call_id > ' + e, 1);
