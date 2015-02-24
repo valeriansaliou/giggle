@@ -71,7 +71,7 @@ var __GigglePlug = ring.create(
        * @default
        * @private
        */
-      this._node   = null;
+      this._parent = null;
 
       /**
        * @constant
@@ -80,6 +80,14 @@ var __GigglePlug = ring.create(
        * @private
        */
       this._packet = null;
+
+      /**
+       * @constant
+       * @member {Object}
+       * @default
+       * @private
+       */
+      this._node   = null;
     },
 
 
@@ -116,28 +124,24 @@ var __GigglePlug = ring.create(
     },
 
     /**
-     * Builds the packet with passed elements
+     * Appends a child on the current element in the tree
      * @public
      * @param   {String} name
+     * @param   {Object} [attributes]
      * @param   {String} [value]
-     * @returns {__GigglePlug} Packet object
+     * @returns {__GigglePlug} Child object
      */
-    build: function(object) {
-      /* @example
-       * [
-       *   {'element_name': {
-       *     e: [
-       *       // Sub elements
-       *     ],
-       *
-       *     a: {
-       *       'attribute_name': 'attribute_value'
-       *     }
-       *   }}
-       * ]
-       */
+    child: function(name, attributes, value) {
+      this.get_debug().log('[giggle:plug] child > Method not implemented.', 1);
+    },
 
-      this.get_debug().log('[giggle:plug] build > Method not implemented.', 1);
+    /**
+     * Goes up in the node tree
+     * @public
+     * @returns {__GigglePlug} Parent object
+     */
+    up: function() {
+      this.get_debug().log('[giggle:plug] up > Method not implemented.', 1);
     },
 
 
@@ -197,12 +201,12 @@ var __GigglePlug = ring.create(
     from: function(from) {
       try {
         if(typeof from != 'undefined') {
-          return this.attribute('to', from);
+          return this.attribute('from', from);
         }
 
-        return this.attribute('to');
+        return this.attribute('from');
       } catch(e) {
-        this.get_debug().log('[giggle:plug] to > ' + e, 1);
+        this.get_debug().log('[giggle:plug] from > ' + e, 1);
       }
     },
 
@@ -215,12 +219,12 @@ var __GigglePlug = ring.create(
     type: function(type) {
       try {
         if(typeof type != 'undefined') {
-          return this.attribute('to', type);
+          return this.attribute('type', type);
         }
 
-        return this.attribute('to');
+        return this.attribute('type');
       } catch(e) {
-        this.get_debug().log('[giggle:plug] to > ' + e, 1);
+        this.get_debug().log('[giggle:plug] type > ' + e, 1);
       }
     },
 
@@ -233,12 +237,12 @@ var __GigglePlug = ring.create(
     id: function(id) {
       try {
         if(typeof id != 'undefined') {
-          return this.attribute('to', id);
+          return this.attribute('id', id);
         }
 
-        return this.attribute('to');
+        return this.attribute('id');
       } catch(e) {
-        this.get_debug().log('[giggle:plug] to > ' + e, 1);
+        this.get_debug().log('[giggle:plug] id > ' + e, 1);
       }
     },
 
@@ -256,8 +260,24 @@ var __GigglePlug = ring.create(
 
         return this.element('body');
       } catch(e) {
-        this.get_debug().log('[giggle:plug] to > ' + e, 1);
+        this.get_debug().log('[giggle:plug] body > ' + e, 1);
       }
+    },
+
+
+
+    /**
+     * GIGGLE PLUG HANDLERS
+     */
+
+    /**
+     * Registers a handler on a specified stanza type
+     * @param {String}   type
+     * @param {Function} cb_handled
+     * @public
+     */
+    register: function(type, cb_handled) {
+      this.get_debug().log('[giggle:plug] register > Method not implemented.', 1);
     },
 
 
@@ -282,23 +302,29 @@ var __GigglePlug = ring.create(
      */
 
     /**
-     * Selects an object in the existing node tree
-     * @public
-     * @param {String} name
-     * @param {String} ns
-     * @returns {__GigglePlug} Selected object
-     */
-    select: function(name, ns) {
-      this.get_debug().log('[giggle:plug] select > Method not implemented.', 1);
-    },
-
-    /**
      * Sends the packet
      * @public
      * @param {...Function} [callback]
      */
     send: function(callback) {
       this.get_debug().log('[giggle:plug] send > Method not implemented.', 1);
+    },
+
+    /**
+     * Clones the current object
+     * @public
+     * @returns {__GigglePlug} Cloned object
+     */
+    clone: function() {
+      var cloned = null;
+
+      try {
+        cloned = _.clone(this);
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] clone > ' + e, 1);
+      } finally {
+        return cloned;
+      }
     },
 
 
@@ -326,12 +352,21 @@ var __GigglePlug = ring.create(
     },
 
     /**
+     * Gets the parent
+     * @public
+     * @returns {Object} Reference to parent object
+     */
+    get_parent: function() {
+      return this._parent;
+    },
+
+    /**
      * Gets the packet
      * @public
-     * @returns {Object} Packet object
+     * @returns {Object} Reference to packet object
      */
-    get_packet: function(packet) {
-      this._packet = packet;
+    get_packet: function() {
+      return this._packet;
     },
 
     /**
@@ -339,8 +374,8 @@ var __GigglePlug = ring.create(
      * @public
      * @returns {Object} Node object
      */
-    get_node: function(node) {
-      this._node = node;
+    get_node: function() {
+      return this._node;
     },
 
 
@@ -351,10 +386,10 @@ var __GigglePlug = ring.create(
 
     /**
      * Sets the session connection value
-     * @private
+     * @public
      * @param {Object} connection
      */
-    _set_connection: function(connection) {
+    set_connection: function(connection) {
       this._connection = connection;
     },
 
@@ -368,20 +403,29 @@ var __GigglePlug = ring.create(
     },
 
     /**
-     * Sets the packet
-     * @private
-     * @param {Object} packet
+     * Sets the reference to parent object
+     * @public
+     * @param {Object} parent
      */
-    _set_packet: function(packet) {
+    set_parent: function(parent) {
+      this._parent = parent;
+    },
+
+    /**
+     * Sets the packet
+     * @public
+     * @param {Object} parent
+     */
+    set_packet: function(packet) {
       this._packet = packet;
     },
 
     /**
      * Sets the node
-     * @private
+     * @public
      * @param {Object} node
      */
-    _set_node: function(node) {
+    set_node: function(node) {
       this._node = node;
     }
   }

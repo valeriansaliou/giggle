@@ -37,7 +37,9 @@ var Giggle = new (ring.create(
        * @default
        * @public
        */
-      this.utils = new GiggleUtils(this);
+      this.utils = new GiggleUtils({
+        debug: GiggleStorage.get_debug()
+      });
 
       /**
        * @constant
@@ -152,7 +154,8 @@ var Giggle = new (ring.create(
 
         // Instanciate broadcast
         this.broadcast = new GiggleBroadcast({
-          plug: this.plug
+          debug : GiggleStorage.get_debug(),
+          plug  : this.plug
         });
 
         // Instanciate initializer
@@ -167,7 +170,7 @@ var Giggle = new (ring.create(
         route_map[GIGGLE_STANZA_PRESENCE]  = this._route_presence;
 
         for(cur_type in route_map) {
-          GiggleStorage.get_connection().registerHandler(
+          this.plug.register(
             cur_type,
             route_map[cur_type].bind(this)
           );
@@ -218,7 +221,7 @@ var Giggle = new (ring.create(
         var from = stanza.from();
 
         if(from) {
-          var jid_obj = new this.utils.jid(from);
+          var jid_obj = new this.utils.jid(this.utils, from);
           var from_bare = (jid_obj.node() + '@' + jid_obj.domain());
 
           // Single or Muji?
@@ -327,7 +330,7 @@ var Giggle = new (ring.create(
         var from = stanza.from();
 
         if(from) {
-          var jid = new this.utils.jid(from);
+          var jid = new this.utils.jid(this.utils, from);
 
           // Broadcast message?
           var is_handled_broadcast = this.broadcast.handle(stanza);
@@ -393,8 +396,8 @@ var Giggle = new (ring.create(
         var from = stanza.from();
 
         if(from) {
-          var jid = new this.utils.jid(from);
-          var room = jid.node() + '@' + jid.domain();
+          var jid = new this.utils.jid(this.utils, from);
+          var room = jid.bare();
 
           var session_route = this._read(GIGGLE_SESSION_MUJI, room);
 

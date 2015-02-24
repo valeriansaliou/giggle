@@ -47,11 +47,11 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      */
     message: function() {
       try {
-        this._set_packet(
+        this.set_packet(
           new JSJaCMessage()
         );
 
-        this._set_node(
+        this.set_node(
           this.get_packet()
         );
       } catch(e) {
@@ -68,11 +68,11 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      */
     presence: function() {
       try {
-        this._set_packet(
+        this.set_packet(
           new JSJaCPresence()
         );
 
-        this._set_node(
+        this.set_node(
           this.get_packet()
         );
       } catch(e) {
@@ -89,11 +89,11 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      */
     iq: function() {
       try {
-        this._set_packet(
+        this.set_packet(
           new JSJaCIQ()
         );
 
-        this._set_node(
+        this.set_node(
           this.get_packet()
         );
       } catch(e) {
@@ -104,81 +104,58 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
     },
 
     /**
-     * Builds the packet with passed elements
+     * Appends a child on the current element in the tree
      * @public
      * @param   {String} name
+     * @param   {Object} [attributes]
      * @param   {String} [value]
-     * @returns {__GigglePlug} Packet object
+     * @returns {__GigglePlug} Child object
      */
-    build: function(object) {
-      var i, k;
-      var parent_node;
-      var cur_name, cur_value, cur_elements, cur_attrs;
+    child: function(name, attributes, value) {
+      var child = this.clone();
+
+      child.set_parent(this);
 
       try {
-        var descend_node = function(_object, _parent_node) {
-          for(i = 0; i < _object.length; i++) {
-            for(k in _object[i]) {
-              // No such property?
-              if(!_object[i].hasOwnProperty(k)) {
-                continue;
-              }
-
-              // Read name
-              cur_name = k;
-
-              // Read attributes
-              if(typeof _object[i][k].a == 'object' &&
-                 _object[i][k].a.length) {
-                cur_attrs = _object[i][k].a;
-              } else {
-                cur_attrs = {};
-              }
-
-              // Read value/elements
-              if(typeof _object[i][k].e == 'string' ||
-                 typeof _object[i][k].e == 'number') {
-                cur_value = _object[i][k].e;
-                cur_elements = [];
-              } else if(typeof _object[i][k].e == 'object' ||
-                        _object[i][k].e.length) {
-                cur_value = null;
-                cur_elements = _object[i][k].e;
-              }
-
-              // Parse it.
-              if(typeof _parent_node != 'undefined') {
-                parent_node = this.get_node().appendChild(
-                  this.get_packet().buildNode(
-                    cur_name, cur_attrs, cur_value
-                  )
-                );
-              } else {
-                parent_node = this.get_node().appendNode(
-                  cur_name, cur_attrs, cur_value
-                );
-              }
-
-              // Move to direct childs
-              if(typeof _object[i][k].e == 'object' &&
-                 _object[i][k].e.length) {
-                descend_node.bind(this)(
-                  _object[i][k].e, parent_node
-                );
-              }
-
-              // Should be an unique key
-              break;
-            }
-          }
-        };
-
-        // First direct parents
-        descend_node.bind(this)(object);
+        // Parse it.
+        if(this.get_parent() !== null) {
+          child.set_node(
+            child.get_node().appendChild(
+              child.get_packet().buildNode(
+                name, attributes, value
+              )
+            )
+          );
+        } else {
+          child.set_node(
+            child.get_node().appendNode(
+              name, attributes, value
+            )
+          );
+        }
       } catch(e) {
-        this.get_debug().log('[giggle:plug:jsjac] build > ' + e, 1);
+        this.get_debug().log('[giggle:plug:jsjac] child > ' + e, 1);
       } finally {
-        return this;
+        return child;
+      }
+    },
+
+    /**
+     * Goes up in the node tree
+     * @public
+     * @returns {__GigglePlug} Parent object
+     */
+    up: function() {
+      var parent = this;
+
+      try {
+        if(this.get_parent() !== null) {
+          parent = this.get_parent();
+        }
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] up > ' + e, 1);
+      } finally {
+        return parent;
       }
     },
 
@@ -199,12 +176,12 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
       try {
         // Sets?
         if(typeof value != 'undefined') {
-          this.get_node().setAttribute(name, value);
+          this.get_node().getNode().setAttribute(name, value);
 
           return this;
         }
 
-        return this.get_node().getAttribute(name);
+        return this.get_node().getNode().getAttribute(name);
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] attribute > ' + e, 1);
       }
@@ -235,6 +212,43 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
 
 
     /**
+     * GIGGLE PLUG HANDLERS
+     */
+
+    /**
+     * Registers a handler on a specified stanza type
+     * @param {String}   type
+     * @param {Function} cb_handled
+     * @public
+     */
+    register: function(type, cb_handled) {
+      try {
+        var self = this;
+
+        // Local handler (constructs a new plug object)
+        var cb_local_handle = function(stanza) {
+          var plug_handle = new GigglePlugJSJaC({
+            connection : self.get_connection(),
+            debug      : self.get_debug()
+          });
+
+          plug_handle.set_packet(stanza);
+          plug_handle.set_node(stanza);
+
+          cb_handled(plug_handle);
+        };
+
+        this.get_connection().registerHandler(
+          type, cb_local_handle
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] register > ' + e, 1);
+      }
+    },
+
+
+
+    /**
      * GIGGLE PLUG SERIALIZERS
      */
 
@@ -258,40 +272,27 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      */
 
     /**
-     * Selects an object in the existing node tree
-     * @public
-     * @param {String} name
-     * @param {String} ns
-     * @returns {__GigglePlug} Selected object
-     */
-    select: function(name, ns) {
-      try {
-        this.node = this.packet.getNode().getChild(
-          name, ns
-        );
-      } catch(e) {
-        this.get_debug().log('[giggle:plug:jsjac] select > ' + e, 1);
-      } finally {
-        return this.node;
-      }
-    },
-
-    /**
      * Sends the packet
      * @public
-     * @param {...Function} [callback]
+     * @param {Function} [callback]
      * @returns {__GigglePlug} Packet object
      */
     send: function(callback) {
       var response_data;
 
       try {
+        var self = this;
+
+        // Cannot send a non-parent object
+        if(this.get_parent() !== null) {
+          throw 'Cannot send non-parent object!';
+        }
+
         // Callback executor
         var on_packet_response = function(response_data) {
-          // Execute callbacks
-          for(var i = 0; i < arguments.length; i++) {
-            arguments[i].bind(this)(response_data);
-          }
+          callback.bind(self)(
+            response_data
+          );
         };
 
         // Send packet

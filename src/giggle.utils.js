@@ -28,15 +28,32 @@ var GiggleUtils = ring.create(
     /**
      * Constructor
      */
-    constructor: function(parent) {
-      /**
-       * @constant
-       * @member {GiggleSingle|GiggleMuji}
-       * @readonly
-       * @default
-       * @public
-       */
-      this.parent = parent;
+    constructor: function(args) {
+      if(args && args.parent)
+        /**
+         * @constant
+         * @member {GiggleSingle|GiggleMuji}
+         * @readonly
+         * @default
+         * @public
+         */
+        this.parent = args.parent;
+
+      if(args && args.debug && args.debug.log) {
+        /**
+         * @member {Console}
+         * @default
+         * @private
+         */
+        this.debug = args.debug;
+      } else {
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this.debug = GiggleStorage.get_debug();
+      }
     },
 
     /**
@@ -61,7 +78,7 @@ var GiggleUtils = ring.create(
           );
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] nonce > ' + e, 1);
+        this.debug.log('[giggle:utils] nonce > ' + e, 1);
       }
 
       return nonce;
@@ -73,90 +90,86 @@ var GiggleUtils = ring.create(
      * @param {String} jid_string
      * @return {Object} Generated JID object
      */
-    jid: function(jid_string) {
-      var jid = {};
-
+    jid: function(parent, jid_string) {
       try {
         /**
          * @private
          */
-        jid._node = '';
+        this._node = '';
 
         /**
          * @private
          */
-        jid._domain = '';
+        this._domain = '';
 
         /**
          * @private
          */
-        jid._resource = '';
+        this._resource = '';
 
         // Proceeds JID parsing & populate JID object
         if(typeof(jid_string) == 'string') {
-            if(jid_string.indexOf('@') != -1) {
-                jid._node = jid_string.substring(
-                  0, jid_string.indexOf('@')
-                );
+          if(jid_string.indexOf('@') != -1) {
+            this._node = jid_string.substring(
+              0, jid_string.indexOf('@')
+            );
 
-                jid_string = jid_string.substring(
-                  jid_string.indexOf('@') + 1
-                );
-            }
+            jid_string = jid_string.substring(
+              (jid_string.indexOf('@') + 1)
+            );
+          }
 
-            if(jid_string.indexOf('/') != -1) {
-                jid._resource = jid_string.substring(
-                  jid_string.indexOf('/') + 1
-                );
+          if(jid_string.indexOf('/') != -1) {
+            this._resource = jid_string.substring(
+              (jid_string.indexOf('/') + 1)
+            );
 
-                jid_string = jid_string.substring(
-                  0, jid_string.indexOf('/')
-                );
-            }
+            jid_string = jid_string.substring(
+              0, jid_string.indexOf('/')
+            );
+          }
 
-            jid.setDomain(jid_string);
+          this._domain = jid_string;
         } else {
-            jid._node      = jid_string.node;
-            jid._domain    = jid_string.domain;
-            jid._resource  = jid_string.resource;
+          this._node      = jid_string.node;
+          this._domain    = jid_string.domain;
+          this._resource  = jid_string.resource;
         }
 
         /**
          * Gets the bare JID (i.e. the JID without resource)
          * @return {String} Bare JID
          */
-        jid.bare = function() {
-          return jid.node() + '@' + jid.domain();
+        this.bare = function() {
+          return (this.node() + '@' + this.domain());
         };
 
         /**
          * Gets the node part of the JID
          * @return {String} JID node
          */
-        jid.node = function() {
-          return jid._node;
+        this.node = function() {
+          return this._node;
         };
 
         /**
          * Gets the domain part of the JID
          * @return {String} JID domain
          */
-        jid.domain = function() {
-          return jid._domain;
+        this.domain = function() {
+          return this._domain;
         };
 
         /**
          * Gets the resource part of the JID
          * @return {String} JID resource
          */
-        jid.resource = function() {
-          return jid._resource;
+        this.resource = function() {
+          return this._resource;
         };
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] jid > ' + e, 1);
+        parent.debug.log('[giggle:utils] jid > ' + e, 1);
       }
-
-      return jid;
     },
 
     /**
@@ -176,7 +189,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] array_remove_value > ' + e, 1);
+        this.debug.log('[giggle:utils] array_remove_value > ' + e, 1);
       }
 
       return array;
@@ -197,7 +210,7 @@ var GiggleUtils = ring.create(
           if(object.hasOwnProperty(key))  l++;
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] object_length > ' + e, 1);
+        this.debug.log('[giggle:utils] object_length > ' + e, 1);
       }
 
       return l;
@@ -321,10 +334,10 @@ var GiggleUtils = ring.create(
             return copy;
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] object_clone > ' + e, 1);
+        this.debug.log('[giggle:utils] object_clone > ' + e, 1);
       }
 
-      this.parent.get_debug().log('[giggle:utils] object_clone > Cannot clone this object.', 1);
+      this.debug.log('[giggle:utils] object_clone > Cannot clone this object.', 1);
     },
 
     /**
@@ -357,7 +370,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] browser > ' + e, 1);
+        this.debug.log('[giggle:utils] browser > ' + e, 1);
       }
 
       return browser_info;
@@ -451,7 +464,7 @@ var GiggleUtils = ring.create(
           return config;
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] config_ice > ' + e, 1);
+        this.debug.log('[giggle:utils] config_ice > ' + e, 1);
       }
 
       return WEBRTC_CONFIGURATION.peer_connection.config;
@@ -470,7 +483,7 @@ var GiggleUtils = ring.create(
         try {
           return (stanza[0]).firstChild.nodeValue || null;
         } catch(_e) {
-          this.parent.get_debug().log('[giggle:utils] stanza_get_value > ' + _e, 1);
+          this.debug.log('[giggle:utils] stanza_get_value > ' + _e, 1);
         }
       }
 
@@ -493,7 +506,7 @@ var GiggleUtils = ring.create(
         try {
           return (stanza[0]).getAttribute(name) || null;
         } catch(_e) {
-          this.parent.get_debug().log('[giggle:utils] stanza_get_attribute > ' + _e, 1);
+          this.debug.log('[giggle:utils] stanza_get_attribute > ' + _e, 1);
         }
       }
 
@@ -516,7 +529,7 @@ var GiggleUtils = ring.create(
         try {
           (stanza[0]).attribute(name, value);
         } catch(_e) {
-          this.parent.get_debug().log('[giggle:utils] stanza_set_attribute > ' + _e, 1);
+          this.debug.log('[giggle:utils] stanza_set_attribute > ' + _e, 1);
         }
       }
     },
@@ -553,7 +566,7 @@ var GiggleUtils = ring.create(
 
         return matches_result;
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_get_element > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_get_element > ' + e, 1);
       }
 
       return matches_result;
@@ -606,7 +619,7 @@ var GiggleUtils = ring.create(
       try {
         return stanza.getChild('jingle', this.parent.get_namespace());
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_jingle > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_jingle > ' + e, 1);
       }
 
       return null;
@@ -622,7 +635,7 @@ var GiggleUtils = ring.create(
       try {
         return stanza.getChild('muji', NS_MUJI);
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_muji > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_muji > ' + e, 1);
       }
 
       return null;
@@ -638,7 +651,7 @@ var GiggleUtils = ring.create(
       try {
         return stanza.from() || null;
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_from > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_from > ' + e, 1);
       }
 
       return null;
@@ -654,7 +667,7 @@ var GiggleUtils = ring.create(
       try {
         return this.extract_username(stanza.from());
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_username > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_username > ' + e, 1);
       }
 
       return null;
@@ -673,7 +686,7 @@ var GiggleUtils = ring.create(
           'sid'
         );
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_sid > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_sid > ' + e, 1);
       }
     },
 
@@ -687,7 +700,7 @@ var GiggleUtils = ring.create(
       try {
         return !((stanza.type() == GIGGLE_IQ_TYPE_SET && this.stanza_sid(stanza) != this.parent.get_sid()) || this.stanza_from(stanza) != this.parent.get_to());
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_safe > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_safe > ' + e, 1);
       }
 
       return false;
@@ -716,7 +729,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_terminate_reason > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_terminate_reason > ' + e, 1);
       }
 
       return null;
@@ -741,7 +754,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_session_info > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_session_info > ' + e, 1);
       }
 
       return null;
@@ -759,16 +772,16 @@ var GiggleUtils = ring.create(
         var t_sid = this.parent.get_sid();
         var t_status = this.parent.get_status();
 
-        this.parent.get_debug().log('[giggle:utils] stanza_timeout > Registered (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + ').', 4);
+        this.debug.log('[giggle:utils] stanza_timeout > Registered (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + ').', 4);
 
         var _this = this;
 
         setTimeout(function() {
-          _this.parent.get_debug().log('[giggle:utils] stanza_timeout > Cheking (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + '-' + _this.parent.get_status() + ').', 4);
+          _this.debug.log('[giggle:utils] stanza_timeout > Cheking (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + '-' + _this.parent.get_status() + ').', 4);
 
           // State did not change?
           if(_this.parent.get_sid() == t_sid && _this.parent.get_status() == t_status && !(t_id in _this.parent.get_received_id())) {
-            _this.parent.get_debug().log('[giggle:utils] stanza_timeout > Stanza timeout.', 2);
+            _this.debug.log('[giggle:utils] stanza_timeout > Stanza timeout.', 2);
 
             _this.parent.unregister_handler(t_node, t_type, t_id);
 
@@ -777,11 +790,11 @@ var GiggleUtils = ring.create(
               if(handlers.internal)  (handlers.internal)();
             }
           } else {
-            _this.parent.get_debug().log('[giggle:utils] stanza_timeout > Stanza successful.', 4);
+            _this.debug.log('[giggle:utils] stanza_timeout > Stanza successful.', 4);
           }
         }, (GIGGLE_STANZA_TIMEOUT * 1000));
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_timeout > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_timeout > ' + e, 1);
       }
     },
 
@@ -830,7 +843,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_parse_node > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_parse_node > ' + e, 1);
       }
     },
 
@@ -902,7 +915,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_parse_content > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_parse_content > ' + e, 1);
       }
 
       return false;
@@ -959,7 +972,7 @@ var GiggleUtils = ring.create(
 
         return true;
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_parse_group > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_parse_group > ' + e, 1);
       }
 
       return false;
@@ -1039,7 +1052,7 @@ var GiggleUtils = ring.create(
           var cd_ssrc  = this.stanza_get_attribute(description, 'ssrc');
 
           if(!cd_media)
-            this.parent.get_debug().log('[giggle:utils] stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
+            this.debug.log('[giggle:utils] stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
 
           // Initialize current description
           init_content();
@@ -1233,7 +1246,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_parse_payload > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_parse_payload > ' + e, 1);
       }
 
       return payload_obj;
@@ -1276,7 +1289,7 @@ var GiggleUtils = ring.create(
           GIGGLE_SDP_CANDIDATE_MAP_RAWUDP
         );
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_parse_candidate > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_parse_candidate > ' + e, 1);
       }
 
       return candidate_arr;
@@ -1317,7 +1330,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_build_node > name: ' + name + ' > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_build_node > name: ' + name + ' > ' + e, 1);
       }
 
       return node;
@@ -1344,7 +1357,7 @@ var GiggleUtils = ring.create(
 
         for(cur_attr in attrs) this.stanza_set_attribute(jingle, cur_attr, attrs[cur_attr]);
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_generate_jingle > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_generate_jingle > ' + e, 1);
       }
 
       return jingle;
@@ -1364,7 +1377,7 @@ var GiggleUtils = ring.create(
           'xmlns': NS_MUJI
         });
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_generate_muji > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_generate_muji > ' + e, 1);
       }
 
       return muji;
@@ -1393,7 +1406,7 @@ var GiggleUtils = ring.create(
             break;
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_generate_session_info > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_generate_session_info > ' + e, 1);
       }
     },
 
@@ -1653,7 +1666,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_generate_content_local > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_generate_content_local > ' + e, 1);
       }
     },
 
@@ -1689,7 +1702,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] stanza_generate_group_local > ' + e, 1);
+        this.debug.log('[giggle:utils] stanza_generate_group_local > ' + e, 1);
       }
     },
 
@@ -1742,7 +1755,7 @@ var GiggleUtils = ring.create(
         if(payloads.transports && payloads.transports.fingerprint)
           content_obj.transport.fingerprint = payloads.transports.fingerprint;
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] generate_content > ' + e, 1);
+        this.debug.log('[giggle:utils] generate_content > ' + e, 1);
       }
 
       return content_obj;
@@ -1798,7 +1811,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] generate_transport > ' + e, 1);
+        this.debug.log('[giggle:utils] generate_transport > ' + e, 1);
       }
 
       return transport_obj;
@@ -1826,7 +1839,7 @@ var GiggleUtils = ring.create(
           );
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] build_content_local > ' + e, 1);
+        this.debug.log('[giggle:utils] build_content_local > ' + e, 1);
       }
     },
 
@@ -1852,7 +1865,7 @@ var GiggleUtils = ring.create(
           );
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] build_content_remote > ' + e, 1);
+        this.debug.log('[giggle:utils] build_content_remote > ' + e, 1);
       }
     },
 
@@ -1902,7 +1915,7 @@ var GiggleUtils = ring.create(
 
         if(!name) name = media;
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] name_generate > ' + e, 1);
+        this.debug.log('[giggle:utils] name_generate > ' + e, 1);
       }
 
       return name;
@@ -1935,7 +1948,7 @@ var GiggleUtils = ring.create(
 
         if(!media)  media = name;
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] media_generate > ' + e, 1);
+        this.debug.log('[giggle:utils] media_generate > ' + e, 1);
       }
 
       return media;
@@ -2093,11 +2106,11 @@ var GiggleUtils = ring.create(
           if(this.parent.get_media()        == GIGGLE_MEDIA_VIDEO         &&
              this.parent.get_video_source() != GIGGLE_VIDEO_SOURCE_CAMERA ) {
             if(document.location.protocol !== 'https:')
-              this.parent.get_debug().log('[giggle:utils] generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
+              this.debug.log('[giggle:utils] generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
 
             // Unsupported browser? (for that feature)
             if(this.browser().name != GIGGLE_BROWSER_CHROME) {
-              this.parent.get_debug().log('[giggle:utils] generate_constraints > Video source not supported by ' + this.browser().name + ' (source: ' + this.parent.get_video_source() + ').', 1);
+              this.debug.log('[giggle:utils] generate_constraints > Video source not supported by ' + this.browser().name + ' (source: ' + this.parent.get_video_source() + ').', 1);
 
               this.parent.terminate(GIGGLE_REASON_MEDIA_ERROR);
               return;
@@ -2110,7 +2123,7 @@ var GiggleUtils = ring.create(
           }
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] generate_constraints > ' + e, 1);
+        this.debug.log('[giggle:utils] generate_constraints > ' + e, 1);
       }
 
       return constraints;
@@ -2145,7 +2158,7 @@ var GiggleUtils = ring.create(
           prev_credentials = cur_credentials;
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] is_sdp_common_credentials > ' + e, 1);
+        this.debug.log('[giggle:utils] is_sdp_common_credentials > ' + e, 1);
       }
 
       return is_same;
@@ -2167,7 +2180,7 @@ var GiggleUtils = ring.create(
           count_candidates += (typeof candidates_obj[i] == 'object') ? candidates_obj[i].length : 0;
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] count_candidates > ' + e, 1);
+        this.debug.log('[giggle:utils] count_candidates > ' + e, 1);
       } finally {
         return count_candidates;
       }
@@ -2253,7 +2266,7 @@ var GiggleUtils = ring.create(
           network_obj = local_obj;
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] network_extract_main > ' + e, 1);
+        this.debug.log('[giggle:utils] network_extract_main > ' + e, 1);
       }
 
       return network_obj;
@@ -2269,7 +2282,7 @@ var GiggleUtils = ring.create(
       try {
         return (new this.jid(full_jid)).resource();
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] extract_username > ' + e, 1);
+        this.debug.log('[giggle:utils] extract_username > ' + e, 1);
       }
 
       return null;
@@ -2364,7 +2377,7 @@ var GiggleUtils = ring.create(
             break;
         }
       } catch(e) {
-        this.parent.get_debug().log('[giggle:utils] map_register_view > ' + e, 1);
+        this.debug.log('[giggle:utils] map_register_view > ' + e, 1);
       }
 
       return fn;

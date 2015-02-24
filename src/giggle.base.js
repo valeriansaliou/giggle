@@ -413,7 +413,10 @@ var __GiggleBase = ring.create(
      * @returns {Boolean} Success
      */
     instanciate_utils: function() {
-      this.utils = new GiggleUtils(this);
+      this.utils = new GiggleUtils({
+        parent : this,
+        debug  : this.get_debug()
+      });
 
       return true;
     },

@@ -31,14 +31,21 @@ var GiggleBroadcast = ring.create(
      * Constructor
      */
     constructor: function(args) {
-      /**
-       * @constant
-       * @member {GiggleUtils}
-       * @readonly
-       * @default
-       * @public
-       */
-      this.utils = new GiggleUtils(this);
+      if(args && args.debug && args.debug.log) {
+        /**
+         * @member {Console}
+         * @default
+         * @private
+         */
+        this.debug = args.debug;
+      } else {
+        /**
+         * @member {Function}
+         * @default
+         * @private
+         */
+        this.debug = GiggleStorage.get_debug();
+      }
 
       if(args && args.plug) {
         /**
@@ -52,6 +59,17 @@ var GiggleBroadcast = ring.create(
       } else {
         this.plug = {};
       }
+
+      /**
+       * @constant
+       * @member {GiggleUtils}
+       * @readonly
+       * @default
+       * @public
+       */
+      this.utils = new GiggleUtils({
+        debug: this.debug
+      });
     },
 
     /**
