@@ -774,7 +774,7 @@ var GiggleUtils = ring.create(
         var _this = this;
 
         setTimeout(function() {
-          _this.debug.log('[giggle:utils] stanza_timeout > Cheking (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + '-' + _this.parent.get_status() + ').', 4);
+          _this.debug.log('[giggle:utils] stanza_timeout > Checking (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + '-' + _this.parent.get_status() + ').', 4);
 
           // State did not change?
           if(_this.parent.get_sid() == t_sid && _this.parent.get_status() == t_status && !(t_id in _this.parent.get_received_id())) {
@@ -2277,7 +2277,7 @@ var GiggleUtils = ring.create(
      */
     extract_username: function(full_jid) {
       try {
-        return (new this.jid(full_jid)).resource();
+        return (new this.jid(this, full_jid)).resource();
       } catch(e) {
         this.debug.log('[giggle:utils] extract_username > ' + e, 1);
       }
@@ -2300,9 +2300,9 @@ var GiggleUtils = ring.create(
      * @returns {String} JID value
      */
     connection_jid: function() {
-      return this.parent.get_connection().username + '@' +
-             this.parent.get_connection().domain   + '/' +
-             this.parent.get_connection().resource;
+      return this.connection_username() + '@' +
+             this.connection_domain()   + '/' +
+             this.connection_resource();
     },
 
     /**
@@ -2311,7 +2311,7 @@ var GiggleUtils = ring.create(
      * @returns {String} Username value
      */
     connection_username: function() {
-      return this.parent.get_connection().username;
+      return this.parent.plug.connection_username();
     },
 
     /**
@@ -2320,7 +2320,7 @@ var GiggleUtils = ring.create(
      * @returns {String} Domain value
      */
     connection_domain: function() {
-      return this.parent.get_connection().domain;
+      return this.parent.plug.connection_domain();
     },
 
     /**
@@ -2329,7 +2329,7 @@ var GiggleUtils = ring.create(
      * @returns {String} Resource value
      */
     connection_resource: function() {
-      return this.parent.get_connection().resource;
+      return this.parent.plug.connection_resource();
     },
 
     /**

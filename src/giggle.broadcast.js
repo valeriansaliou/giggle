@@ -181,7 +181,7 @@ var GiggleBroadcast = ring.create(
             if(id)  _this._unregister_id(id);
           };
 
-          switch(stanza_child.tagName) {
+          switch(stanza_child.get_node().nodeName) {
             case GIGGLE_MESSAGE_ACTION_PROPOSE:
               proposed_medias = {};
 
@@ -408,17 +408,16 @@ var GiggleBroadcast = ring.create(
      * @private
      */
     _build_stanza: function(to, id, action) {
-      stanza_arr = [];
+      var stanza_arr = null;
 
       try {
-        var connection, stanza, node;
+        var stanza, node;
 
         stanza = this.plug.message();
 
         // Set to connection user?
         if(to === null) {
-          connection = GiggleStorage.get_connection();
-          to = (connection.username + '@' + connection.domain);
+          to = (this.plug.connection_username() + '@' + this.plug.connection_domain());
         }
 
         stanza.to(to);
@@ -444,9 +443,7 @@ var GiggleBroadcast = ring.create(
      */
     _send_stanza: function(stanza_arr) {
       try {
-        GiggleStorage.get_connection().send(
-          stanza_arr[0]
-        );
+        stanza_arr[0].send();
       } catch(e) {
         GiggleStorage.get_debug().log('[giggle:broadcast] _send_stanza > ' + e, 1);
       }

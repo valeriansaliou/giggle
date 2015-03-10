@@ -703,7 +703,7 @@ var GIGGLE_SESSION_MUJI                        = 'muji';
  * @default
  * @public
  */
-var GIGGLE_PEER_TIMEOUT_DEFAULT                = 15;
+var GIGGLE_PEER_TIMEOUT_DEFAULT                = 30;
 
 /**
  * @constant
@@ -713,7 +713,7 @@ var GIGGLE_PEER_TIMEOUT_DEFAULT                = 15;
  * @default
  * @public
  */
-var GIGGLE_PEER_TIMEOUT_DISCONNECT             = 5;
+var GIGGLE_PEER_TIMEOUT_DISCONNECT             = 15;
 
 /**
  * @constant

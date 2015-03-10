@@ -18,7 +18,9 @@ var CALL_AUTO_ACCEPT = {
   'sid'  : null
 };
 
-var JINGLE = null;
+var GIGGLE_SESSION = null;
+var GIGGLE_PLUG = null;
+var GIGGLE_BROADCAST = null;
 
 var ARGS = {
   // Configuration (required)
@@ -253,6 +255,17 @@ GiggleLoader.on_ready(function() {
           });
         }
 
+        // Instanciate Giggle plug & broadcast (in case we need it later on)
+        GIGGLE_PLUG = (new GigglePlugJSJaC({
+          connection : con,
+          debug      : (new JSJaCConsoleLogger(4))
+        }));
+
+        GIGGLE_BROADCAST = (new GiggleBroadcast({
+          debug : (new JSJaCConsoleLogger(4)),
+          plug  : GIGGLE_PLUG
+        }));
+
         // Configure handlers
         con.registerHandler('onconnect', function() {
           try {
@@ -286,15 +299,15 @@ GiggleLoader.on_ready(function() {
                 ARGS.remote_view = $('#video_remote')[0];
 
                 // Let's go!
-                JINGLE = Giggle.session(GIGGLE_SESSION_SINGLE, ARGS);
-                JINGLE.handle(stanza);
+                GIGGLE_SESSION = Giggle.session(GIGGLE_SESSION_SINGLE, ARGS);
+                GIGGLE_SESSION.handle(stanza);
               },
 
               single_propose: function(stanza, proposed_medias) {
                 console.log('single_propose');
 
                 var stanza_from = stanza.from() || null;
-                var call_id = GiggleBroadcast.get_call_id(stanza);
+                var call_id = GIGGLE_BROADCAST.get_call_id(stanza);
 
                 // Request for Jingle session to be accepted
                 if(stanza_from && call_id) {
@@ -310,13 +323,13 @@ GiggleLoader.on_ready(function() {
                     $('.call_notif').hide();
                     $('#call_info').text('Waiting for call initiation...').show();
 
-                    GiggleBroadcast.accept(stanza_from, call_id, proposed_medias);
+                    GIGGLE_BROADCAST.accept(stanza_from, call_id, proposed_medias);
 
                     // Marker to auto-accept call later
                     CALL_AUTO_ACCEPT.from = stanza_from;
                     CALL_AUTO_ACCEPT.sid = call_id;
                   } else {
-                    GiggleBroadcast.reject(stanza_from, call_id, proposed_medias);
+                    GIGGLE_BROADCAST.reject(stanza_from, call_id, proposed_medias);
                   }
                 }
               },
@@ -348,8 +361,8 @@ GiggleLoader.on_ready(function() {
                 // Read broadcast parameters
                 // Important: access ID-related data there as it will be unset right after
                 var call_to = stanza.from() || null;
-                var call_id = GiggleBroadcast.get_call_id(stanza);
-                var call_medias = GiggleBroadcast.get_call_medias(call_id);
+                var call_id = GIGGLE_BROADCAST.get_call_id(stanza);
+                var call_medias = GIGGLE_BROADCAST.get_call_medias(call_id);
 
                 // Wait 1 second for message visibility purposes
                 setTimeout(function() {
@@ -372,8 +385,8 @@ GiggleLoader.on_ready(function() {
                   ARGS.remote_view  = $('#video_remote')[0];
 
                   // Let's go!
-                  JINGLE = Giggle.session(GIGGLE_SESSION_SINGLE, ARGS);
-                  JINGLE.initiate();
+                  GIGGLE_SESSION = Giggle.session(GIGGLE_SESSION_SINGLE, ARGS);
+                  GIGGLE_SESSION.initiate();
                 }, 1000);
               }
             });
@@ -392,7 +405,7 @@ GiggleLoader.on_ready(function() {
               $('#login_error').text('Invalid credentials.').show();
             }
 
-            if(SC_CONNECTED && JINGLE !== null) JINGLE.terminate();
+            if(SC_CONNECTED && GIGGLE_SESSION !== null) GIGGLE_SESSION.terminate();
 
             $('#form_login').find('input, button').removeAttr('disabled');
             $('#form_login button').show();
@@ -537,7 +550,7 @@ GiggleLoader.on_ready(function() {
             medias.push(GIGGLE_MEDIA_VIDEO);
           }
 
-          GiggleBroadcast.propose(
+          GIGGLE_BROADCAST.propose(
             jid_obj.getBareJID(), medias,
 
             function(id) {
@@ -548,7 +561,7 @@ GiggleLoader.on_ready(function() {
               $('#roster_call').removeClass('disabled');
 
               // Retract
-              GiggleBroadcast.retract(
+              GIGGLE_BROADCAST.retract(
                 jid_obj.getBareJID(), id
               );
             }
@@ -567,8 +580,8 @@ GiggleLoader.on_ready(function() {
             ARGS.remote_view  = $('#video_remote')[0];
 
             // Let's go!
-            JINGLE = Giggle.session(GIGGLE_SESSION_SINGLE, ARGS);
-            JINGLE.initiate();
+            GIGGLE_SESSION = Giggle.session(GIGGLE_SESSION_SINGLE, ARGS);
+            GIGGLE_SESSION.initiate();
           } catch(e) {
             alert('jingle > ' + e);
           }
@@ -588,7 +601,7 @@ GiggleLoader.on_ready(function() {
     try {
       if(!SC_CONNECTED) return false;
 
-      if(JINGLE !== null) JINGLE.terminate();
+      if(GIGGLE_SESSION !== null) GIGGLE_SESSION.terminate();
 
       $('.live_notif').hide();
     } catch(e) {
@@ -603,7 +616,7 @@ GiggleLoader.on_ready(function() {
     try {
       if(!SC_CONNECTED) return false;
 
-      if(JINGLE !== null) JINGLE.mute(GIGGLE_MEDIA_AUDIO);
+      if(GIGGLE_SESSION !== null) GIGGLE_SESSION.mute(GIGGLE_MEDIA_AUDIO);
 
       $(this).hide();
       $('#live_unmute').show();
@@ -619,7 +632,7 @@ GiggleLoader.on_ready(function() {
     try {
       if(!SC_CONNECTED) return false;
 
-      if(JINGLE !== null) JINGLE.unmute(GIGGLE_MEDIA_AUDIO);
+      if(GIGGLE_SESSION !== null) GIGGLE_SESSION.unmute(GIGGLE_MEDIA_AUDIO);
 
       $(this).hide();
       $('#live_mute').show();

@@ -340,6 +340,33 @@ var __GigglePlug = ring.create(
       }
     },
 
+    /**
+     * Gets the username associated to the current connection
+     * @public
+     * @returns {String} Username value
+     */
+    connection_username: function() {
+      this.get_debug().log('[giggle:plug] connection_username > Method not implemented.', 1);
+    },
+
+    /**
+     * Gets the domain associated to the current connection
+     * @public
+     * @returns {String} Username value
+     */
+    connection_domain: function() {
+      this.get_debug().log('[giggle:plug] connection_domain > Method not implemented.', 1);
+    },
+
+    /**
+     * Gets the resource associated to the current connection
+     * @public
+     * @returns {String} Username value
+     */
+    connection_resource: function() {
+      this.get_debug().log('[giggle:plug] connection_resource > Method not implemented.', 1);
+    },
+
 
 
     /**

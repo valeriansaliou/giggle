@@ -1469,7 +1469,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
         var stanza_error = this.plug.iq();
 
-        stanza_error.type('error');
+        stanza_error.type(GIGGLE_IQ_TYPE_ERROR);
         stanza_error.id(stanza.id());
         stanza_error.to(this.get_to());
 
@@ -1681,7 +1681,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
             break;
 
-          case 'error':
+          case GIGGLE_IQ_TYPE_ERROR:
             /* @function */
             (this.get_session_accept_error())(this, stanza);
             this._handle_session_accept_error(stanza);
@@ -1873,7 +1873,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
             break;
 
-          case 'error':
+          case GIGGLE_IQ_TYPE_ERROR:
             /* @function */
             (this.get_session_info_error())(this, stanza);
             this._handle_session_info_error(stanza);
@@ -1991,7 +1991,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
             break;
 
-          case 'error':
+          case GIGGLE_IQ_TYPE_ERROR:
             /* @function */
             (this.get_session_initiate_error())(this, stanza);
             this._handle_session_initiate_error(stanza);
@@ -2117,14 +2117,14 @@ var GiggleSingle = ring.create([__GiggleBase],
           }
 
           // Session initiate done
-            /* @function */
+          /* @function */
           (this.get_session_initiate_success())(this, stanza);
           this._handle_session_initiate_success(stanza);
 
           this.send(GIGGLE_IQ_TYPE_RESULT, { id: stanza.id() });
         } else {
           // Session initiation not done
-            /* @function */
+          /* @function */
           (this.get_session_initiate_error())(this, stanza);
           this._handle_session_initiate_error(stanza);
 
@@ -2173,7 +2173,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
             break;
 
-          case 'error':
+          case GIGGLE_IQ_TYPE_ERROR:
             /* @function */
             (this.get_session_terminate_error())(this, stanza);
             this._handle_session_terminate_error(stanza);

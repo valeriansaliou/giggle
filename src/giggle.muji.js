@@ -1312,7 +1312,7 @@ var GiggleMuji = ring.create([__GiggleBase],
           return;
         }
 
-        stanza.setType(GIGGLE_PRESENCE_TYPE_UNAVAILABLE);
+        stanza.type(GIGGLE_PRESENCE_TYPE_UNAVAILABLE);
 
         // Schedule success
         var _this = this;
@@ -2724,10 +2724,10 @@ var GiggleMuji = ring.create([__GiggleBase],
     _send_autoconfigure_room_password: function(stanza, parse_obj) {
       try {
         // Change stanza headers
-        stanza.setID(this.get_id_new());
-        stanza.setType(GIGGLE_IQ_TYPE_SET);
-        stanza.setTo(stanza.from());
-        stanza.setFrom(null);
+        stanza.id(this.get_id_new());
+        stanza.type(GIGGLE_IQ_TYPE_SET);
+        stanza.to(stanza.from());
+        stanza.from(null);
 
         // Change stanza items
         parse_obj.x_data_sel.attribute('type', GIGGLE_MUJI_MUC_OWNER_SUBMIT);

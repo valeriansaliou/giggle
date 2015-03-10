@@ -58,7 +58,7 @@ var GiggleInit = ring.create(
         // Build request
         var request = this.plug.iq();
 
-        request.to(GiggleStorage.get_connection().domain);
+        request.to(this.plug.connection_domain());
         request.type(GIGGLE_IQ_TYPE_GET);
 
         request.child('services', {
@@ -150,7 +150,7 @@ var GiggleInit = ring.create(
         // Build request
         var request = this.plug.iq();
 
-        request.to(GiggleStorage.get_connection().domain);
+        request.to(this.plug.connection_domain());
         request.type(GIGGLE_IQ_TYPE_GET);
 
         request.child('services', {
@@ -227,7 +227,7 @@ var GiggleInit = ring.create(
 
         // Generate fallback API URL
         fallback_url += '?username=' +
-                        encodeURIComponent(GiggleStorage.get_connection().username + '@' + GiggleStorage.get_connection().domain);
+                        encodeURIComponent(this.plug.connection_username() + '@' + this.plug.connection_domain());
 
         // Proceed request
         var xhr = new XMLHttpRequest();

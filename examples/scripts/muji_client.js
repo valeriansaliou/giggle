@@ -13,7 +13,7 @@
 var SC_CONNECTED = false;
 var SC_PRESENCE = {};
 
-var JINGLE = null;
+var GIGGLE_SESSION = null;
 
 var ARGS = {
   // Configuration (required)
@@ -31,7 +31,7 @@ var ARGS = {
   room_message_in: function(_this, stanza) {
     console.log('room_message_in');
 
-    var pr_from = stanza.getFrom();
+    var pr_from = stanza.from();
 
     if(!pr_from)
       return;
@@ -72,7 +72,7 @@ var ARGS = {
   room_presence_in: function(_this, stanza) {
     console.log('room_presence_in');
 
-    var pr_from = stanza.getFrom();
+    var pr_from = stanza.from();
 
     if(!pr_from) return;
 
@@ -90,7 +90,7 @@ var ARGS = {
     }
 
     // Online buddy: show it!
-    if(stanza.getType() == 'unavailable') {
+    if(stanza.type() == 'unavailable') {
       if(jid_bare in SC_PRESENCE && jid_resource in SC_PRESENCE[jid_bare]) {
         delete (SC_PRESENCE[jid_bare])[jid_resource];
 
@@ -533,8 +533,8 @@ GiggleLoader.on_ready(function() {
                   }
 
                   // Let's go!
-                  JINGLE = Giggle.session(GIGGLE_SESSION_MUJI, ARGS);
-                  JINGLE.join();
+                  GIGGLE_SESSION = Giggle.session(GIGGLE_SESSION_MUJI, ARGS);
+                  GIGGLE_SESSION.join();
                 } else {
                   console.log('muji_invite > Invite declined.');
                 }
@@ -563,7 +563,7 @@ GiggleLoader.on_ready(function() {
             else
               $('#login_error').text('Invalid credentials.').show();
 
-            if(SC_CONNECTED && JINGLE !== null) JINGLE.leave();
+            if(SC_CONNECTED && GIGGLE_SESSION !== null) GIGGLE_SESSION.leave();
 
             $('#form_login').find('input, button').removeAttr('disabled');
             $('#form_login button').show();
@@ -628,8 +628,8 @@ GiggleLoader.on_ready(function() {
           ARGS.local_view   = $('#video_local')[0];
 
           // Let's go!
-          JINGLE = Giggle.session(GIGGLE_SESSION_MUJI, ARGS);
-          JINGLE.join();
+          GIGGLE_SESSION = Giggle.session(GIGGLE_SESSION_MUJI, ARGS);
+          GIGGLE_SESSION.join();
         } catch(e) {
           alert('jingle > ' + e);
         }
@@ -648,7 +648,7 @@ GiggleLoader.on_ready(function() {
     try {
       if(!SC_CONNECTED) return false;
 
-      if(JINGLE !== null) JINGLE.leave();
+      if(GIGGLE_SESSION !== null) GIGGLE_SESSION.leave();
 
       $('.live_notif').hide();
     } catch(e) {
@@ -665,7 +665,7 @@ GiggleLoader.on_ready(function() {
       var invite_jid = input_sel.val().trim();
 
       if(invite_jid) {
-        JINGLE.invite(invite_jid, 'Join me buddy!');
+        GIGGLE_SESSION.invite(invite_jid, 'Join me buddy!');
         input_sel.val('');
       }
     } catch(e) {
@@ -682,7 +682,7 @@ GiggleLoader.on_ready(function() {
       var body = input_sel.val().trim();
 
       if(body) {
-        JINGLE.send_message(body);
+        GIGGLE_SESSION.send_message(body);
         input_sel.val('');
       }
     } catch(e) {
@@ -697,7 +697,7 @@ GiggleLoader.on_ready(function() {
     try {
       if(!SC_CONNECTED) return false;
 
-      if(JINGLE !== null) JINGLE.mute(GIGGLE_MEDIA_AUDIO);
+      if(GIGGLE_SESSION !== null) GIGGLE_SESSION.mute(GIGGLE_MEDIA_AUDIO);
 
       $(this).hide();
       $('#live_unmute').show();
@@ -713,7 +713,7 @@ GiggleLoader.on_ready(function() {
     try {
       if(!SC_CONNECTED) return false;
 
-      if(JINGLE !== null) JINGLE.unmute(GIGGLE_MEDIA_AUDIO);
+      if(GIGGLE_SESSION !== null) GIGGLE_SESSION.unmute(GIGGLE_MEDIA_AUDIO);
 
       $(this).hide();
       $('#live_mute').show();

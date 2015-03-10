@@ -108,7 +108,7 @@ Giggle.listen({
         var config = single_config_generator();
 
         // Configuration values
-        config.to          = stanza.getFrom() || null;
+        config.to          = stanza.from() || null;
         config.local_view  = $('#video_local')[0];
         config.remote_view = $('#video_remote')[0];
 

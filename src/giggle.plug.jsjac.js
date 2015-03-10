@@ -362,6 +362,8 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
                 stanza
               )
             );
+          } else {
+            this.get_debug().log('[giggle:plug:jsjac] register > Received an unhandled stanza of type: ' + type, 0);
           }
         };
 
@@ -512,19 +514,23 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
 
         // Callback executor
         var on_packet_response = function(response_data) {
-          if(typeof callback == 'function') {
-            callback.bind(self)(
-              self._build_hierarchy(
-                response_data
-              )
-            );
-          }
+          callback.bind(self)(
+            self._build_hierarchy(
+              response_data
+            )
+          );
         };
 
         // Send packet
-        this.get_connection().send(
-          this.get_packet(), on_packet_response
-        );
+        if(typeof callback == 'function') {
+          this.get_connection().send(
+            this.get_packet(), on_packet_response
+          );
+        } else {
+          this.get_connection().send(
+            this.get_packet()
+          );
+        }
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] send > ' + e, 1);
       } finally {
@@ -548,7 +554,7 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
             elements;
 
         // Would that be the element we're asking for?
-        if(this.get_node().nodeName == name &&
+        if((name == '*' || this.get_node().nodeName == name) &&
           (!namespace || (namespace && this.get_node().namespaceURI == namespace))
         ) {
           selected_elements.push(this);
@@ -597,6 +603,57 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
         this.get_debug().log('[giggle:plug:jsjac] select_element_uniq > ' + e, 1);
       } finally {
         return selected_element;
+      }
+    },
+
+    /**
+     * Gets the username associated to the current connection
+     * @public
+     * @returns {String} Username value
+     */
+    connection_username: function() {
+      var username = null;
+
+      try {
+        username = this.get_connection().username;
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] connection_username > ' + e, 1);
+      } finally {
+        return username;
+      }
+    },
+
+    /**
+     * Gets the domain associated to the current connection
+     * @public
+     * @returns {String} Username value
+     */
+    connection_domain: function() {
+      var domain = null;
+
+      try {
+        domain = this.get_connection().domain;
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] connection_domain > ' + e, 1);
+      } finally {
+        return domain;
+      }
+    },
+
+    /**
+     * Gets the resource associated to the current connection
+     * @public
+     * @returns {String} Username value
+     */
+    connection_resource: function() {
+      var resource = null;
+
+      try {
+        resource = this.get_connection().resource;
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] connection_resource > ' + e, 1);
+      } finally {
+        return resource;
       }
     }
   }
