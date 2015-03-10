@@ -340,14 +340,14 @@ var Giggle = new (ring.create(
             // Nothing to do there.
           } else {
             // Muji?
-            var room = jid.node() + '@' + jid.domain();
+            var room = (jid.node() + '@' + jid.domain());
 
             var session_route = this._read(GIGGLE_SESSION_MUJI, room);
 
-            var x_conference = stanza.select_element_uniq('x', NS_JABBER_CONFERENCE);
-            var x_invite = stanza.select_element_uniq('x', NS_MUJI_INVITE);
+            var x_conference  = stanza.select_element_uniq('x', NS_JABBER_CONFERENCE);
+            var x_invite      = stanza.select_element_uniq('x', NS_MUJI_INVITE);
 
-            var is_invite = (x_conference && x_invite && true);
+            var is_invite     = (x_conference && x_invite && true);
 
             if(is_invite === true) {
               if(session_route === null) {
@@ -396,8 +396,8 @@ var Giggle = new (ring.create(
         var from = stanza.from();
 
         if(from) {
-          var jid = new this.utils.jid(this.utils, from);
-          var room = jid.bare();
+          var jid   = new this.utils.jid(this.utils, from);
+          var room  = jid.bare();
 
           var session_route = this._read(GIGGLE_SESSION_MUJI, room);
 

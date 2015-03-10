@@ -169,7 +169,7 @@ var GiggleInit = ring.create(
 
               if(services) {
                 // Parse STUN servers
-                stun_arr = services.select_element(NS_JABBER_JINGLENODES, 'stun');
+                stun_arr = services.select_element('stun', NS_JABBER_JINGLENODES);
 
                 for(i = 0; i < stun_arr.length; i++) {
                   cur_stun = stun_arr[i];

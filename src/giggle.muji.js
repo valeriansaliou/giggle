@@ -842,7 +842,7 @@ var GiggleMuji = ring.create([__GiggleBase],
         if(typeof args !== 'object') args = {};
 
         // Build stanza
-        var stanza = new this.plug.presence();
+        var stanza = this.plug.presence();
         stanza.to(this.get_muc_to());
 
         if(!args.id) args.id = this.get_id_new();
@@ -915,7 +915,7 @@ var GiggleMuji = ring.create([__GiggleBase],
         }
 
         // Build stanza
-        var stanza = new this.plug.message();
+        var stanza = this.plug.message();
 
         stanza.to(this.get_to());
         stanza.type(GIGGLE_MESSAGE_TYPE_GROUPCHAT);
@@ -1124,7 +1124,7 @@ var GiggleMuji = ring.create([__GiggleBase],
         var cur_participant, participants,
             stanza, x_invite;
 
-        stanza = new this.plug.message();
+        stanza = this.plug.message();
         stanza.to(jid);
 
         x_invite = stanza.child('x', {
@@ -2605,7 +2605,7 @@ var GiggleMuji = ring.create([__GiggleBase],
     _autoconfigure_room_password: function() {
       try {
         // Build stanza
-        stanza = new this.plug.iq();
+        stanza = this.plug.iq();
 
         stanza.to(this.get_to());
         stanza.type(GIGGLE_IQ_TYPE_GET);

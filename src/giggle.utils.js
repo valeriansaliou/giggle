@@ -63,7 +63,7 @@ var GiggleUtils = ring.create(
      * @return {String} Generated nonce
      */
     nonce: function(size) {
-      var nonce = null;
+      var nonce = '';
 
       try {
         var tab = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -478,10 +478,10 @@ var GiggleUtils = ring.create(
      */
     stanza_get_value: function(stanza) {
       try {
-        return stanza.firstChild.nodeValue || null;
+        return stanza.get_node().textContent || null;
       } catch(e) {
         try {
-          return (stanza[0]).firstChild.nodeValue || null;
+          return stanza[0].get_node().textContent || null;
         } catch(_e) {
           this.debug.log('[giggle:utils] stanza_get_value > ' + _e, 1);
         }
@@ -555,11 +555,12 @@ var GiggleUtils = ring.create(
         var i;
 
         // Get only in lower level (not all sub-levels)
-        var matches = stanza.select_element(ns, name);
+        var matches = stanza.select_element(name, ns);
 
         for(i = 0; i < matches.length; i++) {
-          if(matches[i] && matches[i].parentNode == stanza)
+          if(matches[i] && matches[i].get_node().parentNode == stanza.get_node()) {
             matches_result.push(matches[i]);
+          }
         }
 
         return matches_result;
@@ -857,7 +858,7 @@ var GiggleUtils = ring.create(
             cur_candidates;
 
         // Parse initiate stanza
-        switch(stanza.name) {
+        switch(stanza.get_packet().name) {
           case GIGGLE_STANZA_IQ:
             // Jingle elements are encapsulated into IQs
             jingle = this.stanza_jingle(stanza); break;

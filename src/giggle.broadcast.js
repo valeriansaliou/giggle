@@ -186,7 +186,7 @@ var GiggleBroadcast = ring.create(
               proposed_medias = {};
 
               description = stanza_child.select_element(
-                NS_JINGLE_APPS_RTP, 'description'
+                'description', NS_JINGLE_APPS_RTP
               );
 
               for(i = 0; i < description.length; i++) {
@@ -413,7 +413,7 @@ var GiggleBroadcast = ring.create(
       try {
         var connection, stanza, node;
 
-        stanza = new this.plug.message();
+        stanza = this.plug.message();
 
         // Set to connection user?
         if(to === null) {

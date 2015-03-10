@@ -589,9 +589,9 @@ var GiggleSingle = ring.create([__GiggleBase],
         if(typeof args !== 'object') args = {};
 
         // Build stanza
-        var stanza = new this.plug.iq();
-        stanza.to(this.get_to());
+        var stanza = this.plug.iq();
 
+        stanza.to(this.get_to());
         if(type) stanza.type(type);
 
         if(!args.id) args.id = this.get_id_new();

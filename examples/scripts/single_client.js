@@ -280,7 +280,7 @@ GiggleLoader.on_ready(function() {
                 console.log('single_initiate');
 
                 // Session values
-                ARGS.to          = stanza.getFrom() || null;
+                ARGS.to          = stanza.from() || null;
                 ARGS.sid         = null;
                 ARGS.local_view  = $('#video_local')[0];
                 ARGS.remote_view = $('#video_remote')[0];
@@ -293,7 +293,7 @@ GiggleLoader.on_ready(function() {
               single_propose: function(stanza, proposed_medias) {
                 console.log('single_propose');
 
-                var stanza_from = stanza.getFrom() || null;
+                var stanza_from = stanza.from() || null;
                 var call_id = GiggleBroadcast.get_call_id(stanza);
 
                 // Request for Jingle session to be accepted
@@ -347,7 +347,7 @@ GiggleLoader.on_ready(function() {
 
                 // Read broadcast parameters
                 // Important: access ID-related data there as it will be unset right after
-                var call_to = stanza.getFrom() || null;
+                var call_to = stanza.from() || null;
                 var call_id = GiggleBroadcast.get_call_id(stanza);
                 var call_medias = GiggleBroadcast.get_call_medias(call_id);
 
