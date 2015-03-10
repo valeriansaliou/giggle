@@ -180,8 +180,6 @@ var __GigglePlug = ring.create(
       this.get_debug().log('[giggle:plug] element > Method not implemented.', 1);
     },
 
-
-
     /**
      * Gets or sets the 'to' attribute
      * @public
@@ -189,15 +187,7 @@ var __GigglePlug = ring.create(
      * @returns {String} 'to' value
      */
     to: function(to) {
-      try {
-        if(typeof to != 'undefined') {
-          return this.attribute('to', to);
-        }
-
-        return this.attribute('to');
-      } catch(e) {
-        this.get_debug().log('[giggle:plug] to > ' + e, 1);
-      }
+      this.get_debug().log('[giggle:plug] to > Method not implemented.', 1);
     },
 
     /**
@@ -207,15 +197,7 @@ var __GigglePlug = ring.create(
      * @returns {String} 'from' value
      */
     from: function(from) {
-      try {
-        if(typeof from != 'undefined') {
-          return this.attribute('from', from);
-        }
-
-        return this.attribute('from');
-      } catch(e) {
-        this.get_debug().log('[giggle:plug] from > ' + e, 1);
-      }
+      this.get_debug().log('[giggle:plug] from > Method not implemented.', 1);
     },
 
     /**
@@ -225,15 +207,7 @@ var __GigglePlug = ring.create(
      * @returns {String} 'type' value
      */
     type: function(type) {
-      try {
-        if(typeof type != 'undefined') {
-          return this.attribute('type', type);
-        }
-
-        return this.attribute('type');
-      } catch(e) {
-        this.get_debug().log('[giggle:plug] type > ' + e, 1);
-      }
+      this.get_debug().log('[giggle:plug] type > Method not implemented.', 1);
     },
 
     /**
@@ -243,15 +217,7 @@ var __GigglePlug = ring.create(
      * @returns {String} 'id' value
      */
     id: function(id) {
-      try {
-        if(typeof id != 'undefined') {
-          return this.attribute('id', id);
-        }
-
-        return this.attribute('id');
-      } catch(e) {
-        this.get_debug().log('[giggle:plug] id > ' + e, 1);
-      }
+      this.get_debug().log('[giggle:plug] id > Method not implemented.', 1);
     },
 
     /**
@@ -261,15 +227,7 @@ var __GigglePlug = ring.create(
      * @returns {String} 'body' value
      */
     body: function(body) {
-      try {
-        if(typeof body != 'undefined') {
-          return this.element('body', body);
-        }
-
-        return this.element('body');
-      } catch(e) {
-        this.get_debug().log('[giggle:plug] body > ' + e, 1);
-      }
+      this.get_debug().log('[giggle:plug] body > Method not implemented.', 1);
     },
 
 
@@ -312,19 +270,22 @@ var __GigglePlug = ring.create(
     /**
      * Builds the plug hierarchy sub elements
      * @private
-     * @param {__GigglePlug} baseline_object
-     * @param {Object} packet
-     * @param {__GigglePlug} parent_object
-     * @param {Object} node
+     * @param   {Function}     build_baseline_object_fn
+     * @param   {__GigglePlug}     first_in_tree_object
+     * @param   {Object}       packet
+     * @param   {__GigglePlug} parent_object
+     * @param   {Object}       node
+     * @returns {__GigglePlug} Constructed object
      */
-    _build_hierarchy_sub: function(baseline_object, packet, parent_object, node) {
+    _build_hierarchy_sub: function(build_baseline_object_fn, first_in_tree_object, packet, parent_object, node) {
       this.get_debug().log('[giggle:plug] _build_hierarchy_sub > Method not implemented.', 1);
     },
 
     /**
      * Builds the plug hierarchy from a packet object
      * @private
-     * @param {Object} packet
+     * @param   {Object} packet
+     * @returns {__GigglePlug} Constructed object
      */
     _build_hierarchy: function(packet) {
       this.get_debug().log('[giggle:plug] _build_hierarchy > Method not implemented.', 1);
@@ -340,13 +301,26 @@ var __GigglePlug = ring.create(
     },
 
     /**
-     * Selects an element
+     * Selects elements matching query (down in the tree)
      * @public
-     * @param {String} name
-     * @param {String} [namespace]
+     * @param  {String}  name
+     * @param  {String}  [namespace]
+     * @param  {Boolean} [stop_at_first]
+     * @return {Object}  Selected elements
      */
-    select_element: function(name, namespace) {
+    select_element: function(name, namespace, stop_at_first) {
       this.get_debug().log('[giggle:plug] select_element > Method not implemented.', 1);
+    },
+
+    /**
+     * Selects first element matching query (down in the tree)
+     * @public
+     * @param  {String} name
+     * @param  {String} [namespace]
+     * @return {Object} Selected element
+     */
+    select_element_uniq: function(name, namespace) {
+      this.get_debug().log('[giggle:plug] select_element_uniq > Method not implemented.', 1);
     },
 
     /**

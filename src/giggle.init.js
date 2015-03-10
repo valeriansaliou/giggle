@@ -74,10 +74,10 @@ var GiggleInit = ring.create(
                   cur_host, cur_password, cur_port, cur_transport, cur_type, cur_username,
                   store_obj;
 
-              var services = response.select_element('services', NS_EXTDISCO);
+              var services = response.select_element_uniq('services', NS_EXTDISCO);
 
               if(services) {
-                service_arr = services.select_element(NS_EXTDISCO, 'service');
+                service_arr = services.select_element('service', NS_EXTDISCO);
 
                 for(i = 0; i < service_arr.length; i++) {
                   cur_service = service_arr[i];
@@ -165,7 +165,7 @@ var GiggleInit = ring.create(
                   stun_arr, cur_stun,
                   cur_policy, cur_address, cur_protocol;
 
-              var services = response.select_element('services', NS_JABBER_JINGLENODES);
+              var services = response.select_element_uniq('services', NS_JABBER_JINGLENODES);
 
               if(services) {
                 // Parse STUN servers

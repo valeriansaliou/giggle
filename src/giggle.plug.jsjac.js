@@ -112,6 +112,12 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      * @returns {__GigglePlug} Child object
      */
     child: function(name, attributes, value) {
+      // Swap values? (value shortcut)
+      if(typeof attributes == 'string') {
+        value = attributes;
+        attributes = {};
+      }
+
       var child = this.clone();
 
       // Set reference to child
@@ -131,9 +137,9 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
           );
         } else {
           child.set_node(
-            child.get_node().appendNode(
+            child.get_packet().appendNode(
               name, attributes, value
-            )
+            ).getNode()
           );
         }
       } catch(e) {
@@ -179,12 +185,17 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
       try {
         // Sets?
         if(typeof value != 'undefined') {
-          this.get_node().getNode().setAttribute(name, value);
+          if(name == 'xmlns') {
+            this.get_node().namespaceURI = value;
+          } else {
+            this.get_node().setAttribute(name, value);
+          }
 
           return this;
         }
 
-        return this.get_node().getNode().getAttribute(name);
+        return (name == 'xmlns') ? this.get_node().namespaceURI  :
+                                   this.get_node().getAttribute(name);
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] attribute > ' + e, 1);
       }
@@ -212,6 +223,96 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
       }
     },
 
+    /**
+     * Gets or sets the 'to' attribute
+     * @public
+     * @param   {String} [to]
+     * @returns {String} 'to' value
+     */
+    to: function(to) {
+      try {
+        if(typeof to != 'undefined') {
+          return this.get_packet().setTo(to);
+        }
+
+        return this.get_packet().getTo();
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] to > ' + e, 1);
+      }
+    },
+
+    /**
+     * Gets or sets the 'from' attribute
+     * @public
+     * @param   {String} [from]
+     * @returns {String} 'from' value
+     */
+    from: function(from) {
+      try {
+        if(typeof from != 'undefined') {
+          return this.get_packet().setFrom(from);
+        }
+
+        return this.get_packet().getFrom();
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] from > ' + e, 1);
+      }
+    },
+
+    /**
+     * Gets or sets the 'type' attribute
+     * @public
+     * @param   {String} [type]
+     * @returns {String} 'type' value
+     */
+    type: function(type) {
+      try {
+        if(typeof type != 'undefined') {
+          return this.get_packet().setType(type);
+        }
+
+        return this.get_packet().getType();
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] type > ' + e, 1);
+      }
+    },
+
+    /**
+     * Gets or sets the 'id' attribute
+     * @public
+     * @param   {String} [id]
+     * @returns {String} 'id' value
+     */
+    id: function(id) {
+      try {
+        if(typeof id != 'undefined') {
+          return this.get_packet().setID(id);
+        }
+
+        return this.get_packet().getID();
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] id > ' + e, 1);
+      }
+    },
+
+    /**
+     * Gets or sets the 'body' element content
+     * @public
+     * @param   {String} [body]
+     * @returns {String} 'body' value
+     */
+    body: function(body) {
+      try {
+        if(typeof body != 'undefined') {
+          return this.get_packet().setBody(body);
+        }
+
+        return this.get_packet().getBody();
+      } catch(e) {
+        this.get_debug().log('[giggle:plug] body > ' + e, 1);
+      }
+    },
+
 
 
     /**
@@ -231,7 +332,7 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
         // Local handler (constructs a new plug object)
         var cb_local_handle = function(stanza) {
           cb_handled.bind(self)(
-            this._build_hierarchy(
+            self._build_hierarchy(
               stanza
             )
           );
@@ -273,44 +374,54 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
     /**
      * Builds the plug hierarchy sub elements
      * @private
-     * @param {__GigglePlug} baseline_object
-     * @param {Object} packet
-     * @param {__GigglePlug} parent_object
-     * @param {Object} node
+     * @param   {Function}     build_baseline_object_fn
+     * @param   {__GigglePlug}     first_in_tree_object
+     * @param   {Object}       packet
+     * @param   {__GigglePlug} parent_object
+     * @param   {Object}       node
+     * @returns {__GigglePlug} Constructed object
      */
-    _build_hierarchy_sub: function(baseline_object, packet, parent_object, node) {
+    _build_hierarchy_sub: function(build_baseline_object_fn, first_in_tree_object, packet, parent_object, node) {
       var hierarchy_element = null;
-      var hierarchy_children = [];
 
       try {
-        var i;
+        var i, cur_node_item;
 
-        hierarchy_element = baseline_object.clone();
-
-        for(i = 0; i < node.childNodes.length; i++) {
-          hierarchy_children.push(
-            this._build_hierarchy_sub(
-              baseline_object,
-              packet,
-              hierarchy_element,
-              node.childNodes[i]
-            )
-          );
+        if(first_in_tree_object !== null) {
+          hierarchy_element = first_in_tree_object;
+        } else {
+          hierarchy_element = build_baseline_object_fn();
         }
 
-        plug_handle.set_parent(
+        if(node && node.hasChildNodes()) {
+          for(i = 0; i < node.childNodes.length; i++) {
+            cur_node_item = node.childNodes.item(i);
+
+            if(cur_node_item                     &&
+               cur_node_item.parentNode == node  &&
+               cur_node_item.nodeType == document.ELEMENT_NODE) {
+              hierarchy_element.set_children(
+                this._build_hierarchy_sub(
+                  build_baseline_object_fn,
+                  null,
+                  packet,
+                  hierarchy_element,
+                  node.childNodes.item(i)
+                )
+              );
+            }
+          }
+        }
+
+        hierarchy_element.set_parent(
           parent_object
         );
 
-        plug_handle.set_children(
-          hierarchy_children
-        );
-
-        plug_handle.set_packet(
+        hierarchy_element.set_packet(
           packet
         );
 
-        plug_handle.set_node(
+        hierarchy_element.set_node(
           node
         );
       } catch(e) {
@@ -323,19 +434,27 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
     /**
      * Builds the plug hierarchy from a packet object
      * @private
-     * @param {Object} packet
+     * @param   {Object} packet
+     * @returns {__GigglePlug} Constructed object
      */
     _build_hierarchy: function(packet) {
-      var hierarchy_parent = null;
+      var first_in_tree_object;
 
       try {
-        hierarchy_parent = new GigglePlugJSJaC({
-          connection : this.get_connection(),
-          debug      : this.get_debug()
-        });
+        var self = this;
+
+        var build_baseline_object_fn = function() {
+          return (new GigglePlugJSJaC({
+            connection : self.get_connection(),
+            debug      : self.get_debug()
+          }));
+        };
+
+        first_in_tree_object = build_baseline_object_fn();
 
         this._build_hierarchy_sub(
-          hierarchy_parent,
+          build_baseline_object_fn,
+          first_in_tree_object,
           packet,
           null,
           packet.getNode()
@@ -343,7 +462,7 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] _build_hierarchy > ' + e, 1);
       } finally {
-        return hierarchy_parent;
+        return first_in_tree_object;
       }
     },
 
@@ -385,37 +504,68 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
     },
 
     /**
-     * Selects an element
+     * Selects elements matching query (down in the tree)
      * @public
-     * @param {String} name
-     * @param {String} [namespace]
-     * @return {__GigglePlug} Selected element
+     * @param  {String}  name
+     * @param  {String}  [namespace]
+     * @param  {Boolean} [stop_at_first]
+     * @return {Object}  Selected elements
      */
-    select_element: function(name, namespace) {
-      var selected_element = null;
+    select_element: function(name, namespace, stop_at_first) {
+      var selected_elements = [];
 
       try {
         var i,
             elements;
 
-        // Wanted element?
-        if(this.get_node().elementName == name &&
-          (!namespace || (namespace && this.get_node().getAttribute('xmlns') == namespace))
+        // Would that be the element we're asking for?
+        if(this.get_node().nodeName == name &&
+          (!namespace || (namespace && this.get_node().namespaceURI == namespace))
         ) {
-          selected_element = this;
-        } else {
-          elements = this.get_children();
+          selected_elements.push(this);
 
-          for(i = 0; i < elements.length; i++) {
-            selected_element = elements[i].select_element(
-              name, namespace
-            );
+          if(stop_at_first === true)  return;
+        }
 
-            if(selected_element !== null) break;
-          }
+        // Iterate on children
+        elements = this.get_children();
+
+        for(i = 0; i < elements.length; i++) {
+          selected_elements = selected_elements.concat(
+            elements[i].select_element(
+              name, namespace, stop_at_first
+            )
+          );
+
+          if(stop_at_first === true && selected_elements.length)  return;
         }
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] select_element > ' + e, 1);
+      } finally {
+        return selected_elements;
+      }
+    },
+
+    /**
+     * Selects first element matching query (down in the tree)
+     * @public
+     * @param  {String} name
+     * @param  {String} [namespace]
+     * @return {Object} Selected element
+     */
+    select_element_uniq: function(name, namespace) {
+      var selected_element = null;
+
+      try {
+        var selected_elements_arr = this.select_element(
+          name, namespace, true
+        );
+
+        if(selected_elements_arr.length) {
+          selected_element = selected_elements_arr[0] || null;
+        }
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] select_element_uniq > ' + e, 1);
       } finally {
         return selected_element;
       }

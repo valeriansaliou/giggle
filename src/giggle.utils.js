@@ -557,11 +557,9 @@ var GiggleUtils = ring.create(
         // Get only in lower level (not all sub-levels)
         var matches = stanza.select_element(ns, name);
 
-        if(matches && matches.length) {
-          for(i = 0; i < matches.length; i++) {
-            if(matches[i] && matches[i].parentNode == stanza)
-              matches_result.push(matches[i]);
-          }
+        for(i = 0; i < matches.length; i++) {
+          if(matches[i] && matches[i].parentNode == stanza)
+            matches_result.push(matches[i]);
         }
 
         return matches_result;
@@ -588,18 +586,16 @@ var GiggleUtils = ring.create(
 
         error_child = stanza.select_element('error', NS_CLIENT);
 
-        if(error_child && error_child.length) {
-          for(i = 0; i < error_child.length; i++) {
-            cur_error_child = error_child[i];
+        for(i = 0; i < error_child.length; i++) {
+          cur_error_child = error_child[i];
 
-            if(typeof error_match_obj == 'object') {
-              if(cur_error_child.attribute('type') === error_match_obj.type  &&
-                 cur_error_child.select_element(error_match_obj.xmpp, NS_IETF_XMPP_STANZAS)) {
-                matches_result.push(cur_error_child);
-              }
-            } else {
+          if(typeof error_match_obj == 'object') {
+            if(cur_error_child.attribute('type') === error_match_obj.type  &&
+               cur_error_child.select_element(error_match_obj.xmpp, NS_IETF_XMPP_STANZAS)) {
               matches_result.push(cur_error_child);
             }
+          } else {
+            matches_result.push(cur_error_child);
           }
         }
       } catch(e) {
@@ -617,7 +613,7 @@ var GiggleUtils = ring.create(
      */
     stanza_jingle: function(stanza) {
       try {
-        return stanza.select_element('jingle', this.parent.get_namespace());
+        return stanza.select_element_uniq('jingle', this.parent.get_namespace());
       } catch(e) {
         this.debug.log('[giggle:utils] stanza_jingle > ' + e, 1);
       }
@@ -633,7 +629,7 @@ var GiggleUtils = ring.create(
      */
     stanza_muji: function(stanza) {
       try {
-        return stanza.select_element('muji', NS_MUJI);
+        return stanza.select_element_uniq('muji', NS_MUJI);
       } catch(e) {
         this.debug.log('[giggle:utils] stanza_muji > ' + e, 1);
       }

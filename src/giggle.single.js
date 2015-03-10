@@ -663,7 +663,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
         this._set_sent_id(args.id);
 
-        this.get_connection().send(stanza);
+        stanza.send();
 
         if(this.get_net_trace())  this.get_debug().log('[giggle:single] send > Outgoing packet sent' + '\n\n' + stanza.xml());
 

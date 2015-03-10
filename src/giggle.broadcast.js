@@ -169,7 +169,7 @@ var GiggleBroadcast = ring.create(
       try {
         is_handled = false;
 
-        stanza_child = stanza.select_element(
+        stanza_child = stanza.select_element_uniq(
           '*', NS_JINGLE_MESSAGE
         );
 
@@ -247,7 +247,7 @@ var GiggleBroadcast = ring.create(
       var call_id = null;
 
       try {
-        var stanza_child = stanza.select_element(
+        var stanza_child = stanza.select_element_uniq(
           '*', NS_JINGLE_MESSAGE
         );
 

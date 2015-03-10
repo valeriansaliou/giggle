@@ -1231,8 +1231,8 @@ var GiggleSDP = ring.create(
 
       try {
         // Values
-        var jid = new this.utils.jid(
-          this.utils, this.parent.get_initiator()
+        var jid = new this.parent.utils.jid(
+          this.parent.utils, this.parent.get_initiator()
         );
 
         var username        = jid.node() ? jid.node() : '-';

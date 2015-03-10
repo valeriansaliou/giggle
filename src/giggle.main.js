@@ -233,7 +233,7 @@ var Giggle = new (ring.create(
           var session_route = null;
 
           // Route the incoming stanza
-          var jingle = stanza.select_element('jingle', NS_JINGLE);
+          var jingle = stanza.select_element_uniq('jingle', NS_JINGLE);
 
           if(jingle) {
             sid = jingle.attribute('sid');
@@ -344,8 +344,8 @@ var Giggle = new (ring.create(
 
             var session_route = this._read(GIGGLE_SESSION_MUJI, room);
 
-            var x_conference = stanza.select_element('x', NS_JABBER_CONFERENCE);
-            var x_invite = stanza.select_element('x', NS_MUJI_INVITE);
+            var x_conference = stanza.select_element_uniq('x', NS_JABBER_CONFERENCE);
+            var x_invite = stanza.select_element_uniq('x', NS_MUJI_INVITE);
 
             var is_invite = (x_conference && x_invite && true);
 

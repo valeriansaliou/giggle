@@ -392,9 +392,9 @@ var __GiggleBase = ring.create(
       this._name = {};
 
       /* @function */
-      if(instanciate_utils() === true  &&
-         instanciate_sdp()   === true  &&
-         instanciate_plug()  === true) {
+      if(this.instanciate_utils() === true  &&
+         this.instanciate_sdp()   === true  &&
+         this.instanciate_plug()  === true) {
         this.get_debug().log('[giggle:base] constructor > All components successfully instanciated.', 3);
       } else {
         this.get_debug().log('[giggle:base] constructor > Could not instanciate some components!', 1);

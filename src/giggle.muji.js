@@ -2102,7 +2102,7 @@ var GiggleMuji = ring.create([__GiggleBase],
 
       try {
         var i, items,
-            x_muc_user = stanza.select_element('x', NS_JABBER_MUC_USER);
+            x_muc_user = stanza.select_element_uniq('x', NS_JABBER_MUC_USER);
 
         if(x_muc_user) {
           items = this.utils.stanza_get_element(x_muc_user, 'item', NS_JABBER_MUC_USER);
