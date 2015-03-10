@@ -64,7 +64,6 @@ module.exports = function(grunt) {
   // Map files
   var GRUNT_LIB_FILES = [
     'lib/underscore/underscore.js',
-    'lib/promise/promise.js',
     'lib/ring/ring.js'
   ];
 
