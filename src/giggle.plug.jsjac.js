@@ -230,15 +230,11 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
 
         // Local handler (constructs a new plug object)
         var cb_local_handle = function(stanza) {
-          var plug_handle = new GigglePlugJSJaC({
-            connection : self.get_connection(),
-            debug      : self.get_debug()
-          });
-
-          plug_handle.set_packet(stanza);
-          plug_handle.set_node(stanza);
-
-          cb_handled(plug_handle);
+          cb_handled.bind(self)(
+            this._build_hierarchy(
+              stanza
+            )
+          );
         };
 
         this.get_connection().registerHandler(
@@ -275,9 +271,86 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      */
 
     /**
+     * Builds the plug hierarchy sub elements
+     * @private
+     * @param {__GigglePlug} baseline_object
+     * @param {Object} packet
+     * @param {__GigglePlug} parent_object
+     * @param {Object} node
+     */
+    _build_hierarchy_sub: function(baseline_object, packet, parent_object, node) {
+      var hierarchy_element = null;
+      var hierarchy_children = [];
+
+      try {
+        var i;
+
+        hierarchy_element = baseline_object.clone();
+
+        for(i = 0; i < node.childNodes.length; i++) {
+          hierarchy_children.push(
+            this._build_hierarchy_sub(
+              baseline_object,
+              packet,
+              hierarchy_element,
+              node.childNodes[i]
+            )
+          );
+        }
+
+        plug_handle.set_parent(
+          parent_object
+        );
+
+        plug_handle.set_children(
+          hierarchy_children
+        );
+
+        plug_handle.set_packet(
+          packet
+        );
+
+        plug_handle.set_node(
+          node
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] _build_hierarchy_sub > ' + e, 1);
+      } finally {
+        return hierarchy_element;
+      }
+    },
+
+    /**
+     * Builds the plug hierarchy from a packet object
+     * @private
+     * @param {Object} packet
+     */
+    _build_hierarchy: function(packet) {
+      var hierarchy_parent = null;
+
+      try {
+        hierarchy_parent = new GigglePlugJSJaC({
+          connection : this.get_connection(),
+          debug      : this.get_debug()
+        });
+
+        this._build_hierarchy_sub(
+          hierarchy_parent,
+          packet,
+          null,
+          packet.getNode()
+        );
+      } catch(e) {
+        this.get_debug().log('[giggle:plug:jsjac] _build_hierarchy > ' + e, 1);
+      } finally {
+        return hierarchy_parent;
+      }
+    },
+
+    /**
      * Sends the packet
      * @public
-     * @param {Function} [callback]
+     * @param   {Function} [callback]
      * @returns {__GigglePlug} Packet object
      */
     send: function(callback) {
@@ -294,7 +367,9 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
         // Callback executor
         var on_packet_response = function(response_data) {
           callback.bind(self)(
-            response_data
+            self._build_hierarchy(
+              response_data
+            )
           );
         };
 

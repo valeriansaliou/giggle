@@ -310,6 +310,27 @@ var __GigglePlug = ring.create(
      */
 
     /**
+     * Builds the plug hierarchy sub elements
+     * @private
+     * @param {__GigglePlug} baseline_object
+     * @param {Object} packet
+     * @param {__GigglePlug} parent_object
+     * @param {Object} node
+     */
+    _build_hierarchy_sub: function(baseline_object, packet, parent_object, node) {
+      this.get_debug().log('[giggle:plug] _build_hierarchy_sub > Method not implemented.', 1);
+    },
+
+    /**
+     * Builds the plug hierarchy from a packet object
+     * @private
+     * @param {Object} packet
+     */
+    _build_hierarchy: function(packet) {
+      this.get_debug().log('[giggle:plug] _build_hierarchy > Method not implemented.', 1);
+    },
+
+    /**
      * Sends the packet
      * @public
      * @param {...Function} [callback]
