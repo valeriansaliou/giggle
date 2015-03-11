@@ -50,7 +50,7 @@ var GiggleStorage = new (ring.create(
        * @default
        * @private
        */
-      this._sessions                               = {};
+      this._sessions                         = {};
       this._sessions[GIGGLE_SESSION_SINGLE]  = {};
       this._sessions[GIGGLE_SESSION_MUJI]    = {};
 
@@ -59,7 +59,7 @@ var GiggleStorage = new (ring.create(
        * @default
        * @private
        */
-      this._broadcast_ids                          = {};
+      this._broadcast_ids = {};
 
       /**
        * @type {Function}
@@ -73,35 +73,35 @@ var GiggleStorage = new (ring.create(
        * @default
        * @private
        */
-      this._single_propose = undefined;
+      this._single_propose  = undefined;
 
       /**
        * @type {Function}
        * @default
        * @private
        */
-      this._single_retract = undefined;
+      this._single_retract  = undefined;
 
       /**
        * @type {Function}
        * @default
        * @private
        */
-      this._single_accept = undefined;
+      this._single_accept   = undefined;
 
       /**
        * @type {Function}
        * @default
        * @private
        */
-      this._single_reject = undefined;
+      this._single_reject   = undefined;
 
       /**
        * @type {Function}
        * @default
        * @private
        */
-      this._single_proceed = undefined;
+      this._single_proceed  = undefined;
 
       /**
        * @type {Function}
@@ -199,8 +199,9 @@ var GiggleStorage = new (ring.create(
      * @returns {Object} Broadcast ID medias
      */
     get_broadcast_ids: function(id) {
-      if(id in this._broadcast_ids)
+      if(id in this._broadcast_ids) {
         return this._broadcast_ids[id];
+      }
 
       return null;
     },
@@ -211,8 +212,9 @@ var GiggleStorage = new (ring.create(
      * @returns {Function} Single initiate
      */
     get_single_initiate: function() {
-      if(typeof this._single_initiate == 'function')
+      if(typeof this._single_initiate == 'function') {
         return this._single_initiate;
+      }
 
       return function(stanza) {};
     },
@@ -232,8 +234,9 @@ var GiggleStorage = new (ring.create(
      * @returns {Function} Single propose
      */
     get_single_propose: function() {
-      if(typeof this._single_propose == 'function')
+      if(typeof this._single_propose == 'function') {
         return this._single_propose;
+      }
 
       return function(stanza) {};
     },
@@ -244,8 +247,9 @@ var GiggleStorage = new (ring.create(
      * @returns {Function} Single retract
      */
     get_single_retract: function() {
-      if(typeof this._single_retract == 'function')
+      if(typeof this._single_retract == 'function') {
         return this._single_retract;
+      }
 
       return function(stanza) {};
     },
@@ -256,8 +260,9 @@ var GiggleStorage = new (ring.create(
      * @returns {Function} Single accept
      */
     get_single_accept: function() {
-      if(typeof this._single_accept == 'function')
+      if(typeof this._single_accept == 'function') {
         return this._single_accept;
+      }
 
       return function(stanza) {};
     },
@@ -268,8 +273,9 @@ var GiggleStorage = new (ring.create(
      * @returns {Function} Single reject
      */
     get_single_reject: function() {
-      if(typeof this._single_reject == 'function')
+      if(typeof this._single_reject == 'function') {
         return this._single_reject;
+      }
 
       return function(stanza) {};
     },
@@ -280,8 +286,9 @@ var GiggleStorage = new (ring.create(
      * @returns {Function} Single proceed
      */
     get_single_proceed: function() {
-      if(typeof this._single_proceed == 'function')
+      if(typeof this._single_proceed == 'function') {
         return this._single_proceed;
+      }
 
       return function(stanza) {};
     },
@@ -292,8 +299,9 @@ var GiggleStorage = new (ring.create(
      * @returns {Function} Muji invite
      */
     get_muji_invite: function() {
-      if(typeof this._muji_invite == 'function')
+      if(typeof this._muji_invite == 'function') {
         return this._muji_invite;
+      }
 
       return function(stanza) {};
     },
@@ -395,8 +403,9 @@ var GiggleStorage = new (ring.create(
     set_broadcast_ids: function(id, medias, proceed_unset) {
       this._broadcast_ids[id] = medias;
 
-      if(proceed_unset === true && id in this._broadcast_ids)
+      if(proceed_unset === true && id in this._broadcast_ids) {
         delete this._broadcast_ids[id];
+      }
     },
 
     /**

@@ -82,14 +82,14 @@ var GiggleSDP = ring.create(
         var init_descriptions = function(name, sub, sub_default) {
           init_content(name);
 
-          if(!('descriptions' in payload[name]))        payload[name].descriptions      = {};
+          if(!('descriptions' in payload[name]))     payload[name].descriptions      = {};
           if(!(sub  in payload[name].descriptions))  payload[name].descriptions[sub] = sub_default;
         };
 
         var init_transports = function(name, sub, sub_default) {
           init_content(name);
 
-          if(!('transports' in payload[name]))        payload[name].transports      = {};
+          if(!('transports' in payload[name]))     payload[name].transports      = {};
           if(!(sub  in payload[name].transports))  payload[name].transports[sub] = sub_default;
         };
 
@@ -160,7 +160,7 @@ var GiggleSDP = ring.create(
             cur_bandwidth.value = m_bandwidth[2]  || error++;
 
             // Incomplete?
-            if(error !== 0) continue;
+            if(error !== 0)  continue;
 
             // Push it to parent array
             init_descriptions(cur_name, 'bandwidth', []);
@@ -183,7 +183,7 @@ var GiggleSDP = ring.create(
             cur_rtpmap.name      = m_rtpmap[3];
 
             // Incomplete?
-            if(error !== 0) continue;
+            if(error !== 0)  continue;
 
             cur_rtpmap_id = cur_rtpmap.id;
 
@@ -210,8 +210,9 @@ var GiggleSDP = ring.create(
                   cur_fmtp_key   = cur_fmtp_attrs[0];
                   cur_fmtp_value = cur_fmtp_attrs[1];
 
-                  while(cur_fmtp_key.length && !cur_fmtp_key[0])
+                  while(cur_fmtp_key.length && !cur_fmtp_key[0]) {
                     cur_fmtp_key = cur_fmtp_key.substring(1);
+                  }
                 } else {
                   cur_fmtp_key = cur_fmtp_values[j];
                   cur_fmtp_value = null;
@@ -221,11 +222,11 @@ var GiggleSDP = ring.create(
                 error = 0;
                 cur_fmtp = {};
 
-                cur_fmtp.name  = cur_fmtp_key    || error++;
+                cur_fmtp.name  = cur_fmtp_key   || error++;
                 cur_fmtp.value = cur_fmtp_value;
 
                 // Incomplete?
-                if(error !== 0) continue;
+                if(error !== 0)  continue;
 
                 // Push it to parent array
                 init_payload(cur_name, cur_fmtp_id);
@@ -249,7 +250,7 @@ var GiggleSDP = ring.create(
             cur_rtcp_fb.subtype = m_rtcp_fb[4];
 
             // Incomplete?
-            if(error !== 0) continue;
+            if(error !== 0)  continue;
 
             cur_rtcp_fb_id = cur_rtcp_fb.id;
 
@@ -277,7 +278,7 @@ var GiggleSDP = ring.create(
             cur_rtcp_fb_trr_int.value   = m_rtcp_fb_trr_int[2] || error++;
 
             // Incomplete?
-            if(error !== 0) continue;
+            if(error !== 0)  continue;
 
             cur_rtcp_fb_trr_int_id = cur_rtcp_fb_trr_int.id;
 
@@ -302,7 +303,7 @@ var GiggleSDP = ring.create(
             cur_crypto.tag               = m_crypto[1]  || error++;
 
             // Incomplete?
-            if(error !== 0) continue;
+            if(error !== 0)  continue;
 
             // Push it to parent array
             init_encryption(cur_name);
@@ -323,7 +324,7 @@ var GiggleSDP = ring.create(
             cur_zrtp_hash.value   = m_zrtp_hash[2]  || error++;
 
             // Incomplete?
-            if(error !== 0) continue;
+            if(error !== 0)  continue;
 
             // Push it to parent array
             init_encryption(cur_name);
@@ -367,7 +368,7 @@ var GiggleSDP = ring.create(
             cur_ssrc.value = m_ssrc[4];
 
             // Incomplete?
-            if(error !== 0) continue;
+            if(error !== 0)  continue;
 
             // Push it to storage array
             init_ssrc(cur_name, cur_ssrc_id);
@@ -412,7 +413,7 @@ var GiggleSDP = ring.create(
             if(cur_ssrc_group.sources.length === 0)  error++;
 
             // Incomplete?
-            if(error !== 0) continue;
+            if(error !== 0)  continue;
 
             // Push it to storage array
             init_ssrc_group(cur_name, cur_ssrc_group_semantics);
@@ -444,7 +445,7 @@ var GiggleSDP = ring.create(
             cur_extmap.senders = m_extmap[3];
 
             // Incomplete?
-            if(error !== 0) continue;
+            if(error !== 0)  continue;
 
             // Push it to parent array
             init_descriptions(cur_name, 'rtp-hdrext', []);
@@ -465,7 +466,7 @@ var GiggleSDP = ring.create(
             cur_fingerprint.value = m_fingerprint[2]  || error++;
 
             // Incomplete?
-            if(error !== 0) continue;
+            if(error !== 0)  continue;
 
             // Push it to parent array
             init_transports(cur_name, 'fingerprint', cur_fingerprint);
@@ -498,8 +499,9 @@ var GiggleSDP = ring.create(
           if(m_pwd) {
             init_transports(cur_name, 'pwd', m_pwd[1]);
 
-            if(!common_transports.pwd)
+            if(!common_transports.pwd) {
               common_transports.pwd = m_pwd[1];
+            }
 
             continue;
           }
@@ -510,8 +512,9 @@ var GiggleSDP = ring.create(
           if(m_ufrag) {
             init_transports(cur_name, 'ufrag', m_ufrag[1]);
 
-            if(!common_transports.ufrag)
+            if(!common_transports.ufrag) {
               common_transports.ufrag = m_ufrag[1];
+            }
 
             continue;
           }
@@ -537,12 +540,14 @@ var GiggleSDP = ring.create(
           }
 
           // Validate transports
-          if(typeof payload[cur_check_name].transports !== 'object')
+          if(typeof payload[cur_check_name].transports !== 'object') {
             payload[cur_check_name].transports = {};
+          }
 
           for(cur_transport_sub in common_transports) {
-            if(!payload[cur_check_name].transports[cur_transport_sub])
+            if(!payload[cur_check_name].transports[cur_transport_sub]) {
               payload[cur_check_name].transports[cur_transport_sub] = common_transports[cur_transport_sub];
+            }
           }
         }
       } catch(e) {
@@ -658,15 +663,18 @@ var GiggleSDP = ring.create(
         ];
 
         for(cur_media in payload) {
-          if(cur_media != GIGGLE_MEDIA_VIDEO) continue;
+          if(cur_media != GIGGLE_MEDIA_VIDEO)  continue;
 
           cur_payload = payload[cur_media].descriptions.payload;
 
           for(j in cur_payload) {
-            if(typeof cur_payload[j].parameter !== 'object')  cur_payload[j].parameter = [];
+            if(typeof cur_payload[j].parameter !== 'object') {
+              cur_payload[j].parameter = [];
+            }
 
-            for(k in res_arr)
+            for(k in res_arr) {
               (cur_payload[j].parameter).push(res_arr[k]);
+            }
           }
         }
 
@@ -710,7 +718,7 @@ var GiggleSDP = ring.create(
         }
 
         // Incomplete?
-        if(error !== 0) return {};
+        if(error !== 0)  return {};
       } catch(e) {
         this.parent.get_debug().log('[giggle:sdp] _parse_candidate > ' + e, 1);
       }
@@ -793,10 +801,11 @@ var GiggleSDP = ring.create(
       try {
         // Parse candidates
         var i,
-            cur_media, cur_name, cur_c_name, cur_candidate, cur_label, cur_id, cur_candidate_str;
+            cur_media, cur_name, cur_c_name, cur_candidate,
+            cur_label, cur_id, cur_candidate_str;
 
         for(cur_name in candidates) {
-          cur_c_name = candidates[cur_name];
+          cur_c_name  = candidates[cur_name];
           cur_media   = this.parent.utils.media_generate(cur_name);
 
           for(i in cur_c_name) {
@@ -1008,8 +1017,9 @@ var GiggleSDP = ring.create(
 
               payloads_str += 'a=extmap:' + cur_d_rtp_hdrext_obj.id;
 
-              if(cur_d_rtp_hdrext_obj.senders)
+              if(cur_d_rtp_hdrext_obj.senders) {
                 payloads_str += '/' + cur_d_rtp_hdrext_obj.senders;
+              }
 
               payloads_str += ' ' + cur_d_rtp_hdrext_obj.uri;
               payloads_str += WEBRTC_SDP_LINE_BREAK;
@@ -1044,7 +1054,7 @@ var GiggleSDP = ring.create(
               cur_d_crypto_obj = cur_d_encryption.crypto[j];
 
               payloads_str += 'a=crypto:'                       +
-                              cur_d_crypto_obj.tag           + ' ' +
+                              cur_d_crypto_obj.tag              + ' ' +
                               cur_d_crypto_obj['crypto-suite']  + ' ' +
                               cur_d_crypto_obj['key-params']    +
                               (cur_d_crypto_obj['session-params'] ? (' ' + cur_d_crypto_obj['session-params']) : '');
@@ -1056,7 +1066,7 @@ var GiggleSDP = ring.create(
             for(p in cur_d_encryption['zrtp-hash']) {
               cur_d_zrtp_hash_obj = cur_d_encryption['zrtp-hash'][p];
 
-              payloads_str += 'a=zrtp-hash:'                  +
+              payloads_str += 'a=zrtp-hash:'               +
                               cur_d_zrtp_hash_obj.version  + ' ' +
                               cur_d_zrtp_hash_obj.value;
 
@@ -1071,8 +1081,9 @@ var GiggleSDP = ring.create(
             payloads_str += 'a=rtcp-fb:*';
             payloads_str += ' ' + cur_d_rtcp_fb_obj.type;
 
-            if(cur_d_rtcp_fb_obj.subtype)
+            if(cur_d_rtcp_fb_obj.subtype) {
               payloads_str += ' ' + cur_d_rtcp_fb_obj.subtype;
+            }
 
             payloads_str += WEBRTC_SDP_LINE_BREAK;
           }
@@ -1105,8 +1116,9 @@ var GiggleSDP = ring.create(
               if(cur_d_payload_obj_attrs.clockrate) {
                 payloads_str += '/' + cur_d_payload_obj_attrs.clockrate;
 
-                if(cur_d_payload_obj_attrs.channels)
+                if(cur_d_payload_obj_attrs.channels) {
                   payloads_str += '/' + cur_d_payload_obj_attrs.channels;
+                }
               }
             }
 
@@ -1120,7 +1132,9 @@ var GiggleSDP = ring.create(
               for(o in cur_d_payload_obj_parameter) {
                 cur_d_payload_obj_parameter_obj = cur_d_payload_obj_parameter[o];
 
-                if(cur_d_payload_obj_parameter_str)  cur_d_payload_obj_parameter_str += ';';
+                if(cur_d_payload_obj_parameter_str) {
+                  cur_d_payload_obj_parameter_str += ';';
+                }
 
                 cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj.name;
 
@@ -1141,8 +1155,9 @@ var GiggleSDP = ring.create(
               payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
               payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj.type;
 
-              if(cur_d_payload_obj_rtcp_fb_obj.subtype)
+              if(cur_d_payload_obj_rtcp_fb_obj.subtype) {
                 payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj.subtype;
+              }
 
               payloads_str += WEBRTC_SDP_LINE_BREAK;
             }
@@ -1186,8 +1201,9 @@ var GiggleSDP = ring.create(
               payloads_str += ':' + cur_d_ssrc_id;
               payloads_str += ' ' + cur_d_ssrc_obj.name;
 
-              if(cur_d_ssrc_obj.value)
+              if(cur_d_ssrc_obj.value) {
                 payloads_str += ':' + cur_d_ssrc_obj.value;
+              }
 
               payloads_str += WEBRTC_SDP_LINE_BREAK;
             }
@@ -1196,8 +1212,9 @@ var GiggleSDP = ring.create(
           // Candidates (some browsers require them there, too)
           if(typeof sdp_candidates == 'object') {
             for(c in sdp_candidates) {
-              if((sdp_candidates[c]).label == GIGGLE_MEDIAS[cur_media].label)
+              if((sdp_candidates[c]).label == GIGGLE_MEDIAS[cur_media].label) {
                 payloads_str += (sdp_candidates[c]).candidate;
+              }
             }
           }
         }
@@ -1244,11 +1261,11 @@ var GiggleSDP = ring.create(
 
         // Line content
         sdp_origin += 'o=';
-        sdp_origin += username + ' ';
-        sdp_origin += session_id + ' ';
-        sdp_origin += session_version + ' ';
-        sdp_origin += nettype + ' ';
-        sdp_origin += addrtype + ' ';
+        sdp_origin += username         + ' ';
+        sdp_origin += session_id       + ' ';
+        sdp_origin += session_version  + ' ';
+        sdp_origin += nettype          + ' ';
+        sdp_origin += addrtype         + ' ';
         sdp_origin += unicast_address;
       } catch(e) {
         this.parent.get_debug().log('[giggle:sdp] _generate_origin > ' + e, 1);
@@ -1263,7 +1280,7 @@ var GiggleSDP = ring.create(
      * @returns {String} SDP session name raw text
      */
     _generate_session_name: function() {
-      return 's=' + (this.parent.get_sid() || '-');
+      return ('s=' + (this.parent.get_sid() || '-'));
     },
 
     /**
@@ -1287,13 +1304,13 @@ var GiggleSDP = ring.create(
       var sdp = '';
 
       // ICE credentials
-      if(ufrag)  sdp += 'a=ice-ufrag:' + ufrag + WEBRTC_SDP_LINE_BREAK;
-      if(pwd)    sdp += 'a=ice-pwd:' + pwd + WEBRTC_SDP_LINE_BREAK;
+      if(ufrag)  sdp += ('a=ice-ufrag:' + ufrag + WEBRTC_SDP_LINE_BREAK);
+      if(pwd)    sdp += ('a=ice-pwd:'   + pwd   + WEBRTC_SDP_LINE_BREAK);
 
       // Fingerprint
       if(fingerprint) {
         if(fingerprint.hash && fingerprint.value) {
-          sdp += 'a=fingerprint:' + fingerprint.hash + ' ' + fingerprint.value;
+          sdp += ('a=fingerprint:' + fingerprint.hash + ' ' + fingerprint.value);
           sdp += WEBRTC_SDP_LINE_BREAK;
         }
       }
@@ -1318,18 +1335,19 @@ var GiggleSDP = ring.create(
         var i;
         var type_ids = [];
 
-        sdp_media += 'm=' + media + ' ' + port + ' ';
+        sdp_media += ('m=' + media + ' ' + port + ' ');
 
         // Protocol
-        if((crypto && crypto.length) || (fingerprint && fingerprint.hash && fingerprint.value))
+        if((crypto && crypto.length) || (fingerprint && fingerprint.hash && fingerprint.value)) {
           sdp_media += 'RTP/SAVPF';
-        else
+        } else {
           sdp_media += 'RTP/AVPF';
+        }
 
         // Payload type IDs
         for(i in payload)  type_ids.push(payload[i].attrs.id);
 
-        sdp_media += ' ' + type_ids.join(' ');
+        sdp_media += (' ' + type_ids.join(' '));
       } catch(e) {
         this.parent.get_debug().log('[giggle:sdp] _generate_description_media > ' + e, 1);
       }

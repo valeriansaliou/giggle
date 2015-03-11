@@ -221,23 +221,23 @@ var Giggle = new (ring.create(
         var from = stanza.from();
 
         if(from) {
-          var jid_obj = new this.utils.jid(this.utils, from);
-          var from_bare = (jid_obj.node() + '@' + jid_obj.domain());
+          var jid_obj    = new this.utils.jid(this.utils, from);
+          var from_bare  = (jid_obj.node() + '@' + jid_obj.domain());
 
           // Single or Muji?
-          var is_muji   = (this._read(GIGGLE_SESSION_MUJI, from_bare) !== null);
-          var is_single = !is_muji;
+          var is_muji    = (this._read(GIGGLE_SESSION_MUJI, from_bare) !== null);
+          var is_single  = !is_muji;
 
-          var action        = null;
-          var sid           = null;
-          var session_route = null;
+          var action         = null;
+          var sid            = null;
+          var session_route  = null;
 
           // Route the incoming stanza
           var jingle = stanza.select_element_uniq('jingle', NS_JINGLE);
 
           if(jingle) {
-            sid = jingle.attribute('sid');
-            action = jingle.attribute('action');
+            sid     = jingle.attribute('sid');
+            action  = jingle.attribute('action');
           } else {
             var stanza_id = stanza.id();
 

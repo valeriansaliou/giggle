@@ -745,8 +745,10 @@ var GiggleMuji = ring.create([__GiggleBase],
         }
 
         // Toggle media?
-        if(!media)
-          media = (this.get_media() == GIGGLE_MEDIA_VIDEO) ? GIGGLE_MEDIA_AUDIO : GIGGLE_MEDIA_VIDEO;
+        if(!media) {
+          media = (this.get_media() == GIGGLE_MEDIA_VIDEO) ? GIGGLE_MEDIA_AUDIO
+                                                           : GIGGLE_MEDIA_VIDEO;
+        }
 
         // Media unknown?
         if(!(media in GIGGLE_MEDIAS)) {
@@ -839,7 +841,7 @@ var GiggleMuji = ring.create([__GiggleBase],
           return false;
         }
 
-        if(typeof args !== 'object') args = {};
+        if(typeof args !== 'object')  args = {};
 
         // Build stanza
         var stanza = this.plug.presence();
@@ -973,8 +975,8 @@ var GiggleMuji = ring.create([__GiggleBase],
         /* @function */
         (this.get_room_presence_in())(this, stanza);
 
-        var id = stanza.id();
-        var type = (stanza.type() || GIGGLE_PRESENCE_TYPE_AVAILABLE);
+        var id    = stanza.id();
+        var type  = (stanza.type() || GIGGLE_PRESENCE_TYPE_AVAILABLE);
 
         if(id)  this._set_received_id(id);
 
@@ -1027,7 +1029,7 @@ var GiggleMuji = ring.create([__GiggleBase],
               var muji = _this.utils.stanza_muji(stanza);
 
               // Don't handle non-Muji stanzas there...
-              if(!muji) return;
+              if(!muji)  return;
 
               // Submit to registered handler
               var username = _this.utils.stanza_username(stanza);
@@ -1132,10 +1134,8 @@ var GiggleMuji = ring.create([__GiggleBase],
           'xmlns': NS_JABBER_CONFERENCE
         });
 
-        if(reason)
-          x_invite.attribute('reason', reason);
-        if(this.get_password())
-          x_invite.attribute('password', this.get_password());
+        if(reason)               x_invite.attribute('reason', reason);
+        if(this.get_password())  x_invite.attribute('password', this.get_password());
 
         stanza.child('x', {
           'media': this.get_media(),
@@ -1672,8 +1672,9 @@ var GiggleMuji = ring.create([__GiggleBase],
         // Remove participant session
         var session = (this.get_participants(username) || {}).session;
 
-        if(session && session.get_status() !== GIGGLE_STATUS_TERMINATED)
+        if(session && session.get_status() !== GIGGLE_STATUS_TERMINATED) {
           session.abort(true);
+        }
 
         this._set_participants(username, null);
         this.get_remove_remote_view()(this, username);
@@ -2251,7 +2252,7 @@ var GiggleMuji = ring.create([__GiggleBase],
     _peer_timeout: function(state, args) {
       try {
         // Assert
-        if(typeof args !== 'object') args = {};
+        if(typeof args !== 'object')  args = {};
 
         var t_iid = this.get_iid();
 
@@ -2284,8 +2285,9 @@ var GiggleMuji = ring.create([__GiggleBase],
 
       // Close the media stream
       if(this.get_peer_connection()  &&
-         (typeof this.get_peer_connection().close == 'function'))
+         (typeof this.get_peer_connection().close == 'function')) {
         this.get_peer_connection().close();
+      }
 
       // Remove this session from router
       Giggle._remove(GIGGLE_SESSION_SINGLE, this.get_sid());
@@ -2424,10 +2426,11 @@ var GiggleMuji = ring.create([__GiggleBase],
         var participants = {};
 
         // One specific or all?
-        if(username)
+        if(username) {
           participants[username] = this.get_participants(username);
-        else
+        } else {
           participants = this.get_participants();
+        }
 
         for(i in participants) {
           cur_participant = participants[i];
@@ -2548,23 +2551,23 @@ var GiggleMuji = ring.create([__GiggleBase],
 
       try {
         // Main values
-        args.connection             = this.get_connection();
-        args.to                     = this.get_to() + '/' + username;
-        args.local_view             = this.get_local_view();
-        args.remote_view            = this._shortcut_participant_view(username);
-        args.local_stream_readonly  = true;
+        args.connection                 = this.get_connection();
+        args.to                         = this.get_to() + '/' + username;
+        args.local_view                 = this.get_local_view();
+        args.remote_view                = this._shortcut_participant_view(username);
+        args.local_stream_readonly      = true;
 
         // Propagate values
-        args.media         = this.get_media();
-        args.video_source  = this.get_video_source();
-        args.resolution    = this.get_resolution();
-        args.bandwidth     = this.get_bandwidth();
-        args.fps           = this.get_fps();
-        args.stun          = this.get_stun();
-        args.turn          = this.get_turn();
-        args.sdp_trace     = this.get_sdp_trace();
-        args.net_trace     = this.get_net_trace();
-        args.debug         = this.get_debug();
+        args.media                      = this.get_media();
+        args.video_source               = this.get_video_source();
+        args.resolution                 = this.get_resolution();
+        args.bandwidth                  = this.get_bandwidth();
+        args.fps                        = this.get_fps();
+        args.stun                       = this.get_stun();
+        args.turn                       = this.get_turn();
+        args.sdp_trace                  = this.get_sdp_trace();
+        args.net_trace                  = this.get_net_trace();
+        args.debug                      = this.get_debug();
 
         // Handlers
         args.session_initiate_pending   = this._handle_participant_session_initiate_pending.bind(this);
@@ -2617,10 +2620,11 @@ var GiggleMuji = ring.create([__GiggleBase],
         stanza.send(function(_stanza) {
           if(_this.get_net_trace())  _this.get_debug().log('[giggle:muji] _autoconfigure_room_password > Incoming packet received' + '\n\n' + _stanza.xml());
 
-          if(_stanza.type() === GIGGLE_IQ_TYPE_ERROR)
+          if(_stanza.type() === GIGGLE_IQ_TYPE_ERROR) {
             _this.get_debug().log('[giggle:muji] _autoconfigure_room_password > Could not get room configuration.', 1);
-          else
+          } else {
             _this._receive_autoconfigure_room_password(_stanza);
+          }
         });
 
         if(this.get_net_trace())  this.get_debug().log('[giggle:muji] _autoconfigure_room_password > Outgoing packet sent' + '\n\n' + stanza.xml());
@@ -3292,7 +3296,10 @@ var GiggleMuji = ring.create([__GiggleBase],
      * @returns {String} Prepended ID value
      */
     get_id_pre: function() {
-      return GIGGLE_STANZA_ID_PRE + '_' + (this.get_sid() || '0') + '_' + this.get_username() + '_';
+      return (GIGGLE_STANZA_ID_PRE +
+              '_' + (this.get_sid() || '0') +
+              '_' + this.get_username() +
+              '_');
     },
 
     /**
@@ -3671,8 +3678,9 @@ var GiggleMuji = ring.create([__GiggleBase],
       if(username === null) {
         this._participants = {};
       } else if(data_obj === null) {
-        if(username in this._participants)
+        if(username in this._participants) {
           delete this._participants[username];
+        }
       } else if(username) {
         this._participants[username] = data_obj;
       }

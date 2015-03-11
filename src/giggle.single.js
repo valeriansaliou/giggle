@@ -586,15 +586,15 @@ var GiggleSingle = ring.create([__GiggleBase],
         }
 
         // Assert
-        if(typeof args !== 'object') args = {};
+        if(typeof args !== 'object')  args = {};
 
         // Build stanza
         var stanza = this.plug.iq();
 
         stanza.to(this.get_to());
-        if(type) stanza.type(type);
+        if(type)      stanza.type(type);
 
-        if(!args.id) args.id = this.get_id_new();
+        if(!args.id)  args.id = this.get_id_new();
         stanza.id(args.id);
 
         if(type == GIGGLE_IQ_TYPE_SET) {
@@ -902,8 +902,9 @@ var GiggleSingle = ring.create([__GiggleBase],
         }
 
         // Toggle media?
-        if(!media)
+        if(!media) {
           media = (this.get_media() == GIGGLE_MEDIA_VIDEO) ? GIGGLE_MEDIA_AUDIO : GIGGLE_MEDIA_VIDEO;
+        }
 
         // Media unknown?
         if(!(media in GIGGLE_MEDIAS)) {
@@ -1171,7 +1172,7 @@ var GiggleSingle = ring.create([__GiggleBase],
         }
 
         // Filter info
-        args.info = args.info || GIGGLE_SESSION_INFO_ACTIVE;
+        args.info = (args.info || GIGGLE_SESSION_INFO_ACTIVE);
 
         // Build Jingle stanza
         var jingle = this.utils.stanza_generate_jingle(stanza, {
@@ -1283,7 +1284,7 @@ var GiggleSingle = ring.create([__GiggleBase],
         }
 
         // Filter reason
-        args.reason = args.reason || GIGGLE_REASON_SUCCESS;
+        args.reason = (args.reason || GIGGLE_REASON_SUCCESS);
 
         // Store terminate reason
         this._set_reason(args.reason);
@@ -1313,8 +1314,8 @@ var GiggleSingle = ring.create([__GiggleBase],
         // Schedule error timeout
         this.utils.stanza_timeout(GIGGLE_STANZA_IQ, GIGGLE_IQ_TYPE_RESULT, args.id, {
           /* @function */
-          external:   this.get_session_terminate_error().bind(this),
-          internal:   this._handle_session_terminate_error.bind(this)
+          external: this.get_session_terminate_error().bind(this),
+          internal: this._handle_session_terminate_error.bind(this)
         });
 
         this.get_debug().log('[giggle:single] _send_session_terminate > Sent (reason: ' + args.reason + ').', 2);
@@ -1380,11 +1381,11 @@ var GiggleSingle = ring.create([__GiggleBase],
 
         for(cur_name in this.get_name()) {
           content_queue_local[cur_name] = this.utils.generate_content(
-              this.get_creator(cur_name),
-              cur_name,
-              this.get_senders(cur_name),
-              this.get_payloads_local(cur_name),
-              this.get_candidates_queue_local(cur_name)
+            this.get_creator(cur_name),
+            cur_name,
+            this.get_senders(cur_name),
+            this.get_payloads_local(cur_name),
+            this.get_candidates_queue_local(cur_name)
           );
         }
 
@@ -1480,7 +1481,7 @@ var GiggleSingle = ring.create([__GiggleBase],
           }
         );
 
-        if('xmpp'   in error) {
+        if('xmpp' in error) {
           error_node.child(
             error.xmpp, {
               'xmlns': NS_STANZAS
@@ -2551,8 +2552,9 @@ var GiggleSingle = ring.create([__GiggleBase],
             // Send unsent candidates
             var candidates_queue_local = _this.get_candidates_queue_local();
 
-            if(_this.utils.object_length(candidates_queue_local) > 0)
+            if(_this.utils.object_length(candidates_queue_local) > 0) {
               _this.send(GIGGLE_IQ_TYPE_SET, { action: GIGGLE_ACTION_TRANSPORT_INFO, candidates: candidates_queue_local });
+            }
           }
 
           // Empty the unsent candidates queue
@@ -2642,10 +2644,11 @@ var GiggleSingle = ring.create([__GiggleBase],
       this.get_debug().log('[giggle:single] _peer_connection_create_dispatch', 4);
 
       try {
-        if(this.is_initiator())
+        if(this.is_initiator()) {
           this._peer_connection_create_offer();
-        else
+        } else {
           this._peer_connection_create_answer();
+        }
       } catch(e) {
         this.get_debug().log('[giggle:single] _peer_connection_create_dispatch > ' + e, 1);
       }
@@ -2766,10 +2769,10 @@ var GiggleSingle = ring.create([__GiggleBase],
         (this.get_session_initiate_error())(this);
 
         // Not needed in case we are the responder (breaks termination)
-        if(this.is_initiator()) this._handle_session_initiate_error();
+        if(this.is_initiator())  this._handle_session_initiate_error();
 
         // Not needed in case we are the initiator (no packet sent, ever)
-        if(this.is_responder()) this.terminate(GIGGLE_REASON_MEDIA_ERROR);
+        if(this.is_responder())  this.terminate(GIGGLE_REASON_MEDIA_ERROR);
 
         this.get_debug().log('[giggle:single] _peer_got_user_media_error > Failed (' + (error.PERMISSION_DENIED ? 'permission denied' : 'unknown' ) + ').', 1);
       } catch(e) {
@@ -2786,7 +2789,7 @@ var GiggleSingle = ring.create([__GiggleBase],
     _peer_timeout: function(state, args) {
       try {
         // Assert
-        if(typeof args !== 'object') args = {};
+        if(typeof args !== 'object')  args = {};
 
         var t_sid = this.get_sid();
 
@@ -2819,8 +2822,9 @@ var GiggleSingle = ring.create([__GiggleBase],
 
       // Close the media stream
       if(this.get_peer_connection()  &&
-         (typeof this.get_peer_connection().close == 'function'))
+         (typeof this.get_peer_connection().close == 'function')) {
         this.get_peer_connection().close();
+      }
 
       // Remove this session from router
       Giggle._remove(GIGGLE_SESSION_SINGLE, this.get_sid());
@@ -3093,7 +3097,7 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @returns {String} Prepended ID value
      */
     get_id_pre: function() {
-      return GIGGLE_STANZA_ID_PRE + '_' + (this.get_sid() || '0') + '_';
+      return (GIGGLE_STANZA_ID_PRE + '_' + (this.get_sid() || '0') + '_');
     },
 
     /**
@@ -3130,8 +3134,10 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @returns {Object} Remote content object
      */
     get_content_remote: function(name) {
-      if(name)
-        return (name in this._content_remote) ? this._content_remote[name] : {};
+      if(name) {
+        return (name in this._content_remote) ? this._content_remote[name]
+                                              : {};
+      }
 
       return this._content_remote;
     },
@@ -3143,8 +3149,10 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @returns {Object} Remote payloads object
      */
     get_payloads_remote: function(name) {
-      if(name)
-        return (name in this._payloads_remote) ? this._payloads_remote[name] : {};
+      if(name) {
+        return (name in this._payloads_remote) ? this._payloads_remote[name]
+                                               : {};
+      }
 
       return this._payloads_remote;
     },
@@ -3156,8 +3164,10 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @returns {Object} Remote group object
      */
     get_group_remote: function(semantics) {
-      if(semantics)
-        return (semantics in this._group_remote) ? this._group_remote[semantics] : {};
+      if(semantics) {
+        return (semantics in this._group_remote) ? this._group_remote[semantics]
+                                                 : {};
+      }
 
       return this._group_remote;
     },
@@ -3169,8 +3179,10 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @returns {Object} Remote candidates object
      */
     get_candidates_remote: function(name) {
-      if(name)
-        return (name in this._candidates_remote) ? this._candidates_remote[name] : [];
+      if(name) {
+        return (name in this._candidates_remote) ? this._candidates_remote[name]
+                                                 : [];
+      }
 
       return this._candidates_remote;
     },
@@ -3182,8 +3194,10 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @returns {Object} Remote candidates queue object
      */
     get_candidates_queue_remote: function(name) {
-      if(name)
-        return (name in this._candidates_queue_remote) ? this._candidates_queue_remote[name] : {};
+      if(name) {
+        return (name in this._candidates_queue_remote) ? this._candidates_queue_remote[name]
+                                                       : {};
+      }
 
       return this._candidates_queue_remote;
     },
@@ -3431,8 +3445,9 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @param {DOM} [remote_view]
      */
     _set_remote_view: function(remote_view) {
-      if(typeof this._remote_view !== 'object')
+      if(typeof this._remote_view !== 'object') {
         this._remote_view = [];
+      }
 
       this._remote_view.push(remote_view);
     },
@@ -3473,8 +3488,9 @@ var GiggleSingle = ring.create([__GiggleBase],
           var payloads_add   = payload_data.descriptions.payload;
 
           for(key in payloads_add) {
-            if(!(key in payloads_store))
+            if(!(key in payloads_store)) {
               payloads_store[key] = payloads_add[key];
+            }
           }
         }
       } catch(e) {
@@ -3509,10 +3525,11 @@ var GiggleSingle = ring.create([__GiggleBase],
      * @param {Object} candidate_data
      */
     _set_candidates_queue_remote: function(name, candidate_data) {
-      if(name === null)
+      if(name === null) {
         this._candidates_queue_remote = {};
-      else
+      } else {
         this._candidates_queue_remote[name] = (candidate_data);
+      }
     },
 
     /**
@@ -3525,18 +3542,21 @@ var GiggleSingle = ring.create([__GiggleBase],
       try {
         if(!name) return;
 
-        if(!(name in this._candidates_remote))
+        if(!(name in this._candidates_remote)) {
           this._set_candidates_remote(name, []);
+        }
 
         var c, i;
         var candidate_ids = [];
 
-        for(c in this.get_candidates_remote(name))
+        for(c in this.get_candidates_remote(name)) {
           candidate_ids.push(this.get_candidates_remote(name)[c].id);
+        }
 
         for(i in candidate_data) {
-          if((candidate_data[i].id).indexOf(candidate_ids) !== -1)
+          if((candidate_data[i].id).indexOf(candidate_ids) !== -1) {
             this.get_candidates_remote(name).push(candidate_data[i]);
+          }
         }
       } catch(e) {
         this.get_debug().log('[giggle:single] _set_candidates_remote_add > ' + e, 1);

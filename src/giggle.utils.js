@@ -255,8 +255,9 @@ var GiggleUtils = ring.create(
 
       for(i = 0; i < arguments.length; i++) {
         for(p in arguments[i]) {
-          if(arguments[i].hasOwnProperty(p))
+          if(arguments[i].hasOwnProperty(p)) {
             collect_obj[p] = arguments[i][p];
+          }
         }
       }
 
@@ -302,36 +303,38 @@ var GiggleUtils = ring.create(
         var copy, i, attr;
 
         // Assert
-        if(object === null || typeof object !== 'object') return object;
+        if(object === null || typeof object !== 'object')  return object;
 
         // Handle Date
         if(object instanceof Date) {
-            copy = new Date();
-            copy.setTime(object.getTime());
+          copy = new Date();
+          copy.setTime(object.getTime());
 
-            return copy;
+          return copy;
         }
 
         // Handle Array
         if(object instanceof Array) {
-            copy = [];
+          copy = [];
 
-            for(i = 0, len = object.length; i < len; i++)
-              copy[i] = this.object_clone(object[i]);
+          for(i = 0, len = object.length; i < len; i++) {
+            copy[i] = this.object_clone(object[i]);
+          }
 
-            return copy;
+          return copy;
         }
 
         // Handle Object
         if(object instanceof Object) {
-            copy = {};
+          copy = {};
 
-            for(attr in object) {
-                if(object.hasOwnProperty(attr))
-                  copy[attr] = this.object_clone(object[attr]);
+          for(attr in object) {
+            if(object.hasOwnProperty(attr)) {
+              copy[attr] = this.object_clone(object[attr]);
             }
+          }
 
-            return copy;
+          return copy;
         }
       } catch(e) {
         this.debug.log('[giggle:utils] object_clone > ' + e, 1);
@@ -412,11 +415,13 @@ var GiggleUtils = ring.create(
             cur_stun_config = {};
             cur_stun_config.url = 'stun:' + cur_stun_obj.host;
 
-            if(cur_stun_obj.port)
+            if(cur_stun_obj.port) {
               cur_stun_config.url += ':' + cur_stun_obj.port;
+            }
 
-            if(cur_stun_obj.transport && this.browser().name != GIGGLE_BROWSER_FIREFOX)
+            if(cur_stun_obj.transport && this.browser().name != GIGGLE_BROWSER_FIREFOX) {
               cur_stun_config.url += '?transport=' + cur_stun_obj.transport;
+            }
 
             (config.iceServers).push(cur_stun_config);
           }
@@ -430,17 +435,21 @@ var GiggleUtils = ring.create(
             cur_turn_config = {};
             cur_turn_config.url = 'turn:' + cur_turn_obj.host;
 
-            if(cur_turn_obj.port)
+            if(cur_turn_obj.port) {
               cur_turn_config.url += ':' + cur_turn_obj.port;
+            }
 
-            if(cur_turn_obj.transport)
-              cur_turn_config.url += '?transport=' + cur_turn_obj.transport;
+            if(cur_turn_obj.transport) {
+              cur_turn_config.url += ('?transport=' + cur_turn_obj.transport);
+            }
 
-            if(cur_turn_obj.username)
+            if(cur_turn_obj.username) {
               cur_turn_config.username = cur_turn_obj.username;
+            }
 
-            if(cur_turn_obj.password)
+            if(cur_turn_obj.password) {
               cur_turn_config.password = cur_turn_obj.password;
+            }
 
             (config.iceServers).push(cur_turn_config);
           }
@@ -720,8 +729,9 @@ var GiggleUtils = ring.create(
             var cur_reason;
 
             for(cur_reason in GIGGLE_REASONS) {
-              if(this.stanza_get_element(reason[0], cur_reason, this.parent.get_namespace()).length)
+              if(this.stanza_get_element(reason[0], cur_reason, this.parent.get_namespace()).length) {
                 return cur_reason;
+              }
             }
           }
         }
@@ -746,8 +756,9 @@ var GiggleUtils = ring.create(
           var cur_info;
 
           for(cur_info in GIGGLE_SESSION_INFOS) {
-            if(this.stanza_get_element(jingle, cur_info, NS_JINGLE_APPS_RTP_INFO).length)
+            if(this.stanza_get_element(jingle, cur_info, NS_JINGLE_APPS_RTP_INFO).length) {
               return cur_info;
+            }
           }
         }
       } catch(e) {
@@ -766,7 +777,7 @@ var GiggleUtils = ring.create(
      */
     stanza_timeout: function(t_node, t_type, t_id, handlers) {
       try {
-        var t_sid = this.parent.get_sid();
+        var t_sid    = this.parent.get_sid();
         var t_status = this.parent.get_status();
 
         this.debug.log('[giggle:utils] stanza_timeout > Registered (node: ' + t_node + ', type: ' + t_type + ', id: ' + t_id + ', status: ' + t_status + ').', 4);
@@ -1015,8 +1026,9 @@ var GiggleUtils = ring.create(
             'ssrc-group': {}
           };
 
-          for(ic_key in ic_arr)
+          for(ic_key in ic_arr) {
             if(!(ic_key in payload_obj.descriptions))  payload_obj.descriptions[ic_key] = ic_arr[ic_key];
+          }
         };
 
         var init_payload = function(id) {
@@ -1030,8 +1042,9 @@ var GiggleUtils = ring.create(
 
           if(!(id in payload_obj.descriptions.payload))  payload_obj.descriptions.payload[id] = {};
 
-          for(ip_key in ip_arr)
+          for(ip_key in ip_arr) {
             if(!(ip_key in payload_obj.descriptions.payload[id]))  payload_obj.descriptions.payload[id][ip_key] = ip_arr[ip_key];
+          }
         };
 
         var init_ssrc_group_semantics = function(semantics) {
@@ -1048,8 +1061,9 @@ var GiggleUtils = ring.create(
           var cd_media = this.stanza_get_attribute(description, 'media');
           var cd_ssrc  = this.stanza_get_attribute(description, 'ssrc');
 
-          if(!cd_media)
+          if(!cd_media) {
             this.debug.log('[giggle:utils] stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
+          }
 
           // Initialize current description
           init_content();
@@ -1322,8 +1336,9 @@ var GiggleUtils = ring.create(
               (value && child[value]) ? child[value] : null
             );
 
-            for(attr in child)
+            for(attr in child) {
               if(attr != value)  this.stanza_set_attribute(node, attr, child[attr]);
+            }
           }
         }
       } catch(e) {
@@ -1350,9 +1365,11 @@ var GiggleUtils = ring.create(
           'xmlns': this.parent.get_namespace()
         });
 
-        if(!attrs.sid) attrs.sid = this.parent.get_sid();
+        if(!attrs.sid)  attrs.sid = this.parent.get_sid();
 
-        for(cur_attr in attrs) this.stanza_set_attribute(jingle, cur_attr, attrs[cur_attr]);
+        for(cur_attr in attrs) {
+          this.stanza_set_attribute(jingle, cur_attr, attrs[cur_attr]);
+        }
       } catch(e) {
         this.debug.log('[giggle:utils] stanza_generate_jingle > ' + e, 1);
       }
@@ -1787,8 +1804,9 @@ var GiggleUtils = ring.create(
           transport_sub_obj.candidate = [];
         };
 
-        for(j in transport_obj)
+        for(j in transport_obj) {
           fn_init_obj(transport_obj[j]);
+        }
 
         // Nest candidates in their category
         for(k = 0; k < (transport_init_obj.candidate).length; k++) {
@@ -1798,8 +1816,9 @@ var GiggleUtils = ring.create(
             // Remove attributes that are not required by RAW-UDP (XEP-0177 compliance)
             if(GIGGLE_SDP_CANDIDATE_TYPES[cur_candidate.type] === GIGGLE_SDP_CANDIDATE_METHOD_RAW) {
               for(cur_attr in cur_candidate) {
-                if(typeof rawudp_map[cur_attr] == 'undefined')
+                if(typeof rawudp_map[cur_attr] == 'undefined') {
                   delete cur_candidate[cur_attr];
+                }
               }
             }
 
@@ -2092,18 +2111,21 @@ var GiggleUtils = ring.create(
           }
 
           // Bandwidth?
-          if(this.parent.get_bandwidth())
+          if(this.parent.get_bandwidth()) {
             constraints.video.optional = [{ bandwidth: this.parent.get_bandwidth() }];
+          }
 
           // FPS?
-          if(this.parent.get_fps())
+          if(this.parent.get_fps()) {
             constraints.video.mandatory.minFrameRate = this.parent.get_fps();
+          }
 
           // Custom video source? (screenshare)
           if(this.parent.get_media()        == GIGGLE_MEDIA_VIDEO         &&
              this.parent.get_video_source() != GIGGLE_VIDEO_SOURCE_CAMERA ) {
-            if(document.location.protocol !== 'https:')
+            if(document.location.protocol !== 'https:') {
               this.debug.log('[giggle:utils] generate_constraints > HTTPS might be required to share screen, otherwise you may get a permission denied error.', 0);
+            }
 
             // Unsupported browser? (for that feature)
             if(this.browser().name != GIGGLE_BROWSER_CHROME) {
@@ -2193,10 +2215,10 @@ var GiggleUtils = ring.create(
      */
     network_extract_main: function(media, candidates) {
       var network_obj = {
-        'ip': GIGGLE_SDP_CANDIDATE_IP_DEFAULT,
-        'port': GIGGLE_SDP_CANDIDATE_PORT_DEFAULT,
-        'scope': GIGGLE_SDP_CANDIDATE_SCOPE_DEFAULT,
-        'protocol': GIGGLE_SDP_CANDIDATE_IPVERSION_DEFAULT
+        'ip'       : GIGGLE_SDP_CANDIDATE_IP_DEFAULT,
+        'port'     : GIGGLE_SDP_CANDIDATE_PORT_DEFAULT,
+        'scope'    : GIGGLE_SDP_CANDIDATE_SCOPE_DEFAULT,
+        'protocol' : GIGGLE_SDP_CANDIDATE_IPVERSION_DEFAULT
       };
 
       var local_obj, remote_obj;
@@ -2209,8 +2231,8 @@ var GiggleUtils = ring.create(
           var r_lan, protocol;
 
           var parse_obj = {
-            'ip': candidate_eval.ip,
-            'port': candidate_eval.port
+            'ip'   : candidate_eval.ip,
+            'port' : candidate_eval.port
           };
 
           if(candidate_eval.ip.match(R_NETWORK_IP.all.v4)) {

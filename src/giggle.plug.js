@@ -324,23 +324,6 @@ var __GigglePlug = ring.create(
     },
 
     /**
-     * Clones the current object
-     * @public
-     * @returns {__GigglePlug} Cloned object
-     */
-    clone: function() {
-      var cloned = null;
-
-      try {
-        cloned = _.clone(this);
-      } catch(e) {
-        this.get_debug().log('[giggle:plug] clone > ' + e, 1);
-      } finally {
-        return cloned;
-      }
-    },
-
-    /**
      * Gets the username associated to the current connection
      * @public
      * @returns {String} Username value

@@ -226,8 +226,10 @@ var GiggleInit = ring.create(
         Giggle._defer(true);
 
         // Generate fallback API URL
-        fallback_url += '?username=' +
-                        encodeURIComponent(this.plug.connection_username() + '@' + this.plug.connection_domain());
+        fallback_url += ('?username=' +
+                         encodeURIComponent(
+                           this.plug.connection_username() + '@' + this.plug.connection_domain()
+                         ));
 
         // Proceed request
         var xhr = new XMLHttpRequest();

@@ -847,7 +847,7 @@ var __GiggleBase = ring.create(
 
           function(e) {
             var error_str = (typeof e == 'string') ? e : null;
-            error_str = (error_str || e.message || e.name || 'Unknown error');
+            error_str     = (error_str || e.message || e.name || 'Unknown error');
 
             if(_this.get_sdp_trace())  _this.get_debug().log('[giggle:base] _peer_got_description > SDP (local:error)' + '\n\n' + error_str, 1);
 
@@ -897,8 +897,9 @@ var __GiggleBase = ring.create(
         var i;
         var audio_tracks = this.get_local_stream().getAudioTracks();
 
-        for(i = 0; i < audio_tracks.length; i++)
+        for(i = 0; i < audio_tracks.length; i++) {
           audio_tracks[i].enabled = enable;
+        }
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_sound > ' + e, 1);
       }
@@ -919,10 +920,11 @@ var __GiggleBase = ring.create(
         for(i in element) {
           element[i].src = stream_src;
 
-          if(navigator.mozGetUserMedia)
+          if(navigator.mozGetUserMedia) {
             element[i].play();
-          else
+          } else {
             element[i].autoplay = true;
+          }
 
           if(typeof mute == 'boolean') element[i].muted = mute;
         }
@@ -986,8 +988,9 @@ var __GiggleBase = ring.create(
      * @returns {Function} Handler
      */
     _shortcut_get_handler: function(member) {
-      if(typeof member == 'function')
+      if(typeof member == 'function') {
         return member;
+      }
 
       return function() {};
     },
@@ -1014,8 +1017,9 @@ var __GiggleBase = ring.create(
      * @returns {Object} Local payloads object
      */
     get_payloads_local: function(name) {
-      if(name)
+      if(name) {
         return (name in this._payloads_local) ? this._payloads_local[name] : {};
+      }
 
       return this._payloads_local;
     },
@@ -1027,8 +1031,9 @@ var __GiggleBase = ring.create(
      * @returns {Object} Local group object
      */
     get_group_local: function(semantics) {
-      if(semantics)
+      if(semantics) {
         return (semantics in this._group_local) ? this._group_local[semantics] : {};
+      }
 
       return this._group_local;
     },
@@ -1040,8 +1045,9 @@ var __GiggleBase = ring.create(
      * @returns {Object} Local candidates object
      */
     get_candidates_local: function(name) {
-      if(name)
+      if(name) {
         return (name in this._candidates_local) ? this._candidates_local[name] : {};
+      }
 
       return this._candidates_local;
     },
@@ -1053,8 +1059,9 @@ var __GiggleBase = ring.create(
      * @returns {Object} Local candidates queue object
      */
     get_candidates_queue_local: function(name) {
-      if(name)
+      if(name) {
         return (name in this._candidates_queue_local) ? this._candidates_queue_local[name] : {};
+      }
 
       return this._candidates_queue_local;
     },
@@ -1066,8 +1073,9 @@ var __GiggleBase = ring.create(
      * @returns {Object} Local content object
      */
     get_content_local: function(name) {
-      if(name)
+      if(name) {
         return (name in this._content_local) ? this._content_local[name] : {};
+      }
 
       return this._content_local;
     },
@@ -1131,8 +1139,9 @@ var __GiggleBase = ring.create(
     get_registered_handlers: function(node, type, id) {
       if(id && node in this._registered_handlers  &&
          type in this._registered_handlers[node]  &&
-         typeof this._registered_handlers[node][type][id] == 'object')
+         typeof this._registered_handlers[node][type][id] == 'object') {
         return this._registered_handlers[node][type][id];
+      }
 
       return [];
     },
@@ -1247,8 +1256,9 @@ var __GiggleBase = ring.create(
      * @returns {String|Object} Creator value
      */
     get_creator: function(name) {
-      if(name)
+      if(name) {
         return (name in this._creator) ? this._creator[name] : null;
+      }
 
       return this._creator;
     },
@@ -1260,7 +1270,8 @@ var __GiggleBase = ring.create(
      * @returns {String} Creator value
      */
     get_creator_this: function(name) {
-      return this.get_responder() == this.get_to() ? GIGGLE_CREATOR_INITIATOR : GIGGLE_CREATOR_RESPONDER;
+      return this.get_responder() == this.get_to() ? GIGGLE_CREATOR_INITIATOR :
+                                                     GIGGLE_CREATOR_RESPONDER;
     },
 
     /**
@@ -1270,8 +1281,9 @@ var __GiggleBase = ring.create(
      * @returns {String} Senders value
      */
     get_senders: function(name) {
-      if(name)
+      if(name) {
         return (name in this._senders) ? this._senders[name] : null;
+      }
 
       return this._senders;
     },
@@ -1291,8 +1303,9 @@ var __GiggleBase = ring.create(
      * @returns {Object} Media list
      */
     get_media_all: function() {
-      if(this.get_media() == GIGGLE_MEDIA_AUDIO)
+      if(this.get_media() == GIGGLE_MEDIA_AUDIO) {
         return [GIGGLE_MEDIA_AUDIO];
+      }
 
       return [GIGGLE_MEDIA_AUDIO, GIGGLE_MEDIA_VIDEO];
     },
@@ -1303,7 +1316,9 @@ var __GiggleBase = ring.create(
      * @returns {String} Video source value
      */
     get_video_source: function() {
-      return (this._video_source && this._video_source in GIGGLE_VIDEO_SOURCES) ? this._video_source : GIGGLE_VIDEO_SOURCE_CAMERA;
+      return (this._video_source &&
+              this._video_source in GIGGLE_VIDEO_SOURCES) ? this._video_source
+                                                          : GIGGLE_VIDEO_SOURCE_CAMERA;
     },
 
     /**
@@ -1340,8 +1355,9 @@ var __GiggleBase = ring.create(
      * @returns {String} Name value
      */
     get_name: function(name) {
-      if(name)
+      if(name) {
         return name in this._name;
+      }
 
       return this._name;
     },
@@ -1611,11 +1627,13 @@ var __GiggleBase = ring.create(
       if(!(type in this._registered_handlers[node]))  this._registered_handlers[node][type] = {};
 
       if(handler === null) {
-        if(id in this._registered_handlers[node][type])
+        if(id in this._registered_handlers[node][type]) {
           delete this._registered_handlers[node][type][id];
+        }
       } else {
-        if(typeof this._registered_handlers[node][type][id] != 'object')
+        if(typeof this._registered_handlers[node][type][id] != 'object') {
           this._registered_handlers[node][type][id] = [];
+        }
 
         this._registered_handlers[node][type][id].push(handler);
       }
@@ -1630,10 +1648,11 @@ var __GiggleBase = ring.create(
     _set_deferred_handlers: function(ns, handler) {
       if(!(ns in this._deferred_handlers))  this._deferred_handlers[ns] = [];
 
-      if(handler === null)
+      if(handler === null) {
         delete this._deferred_handlers[ns];
-      else
+      } else {
         this._deferred_handlers[ns].push(handler);
+      }
     },
 
     /**
