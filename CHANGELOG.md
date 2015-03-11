@@ -4,13 +4,12 @@ Giggle.js Changelog
 Here's the log of what has changed over the Giggle.js releases.
 
 
-v0.8.0 (Development)
---------------------
+v0.8.0 (Mar 11, 2015)
+---------------------
 
  * **In a nutshell**
-    * **Giggle.js is now Giggle.js**                                     @valeriansaliou
-    * **Pluggability module** to other XMPP libraries                    @valeriansaliou
-    * (...)
+    * **JSJaCJingle.js is now Giggle.js**              @valeriansaliou
+    * **Pluggability module** to other XMPP libraries  @valeriansaliou
 
 
 v0.7.6 (Oct 13, 2014)
