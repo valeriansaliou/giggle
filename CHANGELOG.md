@@ -4,6 +4,13 @@ Giggle.js Changelog
 Here's the log of what has changed over the Giggle.js releases.
 
 
+v0.8.1 (Development)
+--------------------
+
+ * **In a nutshell**
+    * (...)
+
+
 v0.8.0 (Mar 11, 2015)
 ---------------------
 
