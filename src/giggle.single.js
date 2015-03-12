@@ -1813,8 +1813,8 @@ var GiggleSingle = ring.create([__GiggleBase],
             _this.get_debug().log('[giggle:single] _handle_session_accept_request > addIceCandidate > Successfully added ICE candidate.', 3);
           };
 
-          var on_ice_candidate_add_failure = function() {
-            _this.get_debug().log('[giggle:single] _handle_session_accept_request > addIceCandidate > Failed to add ICE candidate.', 1);
+          var on_ice_candidate_add_failure = function(error) {
+            _this.get_debug().log('[giggle:single] _handle_session_accept_request > addIceCandidate > Failed to add ICE candidate (' + error.name + ' - ' + error.message + ').', 1);
           };
 
           for(i in sdp_remote.candidates) {
@@ -2343,8 +2343,8 @@ var GiggleSingle = ring.create([__GiggleBase],
             _this.get_debug().log('[giggle:single] _handle_transport_info > addIceCandidate > Successfully added ICE candidate.', 3);
           };
 
-          var on_ice_candidate_add_failure = function() {
-            _this.get_debug().log('[giggle:single] _handle_transport_info > addIceCandidate > Failed to add ICE candidate.', 1);
+          var on_ice_candidate_add_failure = function(error) {
+            _this.get_debug().log('[giggle:single] _handle_transport_info > addIceCandidate > Failed to add ICE candidate (' + error.name + ' - ' + error.message + ').', 1);
           };
 
           for(i in sdp_candidates_remote) {
@@ -2770,8 +2770,8 @@ var GiggleSingle = ring.create([__GiggleBase],
           _this.get_debug().log('[giggle:single] _peer_connection_create_answer > addIceCandidate > Successfully added ICE candidate.', 3);
         };
 
-        var on_ice_candidate_add_failure = function() {
-          _this.get_debug().log('[giggle:single] _peer_connection_create_answer > addIceCandidate > Failed to add ICE candidate.', 1);
+        var on_ice_candidate_add_failure = function(error) {
+          _this.get_debug().log('[giggle:single] _peer_connection_create_answer > addIceCandidate > Failed to add ICE candidate (' + error.name + ' - ' + error.message + ').', 1);
         };
 
         for(c in sdp_remote.candidates) {
