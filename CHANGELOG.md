@@ -4,11 +4,11 @@ Giggle.js Changelog
 Here's the log of what has changed over the Giggle.js releases.
 
 
-v0.8.1 (Development)
---------------------
+v0.8.1 (Mar 12, 2015)
+---------------------
 
  * **In a nutshell**
-    * (...)
+    * **Fix Chrome SSRC errors** that were occuring frequently  @valeriansaliou
 
 
 v0.8.0 (Mar 11, 2015)
