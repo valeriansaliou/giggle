@@ -46,7 +46,7 @@ var ARGS = {
       return;
     }
 
-    var body = stanza.getBody();
+    var body = stanza.body();
 
     if(body) {
       var chat_messages_sel = $('#chat_messages');

@@ -2536,7 +2536,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
       try {
         if(data.candidate) {
-          if(_this.get_ice_trace())  _this.get_debug().log('[giggle:single] _peer_connection_callback_onicecandidate > ICE (push from STUN)' + '\n' + data.candidate.candidate, 4);
+          if(_this.get_ice_trace())  _this.get_debug().log('[giggle:single] _peer_connection_callback_onicecandidate > ICE (push from STUN)' + '\n\n' + data.candidate.candidate, 4);
 
           _this.sdp._parse_candidate_store_store_data(data);
         } else {

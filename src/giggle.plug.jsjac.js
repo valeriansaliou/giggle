@@ -388,7 +388,7 @@ var GigglePlugJSJaC = ring.create([__GigglePlug],
      */
     xml: function() {
       try {
-        return this.get_node().xml();
+        return this.get_packet().xml();
       } catch(e) {
         this.get_debug().log('[giggle:plug:jsjac] xml > ' + e, 1);
       }
