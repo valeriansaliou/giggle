@@ -765,11 +765,26 @@ var GiggleSDP = ring.create(
      * @param {Object} data
      */
     _parse_candidate_store_store_data: function(data) {
-      this._parse_candidate_store({
-        media     : (isNaN(data.candidate.sdpMid) ? data.candidate.sdpMid
-                                                  : this.parent.utils.media_generate(parseInt(data.candidate.sdpMid, 10))),
-        candidate : data.candidate.candidate
-      });
+      if(data.candidate.sdpMid) {
+        this._parse_candidate_store({
+          media     : (isNaN(data.candidate.sdpMid) ? data.candidate.sdpMid
+                                                    : this.parent.utils.media_generate(parseInt(data.candidate.sdpMid, 10))),
+          candidate : data.candidate.candidate
+        });
+      } else {
+        // Assume this candidate is not bound to a specific media
+        var i, emulated_medias;
+
+        emulated_medias = [GIGGLE_MEDIA_AUDIO];
+        if(this.parent.get_media())  emulated_medias.push(GIGGLE_MEDIA_VIDEO);
+
+        for(i in emulated_medias) {
+          this._parse_candidate_store({
+            media     : emulated_medias[i],
+            candidate : data.candidate.candidate
+          });
+        }
+      }
     },
 
     /**

@@ -1915,8 +1915,9 @@ var GiggleUtils = ring.create(
         var cur_participant, participants,
             content_remote = {};
 
-        if(typeof this.parent.get_content_remote == 'function')
+        if(typeof this.parent.get_content_remote == 'function') {
           content_remote = this.parent.get_content_remote();
+        }
 
         for(cur_participant in content_remote) {
           content_all.push(

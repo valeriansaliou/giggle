@@ -1753,6 +1753,8 @@ var GiggleSingle = ring.create([__GiggleBase],
       this.get_debug().log('[giggle:single] _handle_session_accept_request', 4);
 
       try {
+        var _this = this;
+
         // Slot unavailable?
         if(this.get_status() !== GIGGLE_STATUS_INITIATED) {
           this.get_debug().log('[giggle:single] _handle_session_accept_request > Cannot handle, resource already accepted (status: ' + this.get_status() + ').', 0);
@@ -1791,8 +1793,6 @@ var GiggleSingle = ring.create([__GiggleBase],
           if(this.get_sdp_trace())  this.get_debug().log('[giggle:single] SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
 
           // Remote description
-          var _this = this;
-
           this.get_peer_connection().setRemoteDescription(
             (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
 
@@ -1809,6 +1809,14 @@ var GiggleSingle = ring.create([__GiggleBase],
           );
 
           // ICE candidates
+          var on_ice_candidate_add_success = function() {
+            _this.get_debug().log('[giggle:single] _handle_session_accept_request > addIceCandidate > Successfully added ICE candidate.', 3);
+          };
+
+          var on_ice_candidate_add_failure = function() {
+            _this.get_debug().log('[giggle:single] _handle_session_accept_request > addIceCandidate > Failed to add ICE candidate.', 1);
+          };
+
           for(i in sdp_remote.candidates) {
             cur_candidate_obj = sdp_remote.candidates[i];
 
@@ -1816,7 +1824,10 @@ var GiggleSingle = ring.create([__GiggleBase],
               new WEBRTC_ICE_CANDIDATE({
                 sdpMLineIndex : cur_candidate_obj.id,
                 candidate     : cur_candidate_obj.candidate
-              })
+              }),
+
+              on_ice_candidate_add_success,
+              on_ice_candidate_add_failure
             );
           }
 
@@ -2297,6 +2308,8 @@ var GiggleSingle = ring.create([__GiggleBase],
       this.get_debug().log('[giggle:single] _handle_transport_info', 4);
 
       try {
+        var _this = this;
+
         // Slot unavailable?
         if(this.get_status() !== GIGGLE_STATUS_INITIATED  &&
            this.get_status() !== GIGGLE_STATUS_ACCEPTING  &&
@@ -2326,6 +2339,14 @@ var GiggleSingle = ring.create([__GiggleBase],
           );
 
           // ICE candidates
+          var on_ice_candidate_add_success = function() {
+            _this.get_debug().log('[giggle:single] _handle_transport_info > addIceCandidate > Successfully added ICE candidate.', 3);
+          };
+
+          var on_ice_candidate_add_failure = function() {
+            _this.get_debug().log('[giggle:single] _handle_transport_info > addIceCandidate > Failed to add ICE candidate.', 1);
+          };
+
           for(i in sdp_candidates_remote) {
             cur_candidate_obj = sdp_candidates_remote[i];
 
@@ -2333,7 +2354,10 @@ var GiggleSingle = ring.create([__GiggleBase],
               new WEBRTC_ICE_CANDIDATE({
                 sdpMLineIndex : cur_candidate_obj.id,
                 candidate     : cur_candidate_obj.candidate
-              })
+              }),
+
+              on_ice_candidate_add_success,
+              on_ice_candidate_add_failure
             );
           }
 
@@ -2426,8 +2450,9 @@ var GiggleSingle = ring.create([__GiggleBase],
         var ice_config = this.utils.config_ice();
 
         if(typeof ice_config.iceServers == 'object') {
-          for(i = 0; i < (ice_config.iceServers).length; i++)
+          for(i = 0; i < (ice_config.iceServers).length; i++) {
             this.get_debug().log('[giggle:single] _peer_connection_create_instance > Using ICE server at: ' + ice_config.iceServers[i].url + ' (' + (i + 1) + ').', 2);
+          }
         } else {
           this.get_debug().log('[giggle:single] _peer_connection_create_instance > No ICE server configured. Network may not work properly.', 0);
         }
@@ -2696,6 +2721,8 @@ var GiggleSingle = ring.create([__GiggleBase],
       this.get_debug().log('[giggle:single] _peer_connection_create_answer', 4);
 
       try {
+        var _this = this;
+
         // Create offer
         this.get_debug().log('[giggle:single] _peer_connection_create_answer > Getting local description...', 2);
 
@@ -2710,8 +2737,6 @@ var GiggleSingle = ring.create([__GiggleBase],
         if(this.get_sdp_trace())  this.get_debug().log('[giggle:single] _peer_connection_create_answer > SDP (remote)' + '\n\n' + sdp_remote.description.sdp, 4);
 
         // Remote description
-        var _this = this;
-
         this.get_peer_connection().setRemoteDescription(
           (new WEBRTC_SESSION_DESCRIPTION(sdp_remote.description)),
 
@@ -2741,6 +2766,14 @@ var GiggleSingle = ring.create([__GiggleBase],
         var c;
         var cur_candidate_obj;
 
+        var on_ice_candidate_add_success = function() {
+          _this.get_debug().log('[giggle:single] _peer_connection_create_answer > addIceCandidate > Successfully added ICE candidate.', 3);
+        };
+
+        var on_ice_candidate_add_failure = function() {
+          _this.get_debug().log('[giggle:single] _peer_connection_create_answer > addIceCandidate > Failed to add ICE candidate.', 1);
+        };
+
         for(c in sdp_remote.candidates) {
           cur_candidate_obj = sdp_remote.candidates[c];
 
@@ -2748,7 +2781,10 @@ var GiggleSingle = ring.create([__GiggleBase],
             new WEBRTC_ICE_CANDIDATE({
               sdpMLineIndex : cur_candidate_obj.id,
               candidate     : cur_candidate_obj.candidate
-            })
+            }),
+
+            on_ice_candidate_add_success,
+            on_ice_candidate_add_failure
           );
         }
 
