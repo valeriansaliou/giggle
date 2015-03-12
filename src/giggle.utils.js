@@ -1022,12 +1022,15 @@ var GiggleUtils = ring.create(
               'zrtp-hash' : []
             },
 
+            'ssrc-id': [],
             'ssrc': {},
             'ssrc-group': {}
           };
 
           for(ic_key in ic_arr) {
-            if(!(ic_key in payload_obj.descriptions))  payload_obj.descriptions[ic_key] = ic_arr[ic_key];
+            if(!(ic_key in payload_obj.descriptions)) {
+              payload_obj.descriptions[ic_key] = ic_arr[ic_key];
+            }
           }
         };
 
@@ -1043,13 +1046,16 @@ var GiggleUtils = ring.create(
           if(!(id in payload_obj.descriptions.payload))  payload_obj.descriptions.payload[id] = {};
 
           for(ip_key in ip_arr) {
-            if(!(ip_key in payload_obj.descriptions.payload[id]))  payload_obj.descriptions.payload[id][ip_key] = ip_arr[ip_key];
+            if(!(ip_key in payload_obj.descriptions.payload[id])) {
+              payload_obj.descriptions.payload[id][ip_key] = ip_arr[ip_key];
+            }
           }
         };
 
         var init_ssrc_group_semantics = function(semantics) {
-          if(typeof payload_obj.descriptions['ssrc-group'][semantics] != 'object')
+          if(typeof payload_obj.descriptions['ssrc-group'][semantics] != 'object') {
             payload_obj.descriptions['ssrc-group'][semantics] = [];
+          }
         };
 
         // Parse session description
@@ -1058,8 +1064,8 @@ var GiggleUtils = ring.create(
         if(description.length) {
           description = description[0];
 
-          var cd_media = this.stanza_get_attribute(description, 'media');
-          var cd_ssrc  = this.stanza_get_attribute(description, 'ssrc');
+          var cd_media    = this.stanza_get_attribute(description, 'media');
+          var cd_ssrc     = this.stanza_get_attribute(description, 'ssrc');
 
           if(!cd_media) {
             this.debug.log('[giggle:utils] stanza_parse_payload > No media attribute to ' + cc_name + ' stanza.', 1);
@@ -1068,8 +1074,8 @@ var GiggleUtils = ring.create(
           // Initialize current description
           init_content();
 
-          payload_obj.descriptions.attrs.media = cd_media;
-          payload_obj.descriptions.attrs.ssrc  = cd_ssrc;
+          payload_obj.descriptions.attrs.media       = cd_media;
+          payload_obj.descriptions.attrs.ssrc        = cd_ssrc;
 
           // Loop on multiple payloads
           var payload = this.stanza_get_element(description, 'payload-type', NS_JINGLE_APPS_RTP);
@@ -1190,7 +1196,10 @@ var GiggleUtils = ring.create(
               cur_ssrc = ssrc[l];
               cur_ssrc_id = this.stanza_get_attribute(cur_ssrc, 'ssrc') || null;
 
-              if(cur_ssrc_id !== null) {
+              if(cur_ssrc_id !== null &&
+                 payload_obj.descriptions['ssrc-id'].indexOf(cur_ssrc_id) === -1) {
+                // SSRC ID order is important for SDP generation (keep track of it)
+                payload_obj.descriptions['ssrc-id'].push(cur_ssrc_id);
                 payload_obj.descriptions.ssrc[cur_ssrc_id] = [];
 
                 this.stanza_parse_node(
@@ -1487,6 +1496,7 @@ var GiggleUtils = ring.create(
             var cs_d_bandwidth  = cs_description.bandwidth;
             var cs_d_payload    = cs_description.payload;
             var cs_d_encryption = cs_description.encryption;
+            var cs_d_ssrc_id    = cs_description['ssrc-id'];
             var cs_d_ssrc       = cs_description.ssrc;
             var cs_d_ssrc_group = cs_description['ssrc-group'];
             var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
@@ -1501,7 +1511,7 @@ var GiggleUtils = ring.create(
 
             // Payload-type
             if(cs_d_payload) {
-              var i, j,
+              var i, j, k,
                   cur_ssrc_id,
                   cur_cs_d_ssrc_group_semantics, cur_cs_d_ssrc_group_semantics_sub,
                   cs_d_p, payload_type;
@@ -1570,8 +1580,10 @@ var GiggleUtils = ring.create(
               }
 
               // SSRC
-              if(cs_d_ssrc) {
-                for(cur_ssrc_id in cs_d_ssrc) {
+              if(cs_d_ssrc_id && cs_d_ssrc) {
+                for(k in cs_d_ssrc_id) {
+                  cur_ssrc_id = cs_d_ssrc_id[k];
+
                   var ssrc = description.child('source', {
                     'ssrc': cur_ssrc_id,
                     'xmlns': NS_JINGLE_APPS_RTP_SSMA

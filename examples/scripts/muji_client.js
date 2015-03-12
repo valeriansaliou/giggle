@@ -24,6 +24,7 @@ var ARGS = {
   local_view        : null,
   resolution        : 'sd',
   sdp_trace         : (url_param('sdp') == '1'),
+  ice_trace   : (url_param('ice') == '1'),
   net_trace         : (url_param('net') == '1'),
   debug             : (new JSJaCConsoleLogger(4)),
 

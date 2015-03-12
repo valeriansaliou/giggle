@@ -94,17 +94,24 @@ var GiggleSDP = ring.create(
         };
 
         var init_ssrc = function(name, id) {
+          init_descriptions(name, 'ssrc-id', []);
           init_descriptions(name, 'ssrc', {});
 
-          if(!(id in payload[name].descriptions.ssrc))
+          if(payload[name].descriptions['ssrc-id'].indexOf(id) === -1) {
+            payload[name].descriptions['ssrc-id'].push(id);
+          }
+
+          if(!(id in payload[name].descriptions.ssrc)) {
             payload[name].descriptions.ssrc[id] = [];
+          }
         };
 
         var init_ssrc_group = function(name, semantics) {
           init_descriptions(name, 'ssrc-group', {});
 
-          if(!(semantics in payload[name].descriptions['ssrc-group']))
+          if(!(semantics in payload[name].descriptions['ssrc-group'])) {
             payload[name].descriptions['ssrc-group'][semantics] = [];
+          }
         };
 
         var init_payload = function(name, id) {
@@ -886,14 +893,14 @@ var GiggleSDP = ring.create(
         var is_common_credentials = this.parent.utils.is_sdp_common_credentials(payloads);
 
         // Common vars
-        var i, c, j, k, l, m, n, o, p, q, r, s, t, u,
+        var i, c, j, k, l, m, n, o, p, q, r, s, t, u, v,
             cur_name, cur_name_first, cur_name_obj,
             cur_media, cur_senders,
             cur_group_semantics, cur_group_names, cur_group_name,
             cur_network_obj, cur_transports_obj, cur_transports_obj_first, cur_description_obj,
             cur_d_pwd, cur_d_ufrag, cur_d_fingerprint,
             cur_d_attrs, cur_d_rtcp_fb, cur_d_bandwidth, cur_d_encryption,
-            cur_d_ssrc, cur_d_ssrc_id, cur_d_ssrc_obj, cur_d_ssrc_group, cur_d_ssrc_group_semantics, cur_d_ssrc_group_obj,
+            cur_d_ssrc_id_arr, cur_d_ssrc, cur_d_ssrc_id, cur_d_ssrc_obj, cur_d_ssrc_group, cur_d_ssrc_group_semantics, cur_d_ssrc_group_obj,
             cur_d_rtcp_fb_obj,
             cur_d_payload, cur_d_payload_obj, cur_d_payload_obj_attrs, cur_d_payload_obj_id,
             cur_d_payload_obj_parameter, cur_d_payload_obj_parameter_obj, cur_d_payload_obj_parameter_str,
@@ -967,6 +974,7 @@ var GiggleSDP = ring.create(
           cur_d_bandwidth       = cur_description_obj.bandwidth;
           cur_d_payload         = cur_description_obj.payload;
           cur_d_encryption      = cur_description_obj.encryption;
+          cur_d_ssrc_id_arr     = cur_description_obj['ssrc-id'];
           cur_d_ssrc            = cur_description_obj.ssrc;
           cur_d_ssrc_group      = cur_description_obj['ssrc-group'];
           cur_d_rtp_hdrext      = cur_description_obj['rtp-hdrext'];
@@ -1193,7 +1201,9 @@ var GiggleSDP = ring.create(
           }
 
           // 'ssrc'
-          for(cur_d_ssrc_id in cur_d_ssrc) {
+          for(v in cur_d_ssrc_id_arr) {
+            cur_d_ssrc_id = cur_d_ssrc_id_arr[v];
+
             for(r in cur_d_ssrc[cur_d_ssrc_id]) {
               cur_d_ssrc_obj = cur_d_ssrc[cur_d_ssrc_id][r];
 

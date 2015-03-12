@@ -36,6 +36,7 @@
  * @property   {Array}          [args.stun]                   - A list of STUN servers to use (override the default one).
  * @property   {Array}          [args.turn]                   - A list of TURN servers to use.
  * @property   {Boolean}        [args.sdp_trace]              - Log SDP trace in console (requires a debug interface).
+ * @property   {Boolean}        [args.ice_trace]              - Log ICE candidates trace in console (requires a debug interface).
  * @property   {Boolean}        [args.net_trace]              - Log network packet trace in console (requires a debug interface).
  * @property   {Console}  [args.debug]                        - A reference to a debugger implementing the Console interface.
  */
@@ -219,6 +220,14 @@ var __GiggleBase = ring.create(
          * @private
          */
         this._sdp_trace = args.sdp_trace;
+
+      if(args && args.ice_trace)
+        /**
+         * @member {Boolean}
+         * @default
+         * @private
+         */
+        this._ice_trace = args.ice_trace;
 
       if(args && args.net_trace)
         /**
@@ -1417,6 +1426,15 @@ var __GiggleBase = ring.create(
     },
 
     /**
+     * Gets the ICE candidates trace value
+     * @public
+     * @returns {Boolean} ICE candidates trace value
+     */
+    get_ice_trace: function() {
+      return (this._ice_trace === true);
+    },
+
+    /**
      * Gets the network packet trace value
      * @public
      * @returns {Boolean} Network packet trace value
@@ -1865,6 +1883,15 @@ var __GiggleBase = ring.create(
      */
     set_sdp_trace: function(sdp_trace) {
       this._sdp_trace = sdp_trace;
+    },
+
+    /**
+     * Enables/disables ICE candidates traces
+     * @public
+     * @param {Boolean} ice_trace
+     */
+    set_ice_trace: function(ice_trace) {
+      this._ice_trace = ice_trace;
     },
 
     /**

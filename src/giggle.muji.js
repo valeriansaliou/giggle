@@ -2566,6 +2566,7 @@ var GiggleMuji = ring.create([__GiggleBase],
         args.stun                       = this.get_stun();
         args.turn                       = this.get_turn();
         args.sdp_trace                  = this.get_sdp_trace();
+        args.ice_trace                  = this.get_ice_trace();
         args.net_trace                  = this.get_net_trace();
         args.debug                      = this.get_debug();
 
