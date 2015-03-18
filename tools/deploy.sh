@@ -6,7 +6,7 @@
 #
 #  Author: Valérian Saliou https://valeriansaliou.name/
 #
-#  Copyright: 2015, Valérian Saliou
+#  Copyright: 2015, Hakuma Holdings Ltd.
 #  License: Mozilla Public License v2.0 (MPL v2.0)
 ##
 
