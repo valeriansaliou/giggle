@@ -8,7 +8,7 @@ Giggle.js
 To be used with JSJaC from Stefan Strigler, available there: https://github.com/sstrigler/JSJaC
 Giggle is pluggable to other third-party XMPP libraries, please refer to `./src/giggle.plug.js`. We'll happily accept your Pull Requests.
 
-[![Build Status](https://semaphoreci.com/api/v1/projects/c9848a3a-4123-411f-9250-d7d199d75f48/376010/shields_badge.svg)](https://semaphoreci.com/valeriansaliou/giggle)
+[![build status](https://ci.hakuma.holdings/projects/8/status.png?ref=master)](https://ci.hakuma.holdings/projects/8?ref=master)
 
 
 ## How To Build It?
