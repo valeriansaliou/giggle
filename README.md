@@ -61,14 +61,6 @@ Giggle.js simply **DOES NOT** fire the custom event handlers that you may have d
 
 Multiparty call can be password-protected, in a completely transparent fashion. Giggle.js can handle the password generation process, and then transmit it to other potential call participants through the Muji call invites you send to them.
 
-## Commercial Support
-
-If you don't manage to setup Giggle.js or you need us to implement more features in the library as an open-source or a proprietary code patch, **we can handle that** for you!
-
-We are running a **commercial support service** for Jappix, that you can also use for Giggle.js support requests. Please **[send us a quote on Jappix Business](https://business.jappix.org/)**, as a feature development service.
-
-*We provide a quality service where customer satisfaction is our goal.*
-
 ## Usage
 
 The API documentation is available in: `./doc/`. **You must first build Giggle to view it, please refer to the upper section about building Giggle.**
