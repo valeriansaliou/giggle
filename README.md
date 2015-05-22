@@ -29,11 +29,13 @@ Deploy the library in one simple command:
 
 Made with love by the happy folks at **Jappix** https://jappix.com/, originally for the awesome guys at **Uno IM** https://uno.im/
 
-## Online Demo
+## Testing Giggle
+
+Please first clone Giggle on your local environment, and access it over your local HTTP server. **Serving example pages over HTTP is a requirement for WebRTC to work**.
 
 ### One-to-one calls (aka Single)
 
-You can try Giggle.js one-to-one calls there: https://demo.hakuma.holdings/valerian.saliou/giggle/examples/single_client.html
+You can try Giggle.js one-to-one calls using the page: `./examples/single_client.html`
 
 Open it on 2 separate tabs or 2 different computers, and login with 2 different XMPP accounts (Jappix.com accounts only for this online demo). Then, paste the full JID of the other connected account in the call field.
 
@@ -41,7 +43,7 @@ The call should then be initiated, and after a while the video will come.
 
 ### Multiparty calls (aka Muji)
 
-You can try Giggle.js multiparty calls there: https://demo.hakuma.holdings/valerian.saliou/giggle/examples/muji_client.html
+You can try Giggle.js multiparty calls using the page: `./examples/muji_client.html`
 
 Open it on 3+ separate tabs or 3+ different computers, and login with 3+ different XMPP accounts (Jappix.com accounts only for this online demo). Then, join the same conference room (you can enter any room even if it doesn't exist, just be sure to use muc.jappix.com as a MUC server - eg: happy-muji-test@muc.jappix.com).
 
@@ -57,7 +59,7 @@ We wanted to avoid such possible security exploits: _imagine a friend of you wan
 
 Giggle.js simply **DOES NOT** fire the custom event handlers that you may have defined, so that you don't have to check yourself that each incoming packet is safe, thus to ensure your client implementation of Jingle is rock-solid (safe: session is authorized **AND** stanza sender is authorized **AND** the Jingle session flow is respected).
 
-Multiparty call can be password-protected, in a completely transparent fashion. Giggle.js can handle the password generation process, and then transmit it to other potential call participants through the Muji call invites you send to them. [See our API docs](https://demo.hakuma.holdings/valerian.saliou/giggle/doc/) for more about this.
+Multiparty call can be password-protected, in a completely transparent fashion. Giggle.js can handle the password generation process, and then transmit it to other potential call participants through the Muji call invites you send to them.
 
 ## Commercial Support
 
@@ -69,7 +71,7 @@ We are running a **commercial support service** for Jappix, that you can also us
 
 ## Usage
 
-API documentation: https://demo.hakuma.holdings/valerian.saliou/giggle/doc/
+The API documentation is available in: `./doc/`. **You must first build Giggle to view it, please refer to the upper section about building Giggle.**
 
 We assume your XMPP Web client is using a supported XMPP library and has an active connection, stored in the *GIGGLE_CONNECTION* global object.
 
