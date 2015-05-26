@@ -6,7 +6,7 @@
  * @url https://github.com/valeriansaliou/giggle
  * @author Valérian Saliou https://valeriansaliou.name/
  *
- * @copyright 2015, Hakuma Holdings Ltd.
+ * @copyright 2015, Valérian Saliou
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 

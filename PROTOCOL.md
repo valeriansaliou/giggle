@@ -28,7 +28,6 @@ Here are listed the XMPP Protocol Extensions that Giggle.js supports, as well as
 # XMPP Extensions (Updated)
 
  * XEP-0272: Multiparty Jingle (Muji) *v0.2*
-   * Alternate URL: https://demo.hakuma.holdings/valerian.saliou/xmpp/extensions/xep-0272.html
 
 
 # Others
