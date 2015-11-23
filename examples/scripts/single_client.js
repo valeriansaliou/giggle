@@ -41,18 +41,6 @@ var ARGS = {
       host      : 'stun.l.google.com',
       port      : 19302,
       transport : 'udp'
-    },
-
-    {
-      host      : 'stun.ekiga.net',
-      port      : 3478,
-      transport : 'tcp'
-    },
-
-    {
-      host      : 'stunserver.org',
-      port      : 3478,
-      transport : 'tcp'
     }
   ],
 
