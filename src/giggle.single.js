@@ -4,7 +4,7 @@
  * @url https://github.com/valeriansaliou/giggle
  * @author Valérian Saliou https://valeriansaliou.name/
  *
- * @copyright 2015, Hakuma Holdings Ltd.
+ * @copyright 2015, Valérian Saliou
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
@@ -234,15 +234,6 @@ var GiggleSingle = ring.create([__GiggleBase],
          */
         this._sid = [args.sid];
 
-      if(args && args.media_permission_error)
-        this._media_permission_error = args.media_permission_error;
-
-      if(args && args.waiting_media_permission)
-        this._waiting_media_permission = args.waiting_media_permission;
-
-      if(args && args.media_permission_granted)
-        this._media_permission_granted = args.media_permission_granted;
-
       /**
        * @member {Object}
        * @default
@@ -366,23 +357,21 @@ var GiggleSingle = ring.create([__GiggleBase],
         this._set_responder(this.get_to());
 
         for(i in this.get_media_all()) {
-          if(this.get_media_all().hasOwnProperty(i)){
-            cur_name = this.utils.name_generate(
-              this.get_media_all()[i]
-            );
+          cur_name = this.utils.name_generate(
+            this.get_media_all()[i]
+          );
 
-            this._set_name(cur_name);
+          this._set_name(cur_name);
 
-            this._set_senders(
-              cur_name,
-              GIGGLE_SENDERS_BOTH.jingle
-            );
+          this._set_senders(
+            cur_name,
+            GIGGLE_SENDERS_BOTH.jingle
+          );
 
-            this._set_creator(
-              cur_name,
-              GIGGLE_CREATOR_INITIATOR
-            );
-          }
+          this._set_creator(
+            cur_name,
+            GIGGLE_CREATOR_INITIATOR
+          );
         }
 
         // Register session to common router
@@ -739,9 +728,7 @@ var GiggleSingle = ring.create([__GiggleBase],
 
           for(i in handlers) {
             /* @function */
-            if(handlers.hasOwnProperty(i)){
-              handlers[i](stanza);
-            }
+            handlers[i](stanza);
           }
 
           this.unregister_handler(GIGGLE_STANZA_IQ, type, id);
@@ -1393,15 +1380,13 @@ var GiggleSingle = ring.create([__GiggleBase],
         var content_queue_local = {};
 
         for(cur_name in this.get_name()) {
-          if(this.get_name().hasOwnProperty(cur_name)){
-            content_queue_local[cur_name] = this.utils.generate_content(
-              this.get_creator(cur_name),
-              cur_name,
-              this.get_senders(cur_name),
-              this.get_payloads_local(cur_name),
-              this.get_candidates_queue_local(cur_name)
-            );
-          }
+          content_queue_local[cur_name] = this.utils.generate_content(
+            this.get_creator(cur_name),
+            cur_name,
+            this.get_senders(cur_name),
+            this.get_payloads_local(cur_name),
+            this.get_candidates_queue_local(cur_name)
+          );
         }
 
         this.utils.stanza_generate_content_local(stanza, jingle, true, content_queue_local);
@@ -1833,19 +1818,17 @@ var GiggleSingle = ring.create([__GiggleBase],
           };
 
           for(i in sdp_remote.candidates) {
-            if(sdp_remote.candidates.hasOwnProperty(i)){
-              cur_candidate_obj = sdp_remote.candidates[i];
+            cur_candidate_obj = sdp_remote.candidates[i];
 
-              this.get_peer_connection().addIceCandidate(
-                new WEBRTC_ICE_CANDIDATE({
-                  sdpMLineIndex : cur_candidate_obj.id,
-                  candidate     : cur_candidate_obj.candidate
-                }),
+            this.get_peer_connection().addIceCandidate(
+              new WEBRTC_ICE_CANDIDATE({
+                sdpMLineIndex : cur_candidate_obj.id,
+                candidate     : cur_candidate_obj.candidate
+              }),
 
-                on_ice_candidate_add_success,
-                on_ice_candidate_add_failure
-              );
-            }
+              on_ice_candidate_add_success,
+              on_ice_candidate_add_failure
+            );
           }
 
           // Empty the unapplied candidates queue
@@ -2365,19 +2348,17 @@ var GiggleSingle = ring.create([__GiggleBase],
           };
 
           for(i in sdp_candidates_remote) {
-            if(sdp_candidates_remote.hasOwnProperty(i)){
-              cur_candidate_obj = sdp_candidates_remote[i];
+            cur_candidate_obj = sdp_candidates_remote[i];
 
-              this.get_peer_connection().addIceCandidate(
-                new WEBRTC_ICE_CANDIDATE({
-                  sdpMLineIndex : cur_candidate_obj.id,
-                  candidate     : cur_candidate_obj.candidate
-                }),
+            this.get_peer_connection().addIceCandidate(
+              new WEBRTC_ICE_CANDIDATE({
+                sdpMLineIndex : cur_candidate_obj.id,
+                candidate     : cur_candidate_obj.candidate
+              }),
 
-                on_ice_candidate_add_success,
-                on_ice_candidate_add_failure
-              );
-            }
+              on_ice_candidate_add_success,
+              on_ice_candidate_add_failure
+            );
           }
 
           // Empty the unapplied candidates queue
@@ -2794,19 +2775,17 @@ var GiggleSingle = ring.create([__GiggleBase],
         };
 
         for(c in sdp_remote.candidates) {
-          if(sdp_remote.candidates.hasOwnProperty(c)){
-            cur_candidate_obj = sdp_remote.candidates[c];
+          cur_candidate_obj = sdp_remote.candidates[c];
 
-            this.get_peer_connection().addIceCandidate(
-              new WEBRTC_ICE_CANDIDATE({
-                sdpMLineIndex : cur_candidate_obj.id,
-                candidate     : cur_candidate_obj.candidate
-              }),
+          this.get_peer_connection().addIceCandidate(
+            new WEBRTC_ICE_CANDIDATE({
+              sdpMLineIndex : cur_candidate_obj.id,
+              candidate     : cur_candidate_obj.candidate
+            }),
 
-              on_ice_candidate_add_success,
-              on_ice_candidate_add_failure
-            );
-          }
+            on_ice_candidate_add_success,
+            on_ice_candidate_add_failure
+          );
         }
 
         // Empty the unapplied candidates queue
@@ -2839,8 +2818,6 @@ var GiggleSingle = ring.create([__GiggleBase],
       } catch(e) {
         this.get_debug().log('[giggle:single] _peer_got_user_media_error > ' + e, 1);
       }
-
-      this.media_permission_error(this.get_media(), this.get_to());
     },
 
     /**
@@ -3551,11 +3528,9 @@ var GiggleSingle = ring.create([__GiggleBase],
           var payloads_add   = payload_data.descriptions.payload;
 
           for(key in payloads_add) {
-              if(payloads_add.hasOwnProperty(key)){
-                if(!(key in payloads_store)) {
-                  payloads_store[key] = payloads_add[key];
-                }
-              }
+            if(!(key in payloads_store)) {
+              payloads_store[key] = payloads_add[key];
+            }
           }
         }
       } catch(e) {
@@ -3615,16 +3590,12 @@ var GiggleSingle = ring.create([__GiggleBase],
         var candidate_ids = [];
 
         for(c in this.get_candidates_remote(name)) {
-          if(this.get_candidates_remote(name).hasOwnProperty(c)){
-            candidate_ids.push(this.get_candidates_remote(name)[c].id);
-          }
+          candidate_ids.push(this.get_candidates_remote(name)[c].id);
         }
 
         for(i in candidate_data) {
-          if(candidate_data.hasOwnProperty(i)){
-            if((candidate_data[i].id).indexOf(candidate_ids) !== -1) {
-              this.get_candidates_remote(name).push(candidate_data[i]);
-            }
+          if((candidate_data[i].id).indexOf(candidate_ids) !== -1) {
+            this.get_candidates_remote(name).push(candidate_data[i]);
           }
         }
       } catch(e) {
@@ -3639,18 +3610,6 @@ var GiggleSingle = ring.create([__GiggleBase],
      */
     _set_last_ice_state: function(last_ice_state) {
       this._last_ice_state = last_ice_state;
-    },
-
-    media_permission_error: function(media, to) {
-      return this._media_permission_error(media, to);
-    },
-
-    waiting_media_permission: function() {
-      return this._waiting_media_permission();
-    },
-
-    media_permission_granted: function() {
-      return this._media_permission_granted();
     },
   }
 );
