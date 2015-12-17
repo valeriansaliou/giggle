@@ -4,7 +4,7 @@
  * @url https://github.com/valeriansaliou/giggle
  * @author Valérian Saliou https://valeriansaliou.name/
  *
- * @copyright 2015, Valérian Saliou
+ * @copyright 2015, Hakuma Holdings Ltd.
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
@@ -604,9 +604,11 @@ var __GiggleBase = ring.create(
 
           // Check view is not already registered
           for(i in (fn.view.get)()) {
-            if((fn.view.get)()[i] == view) {
-              this.get_debug().log('[giggle:base] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
-              return true;
+            if((fn.view.get)().hasOwnProperty(i)){
+              if((fn.view.get)()[i] == view) {
+                this.get_debug().log('[giggle:base] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
+                return true;
+              }
             }
           }
 
@@ -652,20 +654,22 @@ var __GiggleBase = ring.create(
 
           // Check view is registered
           for(i in (fn.view.get)()) {
-            if((fn.view.get)()[i] == view) {
-              // Proceeds un-registration
-              this.utils._peer_stream_detach(
-                [view]
-              );
+              if((fn.view.get)().hasOwnProperty(i)){
+                if((fn.view.get)()[i] == view) {
+                  // Proceeds un-registration
+                  this.utils._peer_stream_detach(
+                    [view]
+                  );
 
-              this.utils.array_remove_value(
-                (fn.view.get)(),
-                view
-              );
+                  this.utils.array_remove_value(
+                    (fn.view.get)(),
+                    view
+                  );
 
-              this.get_debug().log('[giggle:base] unregister_view > Unregistered view of type: ' + type, 3);
-              return true;
-            }
+                  this.get_debug().log('[giggle:base] unregister_view > Unregistered view of type: ' + type, 3);
+                  return true;
+                }
+             }
           }
 
           this.get_debug().log('[giggle:base] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
@@ -740,6 +744,8 @@ var __GiggleBase = ring.create(
         if(this.get_local_stream() === null) {
           this.get_debug().log('[giggle:base] _peer_get_user_media > Getting user media...', 2);
 
+          this.waiting_media_permission();
+
           (WEBRTC_GET_MEDIA.bind(navigator))(
             this.utils.generate_constraints(),
             this._peer_got_user_media_success.bind(this, callback),
@@ -766,6 +772,9 @@ var __GiggleBase = ring.create(
 
       try {
         this.get_debug().log('[giggle:base] _peer_got_user_media_success > Got user media.', 2);
+
+        GIGGLE_MEDIA_GRANT_SUCCESS = true;
+        this.media_permission_granted();
 
         this._set_local_stream(stream);
 
@@ -816,20 +825,24 @@ var __GiggleBase = ring.create(
         this.sdp._resolution_payload(payload_parsed);
 
         for(cur_name in payload_parsed) {
-          this._set_payloads_local(
-            cur_name,
-            payload_parsed[cur_name]
-          );
+          if(payload_parsed.hasOwnProperty(cur_name)){
+	    this._set_payloads_local(
+	      cur_name,
+	      payload_parsed[cur_name]
+	    );
+          }
         }
 
         var cur_semantics;
         var group_parsed = this.sdp._parse_group(sdp_local.sdp);
 
         for(cur_semantics in group_parsed) {
-          this._set_group_local(
-            cur_semantics,
-            group_parsed[cur_semantics]
-          );
+          if(group_parsed.hasOwnProperty(cur_semantics)){
+            this._set_group_local(
+              cur_semantics,
+              group_parsed[cur_semantics]
+            );
+          }
         }
 
         // Filter our local description (remove unused medias)
@@ -927,15 +940,17 @@ var __GiggleBase = ring.create(
         var stream_src = stream ? URL.createObjectURL(stream) : '';
 
         for(i in element) {
-          element[i].src = stream_src;
+          if(element.hasOwnProperty(i)){
+            element[i].src = stream_src;
 
-          if(navigator.mozGetUserMedia) {
-            element[i].play();
-          } else {
-            element[i].autoplay = true;
+            if(navigator.mozGetUserMedia) {
+              element[i].play();
+            } else {
+              element[i].autoplay = true;
+            }
+
+            if(typeof mute == 'boolean') element[i].muted = mute;
           }
-
-          if(typeof mute == 'boolean') element[i].muted = mute;
         }
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_stream_attach > ' + e, 1);
@@ -952,8 +967,10 @@ var __GiggleBase = ring.create(
         var i;
 
         for(i in element) {
-          element[i].pause();
-          element[i].src = '';
+          if(element.hasOwnProperty(i)){
+            element[i].pause();
+            element[i].src = '';
+          }
         }
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_stream_detach > ' + e, 1);

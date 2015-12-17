@@ -4,7 +4,7 @@
  * @url https://github.com/valeriansaliou/giggle
  * @author Valérian Saliou https://valeriansaliou.name/
  *
- * @copyright 2015, Valérian Saliou
+ * @copyright 2015, Hakuma Holdings Ltd.
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
@@ -2679,3 +2679,5 @@ GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_INITIATING]  = 1;
 GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_INITIATED]   = 1;
 GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_LEAVING]     = 1;
 GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_LEFT]        = 1;
+
+var GIGGLE_MEDIA_GRANT_SUCCESS = false;
