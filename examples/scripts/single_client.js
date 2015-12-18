@@ -202,7 +202,23 @@ var ARGS = {
 
   stream_disconnected: function(_this, stanza) {
     console.log('stream_disconnected');
+  },
+
+  waiting_media_permission: function() {
+    //Show message to allow hardware permission here.
+    console.log('waiting_media_permission');
+  },
+
+  media_permission_granted: function() {
+    //Hide permission message.
+    console.log('media_permission_granted');
+  },
+
+  media_permission_error: function(media_type, to) {
+    //Invoked when caller blocks media permission
+    console.log('media_permission_error');
   }
+
 };
 
 GiggleLoader.on_ready(function() {

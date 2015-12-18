@@ -234,6 +234,15 @@ var GiggleSingle = ring.create([__GiggleBase],
          */
         this._sid = [args.sid];
 
+      if(args && args.media_permission_error)
+        this._media_permission_error = args.media_permission_error;
+
+      if(args && args.waiting_media_permission)
+        this._waiting_media_permission = args.waiting_media_permission;
+
+      if(args && args.media_permission_granted)
+        this._media_permission_granted = args.media_permission_granted;
+
       /**
        * @member {Object}
        * @default
@@ -2818,6 +2827,8 @@ var GiggleSingle = ring.create([__GiggleBase],
       } catch(e) {
         this.get_debug().log('[giggle:single] _peer_got_user_media_error > ' + e, 1);
       }
+
+      this.media_permission_error(this.get_media(), this.get_to());
     },
 
     /**
@@ -3610,6 +3621,18 @@ var GiggleSingle = ring.create([__GiggleBase],
      */
     _set_last_ice_state: function(last_ice_state) {
       this._last_ice_state = last_ice_state;
+    },
+
+    media_permission_error: function(media, to) {
+      return this._media_permission_error(media, to);
+    },
+
+    waiting_media_permission: function() {
+      return this._waiting_media_permission();
+    },
+
+    media_permission_granted: function() {
+      return this._media_permission_granted();
     },
   }
 );

@@ -740,6 +740,8 @@ var __GiggleBase = ring.create(
         if(this.get_local_stream() === null) {
           this.get_debug().log('[giggle:base] _peer_get_user_media > Getting user media...', 2);
 
+          this.waiting_media_permission();
+
           (WEBRTC_GET_MEDIA.bind(navigator))(
             this.utils.generate_constraints(),
             this._peer_got_user_media_success.bind(this, callback),
@@ -766,6 +768,9 @@ var __GiggleBase = ring.create(
 
       try {
         this.get_debug().log('[giggle:base] _peer_got_user_media_success > Got user media.', 2);
+
+        GIGGLE_MEDIA_GRANT_SUCCESS = true;
+        this.media_permission_granted();
 
         this._set_local_stream(stream);
 
