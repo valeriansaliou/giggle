@@ -170,10 +170,12 @@ var Giggle = new (ring.create(
         route_map[GIGGLE_STANZA_PRESENCE]  = this._route_presence;
 
         for(cur_type in route_map) {
-          this.plug.register(
-            cur_type,
-            route_map[cur_type].bind(this)
-          );
+          if(route_map.hasOwnProperty(cur_type)){
+            this.plug.register(
+              cur_type,
+              route_map[cur_type].bind(this)
+            );
+          }
         }
 
         GiggleStorage.get_debug().log('[giggle:main] listen > Listening.', 2);

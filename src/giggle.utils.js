@@ -207,7 +207,9 @@ var GiggleUtils = ring.create(
 
       try {
         for(key in object) {
-          if(object.hasOwnProperty(key))  l++;
+          if(object.hasOwnProperty(key)){
+            if(object.hasOwnProperty(key))  l++;
+          }
         }
       } catch(e) {
         this.debug.log('[giggle:utils] object_length > ' + e, 1);
@@ -255,8 +257,10 @@ var GiggleUtils = ring.create(
 
       for(i = 0; i < arguments.length; i++) {
         for(p in arguments[i]) {
-          if(arguments[i].hasOwnProperty(p)) {
-            collect_obj[p] = arguments[i][p];
+          if(arguments[i].hasOwnProperty(p)){
+            if(arguments[i].hasOwnProperty(p)) {
+              collect_obj[p] = arguments[i][p];
+            }
           }
         }
       }
@@ -282,7 +286,9 @@ var GiggleUtils = ring.create(
         loop_arr: for(j = 0; j < cur_arr.length; j++) {
           // Ensure uniqueness of object
           for(p in collect_arr) {
-            if(this.object_equal(cur_arr[j], collect_arr[p]))  continue loop_arr;
+            if(collect_arr.hasOwnProperty(p)){
+              if(this.object_equal(cur_arr[j], collect_arr[p]))  continue loop_arr;
+            }
           }
 
           collect_arr.push(cur_arr[j]);
@@ -329,8 +335,10 @@ var GiggleUtils = ring.create(
           copy = {};
 
           for(attr in object) {
-            if(object.hasOwnProperty(attr)) {
-              copy[attr] = this.object_clone(object[attr]);
+            if(object.hasOwnProperty(attr)){
+              if(object.hasOwnProperty(attr)) {
+                copy[attr] = this.object_clone(object[attr]);
+              }
             }
           }
 
@@ -367,9 +375,11 @@ var GiggleUtils = ring.create(
         user_agent = navigator.userAgent.toLowerCase();
 
         for(cur_browser in detect_arr) {
-          if(user_agent.indexOf(cur_browser) > -1) {
-            browser_info.name = detect_arr[cur_browser];
-            break;
+          if(detect_arr.hasOwnProperty(cur_browser)){
+            if(user_agent.indexOf(cur_browser) > -1) {
+              browser_info.name = detect_arr[cur_browser];
+              break;
+            }
           }
         }
       } catch(e) {
@@ -410,48 +420,52 @@ var GiggleUtils = ring.create(
           var i, cur_stun_obj, cur_stun_config;
 
           for(i in stun_config) {
-            cur_stun_obj = stun_config[i];
+              if(stun_config.hasOwnProperty(i)){
+                cur_stun_obj = stun_config[i];
 
-            cur_stun_config = {};
-            cur_stun_config.url = 'stun:' + cur_stun_obj.host;
+                cur_stun_config = {};
+                cur_stun_config.url = 'stun:' + cur_stun_obj.host;
 
-            if(cur_stun_obj.port) {
-              cur_stun_config.url += ':' + cur_stun_obj.port;
+                if(cur_stun_obj.port) {
+                  cur_stun_config.url += ':' + cur_stun_obj.port;
+                }
+
+                if(cur_stun_obj.transport && this.browser().name != GIGGLE_BROWSER_FIREFOX) {
+                  cur_stun_config.url += '?transport=' + cur_stun_obj.transport;
+                }
+
+                (config.iceServers).push(cur_stun_config);
             }
-
-            if(cur_stun_obj.transport && this.browser().name != GIGGLE_BROWSER_FIREFOX) {
-              cur_stun_config.url += '?transport=' + cur_stun_obj.transport;
-            }
-
-            (config.iceServers).push(cur_stun_config);
           }
 
           // TURN servers
           var j, cur_turn_obj, cur_turn_config;
 
           for(j in turn_config) {
-            cur_turn_obj = turn_config[j];
+              if(turn_config.hasOwnProperty(j)){
+                cur_turn_obj = turn_config[j];
 
-            cur_turn_config = {};
-            cur_turn_config.url = 'turn:' + cur_turn_obj.host;
+                cur_turn_config = {};
+                cur_turn_config.url = 'turn:' + cur_turn_obj.host;
 
-            if(cur_turn_obj.port) {
-              cur_turn_config.url += ':' + cur_turn_obj.port;
-            }
+                if(cur_turn_obj.port) {
+                  cur_turn_config.url += ':' + cur_turn_obj.port;
+                }
 
-            if(cur_turn_obj.transport) {
-              cur_turn_config.url += ('?transport=' + cur_turn_obj.transport);
-            }
+                if(cur_turn_obj.transport) {
+                  cur_turn_config.url += ('?transport=' + cur_turn_obj.transport);
+                }
 
-            if(cur_turn_obj.username) {
-              cur_turn_config.username = cur_turn_obj.username;
-            }
+                if(cur_turn_obj.username) {
+                  cur_turn_config.username = cur_turn_obj.username;
+                }
 
-            if(cur_turn_obj.password) {
-              cur_turn_config.password = cur_turn_obj.password;
-            }
+                if(cur_turn_obj.password) {
+                  cur_turn_config.password = cur_turn_obj.password;
+                }
 
-            (config.iceServers).push(cur_turn_config);
+                (config.iceServers).push(cur_turn_config);
+              }
           }
 
           // Check we have at least a STUN server (if user can traverse NAT)
@@ -459,9 +473,11 @@ var GiggleUtils = ring.create(
           var has_stun = false;
 
           for(k in config.iceServers) {
-            if((config.iceServers[k].url).match(R_NETWORK_PROTOCOLS.stun)) {
-              has_stun = true; break;
-            }
+              if(config.iceServers.hasOwnProperty(k)){
+                if((config.iceServers[k].url).match(R_NETWORK_PROTOCOLS.stun)) {
+                  has_stun = true; break;
+                }
+              }
           }
 
           if(!has_stun) {
@@ -729,8 +745,10 @@ var GiggleUtils = ring.create(
             var cur_reason;
 
             for(cur_reason in GIGGLE_REASONS) {
-              if(this.stanza_get_element(reason[0], cur_reason, this.parent.get_namespace()).length) {
-                return cur_reason;
+              if(GIGGLE_REASONS.hasOwnProperty(cur_reason)){
+                if(this.stanza_get_element(reason[0], cur_reason, this.parent.get_namespace()).length) {
+                  return cur_reason;
+                }
               }
             }
           }
@@ -756,9 +774,11 @@ var GiggleUtils = ring.create(
           var cur_info;
 
           for(cur_info in GIGGLE_SESSION_INFOS) {
-            if(this.stanza_get_element(jingle, cur_info, NS_JINGLE_APPS_RTP_INFO).length) {
-              return cur_info;
-            }
+              if(GIGGLE_SESSION_INFOS.hasOwnProperty(cur_info)){
+                if(this.stanza_get_element(jingle, cur_info, NS_JINGLE_APPS_RTP_INFO).length) {
+                  return cur_info;
+                }
+              }
           }
         }
       } catch(e) {
@@ -831,10 +851,12 @@ var GiggleUtils = ring.create(
 
             // Parse attributes
             for(j in attrs) {
-              child_arr[attrs[j].n] = this.stanza_get_attribute(child, attrs[j].n);
+              if(attrs.hasOwnProperty(j)){
+                child_arr[attrs[j].n] = this.stanza_get_attribute(child, attrs[j].n);
 
-              if(attrs[j].r && !child_arr[attrs[j].n]) {
-                error++; break;
+                if(attrs[j].r && !child_arr[attrs[j].n]) {
+                  error++; break;
+                }
               }
             }
 
@@ -1028,8 +1050,10 @@ var GiggleUtils = ring.create(
           };
 
           for(ic_key in ic_arr) {
-            if(!(ic_key in payload_obj.descriptions)) {
-              payload_obj.descriptions[ic_key] = ic_arr[ic_key];
+            if(ic_arr.hasOwnProperty(ic_key)){
+              if(!(ic_key in payload_obj.descriptions)) {
+                payload_obj.descriptions[ic_key] = ic_arr[ic_key];
+              }
             }
           }
         };
@@ -1046,8 +1070,10 @@ var GiggleUtils = ring.create(
           if(!(id in payload_obj.descriptions.payload))  payload_obj.descriptions.payload[id] = {};
 
           for(ip_key in ip_arr) {
-            if(!(ip_key in payload_obj.descriptions.payload[id])) {
-              payload_obj.descriptions.payload[id][ip_key] = ip_arr[ip_key];
+            if(ip_arr.hasOwnProperty(ip_key)){
+              if(!(ip_key in payload_obj.descriptions.payload[id])) {
+                payload_obj.descriptions.payload[id][ip_key] = ip_arr[ip_key];
+              }
             }
           }
         };
@@ -1333,21 +1359,25 @@ var GiggleUtils = ring.create(
 
         if(children && children.length) {
           for(i in children) {
-            child = children[i];
+              if(children.hasOwnProperty(i)){
+                child = children[i];
 
-            if(!child) continue;
+                if(!child) continue;
 
-            node = parent.child(
-              name,
-              {
-                'xmlns': ns
-              },
-              (value && child[value]) ? child[value] : null
-            );
+                node = parent.child(
+                  name,
+                  {
+                    'xmlns': ns
+                  },
+                  (value && child[value]) ? child[value] : null
+                );
 
-            for(attr in child) {
-              if(attr != value)  this.stanza_set_attribute(node, attr, child[attr]);
-            }
+                for(attr in child) {
+                  if(child.hasOwnProperty(attr)){
+                    if(attr != value)  this.stanza_set_attribute(node, attr, child[attr]);
+                  }
+                }
+              }
           }
         }
       } catch(e) {
@@ -1377,7 +1407,9 @@ var GiggleUtils = ring.create(
         if(!attrs.sid)  attrs.sid = this.parent.get_sid();
 
         for(cur_attr in attrs) {
-          this.stanza_set_attribute(jingle, cur_attr, attrs[cur_attr]);
+          if(attrs.hasOwnProperty(cur_attr)){
+            this.stanza_set_attribute(jingle, cur_attr, attrs[cur_attr]);
+          }
         }
       } catch(e) {
         this.debug.log('[giggle:utils] stanza_generate_jingle > ' + e, 1);
@@ -1478,216 +1510,226 @@ var GiggleUtils = ring.create(
         };
 
         for(cur_media in content_local) {
-          var cur_content = content_local[cur_media];
+          if(content_local.hasOwnProperty(cur_media)){
+            var cur_content = content_local[cur_media];
 
-          var content = jingle.child('content', {
-            'xmlns': this.parent.get_namespace()
-          });
+            var content = jingle.child('content', {
+              'xmlns': this.parent.get_namespace()
+            });
 
-          this.stanza_set_attribute(content, 'creator', cur_content.creator);
-          this.stanza_set_attribute(content, 'name',    cur_content.name);
-          this.stanza_set_attribute(content, 'senders', cur_content.senders);
+            this.stanza_set_attribute(content, 'creator', cur_content.creator);
+            this.stanza_set_attribute(content, 'name',    cur_content.name);
+            this.stanza_set_attribute(content, 'senders', cur_content.senders);
 
-          // Build description (if action type allows that element)
-          if(this.stanza_get_attribute(jingle, 'action') != GIGGLE_ACTION_TRANSPORT_INFO) {
-            var cs_description  = cur_content.description;
-            var cs_d_attrs      = cs_description.attrs;
-            var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
-            var cs_d_bandwidth  = cs_description.bandwidth;
-            var cs_d_payload    = cs_description.payload;
-            var cs_d_encryption = cs_description.encryption;
-            var cs_d_ssrc_id    = cs_description['ssrc-id'];
-            var cs_d_ssrc       = cs_description.ssrc;
-            var cs_d_ssrc_group = cs_description['ssrc-group'];
-            var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
-            var cs_d_rtcp_mux   = cs_description['rtcp-mux'];
+            // Build description (if action type allows that element)
+            if(this.stanza_get_attribute(jingle, 'action') != GIGGLE_ACTION_TRANSPORT_INFO) {
+              var cs_description  = cur_content.description;
+              var cs_d_attrs      = cs_description.attrs;
+              var cs_d_rtcp_fb    = cs_description['rtcp-fb'];
+              var cs_d_bandwidth  = cs_description.bandwidth;
+              var cs_d_payload    = cs_description.payload;
+              var cs_d_encryption = cs_description.encryption;
+              var cs_d_ssrc_id    = cs_description['ssrc-id'];
+              var cs_d_ssrc       = cs_description.ssrc;
+              var cs_d_ssrc_group = cs_description['ssrc-group'];
+              var cs_d_rtp_hdrext = cs_description['rtp-hdrext'];
+              var cs_d_rtcp_mux   = cs_description['rtcp-mux'];
 
-            var description = this.stanza_build_node(
-                                stanza, content,
-                                [cs_d_attrs],
-                                'description',
-                                NS_JINGLE_APPS_RTP
+              var description = this.stanza_build_node(
+                                  stanza, content,
+                                  [cs_d_attrs],
+                                  'description',
+                                  NS_JINGLE_APPS_RTP
+                                );
+
+              // Payload-type
+              if(cs_d_payload) {
+                var i, j, k,
+                    cur_ssrc_id,
+                    cur_cs_d_ssrc_group_semantics, cur_cs_d_ssrc_group_semantics_sub,
+                    cs_d_p, payload_type;
+
+                for(i in cs_d_payload) {
+                  if(cs_d_payload.hasOwnProperty(i)){
+                    cs_d_p = cs_d_payload[i];
+
+                    payload_type = this.stanza_build_node(
+                      stanza,
+                      description,
+                      [cs_d_p.attrs],
+                      'payload-type',
+                      NS_JINGLE_APPS_RTP
+                    );
+
+                    // Parameter
+                    this.stanza_build_node(
+                      stanza,
+                      payload_type,
+                      cs_d_p.parameter,
+                      'parameter',
+                      NS_JINGLE_APPS_RTP
+                    );
+
+                    // RTCP-FB (sub)
+                    this.stanza_build_node(
+                      stanza,
+                      payload_type,
+                      cs_d_p['rtcp-fb'],
+                      'rtcp-fb',
+                      NS_JINGLE_APPS_RTP_RTCP_FB
+                    );
+
+                    // RTCP-FB-TRR-INT
+                    this.stanza_build_node(
+                      stanza,
+                      payload_type,
+                      cs_d_p['rtcp-fb-trr-int'],
+                      'rtcp-fb-trr-int',
+                      NS_JINGLE_APPS_RTP_RTCP_FB
+                    );
+                  }
+                }
+
+                // SSRC-GROUP
+                if(cs_d_ssrc_group) {
+                  for(cur_cs_d_ssrc_group_semantics in cs_d_ssrc_group) {
+                    if(cs_d_ssrc_group.hasOwnProperty(cur_cs_d_ssrc_group_semantics)){
+                        for(j in cs_d_ssrc_group[cur_cs_d_ssrc_group_semantics]) {
+                          if(cs_d_ssrc_group[cur_cs_d_ssrc_group_semantics].hasOwnProperty(j)){
+                            cur_cs_d_ssrc_group_semantics_sub = cs_d_ssrc_group[cur_cs_d_ssrc_group_semantics][j];
+
+                            if(cur_cs_d_ssrc_group_semantics_sub !== undefined) {
+                              var ssrc_group = description.child('ssrc-group', {
+                                'semantics': cur_cs_d_ssrc_group_semantics,
+                                'xmlns': NS_JINGLE_APPS_RTP_SSMA
+                              });
+
+                              this.stanza_build_node(
+                                stanza,
+                                ssrc_group,
+                                cur_cs_d_ssrc_group_semantics_sub.sources,
+                                'source',
+                                NS_JINGLE_APPS_RTP_SSMA
                               );
+                            }
+                          }
+                        }
+                    }
+                  }
+                }
 
-            // Payload-type
-            if(cs_d_payload) {
-              var i, j, k,
-                  cur_ssrc_id,
-                  cur_cs_d_ssrc_group_semantics, cur_cs_d_ssrc_group_semantics_sub,
-                  cs_d_p, payload_type;
+                // SSRC
+                if(cs_d_ssrc_id && cs_d_ssrc) {
+                  for(k in cs_d_ssrc_id) {
+                      if(cs_d_ssrc_id.hasOwnProperty(k)){
+                        cur_ssrc_id = cs_d_ssrc_id[k];
 
-              for(i in cs_d_payload) {
-                cs_d_p = cs_d_payload[i];
+                        var ssrc = description.child('source', {
+                          'ssrc': cur_ssrc_id,
+                          'xmlns': NS_JINGLE_APPS_RTP_SSMA
+                        });
 
-                payload_type = this.stanza_build_node(
+                        this.stanza_build_node(
+                          stanza,
+                          ssrc,
+                          cs_d_ssrc[cur_ssrc_id],
+                          'parameter',
+                          NS_JINGLE_APPS_RTP_SSMA
+                        );
+                      }
+                  }
+                }
+
+                // Encryption?
+                if(has_transport === true) {
+                  if(cs_d_encryption &&
+                     (cs_d_encryption.crypto && cs_d_encryption.crypto.length ||
+                      cs_d_encryption['zrtp-hash'] && cs_d_encryption['zrtp-hash'].length)) {
+                    var encryption = description.child('encryption', {
+                      'xmlns': NS_JINGLE_APPS_RTP
+                    });
+
+                    this.stanza_set_attribute(encryption, 'required', (cs_d_encryption.attrs.required || '0'));
+
+                    // Crypto
+                    this.stanza_build_node(
+                      stanza,
+                      encryption,
+                      cs_d_encryption.crypto,
+                      'crypto',
+                      NS_JINGLE_APPS_RTP
+                    );
+
+                    // ZRTP-HASH
+                    this.stanza_build_node(
+                      stanza,
+                      encryption,
+                      cs_d_encryption['zrtp-hash'],
+                      'zrtp-hash',
+                      NS_JINGLE_APPS_RTP_ZRTP,
+                      'value'
+                    );
+                  }
+                }
+
+                // RTCP-FB (common)
+                this.stanza_build_node(
                   stanza,
                   description,
-                  [cs_d_p.attrs],
-                  'payload-type',
-                  NS_JINGLE_APPS_RTP
-                );
-
-                // Parameter
-                this.stanza_build_node(
-                  stanza,
-                  payload_type,
-                  cs_d_p.parameter,
-                  'parameter',
-                  NS_JINGLE_APPS_RTP
-                );
-
-                // RTCP-FB (sub)
-                this.stanza_build_node(
-                  stanza,
-                  payload_type,
-                  cs_d_p['rtcp-fb'],
+                  cs_d_rtcp_fb,
                   'rtcp-fb',
                   NS_JINGLE_APPS_RTP_RTCP_FB
                 );
 
-                // RTCP-FB-TRR-INT
+                // Bandwidth
                 this.stanza_build_node(
                   stanza,
-                  payload_type,
-                  cs_d_p['rtcp-fb-trr-int'],
-                  'rtcp-fb-trr-int',
-                  NS_JINGLE_APPS_RTP_RTCP_FB
+                  description,
+                  cs_d_bandwidth,
+                  'bandwidth',
+                  NS_JINGLE_APPS_RTP,
+                  'value'
+                );
+
+                // RTP-HDREXT
+                this.stanza_build_node(
+                  stanza,
+                  description,
+                  cs_d_rtp_hdrext,
+                  'rtp-hdrext',
+                  NS_JINGLE_APPS_RTP_RTP_HDREXT
+                );
+
+                // RTCP-MUX
+                if(cs_d_rtcp_mux) {
+                  description.child('rtcp-mux', {
+                    'xmlns': NS_JINGLE_APPS_RTP
+                  });
+                }
+              }
+            }
+
+            // Build transport?
+            if(has_transport === true) {
+              var cs_transport = this.generate_transport(cur_content.transport);
+
+              // Transport candidates: ICE-UDP
+              if((cs_transport.ice.candidate).length > 0) {
+                fn_build_transport(
+                  content,
+                  cs_transport.ice,
+                  NS_JINGLE_TRANSPORTS_ICEUDP
                 );
               }
 
-              // SSRC-GROUP
-              if(cs_d_ssrc_group) {
-                for(cur_cs_d_ssrc_group_semantics in cs_d_ssrc_group) {
-                  for(j in cs_d_ssrc_group[cur_cs_d_ssrc_group_semantics]) {
-                    cur_cs_d_ssrc_group_semantics_sub = cs_d_ssrc_group[cur_cs_d_ssrc_group_semantics][j];
-
-                    if(cur_cs_d_ssrc_group_semantics_sub !== undefined) {
-                      var ssrc_group = description.child('ssrc-group', {
-                        'semantics': cur_cs_d_ssrc_group_semantics,
-                        'xmlns': NS_JINGLE_APPS_RTP_SSMA
-                      });
-
-                      this.stanza_build_node(
-                        stanza,
-                        ssrc_group,
-                        cur_cs_d_ssrc_group_semantics_sub.sources,
-                        'source',
-                        NS_JINGLE_APPS_RTP_SSMA
-                      );
-                    }
-                  }
-                }
+              // Transport candidates: RAW-UDP
+              if((cs_transport.raw.candidate).length > 0) {
+                fn_build_transport(
+                  content,
+                  cs_transport.raw,
+                  NS_JINGLE_TRANSPORTS_RAWUDP
+                );
               }
-
-              // SSRC
-              if(cs_d_ssrc_id && cs_d_ssrc) {
-                for(k in cs_d_ssrc_id) {
-                  cur_ssrc_id = cs_d_ssrc_id[k];
-
-                  var ssrc = description.child('source', {
-                    'ssrc': cur_ssrc_id,
-                    'xmlns': NS_JINGLE_APPS_RTP_SSMA
-                  });
-
-                  this.stanza_build_node(
-                    stanza,
-                    ssrc,
-                    cs_d_ssrc[cur_ssrc_id],
-                    'parameter',
-                    NS_JINGLE_APPS_RTP_SSMA
-                  );
-                }
-              }
-
-              // Encryption?
-              if(has_transport === true) {
-                if(cs_d_encryption &&
-                   (cs_d_encryption.crypto && cs_d_encryption.crypto.length ||
-                    cs_d_encryption['zrtp-hash'] && cs_d_encryption['zrtp-hash'].length)) {
-                  var encryption = description.child('encryption', {
-                    'xmlns': NS_JINGLE_APPS_RTP
-                  });
-
-                  this.stanza_set_attribute(encryption, 'required', (cs_d_encryption.attrs.required || '0'));
-
-                  // Crypto
-                  this.stanza_build_node(
-                    stanza,
-                    encryption,
-                    cs_d_encryption.crypto,
-                    'crypto',
-                    NS_JINGLE_APPS_RTP
-                  );
-
-                  // ZRTP-HASH
-                  this.stanza_build_node(
-                    stanza,
-                    encryption,
-                    cs_d_encryption['zrtp-hash'],
-                    'zrtp-hash',
-                    NS_JINGLE_APPS_RTP_ZRTP,
-                    'value'
-                  );
-                }
-              }
-
-              // RTCP-FB (common)
-              this.stanza_build_node(
-                stanza,
-                description,
-                cs_d_rtcp_fb,
-                'rtcp-fb',
-                NS_JINGLE_APPS_RTP_RTCP_FB
-              );
-
-              // Bandwidth
-              this.stanza_build_node(
-                stanza,
-                description,
-                cs_d_bandwidth,
-                'bandwidth',
-                NS_JINGLE_APPS_RTP,
-                'value'
-              );
-
-              // RTP-HDREXT
-              this.stanza_build_node(
-                stanza,
-                description,
-                cs_d_rtp_hdrext,
-                'rtp-hdrext',
-                NS_JINGLE_APPS_RTP_RTP_HDREXT
-              );
-
-              // RTCP-MUX
-              if(cs_d_rtcp_mux) {
-                description.child('rtcp-mux', {
-                  'xmlns': NS_JINGLE_APPS_RTP
-                });
-              }
-            }
-          }
-
-          // Build transport?
-          if(has_transport === true) {
-            var cs_transport = this.generate_transport(cur_content.transport);
-
-            // Transport candidates: ICE-UDP
-            if((cs_transport.ice.candidate).length > 0) {
-              fn_build_transport(
-                content,
-                cs_transport.ice,
-                NS_JINGLE_TRANSPORTS_ICEUDP
-              );
-            }
-
-            // Transport candidates: RAW-UDP
-            if((cs_transport.raw.candidate).length > 0) {
-              fn_build_transport(
-                content,
-                cs_transport.raw,
-                NS_JINGLE_TRANSPORTS_RAWUDP
-              );
             }
           }
         }
@@ -1711,20 +1753,24 @@ var GiggleUtils = ring.create(
         var group_local = this.parent.get_group_local();
 
         for(cur_semantics in group_local) {
-          cur_group = group_local[cur_semantics];
+          if(group_local.hasOwnProperty(cur_semantics)){
+            cur_group = group_local[cur_semantics];
 
-          group = jingle.child('group', {
-            'xmlns': NS_JINGLE_APPS_GROUPING,
-            'semantics': cur_semantics
-          });
-
-          for(i in cur_group) {
-            cur_group_name = cur_group[i];
-
-            group.child('content', {
+            group = jingle.child('group', {
               'xmlns': NS_JINGLE_APPS_GROUPING,
-              'name': cur_group_name
+              'semantics': cur_semantics
             });
+
+            for(i in cur_group) {
+              if(cur_group.hasOwnProperty(i)){
+                cur_group_name = cur_group[i];
+
+                group.child('content', {
+                  'xmlns': NS_JINGLE_APPS_GROUPING,
+                  'name': cur_group_name
+                });
+              }
+            }
           }
         }
       } catch(e) {
@@ -1763,11 +1809,13 @@ var GiggleUtils = ring.create(
         if(description_maxptime)  delete description_cpy.attrs.maxptime;
 
         for(i in description_cpy.payload) {
-          if(!('attrs' in description_cpy.payload[i]))
-            description_cpy.payload[i].attrs        = {};
+          if(description_cpy.payload.hasOwnProperty(i)){
+            if(!('attrs' in description_cpy.payload[i]))
+              description_cpy.payload[i].attrs        = {};
 
-          description_cpy.payload[i].attrs.ptime    = description_ptime;
-          description_cpy.payload[i].attrs.maxptime = description_maxptime;
+            description_cpy.payload[i].attrs.ptime    = description_ptime;
+            description_cpy.payload[i].attrs.maxptime = description_maxptime;
+          }
         }
 
         content_obj.description = description_cpy;
@@ -1807,7 +1855,9 @@ var GiggleUtils = ring.create(
         // Reduce RAW-UDP map object for simpler search
         var rawudp_map = {};
         for(i in GIGGLE_SDP_CANDIDATE_MAP_RAWUDP) {
-          rawudp_map[GIGGLE_SDP_CANDIDATE_MAP_RAWUDP[i].n] = 1;
+          if(GIGGLE_SDP_CANDIDATE_MAP_RAWUDP.hasOwnProperty(i)){
+            rawudp_map[GIGGLE_SDP_CANDIDATE_MAP_RAWUDP[i].n] = 1;
+          }
         }
 
         var fn_init_obj = function(transport_sub_obj) {
@@ -1817,7 +1867,9 @@ var GiggleUtils = ring.create(
         };
 
         for(j in transport_obj) {
-          fn_init_obj(transport_obj[j]);
+          if(transport_obj.hasOwnProperty(j)){
+            fn_init_obj(transport_obj[j]);
+          }
         }
 
         // Nest candidates in their category
@@ -1828,8 +1880,10 @@ var GiggleUtils = ring.create(
             // Remove attributes that are not required by RAW-UDP (XEP-0177 compliance)
             if(GIGGLE_SDP_CANDIDATE_TYPES[cur_candidate.type] === GIGGLE_SDP_CANDIDATE_METHOD_RAW) {
               for(cur_attr in cur_candidate) {
-                if(typeof rawudp_map[cur_attr] == 'undefined') {
-                  delete cur_candidate[cur_attr];
+                if(cur_candidate.hasOwnProperty(cur_attr)){
+                  if(typeof rawudp_map[cur_attr] == 'undefined') {
+                    delete cur_candidate[cur_attr];
+                  }
                 }
               }
             }
@@ -1854,17 +1908,19 @@ var GiggleUtils = ring.create(
         var cur_name;
 
         for(cur_name in this.parent.get_name()) {
-          this.parent._set_content_local(
-            cur_name,
-
-            this.generate_content(
-              GIGGLE_SENDERS_INITIATOR.jingle,
+          if(this.parent.get_name().hasOwnProperty(cur_name)){
+            this.parent._set_content_local(
               cur_name,
-              this.parent.get_senders(cur_name),
-              this.parent.get_payloads_local(cur_name),
-              this.parent.get_candidates_local(cur_name)
-            )
-          );
+
+              this.generate_content(
+                GIGGLE_SENDERS_INITIATOR.jingle,
+                cur_name,
+                this.parent.get_senders(cur_name),
+                this.parent.get_payloads_local(cur_name),
+                this.parent.get_candidates_local(cur_name)
+              )
+            );
+          }
         }
       } catch(e) {
         this.debug.log('[giggle:utils] build_content_local > ' + e, 1);
@@ -1880,17 +1936,19 @@ var GiggleUtils = ring.create(
         var cur_name;
 
         for(cur_name in this.parent.get_name()) {
-          this.parent._set_content_remote(
-            cur_name,
-
-            this.generate_content(
-              this.parent.get_creator(cur_name),
+          if(this.parent.get_name().hasOwnProperty(cur_name)){
+            this.parent._set_content_remote(
               cur_name,
-              this.parent.get_senders(cur_name),
-              this.parent.get_payloads_remote(cur_name),
-              this.parent.get_candidates_remote(cur_name)
-            )
-          );
+
+              this.generate_content(
+                this.parent.get_creator(cur_name),
+                cur_name,
+                this.parent.get_senders(cur_name),
+                this.parent.get_payloads_remote(cur_name),
+                this.parent.get_candidates_remote(cur_name)
+              )
+            );
+          }
         }
       } catch(e) {
         this.debug.log('[giggle:utils] build_content_remote > ' + e, 1);
@@ -1920,9 +1978,11 @@ var GiggleUtils = ring.create(
         }
 
         for(cur_participant in content_remote) {
-          content_all.push(
-            content_remote[cur_participant]
-          );
+          if(content_remote.hasOwnProperty(cur_participant)){
+            content_all.push(
+              content_remote[cur_participant]
+            );
+          }
         }
 
         // Push local content
@@ -1931,15 +1991,19 @@ var GiggleUtils = ring.create(
         );
 
         for(i in content_all) {
-          for(cur_name in content_all[i]) {
-            try {
-              if(content_all[i][cur_name].description.attrs.media === media) {
-                name = cur_name; break;
+          if(content_all.hasOwnProperty(i)){
+            for(cur_name in content_all[i]) {
+              if(content_all[i].hasOwnProperty(cur_name)){
+                try {
+                  if(content_all[i][cur_name].description.attrs.media === media) {
+                    name = cur_name; break;
+                  }
+                } catch(e) {}
               }
-            } catch(e) {}
-          }
+            }
 
-          if(name) break;
+            if(name) break;
+          }
         }
 
         if(!name) name = media;
@@ -1963,14 +2027,18 @@ var GiggleUtils = ring.create(
       try {
         if(typeof name == 'number') {
           for(cur_media in GIGGLE_MEDIAS) {
-            if(name == parseInt(GIGGLE_MEDIAS[cur_media].label, 10)) {
-              media = cur_media; break;
+            if(GIGGLE_MEDIAS.hasOwnProperty(cur_media)){
+              if(name == parseInt(GIGGLE_MEDIAS[cur_media].label, 10)) {
+                media = cur_media; break;
+              }
             }
           }
         } else {
           for(cur_media in GIGGLE_MEDIAS) {
-            if(name == this.name_generate(cur_media)) {
-              media = cur_media; break;
+            if(GIGGLE_MEDIAS.hasOwnProperty(cur_media)){
+              if(name == this.name_generate(cur_media)) {
+                media = cur_media; break;
+              }
             }
           }
         }
@@ -2175,19 +2243,21 @@ var GiggleUtils = ring.create(
             prev_credentials, cur_credentials;
 
         for(i in payloads) {
-          cur_credentials = payloads[i].transports;
+          if(payloads.hasOwnProperty(i)){
+            cur_credentials = payloads[i].transports;
 
-          if(typeof prev_credentials == 'object') {
-            if((prev_credentials.ufrag !== cur_credentials.ufrag)  ||
-               (prev_credentials.pwd !== cur_credentials.pwd)      ||
-               this.object_equal(prev_credentials.fingerprint, cur_credentials.fingerprint)
-              ) {
-              is_same = false;
-              break;
+            if(typeof prev_credentials == 'object') {
+              if((prev_credentials.ufrag !== cur_credentials.ufrag)  ||
+                 (prev_credentials.pwd !== cur_credentials.pwd)      ||
+                 this.object_equal(prev_credentials.fingerprint, cur_credentials.fingerprint)
+                ) {
+                is_same = false;
+                break;
+              }
             }
-          }
 
-          prev_credentials = cur_credentials;
+            prev_credentials = cur_credentials;
+          }
         }
       } catch(e) {
         this.debug.log('[giggle:utils] is_sdp_common_credentials > ' + e, 1);
@@ -2209,7 +2279,9 @@ var GiggleUtils = ring.create(
         var i;
 
         for(i in candidates_obj) {
-          count_candidates += (typeof candidates_obj[i] == 'object') ? candidates_obj[i].length : 0;
+          if(candidates_obj.hasOwnProperty(i)){
+            count_candidates += (typeof candidates_obj[i] == 'object') ? candidates_obj[i].length : 0;
+          }
         }
       } catch(e) {
         this.debug.log('[giggle:utils] count_candidates > ' + e, 1);
@@ -2273,20 +2345,22 @@ var GiggleUtils = ring.create(
         };
 
         for(i in candidates) {
-          cur_candidate = candidates[i];
+          if(candidates.hasOwnProperty(i)){
+            cur_candidate = candidates[i];
 
-          if(cur_candidate.id == media || cur_candidate.label == media) {
-            cur_candidate_parse = this.parent.sdp._parse_candidate(cur_candidate.candidate);
+            if(cur_candidate.id == media || cur_candidate.label == media) {
+              cur_candidate_parse = this.parent.sdp._parse_candidate(cur_candidate.candidate);
 
-            if(cur_candidate_parse.type === GIGGLE_SDP_CANDIDATE_TYPE_HOST) {
-              // Only proceed if no local network yet
-              if(typeof local_obj == 'undefined') {
-                local_obj = fn_proceed_parse(GIGGLE_SDP_CANDIDATE_TYPE_HOST, cur_candidate_parse);
-              }
-            } else if(cur_candidate_parse.type === GIGGLE_SDP_CANDIDATE_TYPE_SRFLX) {
-              // Only proceed if no remote network yet
-              if(typeof remote_obj == 'undefined') {
-                remote_obj = fn_proceed_parse(GIGGLE_SDP_CANDIDATE_TYPE_SRFLX, cur_candidate_parse);
+              if(cur_candidate_parse.type === GIGGLE_SDP_CANDIDATE_TYPE_HOST) {
+                // Only proceed if no local network yet
+                if(typeof local_obj == 'undefined') {
+                  local_obj = fn_proceed_parse(GIGGLE_SDP_CANDIDATE_TYPE_HOST, cur_candidate_parse);
+                }
+              } else if(cur_candidate_parse.type === GIGGLE_SDP_CANDIDATE_TYPE_SRFLX) {
+                // Only proceed if no remote network yet
+                if(typeof remote_obj == 'undefined') {
+                  remote_obj = fn_proceed_parse(GIGGLE_SDP_CANDIDATE_TYPE_SRFLX, cur_candidate_parse);
+                }
               }
             }
           }
