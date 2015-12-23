@@ -366,21 +366,23 @@ var GiggleSingle = ring.create([__GiggleBase],
         this._set_responder(this.get_to());
 
         for(i in this.get_media_all()) {
-          cur_name = this.utils.name_generate(
-            this.get_media_all()[i]
-          );
+          if(this.get_media_all().hasOwnProperty(i)){
+            cur_name = this.utils.name_generate(
+              this.get_media_all()[i]
+            );
 
-          this._set_name(cur_name);
+            this._set_name(cur_name);
 
-          this._set_senders(
-            cur_name,
-            GIGGLE_SENDERS_BOTH.jingle
-          );
+            this._set_senders(
+              cur_name,
+              GIGGLE_SENDERS_BOTH.jingle
+            );
 
-          this._set_creator(
-            cur_name,
-            GIGGLE_CREATOR_INITIATOR
-          );
+            this._set_creator(
+              cur_name,
+              GIGGLE_CREATOR_INITIATOR
+            );
+          }
         }
 
         // Register session to common router
@@ -737,7 +739,9 @@ var GiggleSingle = ring.create([__GiggleBase],
 
           for(i in handlers) {
             /* @function */
-            handlers[i](stanza);
+            if(handlers.hasOwnProperty(i)){
+              handlers[i](stanza);
+            }
           }
 
           this.unregister_handler(GIGGLE_STANZA_IQ, type, id);
@@ -1389,13 +1393,15 @@ var GiggleSingle = ring.create([__GiggleBase],
         var content_queue_local = {};
 
         for(cur_name in this.get_name()) {
-          content_queue_local[cur_name] = this.utils.generate_content(
-            this.get_creator(cur_name),
-            cur_name,
-            this.get_senders(cur_name),
-            this.get_payloads_local(cur_name),
-            this.get_candidates_queue_local(cur_name)
-          );
+          if(this.get_name().hasOwnProperty(cur_name)){
+            content_queue_local[cur_name] = this.utils.generate_content(
+              this.get_creator(cur_name),
+              cur_name,
+              this.get_senders(cur_name),
+              this.get_payloads_local(cur_name),
+              this.get_candidates_queue_local(cur_name)
+            );
+          }
         }
 
         this.utils.stanza_generate_content_local(stanza, jingle, true, content_queue_local);
@@ -1827,17 +1833,19 @@ var GiggleSingle = ring.create([__GiggleBase],
           };
 
           for(i in sdp_remote.candidates) {
-            cur_candidate_obj = sdp_remote.candidates[i];
+            if(sdp_remote.candidates.hasOwnProperty(i)){
+              cur_candidate_obj = sdp_remote.candidates[i];
 
-            this.get_peer_connection().addIceCandidate(
-              new WEBRTC_ICE_CANDIDATE({
-                sdpMLineIndex : cur_candidate_obj.id,
-                candidate     : cur_candidate_obj.candidate
-              }),
+              this.get_peer_connection().addIceCandidate(
+                new WEBRTC_ICE_CANDIDATE({
+                  sdpMLineIndex : cur_candidate_obj.id,
+                  candidate     : cur_candidate_obj.candidate
+                }),
 
-              on_ice_candidate_add_success,
-              on_ice_candidate_add_failure
-            );
+                on_ice_candidate_add_success,
+                on_ice_candidate_add_failure
+              );
+            }
           }
 
           // Empty the unapplied candidates queue
@@ -2357,17 +2365,19 @@ var GiggleSingle = ring.create([__GiggleBase],
           };
 
           for(i in sdp_candidates_remote) {
-            cur_candidate_obj = sdp_candidates_remote[i];
+            if(sdp_candidates_remote.hasOwnProperty(i)){
+              cur_candidate_obj = sdp_candidates_remote[i];
 
-            this.get_peer_connection().addIceCandidate(
-              new WEBRTC_ICE_CANDIDATE({
-                sdpMLineIndex : cur_candidate_obj.id,
-                candidate     : cur_candidate_obj.candidate
-              }),
+              this.get_peer_connection().addIceCandidate(
+                new WEBRTC_ICE_CANDIDATE({
+                  sdpMLineIndex : cur_candidate_obj.id,
+                  candidate     : cur_candidate_obj.candidate
+                }),
 
-              on_ice_candidate_add_success,
-              on_ice_candidate_add_failure
-            );
+                on_ice_candidate_add_success,
+                on_ice_candidate_add_failure
+              );
+            }
           }
 
           // Empty the unapplied candidates queue
@@ -2784,17 +2794,19 @@ var GiggleSingle = ring.create([__GiggleBase],
         };
 
         for(c in sdp_remote.candidates) {
-          cur_candidate_obj = sdp_remote.candidates[c];
+          if(sdp_remote.candidates.hasOwnProperty(c)){
+            cur_candidate_obj = sdp_remote.candidates[c];
 
-          this.get_peer_connection().addIceCandidate(
-            new WEBRTC_ICE_CANDIDATE({
-              sdpMLineIndex : cur_candidate_obj.id,
-              candidate     : cur_candidate_obj.candidate
-            }),
+            this.get_peer_connection().addIceCandidate(
+              new WEBRTC_ICE_CANDIDATE({
+                sdpMLineIndex : cur_candidate_obj.id,
+                candidate     : cur_candidate_obj.candidate
+              }),
 
-            on_ice_candidate_add_success,
-            on_ice_candidate_add_failure
-          );
+              on_ice_candidate_add_success,
+              on_ice_candidate_add_failure
+            );
+          }
         }
 
         // Empty the unapplied candidates queue
@@ -3539,9 +3551,11 @@ var GiggleSingle = ring.create([__GiggleBase],
           var payloads_add   = payload_data.descriptions.payload;
 
           for(key in payloads_add) {
-            if(!(key in payloads_store)) {
-              payloads_store[key] = payloads_add[key];
-            }
+              if(payloads_add.hasOwnProperty(key)){
+                if(!(key in payloads_store)) {
+                  payloads_store[key] = payloads_add[key];
+                }
+              }
           }
         }
       } catch(e) {
@@ -3601,12 +3615,16 @@ var GiggleSingle = ring.create([__GiggleBase],
         var candidate_ids = [];
 
         for(c in this.get_candidates_remote(name)) {
-          candidate_ids.push(this.get_candidates_remote(name)[c].id);
+          if(this.get_candidates_remote(name).hasOwnProperty(c)){
+            candidate_ids.push(this.get_candidates_remote(name)[c].id);
+          }
         }
 
         for(i in candidate_data) {
-          if((candidate_data[i].id).indexOf(candidate_ids) !== -1) {
-            this.get_candidates_remote(name).push(candidate_data[i]);
+          if(candidate_data.hasOwnProperty(i)){
+            if((candidate_data[i].id).indexOf(candidate_ids) !== -1) {
+              this.get_candidates_remote(name).push(candidate_data[i]);
+            }
           }
         }
       } catch(e) {

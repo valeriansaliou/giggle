@@ -604,9 +604,11 @@ var __GiggleBase = ring.create(
 
           // Check view is not already registered
           for(i in (fn.view.get)()) {
-            if((fn.view.get)()[i] == view) {
-              this.get_debug().log('[giggle:base] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
-              return true;
+            if((fn.view.get)().hasOwnProperty(i)){
+              if((fn.view.get)()[i] == view) {
+                this.get_debug().log('[giggle:base] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
+                return true;
+              }
             }
           }
 
@@ -652,20 +654,22 @@ var __GiggleBase = ring.create(
 
           // Check view is registered
           for(i in (fn.view.get)()) {
-            if((fn.view.get)()[i] == view) {
-              // Proceeds un-registration
-              this.utils._peer_stream_detach(
-                [view]
-              );
+              if((fn.view.get)().hasOwnProperty(i)){
+                if((fn.view.get)()[i] == view) {
+                  // Proceeds un-registration
+                  this.utils._peer_stream_detach(
+                    [view]
+                  );
 
-              this.utils.array_remove_value(
-                (fn.view.get)(),
-                view
-              );
+                  this.utils.array_remove_value(
+                    (fn.view.get)(),
+                    view
+                  );
 
-              this.get_debug().log('[giggle:base] unregister_view > Unregistered view of type: ' + type, 3);
-              return true;
-            }
+                  this.get_debug().log('[giggle:base] unregister_view > Unregistered view of type: ' + type, 3);
+                  return true;
+                }
+             }
           }
 
           this.get_debug().log('[giggle:base] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
@@ -821,20 +825,24 @@ var __GiggleBase = ring.create(
         this.sdp._resolution_payload(payload_parsed);
 
         for(cur_name in payload_parsed) {
-          this._set_payloads_local(
-            cur_name,
-            payload_parsed[cur_name]
-          );
+          if(payload_parsed.hasOwnProperty(cur_name)){
+	    this._set_payloads_local(
+	      cur_name,
+	      payload_parsed[cur_name]
+	    );
+          }
         }
 
         var cur_semantics;
         var group_parsed = this.sdp._parse_group(sdp_local.sdp);
 
         for(cur_semantics in group_parsed) {
-          this._set_group_local(
-            cur_semantics,
-            group_parsed[cur_semantics]
-          );
+          if(group_parsed.hasOwnProperty(cur_semantics)){
+            this._set_group_local(
+              cur_semantics,
+              group_parsed[cur_semantics]
+            );
+          }
         }
 
         // Filter our local description (remove unused medias)
@@ -932,15 +940,17 @@ var __GiggleBase = ring.create(
         var stream_src = stream ? URL.createObjectURL(stream) : '';
 
         for(i in element) {
-          element[i].src = stream_src;
+          if(element.hasOwnProperty(i)){
+            element[i].src = stream_src;
 
-          if(navigator.mozGetUserMedia) {
-            element[i].play();
-          } else {
-            element[i].autoplay = true;
+            if(navigator.mozGetUserMedia) {
+              element[i].play();
+            } else {
+              element[i].autoplay = true;
+            }
+
+            if(typeof mute == 'boolean') element[i].muted = mute;
           }
-
-          if(typeof mute == 'boolean') element[i].muted = mute;
         }
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_stream_attach > ' + e, 1);
@@ -957,8 +967,10 @@ var __GiggleBase = ring.create(
         var i;
 
         for(i in element) {
-          element[i].pause();
-          element[i].src = '';
+          if(element.hasOwnProperty(i)){
+            element[i].pause();
+            element[i].src = '';
+          }
         }
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_stream_detach > ' + e, 1);

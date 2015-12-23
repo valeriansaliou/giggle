@@ -139,421 +139,431 @@ var GiggleSDP = ring.create(
         };
 
         for(i in lines) {
-          cur_line = lines[i];
+          if(lines.hasOwnProperty(i)){
+            cur_line = lines[i];
 
-          m_media = (R_WEBRTC_SDP_ICE_PAYLOAD.media).exec(cur_line);
+            m_media = (R_WEBRTC_SDP_ICE_PAYLOAD.media).exec(cur_line);
 
-          // 'audio/video' line?
-          if(m_media) {
-            cur_media = m_media[1];
-            cur_name  = this.parent.utils.name_generate(cur_media);
+            // 'audio/video' line?
+            if(m_media) {
+              cur_media = m_media[1];
+              cur_name  = this.parent.utils.name_generate(cur_media);
 
-            // Push it to parent array
-            init_descriptions(cur_name, 'attrs', {});
-            payload[cur_name].descriptions.attrs.media = cur_media;
+              // Push it to parent array
+              init_descriptions(cur_name, 'attrs', {});
+              payload[cur_name].descriptions.attrs.media = cur_media;
 
-            continue;
-          }
+              continue;
+            }
 
-          m_bandwidth = (R_WEBRTC_SDP_ICE_PAYLOAD.bandwidth).exec(cur_line);
+            m_bandwidth = (R_WEBRTC_SDP_ICE_PAYLOAD.bandwidth).exec(cur_line);
 
-          // 'bandwidth' line?
-          if(m_bandwidth) {
-            // Populate current object
-            error = 0;
-            cur_bandwidth = {};
+            // 'bandwidth' line?
+            if(m_bandwidth) {
+              // Populate current object
+              error = 0;
+              cur_bandwidth = {};
 
-            cur_bandwidth.type  = m_bandwidth[1]  || error++;
-            cur_bandwidth.value = m_bandwidth[2]  || error++;
+              cur_bandwidth.type  = m_bandwidth[1]  || error++;
+              cur_bandwidth.value = m_bandwidth[2]  || error++;
 
-            // Incomplete?
-            if(error !== 0)  continue;
+              // Incomplete?
+              if(error !== 0)  continue;
 
-            // Push it to parent array
-            init_descriptions(cur_name, 'bandwidth', []);
-            payload[cur_name].descriptions.bandwidth.push(cur_bandwidth);
+              // Push it to parent array
+              init_descriptions(cur_name, 'bandwidth', []);
+              payload[cur_name].descriptions.bandwidth.push(cur_bandwidth);
 
-            continue;
-          }
+              continue;
+            }
 
-          m_rtpmap = (R_WEBRTC_SDP_ICE_PAYLOAD.rtpmap).exec(cur_line);
+            m_rtpmap = (R_WEBRTC_SDP_ICE_PAYLOAD.rtpmap).exec(cur_line);
 
-          // 'rtpmap' line?
-          if(m_rtpmap) {
-            // Populate current object
-            error = 0;
-            cur_rtpmap = {};
+            // 'rtpmap' line?
+            if(m_rtpmap) {
+              // Populate current object
+              error = 0;
+              cur_rtpmap = {};
 
-            cur_rtpmap.channels  = m_rtpmap[6];
-            cur_rtpmap.clockrate = m_rtpmap[4];
-            cur_rtpmap.id        = m_rtpmap[1] || error++;
-            cur_rtpmap.name      = m_rtpmap[3];
+              cur_rtpmap.channels  = m_rtpmap[6];
+              cur_rtpmap.clockrate = m_rtpmap[4];
+              cur_rtpmap.id        = m_rtpmap[1] || error++;
+              cur_rtpmap.name      = m_rtpmap[3];
 
-            // Incomplete?
-            if(error !== 0)  continue;
+              // Incomplete?
+              if(error !== 0)  continue;
 
-            cur_rtpmap_id = cur_rtpmap.id;
+              cur_rtpmap_id = cur_rtpmap.id;
 
-            // Push it to parent array
-            init_payload(cur_name, cur_rtpmap_id);
-            payload[cur_name].descriptions.payload[cur_rtpmap_id].attrs = cur_rtpmap;
+              // Push it to parent array
+              init_payload(cur_name, cur_rtpmap_id);
+              payload[cur_name].descriptions.payload[cur_rtpmap_id].attrs = cur_rtpmap;
 
-            continue;
-          }
+              continue;
+            }
 
-          m_fmtp = (R_WEBRTC_SDP_ICE_PAYLOAD.fmtp).exec(cur_line);
+            m_fmtp = (R_WEBRTC_SDP_ICE_PAYLOAD.fmtp).exec(cur_line);
 
-          // 'fmtp' line?
-          if(m_fmtp) {
-            cur_fmtp_id = m_fmtp[1];
+            // 'fmtp' line?
+            if(m_fmtp) {
+              cur_fmtp_id = m_fmtp[1];
 
-            if(cur_fmtp_id) {
-              cur_fmtp_values = m_fmtp[2] ? (m_fmtp[2]).split(';') : [];
+              if(cur_fmtp_id) {
+                cur_fmtp_values = m_fmtp[2] ? (m_fmtp[2]).split(';') : [];
 
-              for(j in cur_fmtp_values) {
-                // Parse current attribute
-                if(cur_fmtp_values[j].indexOf('=') !== -1) {
-                  cur_fmtp_attrs = cur_fmtp_values[j].split('=');
-                  cur_fmtp_key   = cur_fmtp_attrs[0];
-                  cur_fmtp_value = cur_fmtp_attrs[1];
+                for(j in cur_fmtp_values) {
+                  if(cur_fmtp_values.hasOwnProperty(j)){
+                    // Parse current attribute
+                    if(cur_fmtp_values[j].indexOf('=') !== -1) {
+                      cur_fmtp_attrs = cur_fmtp_values[j].split('=');
+                      cur_fmtp_key   = cur_fmtp_attrs[0];
+                      cur_fmtp_value = cur_fmtp_attrs[1];
 
-                  while(cur_fmtp_key.length && !cur_fmtp_key[0]) {
-                    cur_fmtp_key = cur_fmtp_key.substring(1);
+                      while(cur_fmtp_key.length && !cur_fmtp_key[0]) {
+                        cur_fmtp_key = cur_fmtp_key.substring(1);
+                      }
+                    } else {
+                      cur_fmtp_key = cur_fmtp_values[j];
+                      cur_fmtp_value = null;
+                    }
+
+                    // Populate current object
+                    error = 0;
+                    cur_fmtp = {};
+
+                    cur_fmtp.name  = cur_fmtp_key   || error++;
+                    cur_fmtp.value = cur_fmtp_value;
+
+                    // Incomplete?
+                    if(error !== 0)  continue;
+
+                    // Push it to parent array
+                    init_payload(cur_name, cur_fmtp_id);
+                    payload[cur_name].descriptions.payload[cur_fmtp_id].parameter.push(cur_fmtp);
                   }
-                } else {
-                  cur_fmtp_key = cur_fmtp_values[j];
-                  cur_fmtp_value = null;
-                }
-
-                // Populate current object
-                error = 0;
-                cur_fmtp = {};
-
-                cur_fmtp.name  = cur_fmtp_key   || error++;
-                cur_fmtp.value = cur_fmtp_value;
-
-                // Incomplete?
-                if(error !== 0)  continue;
-
-                // Push it to parent array
-                init_payload(cur_name, cur_fmtp_id);
-                payload[cur_name].descriptions.payload[cur_fmtp_id].parameter.push(cur_fmtp);
-              }
-            }
-
-            continue;
-          }
-
-          m_rtcp_fb = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_fb).exec(cur_line);
-
-          // 'rtcp-fb' line?
-          if(m_rtcp_fb) {
-            // Populate current object
-            error = 0;
-            cur_rtcp_fb = {};
-
-            cur_rtcp_fb.id      = m_rtcp_fb[1] || error++;
-            cur_rtcp_fb.type    = m_rtcp_fb[2];
-            cur_rtcp_fb.subtype = m_rtcp_fb[4];
-
-            // Incomplete?
-            if(error !== 0)  continue;
-
-            cur_rtcp_fb_id = cur_rtcp_fb.id;
-
-            // Push it to parent array
-            if(cur_rtcp_fb_id == '*') {
-              init_descriptions(cur_name, 'rtcp-fb', []);
-              (payload[cur_name].descriptions['rtcp-fb']).push(cur_rtcp_fb);
-            } else {
-              init_payload(cur_name, cur_rtcp_fb_id);
-              (payload[cur_name].descriptions.payload[cur_rtcp_fb_id]['rtcp-fb']).push(cur_rtcp_fb);
-            }
-
-            continue;
-          }
-
-          m_rtcp_fb_trr_int = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_fb_trr_int).exec(cur_line);
-
-          // 'rtcp-fb-trr-int' line?
-          if(m_rtcp_fb_trr_int) {
-            // Populate current object
-            error = 0;
-            cur_rtcp_fb_trr_int = {};
-
-            cur_rtcp_fb_trr_int.id      = m_rtcp_fb_trr_int[1] || error++;
-            cur_rtcp_fb_trr_int.value   = m_rtcp_fb_trr_int[2] || error++;
-
-            // Incomplete?
-            if(error !== 0)  continue;
-
-            cur_rtcp_fb_trr_int_id = cur_rtcp_fb_trr_int.id;
-
-            // Push it to parent array
-            init_payload(cur_name, cur_rtcp_fb_trr_int_id);
-            (payload[cur_name].descriptions.payload[cur_rtcp_fb_trr_int_id]['rtcp-fb-trr-int']).push(cur_rtcp_fb_trr_int);
-
-            continue;
-          }
-
-          m_crypto = (R_WEBRTC_SDP_ICE_PAYLOAD.crypto).exec(cur_line);
-
-          // 'crypto' line?
-          if(m_crypto) {
-            // Populate current object
-            error = 0;
-            cur_crypto = {};
-
-            cur_crypto['crypto-suite']   = m_crypto[2]  || error++;
-            cur_crypto['key-params']     = m_crypto[3]  || error++;
-            cur_crypto['session-params'] = m_crypto[5];
-            cur_crypto.tag               = m_crypto[1]  || error++;
-
-            // Incomplete?
-            if(error !== 0)  continue;
-
-            // Push it to parent array
-            init_encryption(cur_name);
-            (payload[cur_name].descriptions.encryption.crypto).push(cur_crypto);
-
-            continue;
-          }
-
-          m_zrtp_hash = (R_WEBRTC_SDP_ICE_PAYLOAD.zrtp_hash).exec(cur_line);
-
-          // 'zrtp-hash' line?
-          if(m_zrtp_hash) {
-            // Populate current object
-            error = 0;
-            cur_zrtp_hash = {};
-
-            cur_zrtp_hash.version = m_zrtp_hash[1]  || error++;
-            cur_zrtp_hash.value   = m_zrtp_hash[2]  || error++;
-
-            // Incomplete?
-            if(error !== 0)  continue;
-
-            // Push it to parent array
-            init_encryption(cur_name);
-            (payload[cur_name].descriptions.encryption['zrtp-hash']).push(cur_zrtp_hash);
-
-            continue;
-          }
-
-          m_ptime = (R_WEBRTC_SDP_ICE_PAYLOAD.ptime).exec(cur_line);
-
-          // 'ptime' line?
-          if(m_ptime) {
-            // Push it to parent array
-            init_descriptions(cur_name, 'attrs', {});
-            payload[cur_name].descriptions.attrs.ptime = m_ptime[1];
-
-            continue;
-          }
-
-          m_maxptime = (R_WEBRTC_SDP_ICE_PAYLOAD.maxptime).exec(cur_line);
-
-          // 'maxptime' line?
-          if(m_maxptime) {
-            // Push it to parent array
-            init_descriptions(cur_name, 'attrs', {});
-            payload[cur_name].descriptions.attrs.maxptime = m_maxptime[1];
-
-            continue;
-          }
-
-          m_ssrc = (R_WEBRTC_SDP_ICE_PAYLOAD.ssrc).exec(cur_line);
-
-          // 'ssrc' line?
-          if(m_ssrc) {
-            // Populate current object
-            error = 0;
-            cur_ssrc = {};
-
-            cur_ssrc_id    = m_ssrc[1]  || error++;
-            cur_ssrc.name  = m_ssrc[2]  || error++;
-            cur_ssrc.value = m_ssrc[4];
-
-            // Incomplete?
-            if(error !== 0)  continue;
-
-            // Push it to storage array
-            init_ssrc(cur_name, cur_ssrc_id);
-            (payload[cur_name].descriptions.ssrc[cur_ssrc_id]).push(cur_ssrc);
-
-            // Push it to parent array (common attr required for Jingle)
-            init_descriptions(cur_name, 'attrs', {});
-            payload[cur_name].descriptions.attrs.ssrc = cur_ssrc_id;
-
-            continue;
-          }
-
-          m_ssrc_group = (R_WEBRTC_SDP_ICE_PAYLOAD.ssrc_group).exec(cur_line);
-
-          // 'ssrc-group' line?
-          if(m_ssrc_group) {
-            // Populate current object
-            error = 0;
-            cur_ssrc_group = {};
-
-            cur_ssrc_group_semantics = m_ssrc_group[1]  || error++;
-            cur_ssrc_group_ids       = m_ssrc_group[2]  || error++;
-
-            // Explode sources into a list
-            cur_ssrc_group.sources = [];
-            cur_ssrc_group_ids = cur_ssrc_group_ids.trim();
-
-            if(cur_ssrc_group_ids) {
-              cur_ssrc_group_ids = cur_ssrc_group_ids.split(' ');
-
-              for(k in cur_ssrc_group_ids) {
-                cur_ssrc_group_id = cur_ssrc_group_ids[k].trim();
-
-                if(cur_ssrc_group_id) {
-                  cur_ssrc_group.sources.push({
-                    'ssrc': cur_ssrc_group_id
-                  });
                 }
               }
+
+              continue;
             }
 
-            if(cur_ssrc_group.sources.length === 0)  error++;
+            m_rtcp_fb = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_fb).exec(cur_line);
 
-            // Incomplete?
-            if(error !== 0)  continue;
+            // 'rtcp-fb' line?
+            if(m_rtcp_fb) {
+              // Populate current object
+              error = 0;
+              cur_rtcp_fb = {};
 
-            // Push it to storage array
-            init_ssrc_group(cur_name, cur_ssrc_group_semantics);
-            (payload[cur_name].descriptions['ssrc-group'][cur_ssrc_group_semantics]).push(cur_ssrc_group);
+              cur_rtcp_fb.id      = m_rtcp_fb[1] || error++;
+              cur_rtcp_fb.type    = m_rtcp_fb[2];
+              cur_rtcp_fb.subtype = m_rtcp_fb[4];
 
-            continue;
-          }
+              // Incomplete?
+              if(error !== 0)  continue;
 
-          m_rtcp_mux = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_mux).exec(cur_line);
+              cur_rtcp_fb_id = cur_rtcp_fb.id;
 
-          // 'rtcp-mux' line?
-          if(m_rtcp_mux) {
-            // Push it to parent array
-            init_descriptions(cur_name, 'rtcp-mux', 1);
+              // Push it to parent array
+              if(cur_rtcp_fb_id == '*') {
+                init_descriptions(cur_name, 'rtcp-fb', []);
+                (payload[cur_name].descriptions['rtcp-fb']).push(cur_rtcp_fb);
+              } else {
+                init_payload(cur_name, cur_rtcp_fb_id);
+                (payload[cur_name].descriptions.payload[cur_rtcp_fb_id]['rtcp-fb']).push(cur_rtcp_fb);
+              }
 
-            continue;
-          }
+              continue;
+            }
 
-          m_extmap = (R_WEBRTC_SDP_ICE_PAYLOAD.extmap).exec(cur_line);
+            m_rtcp_fb_trr_int = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_fb_trr_int).exec(cur_line);
 
-          // 'extmap' line?
-          if(m_extmap) {
-            // Populate current object
-            error = 0;
-            cur_extmap = {};
+            // 'rtcp-fb-trr-int' line?
+            if(m_rtcp_fb_trr_int) {
+              // Populate current object
+              error = 0;
+              cur_rtcp_fb_trr_int = {};
 
-            cur_extmap.id      = m_extmap[1]  || error++;
-            cur_extmap.uri     = m_extmap[4]  || error++;
-            cur_extmap.senders = m_extmap[3];
+              cur_rtcp_fb_trr_int.id      = m_rtcp_fb_trr_int[1] || error++;
+              cur_rtcp_fb_trr_int.value   = m_rtcp_fb_trr_int[2] || error++;
 
-            // Incomplete?
-            if(error !== 0)  continue;
+              // Incomplete?
+              if(error !== 0)  continue;
 
-            // Push it to parent array
-            init_descriptions(cur_name, 'rtp-hdrext', []);
-            (payload[cur_name].descriptions['rtp-hdrext']).push(cur_extmap);
+              cur_rtcp_fb_trr_int_id = cur_rtcp_fb_trr_int.id;
 
-            continue;
-          }
+              // Push it to parent array
+              init_payload(cur_name, cur_rtcp_fb_trr_int_id);
+              (payload[cur_name].descriptions.payload[cur_rtcp_fb_trr_int_id]['rtcp-fb-trr-int']).push(cur_rtcp_fb_trr_int);
 
-          m_fingerprint = (R_WEBRTC_SDP_ICE_PAYLOAD.fingerprint).exec(cur_line);
+              continue;
+            }
 
-          // 'fingerprint' line?
-          if(m_fingerprint) {
-            // Populate current object
-            error = 0;
-            cur_fingerprint = common_transports.fingerprint || {};
+            m_crypto = (R_WEBRTC_SDP_ICE_PAYLOAD.crypto).exec(cur_line);
 
-            cur_fingerprint.hash  = m_fingerprint[1]  || error++;
-            cur_fingerprint.value = m_fingerprint[2]  || error++;
+            // 'crypto' line?
+            if(m_crypto) {
+              // Populate current object
+              error = 0;
+              cur_crypto = {};
 
-            // Incomplete?
-            if(error !== 0)  continue;
+              cur_crypto['crypto-suite']   = m_crypto[2]  || error++;
+              cur_crypto['key-params']     = m_crypto[3]  || error++;
+              cur_crypto['session-params'] = m_crypto[5];
+              cur_crypto.tag               = m_crypto[1]  || error++;
 
-            // Push it to parent array
-            init_transports(cur_name, 'fingerprint', cur_fingerprint);
-            common_transports.fingerprint = cur_fingerprint;
+              // Incomplete?
+              if(error !== 0)  continue;
 
-            continue;
-          }
+              // Push it to parent array
+              init_encryption(cur_name);
+              (payload[cur_name].descriptions.encryption.crypto).push(cur_crypto);
 
-          m_setup = (R_WEBRTC_SDP_ICE_PAYLOAD.setup).exec(cur_line);
+              continue;
+            }
 
-          // 'setup' line?
-          if(m_setup) {
-            // Populate current object
-            cur_fingerprint = common_transports.fingerprint || {};
-            cur_fingerprint.setup = m_setup[1];
+            m_zrtp_hash = (R_WEBRTC_SDP_ICE_PAYLOAD.zrtp_hash).exec(cur_line);
 
-            // Push it to parent array
-            if(cur_fingerprint.setup) {
-              // Map it to fingerprint as XML-wise it is related
+            // 'zrtp-hash' line?
+            if(m_zrtp_hash) {
+              // Populate current object
+              error = 0;
+              cur_zrtp_hash = {};
+
+              cur_zrtp_hash.version = m_zrtp_hash[1]  || error++;
+              cur_zrtp_hash.value   = m_zrtp_hash[2]  || error++;
+
+              // Incomplete?
+              if(error !== 0)  continue;
+
+              // Push it to parent array
+              init_encryption(cur_name);
+              (payload[cur_name].descriptions.encryption['zrtp-hash']).push(cur_zrtp_hash);
+
+              continue;
+            }
+
+            m_ptime = (R_WEBRTC_SDP_ICE_PAYLOAD.ptime).exec(cur_line);
+
+            // 'ptime' line?
+            if(m_ptime) {
+              // Push it to parent array
+              init_descriptions(cur_name, 'attrs', {});
+              payload[cur_name].descriptions.attrs.ptime = m_ptime[1];
+
+              continue;
+            }
+
+            m_maxptime = (R_WEBRTC_SDP_ICE_PAYLOAD.maxptime).exec(cur_line);
+
+            // 'maxptime' line?
+            if(m_maxptime) {
+              // Push it to parent array
+              init_descriptions(cur_name, 'attrs', {});
+              payload[cur_name].descriptions.attrs.maxptime = m_maxptime[1];
+
+              continue;
+            }
+
+            m_ssrc = (R_WEBRTC_SDP_ICE_PAYLOAD.ssrc).exec(cur_line);
+
+            // 'ssrc' line?
+            if(m_ssrc) {
+              // Populate current object
+              error = 0;
+              cur_ssrc = {};
+
+              cur_ssrc_id    = m_ssrc[1]  || error++;
+              cur_ssrc.name  = m_ssrc[2]  || error++;
+              cur_ssrc.value = m_ssrc[4];
+
+              // Incomplete?
+              if(error !== 0)  continue;
+
+              // Push it to storage array
+              init_ssrc(cur_name, cur_ssrc_id);
+              (payload[cur_name].descriptions.ssrc[cur_ssrc_id]).push(cur_ssrc);
+
+              // Push it to parent array (common attr required for Jingle)
+              init_descriptions(cur_name, 'attrs', {});
+              payload[cur_name].descriptions.attrs.ssrc = cur_ssrc_id;
+
+              continue;
+            }
+
+            m_ssrc_group = (R_WEBRTC_SDP_ICE_PAYLOAD.ssrc_group).exec(cur_line);
+
+            // 'ssrc-group' line?
+            if(m_ssrc_group) {
+              // Populate current object
+              error = 0;
+              cur_ssrc_group = {};
+
+              cur_ssrc_group_semantics = m_ssrc_group[1]  || error++;
+              cur_ssrc_group_ids       = m_ssrc_group[2]  || error++;
+
+              // Explode sources into a list
+              cur_ssrc_group.sources = [];
+              cur_ssrc_group_ids = cur_ssrc_group_ids.trim();
+
+              if(cur_ssrc_group_ids) {
+                cur_ssrc_group_ids = cur_ssrc_group_ids.split(' ');
+
+                for(k in cur_ssrc_group_ids) {
+                  if(cur_ssrc_group_ids.hasOwnProperty(k)){
+                    cur_ssrc_group_id = cur_ssrc_group_ids[k].trim();
+
+                    if(cur_ssrc_group_id) {
+                      cur_ssrc_group.sources.push({
+                        'ssrc': cur_ssrc_group_id
+                      });
+                    }
+                  }
+                }
+              }
+
+              if(cur_ssrc_group.sources.length === 0)  error++;
+
+              // Incomplete?
+              if(error !== 0)  continue;
+
+              // Push it to storage array
+              init_ssrc_group(cur_name, cur_ssrc_group_semantics);
+              (payload[cur_name].descriptions['ssrc-group'][cur_ssrc_group_semantics]).push(cur_ssrc_group);
+
+              continue;
+            }
+
+            m_rtcp_mux = (R_WEBRTC_SDP_ICE_PAYLOAD.rtcp_mux).exec(cur_line);
+
+            // 'rtcp-mux' line?
+            if(m_rtcp_mux) {
+              // Push it to parent array
+              init_descriptions(cur_name, 'rtcp-mux', 1);
+
+              continue;
+            }
+
+            m_extmap = (R_WEBRTC_SDP_ICE_PAYLOAD.extmap).exec(cur_line);
+
+            // 'extmap' line?
+            if(m_extmap) {
+              // Populate current object
+              error = 0;
+              cur_extmap = {};
+
+              cur_extmap.id      = m_extmap[1]  || error++;
+              cur_extmap.uri     = m_extmap[4]  || error++;
+              cur_extmap.senders = m_extmap[3];
+
+              // Incomplete?
+              if(error !== 0)  continue;
+
+              // Push it to parent array
+              init_descriptions(cur_name, 'rtp-hdrext', []);
+              (payload[cur_name].descriptions['rtp-hdrext']).push(cur_extmap);
+
+              continue;
+            }
+
+            m_fingerprint = (R_WEBRTC_SDP_ICE_PAYLOAD.fingerprint).exec(cur_line);
+
+            // 'fingerprint' line?
+            if(m_fingerprint) {
+              // Populate current object
+              error = 0;
+              cur_fingerprint = common_transports.fingerprint || {};
+
+              cur_fingerprint.hash  = m_fingerprint[1]  || error++;
+              cur_fingerprint.value = m_fingerprint[2]  || error++;
+
+              // Incomplete?
+              if(error !== 0)  continue;
+
+              // Push it to parent array
               init_transports(cur_name, 'fingerprint', cur_fingerprint);
               common_transports.fingerprint = cur_fingerprint;
+
+              continue;
             }
 
-            continue;
-          }
+            m_setup = (R_WEBRTC_SDP_ICE_PAYLOAD.setup).exec(cur_line);
 
-          m_pwd = (R_WEBRTC_SDP_ICE_PAYLOAD.pwd).exec(cur_line);
+            // 'setup' line?
+            if(m_setup) {
+              // Populate current object
+              cur_fingerprint = common_transports.fingerprint || {};
+              cur_fingerprint.setup = m_setup[1];
 
-          // 'pwd' line?
-          if(m_pwd) {
-            init_transports(cur_name, 'pwd', m_pwd[1]);
+              // Push it to parent array
+              if(cur_fingerprint.setup) {
+                // Map it to fingerprint as XML-wise it is related
+                init_transports(cur_name, 'fingerprint', cur_fingerprint);
+                common_transports.fingerprint = cur_fingerprint;
+              }
 
-            if(!common_transports.pwd) {
-              common_transports.pwd = m_pwd[1];
+              continue;
             }
 
-            continue;
-          }
+            m_pwd = (R_WEBRTC_SDP_ICE_PAYLOAD.pwd).exec(cur_line);
 
-          m_ufrag = (R_WEBRTC_SDP_ICE_PAYLOAD.ufrag).exec(cur_line);
+            // 'pwd' line?
+            if(m_pwd) {
+              init_transports(cur_name, 'pwd', m_pwd[1]);
 
-          // 'ufrag' line?
-          if(m_ufrag) {
-            init_transports(cur_name, 'ufrag', m_ufrag[1]);
+              if(!common_transports.pwd) {
+                common_transports.pwd = m_pwd[1];
+              }
 
-            if(!common_transports.ufrag) {
-              common_transports.ufrag = m_ufrag[1];
+              continue;
             }
 
-            continue;
-          }
+            m_ufrag = (R_WEBRTC_SDP_ICE_PAYLOAD.ufrag).exec(cur_line);
 
-          // 'candidate' line? (shouldn't be there)
-          m_candidate = R_WEBRTC_SDP_CANDIDATE.exec(cur_line);
+            // 'ufrag' line?
+            if(m_ufrag) {
+              init_transports(cur_name, 'ufrag', m_ufrag[1]);
 
-          if(m_candidate) {
-            this._parse_candidate_store({
-              media     : cur_media,
-              candidate : cur_line
-            });
+              if(!common_transports.ufrag) {
+                common_transports.ufrag = m_ufrag[1];
+              }
 
-            continue;
+              continue;
+            }
+
+            // 'candidate' line? (shouldn't be there)
+            m_candidate = R_WEBRTC_SDP_CANDIDATE.exec(cur_line);
+
+            if(m_candidate) {
+              this._parse_candidate_store({
+                media     : cur_media,
+                candidate : cur_line
+              });
+
+              continue;
+            }
           }
         }
 
         // Filter medias
         for(cur_check_name in payload) {
-          // Undesired media?
-          if(!this.parent.get_name()[cur_check_name]) {
-            delete payload[cur_check_name]; continue;
-          }
+          if(payload.hasOwnProperty(cur_check_name)){
+            // Undesired media?
+            if(!this.parent.get_name()[cur_check_name]) {
+              delete payload[cur_check_name]; continue;
+            }
 
-          // Validate transports
-          if(typeof payload[cur_check_name].transports !== 'object') {
-            payload[cur_check_name].transports = {};
-          }
+            // Validate transports
+            if(typeof payload[cur_check_name].transports !== 'object') {
+              payload[cur_check_name].transports = {};
+            }
 
-          for(cur_transport_sub in common_transports) {
-            if(!payload[cur_check_name].transports[cur_transport_sub]) {
-              payload[cur_check_name].transports[cur_transport_sub] = common_transports[cur_transport_sub];
+            for(cur_transport_sub in common_transports) {
+              if(common_transports.hasOwnProperty(cur_transport_sub)){
+                if(!payload[cur_check_name].transports[cur_transport_sub]) {
+                  payload[cur_check_name].transports[cur_transport_sub] = common_transports[cur_transport_sub];
+                }
+              }
             }
           }
         }
@@ -586,19 +596,21 @@ var GiggleSDP = ring.create(
         };
 
         for(i in lines) {
-          cur_line = lines[i];
+          if(lines.hasOwnProperty(i)){
+            cur_line = lines[i];
 
-          // 'group' line?
-          m_group = (R_WEBRTC_SDP_ICE_PAYLOAD.group).exec(cur_line);
+            // 'group' line?
+            m_group = (R_WEBRTC_SDP_ICE_PAYLOAD.group).exec(cur_line);
 
-          if(m_group) {
-            if(m_group[1] && m_group[2]) {
-              init_group(m_group[1]);
+            if(m_group) {
+              if(m_group[1] && m_group[2]) {
+                init_group(m_group[1]);
 
-              group[m_group[1]] = (m_group[2].indexOf(' ') === -1 ? [m_group[2]] : m_group[2].split(' '));
+                group[m_group[1]] = (m_group[2].indexOf(' ') === -1 ? [m_group[2]] : m_group[2].split(' '));
+              }
+
+              continue;
             }
-
-            continue;
           }
         }
       } catch(e) {
@@ -628,12 +640,14 @@ var GiggleSDP = ring.create(
 
         // Try local view? (more reliable)
         for(i in this.parent.get_local_view()) {
-          if(typeof this.parent.get_local_view()[i].videoWidth  == 'number'  &&
-             typeof this.parent.get_local_view()[i].videoHeight == 'number'  ) {
-            res_height = this.parent.get_local_view()[i].videoHeight;
-            res_width  = this.parent.get_local_view()[i].videoWidth;
+          if(this.parent.get_local_view().hasOwnProperty(i)){
+            if(typeof this.parent.get_local_view()[i].videoWidth  == 'number'  &&
+               typeof this.parent.get_local_view()[i].videoHeight == 'number'  ) {
+              res_height = this.parent.get_local_view()[i].videoHeight;
+              res_width  = this.parent.get_local_view()[i].videoWidth;
 
-            if(res_height && res_width)  break;
+              if(res_height && res_width)  break;
+            }
           }
         }
 
@@ -670,17 +684,23 @@ var GiggleSDP = ring.create(
         ];
 
         for(cur_media in payload) {
-          if(cur_media != GIGGLE_MEDIA_VIDEO)  continue;
+          if(payload.hasOwnProperty(cur_media)){
+            if(cur_media != GIGGLE_MEDIA_VIDEO)  continue;
 
-          cur_payload = payload[cur_media].descriptions.payload;
+            cur_payload = payload[cur_media].descriptions.payload;
 
-          for(j in cur_payload) {
-            if(typeof cur_payload[j].parameter !== 'object') {
-              cur_payload[j].parameter = [];
-            }
+            for(j in cur_payload) {
+              if(cur_payload.hasOwnProperty(j)){
+                if(typeof cur_payload[j].parameter !== 'object') {
+                  cur_payload[j].parameter = [];
+                }
 
-            for(k in res_arr) {
-              (cur_payload[j].parameter).push(res_arr[k]);
+                for(k in res_arr) {
+                  if(res_arr.hasOwnProperty(k)){
+                    (cur_payload[j].parameter).push(res_arr[k]);
+                  }
+                }
+              }
             }
           }
         }
@@ -779,10 +799,12 @@ var GiggleSDP = ring.create(
         if(this.parent.get_media())  emulated_medias.push(GIGGLE_MEDIA_VIDEO);
 
         for(i in emulated_medias) {
-          this._parse_candidate_store({
-            media     : emulated_medias[i],
-            candidate : data.candidate.candidate
-          });
+          if(emulated_medias.hasOwnProperty(i)){
+            this._parse_candidate_store({
+              media     : emulated_medias[i],
+              candidate : data.candidate.candidate
+            });
+          }
         }
       }
     },
@@ -827,61 +849,65 @@ var GiggleSDP = ring.create(
             cur_label, cur_id, cur_candidate_str;
 
         for(cur_name in candidates) {
-          cur_c_name  = candidates[cur_name];
-          cur_media   = this.parent.utils.media_generate(cur_name);
+          if(candidates.hasOwnProperty(cur_name)){
+            cur_c_name  = candidates[cur_name];
+            cur_media   = this.parent.utils.media_generate(cur_name);
 
-          for(i in cur_c_name) {
-            cur_candidate = cur_c_name[i];
+            for(i in cur_c_name) {
+              if(cur_c_name.hasOwnProperty(i)){
+                cur_candidate = cur_c_name[i];
 
-            cur_label         = GIGGLE_MEDIAS[cur_media].label;
-            cur_id            = cur_label;
-            cur_candidate_str = '';
+                cur_label         = GIGGLE_MEDIAS[cur_media].label;
+                cur_id            = cur_label;
+                cur_candidate_str = '';
 
-            cur_candidate_str += 'a=candidate:';
-            cur_candidate_str += (cur_candidate.foundation || cur_candidate.id);
-            cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate.component;
-            cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate.protocol || GIGGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT;
-            cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate.priority || GIGGLE_SDP_CANDIDATE_PRIORITY_DEFAULT;
-            cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate.ip;
-            cur_candidate_str += ' ';
-            cur_candidate_str += cur_candidate.port;
+                cur_candidate_str += 'a=candidate:';
+                cur_candidate_str += (cur_candidate.foundation || cur_candidate.id);
+                cur_candidate_str += ' ';
+                cur_candidate_str += cur_candidate.component;
+                cur_candidate_str += ' ';
+                cur_candidate_str += cur_candidate.protocol || GIGGLE_SDP_CANDIDATE_PROTOCOL_DEFAULT;
+                cur_candidate_str += ' ';
+                cur_candidate_str += cur_candidate.priority || GIGGLE_SDP_CANDIDATE_PRIORITY_DEFAULT;
+                cur_candidate_str += ' ';
+                cur_candidate_str += cur_candidate.ip;
+                cur_candidate_str += ' ';
+                cur_candidate_str += cur_candidate.port;
 
-            if(cur_candidate.type) {
-              cur_candidate_str += ' ';
-              cur_candidate_str += 'typ';
-              cur_candidate_str += ' ';
-              cur_candidate_str += cur_candidate.type;
+                if(cur_candidate.type) {
+                  cur_candidate_str += ' ';
+                  cur_candidate_str += 'typ';
+                  cur_candidate_str += ' ';
+                  cur_candidate_str += cur_candidate.type;
+                }
+
+                if(cur_candidate['rel-addr'] && cur_candidate['rel-port']) {
+                  cur_candidate_str += ' ';
+                  cur_candidate_str += 'raddr';
+                  cur_candidate_str += ' ';
+                  cur_candidate_str += cur_candidate['rel-addr'];
+                  cur_candidate_str += ' ';
+                  cur_candidate_str += 'rport';
+                  cur_candidate_str += ' ';
+                  cur_candidate_str += cur_candidate['rel-port'];
+                }
+
+                if(cur_candidate.generation) {
+                  cur_candidate_str += ' ';
+                  cur_candidate_str += 'generation';
+                  cur_candidate_str += ' ';
+                  cur_candidate_str += cur_candidate.generation;
+                }
+
+                cur_candidate_str   += WEBRTC_SDP_LINE_BREAK;
+
+                candidates_arr.push({
+                  label     : cur_label,
+                  id        : cur_id,
+                  candidate : cur_candidate_str
+                });
+              }
             }
-
-            if(cur_candidate['rel-addr'] && cur_candidate['rel-port']) {
-              cur_candidate_str += ' ';
-              cur_candidate_str += 'raddr';
-              cur_candidate_str += ' ';
-              cur_candidate_str += cur_candidate['rel-addr'];
-              cur_candidate_str += ' ';
-              cur_candidate_str += 'rport';
-              cur_candidate_str += ' ';
-              cur_candidate_str += cur_candidate['rel-port'];
-            }
-
-            if(cur_candidate.generation) {
-              cur_candidate_str += ' ';
-              cur_candidate_str += 'generation';
-              cur_candidate_str += ' ';
-              cur_candidate_str += cur_candidate.generation;
-            }
-
-            cur_candidate_str   += WEBRTC_SDP_LINE_BREAK;
-
-            candidates_arr.push({
-              label     : cur_label,
-              id        : cur_id,
-              candidate : cur_candidate_str
-            });
           }
         }
       } catch(e) {
@@ -937,312 +963,349 @@ var GiggleSDP = ring.create(
 
         // Add groups
         for(cur_group_semantics in group) {
-          cur_group_names = group[cur_group_semantics];
+          if(group.hasOwnProperty(cur_group_semantics)){
+            cur_group_names = group[cur_group_semantics];
 
-          payloads_str += 'a=group:' + cur_group_semantics;
+            payloads_str += 'a=group:' + cur_group_semantics;
 
-          for(s in cur_group_names) {
-            cur_group_name = cur_group_names[s];
-            payloads_str += ' ' + cur_group_name;
+            for(s in cur_group_names) {
+              if(cur_group_names.hasOwnProperty(s)){
+                cur_group_name = cur_group_names[s];
+                payloads_str += ' ' + cur_group_name;
+              }
+            }
+
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
           }
-
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
         }
 
         // Common credentials?
         if(is_common_credentials === true) {
           for(cur_name_first in payloads) {
-            cur_transports_obj_first = payloads[cur_name_first].transports || {};
+            if(payloads.hasOwnProperty(cur_name_first)){
+              cur_transports_obj_first = payloads[cur_name_first].transports || {};
 
-            payloads_str += this._generate_credentials(
-              cur_transports_obj_first.ufrag,
-              cur_transports_obj_first.pwd,
-              cur_transports_obj_first.fingerprint
-            );
+              payloads_str += this._generate_credentials(
+                cur_transports_obj_first.ufrag,
+                cur_transports_obj_first.pwd,
+                cur_transports_obj_first.fingerprint
+              );
 
-            break;
+              break;
+            }
           }
         }
 
         // Add media groups
         for(cur_name in payloads) {
-          cur_name_obj          = payloads[cur_name];
-          cur_senders           = this.parent.get_senders(cur_name);
-          cur_media             = this.parent.get_name(cur_name) ? this.parent.utils.media_generate(cur_name) : null;
+          if(payloads.hasOwnProperty(cur_name)){
+            cur_name_obj          = payloads[cur_name];
+            cur_senders           = this.parent.get_senders(cur_name);
+            cur_media             = this.parent.get_name(cur_name) ? this.parent.utils.media_generate(cur_name) : null;
 
-          // No media?
-          if(!cur_media) continue;
+            // No media?
+            if(!cur_media) continue;
 
-          // Network
-          cur_network_obj       = this.parent.utils.network_extract_main(cur_name, sdp_candidates);
+            // Network
+            cur_network_obj       = this.parent.utils.network_extract_main(cur_name, sdp_candidates);
 
-          // Transports
-          cur_transports_obj    = cur_name_obj.transports || {};
-          cur_d_pwd             = cur_transports_obj.pwd;
-          cur_d_ufrag           = cur_transports_obj.ufrag;
-          cur_d_fingerprint     = cur_transports_obj.fingerprint;
+            // Transports
+            cur_transports_obj    = cur_name_obj.transports || {};
+            cur_d_pwd             = cur_transports_obj.pwd;
+            cur_d_ufrag           = cur_transports_obj.ufrag;
+            cur_d_fingerprint     = cur_transports_obj.fingerprint;
 
-          // Descriptions
-          cur_description_obj   = cur_name_obj.descriptions;
-          cur_d_attrs           = cur_description_obj.attrs;
-          cur_d_rtcp_fb         = cur_description_obj['rtcp-fb'];
-          cur_d_bandwidth       = cur_description_obj.bandwidth;
-          cur_d_payload         = cur_description_obj.payload;
-          cur_d_encryption      = cur_description_obj.encryption;
-          cur_d_ssrc_id_arr     = cur_description_obj['ssrc-id'];
-          cur_d_ssrc            = cur_description_obj.ssrc;
-          cur_d_ssrc_group      = cur_description_obj['ssrc-group'];
-          cur_d_rtp_hdrext      = cur_description_obj['rtp-hdrext'];
-          cur_d_rtcp_mux        = cur_description_obj['rtcp-mux'];
+            // Descriptions
+            cur_description_obj   = cur_name_obj.descriptions;
+            cur_d_attrs           = cur_description_obj.attrs;
+            cur_d_rtcp_fb         = cur_description_obj['rtcp-fb'];
+            cur_d_bandwidth       = cur_description_obj.bandwidth;
+            cur_d_payload         = cur_description_obj.payload;
+            cur_d_encryption      = cur_description_obj.encryption;
+            cur_d_ssrc_id_arr     = cur_description_obj['ssrc-id'];
+            cur_d_ssrc            = cur_description_obj.ssrc;
+            cur_d_ssrc_group      = cur_description_obj['ssrc-group'];
+            cur_d_rtp_hdrext      = cur_description_obj['rtp-hdrext'];
+            cur_d_rtcp_mux        = cur_description_obj['rtcp-mux'];
 
-          // Current media
-          payloads_str += this._generate_description_media(
-            cur_media,
-            cur_network_obj.port,
-            cur_d_encryption,
-            cur_d_fingerprint,
-            cur_d_payload
-          );
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-          payloads_str += 'c=' +
-                          cur_network_obj.scope + ' ' +
-                          cur_network_obj.protocol + ' ' +
-                          cur_network_obj.ip;
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-          payloads_str += 'a=rtcp:' +
-                          cur_network_obj.port + ' ' +
-                          cur_network_obj.scope + ' ' +
-                          cur_network_obj.protocol + ' ' +
-                          cur_network_obj.ip;
-          payloads_str += WEBRTC_SDP_LINE_BREAK;
-
-          // Specific credentials?
-          if(is_common_credentials === false) {
-            payloads_str += this._generate_credentials(
-              cur_d_ufrag,
-              cur_d_pwd,
-              cur_d_fingerprint
+            // Current media
+            payloads_str += this._generate_description_media(
+              cur_media,
+              cur_network_obj.port,
+              cur_d_encryption,
+              cur_d_fingerprint,
+              cur_d_payload
             );
-          }
-
-          // Fingerprint
-          if(cur_d_fingerprint && cur_d_fingerprint.setup) {
-            payloads_str += 'a=setup:' + cur_d_fingerprint.setup;
             payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
 
-          // RTP-HDREXT
-          if(cur_d_rtp_hdrext && cur_d_rtp_hdrext.length) {
-            for(i in cur_d_rtp_hdrext) {
-              cur_d_rtp_hdrext_obj = cur_d_rtp_hdrext[i];
+            payloads_str += 'c=' +
+                            cur_network_obj.scope + ' ' +
+                            cur_network_obj.protocol + ' ' +
+                            cur_network_obj.ip;
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
 
-              payloads_str += 'a=extmap:' + cur_d_rtp_hdrext_obj.id;
+            payloads_str += 'a=rtcp:' +
+                            cur_network_obj.port + ' ' +
+                            cur_network_obj.scope + ' ' +
+                            cur_network_obj.protocol + ' ' +
+                            cur_network_obj.ip;
+            payloads_str += WEBRTC_SDP_LINE_BREAK;
 
-              if(cur_d_rtp_hdrext_obj.senders) {
-                payloads_str += '/' + cur_d_rtp_hdrext_obj.senders;
-              }
-
-              payloads_str += ' ' + cur_d_rtp_hdrext_obj.uri;
-              payloads_str += WEBRTC_SDP_LINE_BREAK;
+            // Specific credentials?
+            if(is_common_credentials === false) {
+              payloads_str += this._generate_credentials(
+                cur_d_ufrag,
+                cur_d_pwd,
+                cur_d_fingerprint
+              );
             }
-          }
 
-          // Senders
-          if(cur_senders) {
-            payloads_str += 'a=' + GIGGLE_SENDERS[cur_senders];
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-
-          // Name
-          if(cur_media && GIGGLE_MEDIAS[cur_media]) {
-            payloads_str += 'a=mid:' + (GIGGLE_MEDIAS[cur_media]).label;
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-
-          // RTCP-MUX
-          // WARNING: no spec!
-          // See: http://code.google.com/p/libjingle/issues/detail?id=309
-          //      http://mail.jabber.org/pipermail/jingle/2011-December/001761.html
-          if(cur_d_rtcp_mux) {
-            payloads_str += 'a=rtcp-mux';
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-
-          // 'encryption'
-          if(cur_d_encryption) {
-            // 'crypto'
-            for(j in cur_d_encryption.crypto) {
-              cur_d_crypto_obj = cur_d_encryption.crypto[j];
-
-              payloads_str += 'a=crypto:'                       +
-                              cur_d_crypto_obj.tag              + ' ' +
-                              cur_d_crypto_obj['crypto-suite']  + ' ' +
-                              cur_d_crypto_obj['key-params']    +
-                              (cur_d_crypto_obj['session-params'] ? (' ' + cur_d_crypto_obj['session-params']) : '');
-
+            // Fingerprint
+            if(cur_d_fingerprint && cur_d_fingerprint.setup) {
+              payloads_str += 'a=setup:' + cur_d_fingerprint.setup;
               payloads_str += WEBRTC_SDP_LINE_BREAK;
             }
 
-            // 'zrtp-hash'
-            for(p in cur_d_encryption['zrtp-hash']) {
-              cur_d_zrtp_hash_obj = cur_d_encryption['zrtp-hash'][p];
+            // RTP-HDREXT
+            if(cur_d_rtp_hdrext && cur_d_rtp_hdrext.length) {
+              for(i in cur_d_rtp_hdrext) {
+                if(cur_d_rtp_hdrext.hasOwnProperty(i)){
+                  cur_d_rtp_hdrext_obj = cur_d_rtp_hdrext[i];
 
-              payloads_str += 'a=zrtp-hash:'               +
-                              cur_d_zrtp_hash_obj.version  + ' ' +
-                              cur_d_zrtp_hash_obj.value;
+                  payloads_str += 'a=extmap:' + cur_d_rtp_hdrext_obj.id;
 
-              payloads_str += WEBRTC_SDP_LINE_BREAK;
-            }
-          }
+                  if(cur_d_rtp_hdrext_obj.senders) {
+                    payloads_str += '/' + cur_d_rtp_hdrext_obj.senders;
+                  }
 
-          // 'rtcp-fb' (common)
-          for(n in cur_d_rtcp_fb) {
-            cur_d_rtcp_fb_obj = cur_d_rtcp_fb[n];
-
-            payloads_str += 'a=rtcp-fb:*';
-            payloads_str += ' ' + cur_d_rtcp_fb_obj.type;
-
-            if(cur_d_rtcp_fb_obj.subtype) {
-              payloads_str += ' ' + cur_d_rtcp_fb_obj.subtype;
-            }
-
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-
-          // 'bandwidth' (common)
-          for(q in cur_d_bandwidth) {
-            cur_d_bandwidth_obj = cur_d_bandwidth[q];
-
-            payloads_str += 'b=' + cur_d_bandwidth_obj.type;
-            payloads_str += ':'  + cur_d_bandwidth_obj.value;
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
-          }
-
-          // 'payload-type'
-          for(k in cur_d_payload) {
-            cur_d_payload_obj                 = cur_d_payload[k];
-            cur_d_payload_obj_attrs           = cur_d_payload_obj.attrs;
-            cur_d_payload_obj_parameter       = cur_d_payload_obj.parameter;
-            cur_d_payload_obj_rtcp_fb         = cur_d_payload_obj['rtcp-fb'];
-            cur_d_payload_obj_rtcp_fb_ttr_int = cur_d_payload_obj['rtcp-fb-trr-int'];
-
-            cur_d_payload_obj_id              = cur_d_payload_obj_attrs.id;
-
-            payloads_str += 'a=rtpmap:' + cur_d_payload_obj_id;
-
-            // 'rtpmap'
-            if(cur_d_payload_obj_attrs.name) {
-              payloads_str += ' ' + cur_d_payload_obj_attrs.name;
-
-              if(cur_d_payload_obj_attrs.clockrate) {
-                payloads_str += '/' + cur_d_payload_obj_attrs.clockrate;
-
-                if(cur_d_payload_obj_attrs.channels) {
-                  payloads_str += '/' + cur_d_payload_obj_attrs.channels;
+                  payloads_str += ' ' + cur_d_rtp_hdrext_obj.uri;
+                  payloads_str += WEBRTC_SDP_LINE_BREAK;
                 }
               }
             }
 
-            payloads_str += WEBRTC_SDP_LINE_BREAK;
+            // Senders
+            if(cur_senders) {
+              payloads_str += 'a=' + GIGGLE_SENDERS[cur_senders];
+              payloads_str += WEBRTC_SDP_LINE_BREAK;
+            }
 
-            // 'parameter'
-            if(cur_d_payload_obj_parameter.length) {
-              payloads_str += 'a=fmtp:' + cur_d_payload_obj_id + ' ';
-              cur_d_payload_obj_parameter_str = '';
+            // Name
+            if(cur_media && GIGGLE_MEDIAS[cur_media]) {
+              payloads_str += 'a=mid:' + (GIGGLE_MEDIAS[cur_media]).label;
+              payloads_str += WEBRTC_SDP_LINE_BREAK;
+            }
 
-              for(o in cur_d_payload_obj_parameter) {
-                cur_d_payload_obj_parameter_obj = cur_d_payload_obj_parameter[o];
+            // RTCP-MUX
+            // WARNING: no spec!
+            // See: http://code.google.com/p/libjingle/issues/detail?id=309
+            //      http://mail.jabber.org/pipermail/jingle/2011-December/001761.html
+            if(cur_d_rtcp_mux) {
+              payloads_str += 'a=rtcp-mux';
+              payloads_str += WEBRTC_SDP_LINE_BREAK;
+            }
 
-                if(cur_d_payload_obj_parameter_str) {
-                  cur_d_payload_obj_parameter_str += ';';
+            // 'encryption'
+            if(cur_d_encryption) {
+              // 'crypto'
+              for(j in cur_d_encryption.crypto) {
+                if(cur_d_encryption.crypto.hasOwnProperty(j)){
+                    cur_d_crypto_obj = cur_d_encryption.crypto[j];
+
+                    payloads_str += 'a=crypto:'                       +
+                                    cur_d_crypto_obj.tag              + ' ' +
+                                    cur_d_crypto_obj['crypto-suite']  + ' ' +
+                                    cur_d_crypto_obj['key-params']    +
+                                    (cur_d_crypto_obj['session-params'] ? (' ' + cur_d_crypto_obj['session-params']) : '');
+
+                    payloads_str += WEBRTC_SDP_LINE_BREAK;
+                }
+              }
+
+              // 'zrtp-hash'
+              for(p in cur_d_encryption['zrtp-hash']) {
+                if(cur_d_encryption['zrtp-hash'].hasOwnProperty(p)){
+                  cur_d_zrtp_hash_obj = cur_d_encryption['zrtp-hash'][p];
+
+                  payloads_str += 'a=zrtp-hash:'               +
+                                  cur_d_zrtp_hash_obj.version  + ' ' +
+                                  cur_d_zrtp_hash_obj.value;
+
+                  payloads_str += WEBRTC_SDP_LINE_BREAK;
+                }
+              }
+            }
+
+            // 'rtcp-fb' (common)
+            for(n in cur_d_rtcp_fb) {
+              if(cur_d_rtcp_fb.hasOwnProperty(n)){
+                cur_d_rtcp_fb_obj = cur_d_rtcp_fb[n];
+
+                payloads_str += 'a=rtcp-fb:*';
+                payloads_str += ' ' + cur_d_rtcp_fb_obj.type;
+
+                if(cur_d_rtcp_fb_obj.subtype) {
+                  payloads_str += ' ' + cur_d_rtcp_fb_obj.subtype;
                 }
 
-                cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj.name;
+                payloads_str += WEBRTC_SDP_LINE_BREAK;
+              }
+            }
 
-                if(cur_d_payload_obj_parameter_obj.value !== null) {
-                  cur_d_payload_obj_parameter_str += '=';
-                  cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj.value;
+            // 'bandwidth' (common)
+            for(q in cur_d_bandwidth) {
+              if(cur_d_bandwidth.hasOwnProperty(q)){
+                cur_d_bandwidth_obj = cur_d_bandwidth[q];
+
+                payloads_str += 'b=' + cur_d_bandwidth_obj.type;
+                payloads_str += ':'  + cur_d_bandwidth_obj.value;
+                payloads_str += WEBRTC_SDP_LINE_BREAK;
+              }
+            }
+
+            // 'payload-type'
+            for(k in cur_d_payload) {
+              if(cur_d_payload.hasOwnProperty(k)){
+                cur_d_payload_obj                 = cur_d_payload[k];
+                cur_d_payload_obj_attrs           = cur_d_payload_obj.attrs;
+                cur_d_payload_obj_parameter       = cur_d_payload_obj.parameter;
+                cur_d_payload_obj_rtcp_fb         = cur_d_payload_obj['rtcp-fb'];
+                cur_d_payload_obj_rtcp_fb_ttr_int = cur_d_payload_obj['rtcp-fb-trr-int'];
+
+                cur_d_payload_obj_id              = cur_d_payload_obj_attrs.id;
+
+                payloads_str += 'a=rtpmap:' + cur_d_payload_obj_id;
+
+                // 'rtpmap'
+                if(cur_d_payload_obj_attrs.name) {
+                  payloads_str += ' ' + cur_d_payload_obj_attrs.name;
+
+                  if(cur_d_payload_obj_attrs.clockrate) {
+                    payloads_str += '/' + cur_d_payload_obj_attrs.clockrate;
+
+                    if(cur_d_payload_obj_attrs.channels) {
+                      payloads_str += '/' + cur_d_payload_obj_attrs.channels;
+                    }
+                  }
+                }
+
+                payloads_str += WEBRTC_SDP_LINE_BREAK;
+
+                // 'parameter'
+                if(cur_d_payload_obj_parameter.length) {
+                  payloads_str += 'a=fmtp:' + cur_d_payload_obj_id + ' ';
+                  cur_d_payload_obj_parameter_str = '';
+
+                  for(o in cur_d_payload_obj_parameter) {
+                      if(cur_d_payload_obj_parameter.hasOwnProperty(o)){
+                        cur_d_payload_obj_parameter_obj = cur_d_payload_obj_parameter[o];
+
+                        if(cur_d_payload_obj_parameter_str) {
+                          cur_d_payload_obj_parameter_str += ';';
+                        }
+
+                        cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj.name;
+
+                        if(cur_d_payload_obj_parameter_obj.value !== null) {
+                          cur_d_payload_obj_parameter_str += '=';
+                          cur_d_payload_obj_parameter_str += cur_d_payload_obj_parameter_obj.value;
+                        }
+                      }
+                  }
+
+                  payloads_str += cur_d_payload_obj_parameter_str;
+                  payloads_str += WEBRTC_SDP_LINE_BREAK;
+                }
+
+                // 'rtcp-fb' (sub)
+                for(l in cur_d_payload_obj_rtcp_fb) {
+                  if(cur_d_payload_obj_rtcp_fb.hasOwnProperty(l)){
+                    cur_d_payload_obj_rtcp_fb_obj = cur_d_payload_obj_rtcp_fb[l];
+
+                    payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
+                    payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj.type;
+
+                    if(cur_d_payload_obj_rtcp_fb_obj.subtype) {
+                      payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj.subtype;
+                    }
+
+                    payloads_str += WEBRTC_SDP_LINE_BREAK;
+                  }
+                }
+
+                // 'rtcp-fb-ttr-int'
+                for(m in cur_d_payload_obj_rtcp_fb_ttr_int) {
+                  if(cur_d_payload_obj_rtcp_fb_ttr_int.hasOwnProperty(m)){
+                    cur_d_payload_obj_rtcp_fb_ttr_int_obj = cur_d_payload_obj_rtcp_fb_ttr_int[m];
+
+                    payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
+                    payloads_str += ' ' + 'trr-int';
+                    payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_ttr_int_obj.value;
+                    payloads_str += WEBRTC_SDP_LINE_BREAK;
+                  }
                 }
               }
-
-              payloads_str += cur_d_payload_obj_parameter_str;
-              payloads_str += WEBRTC_SDP_LINE_BREAK;
             }
 
-            // 'rtcp-fb' (sub)
-            for(l in cur_d_payload_obj_rtcp_fb) {
-              cur_d_payload_obj_rtcp_fb_obj = cur_d_payload_obj_rtcp_fb[l];
+            if(cur_d_attrs.ptime)     payloads_str += 'a=ptime:'    + cur_d_attrs.ptime + WEBRTC_SDP_LINE_BREAK;
+            if(cur_d_attrs.maxptime)  payloads_str += 'a=maxptime:' + cur_d_attrs.maxptime + WEBRTC_SDP_LINE_BREAK;
 
-              payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
-              payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj.type;
+            // 'ssrc-group'
+            for(cur_d_ssrc_group_semantics in cur_d_ssrc_group) {
+              if(cur_d_ssrc_group.hasOwnProperty(cur_d_ssrc_group_semantics)){
+                for(t in cur_d_ssrc_group[cur_d_ssrc_group_semantics]) {
+                  if(cur_d_ssrc_group[cur_d_ssrc_group_semantics].hasOwnProperty(t))
+                    cur_d_ssrc_group_obj = cur_d_ssrc_group[cur_d_ssrc_group_semantics][t];
 
-              if(cur_d_payload_obj_rtcp_fb_obj.subtype) {
-                payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_obj.subtype;
+                    payloads_str += 'a=ssrc-group';
+                    payloads_str += ':' + cur_d_ssrc_group_semantics;
+
+                    for(u in cur_d_ssrc_group_obj.sources) {
+                      if(cur_d_ssrc_group_obj.sources.hasOwnProperty(u)){
+                        payloads_str += ' ' + cur_d_ssrc_group_obj.sources[u].ssrc;
+                      }
+                    }
+
+                    payloads_str += WEBRTC_SDP_LINE_BREAK;
+                  }
+                }
               }
-
-              payloads_str += WEBRTC_SDP_LINE_BREAK;
             }
 
-            // 'rtcp-fb-ttr-int'
-            for(m in cur_d_payload_obj_rtcp_fb_ttr_int) {
-              cur_d_payload_obj_rtcp_fb_ttr_int_obj = cur_d_payload_obj_rtcp_fb_ttr_int[m];
+            // 'ssrc'
+            for(v in cur_d_ssrc_id_arr) {
+              if(cur_d_ssrc_id_arr.hasOwnProperty(v)){
+                cur_d_ssrc_id = cur_d_ssrc_id_arr[v];
 
-              payloads_str += 'a=rtcp-fb:' + cur_d_payload_obj_id;
-              payloads_str += ' ' + 'trr-int';
-              payloads_str += ' ' + cur_d_payload_obj_rtcp_fb_ttr_int_obj.value;
-              payloads_str += WEBRTC_SDP_LINE_BREAK;
-            }
-          }
+                for(r in cur_d_ssrc[cur_d_ssrc_id]) {
+                  if(cur_d_ssrc[cur_d_ssrc_id].hasOwnProperty(r)){
+                    cur_d_ssrc_obj = cur_d_ssrc[cur_d_ssrc_id][r];
 
-          if(cur_d_attrs.ptime)     payloads_str += 'a=ptime:'    + cur_d_attrs.ptime + WEBRTC_SDP_LINE_BREAK;
-          if(cur_d_attrs.maxptime)  payloads_str += 'a=maxptime:' + cur_d_attrs.maxptime + WEBRTC_SDP_LINE_BREAK;
+                    payloads_str += 'a=ssrc';
+                    payloads_str += ':' + cur_d_ssrc_id;
+                    payloads_str += ' ' + cur_d_ssrc_obj.name;
 
-          // 'ssrc-group'
-          for(cur_d_ssrc_group_semantics in cur_d_ssrc_group) {
-            for(t in cur_d_ssrc_group[cur_d_ssrc_group_semantics]) {
-              cur_d_ssrc_group_obj = cur_d_ssrc_group[cur_d_ssrc_group_semantics][t];
+                    if(cur_d_ssrc_obj.value) {
+                      payloads_str += ':' + cur_d_ssrc_obj.value;
+                    }
 
-              payloads_str += 'a=ssrc-group';
-              payloads_str += ':' + cur_d_ssrc_group_semantics;
-
-              for(u in cur_d_ssrc_group_obj.sources) {
-                payloads_str += ' ' + cur_d_ssrc_group_obj.sources[u].ssrc;
+                    payloads_str += WEBRTC_SDP_LINE_BREAK;
+                  }
+                }
               }
-
-              payloads_str += WEBRTC_SDP_LINE_BREAK;
             }
-          }
 
-          // 'ssrc'
-          for(v in cur_d_ssrc_id_arr) {
-            cur_d_ssrc_id = cur_d_ssrc_id_arr[v];
-
-            for(r in cur_d_ssrc[cur_d_ssrc_id]) {
-              cur_d_ssrc_obj = cur_d_ssrc[cur_d_ssrc_id][r];
-
-              payloads_str += 'a=ssrc';
-              payloads_str += ':' + cur_d_ssrc_id;
-              payloads_str += ' ' + cur_d_ssrc_obj.name;
-
-              if(cur_d_ssrc_obj.value) {
-                payloads_str += ':' + cur_d_ssrc_obj.value;
-              }
-
-              payloads_str += WEBRTC_SDP_LINE_BREAK;
-            }
-          }
-
-          // Candidates (some browsers require them there, too)
-          if(typeof sdp_candidates == 'object') {
-            for(c in sdp_candidates) {
-              if((sdp_candidates[c]).label == GIGGLE_MEDIAS[cur_media].label) {
-                payloads_str += (sdp_candidates[c]).candidate;
+            // Candidates (some browsers require them there, too)
+            if(typeof sdp_candidates == 'object') {
+              for(c in sdp_candidates) {
+                if(sdp_candidates.hasOwnProperty(c)){
+                  if((sdp_candidates[c]).label == GIGGLE_MEDIAS[cur_media].label) {
+                    payloads_str += (sdp_candidates[c]).candidate;
+                  }
+                }
               }
             }
           }
-        }
 
         // Push to object
         payloads_obj.type = type;
@@ -1370,7 +1433,11 @@ var GiggleSDP = ring.create(
         }
 
         // Payload type IDs
-        for(i in payload)  type_ids.push(payload[i].attrs.id);
+        for(i in payload){
+          if(payload.hasOwnProperty(i)){
+            type_ids.push(payload[i].attrs.id);
+          }
+        }
 
         sdp_media += (' ' + type_ids.join(' '));
       } catch(e) {
