@@ -44,7 +44,8 @@ var GiggleLoader = {
   _includes: {
     lib: [
       'underscore/underscore',
-      'ring/ring'
+      'ring/ring',
+      'temasys/script/plugin_temasys'
     ],
 
     src: [
@@ -61,7 +62,7 @@ var GiggleLoader = {
       'giggle.broadcast',
       'giggle.init',
       'giggle.main',
-      'detect_rtc'
+      'giggle.detect_rtc'
     ]
   },
 

@@ -1835,12 +1835,16 @@ var GiggleSingle = ring.create([__GiggleBase],
           for(i in sdp_remote.candidates) {
             if(sdp_remote.candidates.hasOwnProperty(i)){
               cur_candidate_obj = sdp_remote.candidates[i];
+              ice_candidate_params = {
+                sdpMLineIndex : cur_candidate_obj.id,
+                candidate     : cur_candidate_obj.candidate
+              };
+
+              if(GIGGLE_IS_PluginRTC)
+                ice_candidate_params.sdpMid = cur_candidate_obj.label;
 
               this.get_peer_connection().addIceCandidate(
-                new WEBRTC_ICE_CANDIDATE({
-                  sdpMLineIndex : cur_candidate_obj.id,
-                  candidate     : cur_candidate_obj.candidate
-                }),
+                new WEBRTC_ICE_CANDIDATE(ice_candidate_params),
 
                 on_ice_candidate_add_success,
                 on_ice_candidate_add_failure
@@ -2367,12 +2371,16 @@ var GiggleSingle = ring.create([__GiggleBase],
           for(i in sdp_candidates_remote) {
             if(sdp_candidates_remote.hasOwnProperty(i)){
               cur_candidate_obj = sdp_candidates_remote[i];
+              ice_candidate_params = {
+                sdpMLineIndex : cur_candidate_obj.id,
+                candidate     : cur_candidate_obj.candidate
+              };
+
+              if(GIGGLE_IS_PluginRTC)
+                ice_candidate_params.sdpMid = cur_candidate_obj.label;
 
               this.get_peer_connection().addIceCandidate(
-                new WEBRTC_ICE_CANDIDATE({
-                  sdpMLineIndex : cur_candidate_obj.id,
-                  candidate     : cur_candidate_obj.candidate
-                }),
+                new WEBRTC_ICE_CANDIDATE(ice_candidate_params),
 
                 on_ice_candidate_add_success,
                 on_ice_candidate_add_failure
@@ -2520,7 +2528,9 @@ var GiggleSingle = ring.create([__GiggleBase],
          * @type {Function}
          */
         this.get_peer_connection().oniceconnectionstatechange = function(data) {
-          switch(this.iceConnectionState) {
+          var ice_connection_state = this.iceConnectionState || _this.get_peer_connection().iceConnectionState;
+
+          switch(ice_connection_state) {
             case GIGGLE_ICE_CONNECTION_STATE_CONNECTED:
             case GIGGLE_ICE_CONNECTION_STATE_COMPLETED:
               if(_this.get_last_ice_state() !== GIGGLE_ICE_CONNECTION_STATE_CONNECTED) {
@@ -2548,8 +2558,18 @@ var GiggleSingle = ring.create([__GiggleBase],
          */
         this.get_peer_connection().onaddstream = function(data) {
           /* @function */
-          (_this.get_stream_add()).bind(this)(_this, data);
-          _this._peer_connection_callback_onaddstream.bind(this)(_this, data);
+          if (GIGGLE_IS_PluginRTC) {
+              var self = this;
+
+              setTimeout(function() {
+                  //Do not set remote stream here. It will be attached in giggle.base > _peer_stream_attach function
+                  WebRTCPlugin.attachMediaStream(null, data.stream);
+                  _this._peer_connection_callback_onaddstream.bind(self)(_this, data);
+              }, 1000);
+          } else {
+              (_this.get_stream_add()).bind(this)(_this, data);
+              _this._peer_connection_callback_onaddstream.bind(this)(_this, data);
+          }
         };
 
         /**
@@ -2796,12 +2816,16 @@ var GiggleSingle = ring.create([__GiggleBase],
         for(c in sdp_remote.candidates) {
           if(sdp_remote.candidates.hasOwnProperty(c)){
             cur_candidate_obj = sdp_remote.candidates[c];
+            ice_candidate_params = {
+              sdpMLineIndex : cur_candidate_obj.id,
+              candidate     : cur_candidate_obj.candidate
+            };
+
+            if(GIGGLE_IS_PluginRTC)
+              ice_candidate_params.sdpMid = cur_candidate_obj.label;
 
             this.get_peer_connection().addIceCandidate(
-              new WEBRTC_ICE_CANDIDATE({
-                sdpMLineIndex : cur_candidate_obj.id,
-                candidate     : cur_candidate_obj.candidate
-              }),
+              new WEBRTC_ICE_CANDIDATE(ice_candidate_params),
 
               on_ice_candidate_add_success,
               on_ice_candidate_add_failure

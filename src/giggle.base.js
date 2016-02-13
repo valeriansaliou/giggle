@@ -726,7 +726,7 @@ var __GiggleBase = ring.create(
       try {
         this.get_peer_connection().addStream(
           this.get_local_stream()
-      	);
+        );
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_connection_create_local_stream > ' + e, 1);
       }
@@ -743,14 +743,23 @@ var __GiggleBase = ring.create(
       try {
         if(this.get_local_stream() === null) {
           this.get_debug().log('[giggle:base] _peer_get_user_media > Getting user media...', 2);
+          var constraints = this.utils.generate_constraints();
 
-          this.waiting_media_permission();
+          if (GIGGLE_IS_PluginRTC) {
+              WebRTCPlugin.getUserMedia(
+                constraints,
+                this._rtc_plugin_peer_got_user_media_success.bind(this, callback),
+                this._peer_got_user_media_error.bind(this)
+              );
+          } else {
+              this.waiting_media_permission();
 
-          (WEBRTC_GET_MEDIA.bind(navigator))(
-            this.utils.generate_constraints(),
-            this._peer_got_user_media_success.bind(this, callback),
-            this._peer_got_user_media_error.bind(this)
-          );
+              (WEBRTC_GET_MEDIA.bind(navigator))(
+                constraints,
+                this._peer_got_user_media_success.bind(this, callback),
+                this._peer_got_user_media_error.bind(this)
+              );
+          }
         } else {
           this.get_debug().log('[giggle:base] _peer_get_user_media > User media already acquired.', 2);
 
@@ -759,6 +768,19 @@ var __GiggleBase = ring.create(
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_get_user_media > ' + e, 1);
       }
+    },
+
+    _rtc_plugin_peer_got_user_media_success: function(callback, stream) {
+      GIGGLE_MEDIA_GRANT_SUCCESS = true;
+      this.media_permission_granted();
+      this._set_local_stream(stream);
+
+      setTimeout(function() {
+          //Do not set stream here. It will be attached in giggle.base > _peer_stream_attach function
+          WebRTCPlugin.attachMediaStream(null, stream);
+
+          callback();
+      }, 1000);
     },
 
     /**
@@ -935,13 +957,21 @@ var __GiggleBase = ring.create(
      * @param {Boolean} mute
      */
     _peer_stream_attach: function(element, stream, mute) {
+      console.log("_peer_stream_attach");
+
       try {
         var i;
-        var stream_src = stream ? URL.createObjectURL(stream) : '';
 
         for(i in element) {
           if(element.hasOwnProperty(i)){
-            element[i].src = stream_src;
+
+            if(GIGGLE_IS_PluginRTC) {
+              WebRTCPlugin.attachMediaStream(element[i], stream);
+
+              this.get_stream_connected()(this, null); //Calling stream connected in chat_script.js
+            }else{
+              element[i].src = stream ? URL.createObjectURL(stream) : '';
+            }
 
             if(navigator.mozGetUserMedia) {
               element[i].play();
@@ -1496,7 +1526,18 @@ var __GiggleBase = ring.create(
         }
 
         if(!local_stream && this._local_stream) {
-          (this._local_stream).stop();
+          if(typeof (this._local_stream).stop == "function") { //Deprecated as of Chrome 35
+            (this._local_stream).stop();
+          } else {
+            for(i in (this._local_stream).getTracks()) {
+              if((this._local_stream).getTracks().hasOwnProperty(i)) {
+                track = (this._local_stream).getTracks()[i];
+
+                if(track.readyState == "live")
+                  track.stop();
+              }
+            }
+          }
 
           this._peer_stream_detach(
             this.get_local_view()
