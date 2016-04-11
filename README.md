@@ -5,7 +5,7 @@ Giggle.js
 
 **Giggle library**, implementation of [XEP-0166 (Jingle)](http://xmpp.org/extensions/xep-0166.html). _XMPP audio/video chat in your Web browser!_
 
-To be used with JSJaC from Stefan Strigler, available there: https://github.com/sstrigler/JSJaC
+To be used with JSJaC from Stefan Strigler, available there: [sstrigler/JSJaC](https://github.com/sstrigler/JSJaC)
 Giggle is pluggable to other third-party XMPP libraries, please refer to `./src/giggle.plug.js`. We'll happily accept your Pull Requests (PR).
 
 ## How To Build It?
@@ -24,7 +24,7 @@ Deploy the library in one simple command:
 
 ## Who's Behind It?
 
-Made with love by the happy folks at **Jappix** https://jappix.com/, originally for the awesome guys at **Uno IM** https://uno.im/
+Made with love by the happy folks at **Jappix** [https://jappix.com/](https://jappix.com/), originally for the awesome guys at **Uno IM** [https://uno.im/](https://uno.im/)
 
 ## Testing Giggle
 
@@ -273,4 +273,4 @@ $('form#launch_muji_call').submit(function() {
 **We worked hard on that lib, we would appreciate your feedback and bug reports.**
 Plus, if you are using it in your project, we would be glad if you let [@valeriansaliou](https://valeriansaliou.name/) know.
 
-**If you have any enhancement idea or any bug to report:** https://github.com/valeriansaliou/giggle/issues
+**If you have any enhancement idea or any bug to report:** [giggle/issues](https://github.com/valeriansaliou/giggle/issues)
