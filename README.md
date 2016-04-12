@@ -153,9 +153,9 @@ var handle_disco_info = function(iq) {
 
 The one-to-one demo client source code can be found at the following URLs:
 
-* **HTML**: https://github.com/valeriansaliou/giggle/blob/master/examples/single_client.html
-* **CSS**: https://github.com/valeriansaliou/giggle/blob/master/examples/styles/single_client.css
-* **JavaScript**: https://github.com/valeriansaliou/giggle/blob/master/examples/scripts/single_client.js
+* **HTML**: [valeriansaliou/giggle/blob/master/examples/single_client.html](https://github.com/valeriansaliou/giggle/blob/master/examples/single_client.html)
+* **CSS**: [valeriansaliou/giggle/blob/master/examples/styles/single_client.css](https://github.com/valeriansaliou/giggle/blob/master/examples/styles/single_client.css)
+* **JavaScript**: [valeriansaliou/giggle/blob/master/examples/scripts/single_client.js](https://github.com/valeriansaliou/giggle/blob/master/examples/scripts/single_client.js)
 
 Here's a sum up on how to use the Giggle/Single API:
 
@@ -209,9 +209,9 @@ $('form#launch_single_call').submit(function() {
 
 The multiparty demo client source code can be found at the following URLs:
 
-* **HTML**: https://github.com/valeriansaliou/giggle/blob/master/examples/muji_client.html
-* **CSS**: https://github.com/valeriansaliou/giggle/blob/master/examples/styles/muji_client.css
-* **JavaScript**: https://github.com/valeriansaliou/giggle/blob/master/examples/scripts/muji_client.js
+* **HTML**: [valeriansaliou/giggle/blob/master/examples/muji_client.html](https://github.com/valeriansaliou/giggle/blob/master/examples/muji_client.html)
+* **CSS**: [valeriansaliou/giggle/blob/master/examples/styles/muji_client.css](https://github.com/valeriansaliou/giggle/blob/master/examples/styles/muji_client.css)
+* **JavaScript**: [valeriansaliou/giggle/blob/master/examples/scripts/muji_client.js](https://github.com/valeriansaliou/giggle/blob/master/examples/scripts/muji_client.js)
 
 Here's a sum up on how to use the Giggle/Muji API:
 
