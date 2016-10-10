@@ -22,10 +22,6 @@ Deploy the library in one simple command:
 
 > ./tools/deploy.sh
 
-## Who's Behind It?
-
-Made with love by the happy folks at **Jappix** [https://jappix.com/](https://jappix.com/), originally for the awesome guys at **Uno IM** [https://uno.im/](https://uno.im/)
-
 ## Testing Giggle
 
 Please first clone Giggle on your local environment, and access it over your local HTTP server. **Serving example pages over HTTP is a requirement for WebRTC to work**.
@@ -34,7 +30,7 @@ Please first clone Giggle on your local environment, and access it over your loc
 
 You can try Giggle.js one-to-one calls using the page: `./examples/single_client.html`
 
-Open it on 2 separate tabs or 2 different computers, and login with 2 different XMPP accounts (Jappix.com accounts only for this online demo). Then, paste the full JID of the other connected account in the call field.
+Open it on 2 separate tabs or 2 different computers, and login with 2 different XMPP accounts. Then, paste the full JID of the other connected account in the call field.
 
 The call should then be initiated, and after a while the video will come.
 
@@ -42,7 +38,7 @@ The call should then be initiated, and after a while the video will come.
 
 You can try Giggle.js multiparty calls using the page: `./examples/muji_client.html`
 
-Open it on 3+ separate tabs or 3+ different computers, and login with 3+ different XMPP accounts (Jappix.com accounts only for this online demo). Then, join the same conference room (you can enter any room even if it doesn't exist, just be sure to use muc.jappix.com as a MUC server - eg: happy-muji-test@muc.jappix.com).
+Open it on 3+ separate tabs or 3+ different computers, and login with 3+ different XMPP accounts. Then, join the same conference room (you can enter any room even if it doesn't exist, on any open MUC server).
 
 The multiparty conference call should take some time to initiate.
 
@@ -255,8 +251,8 @@ $('form#launch_muji_call').submit(function() {
 
         // Invite people to conference...
         session.invite([
-            'valerian@jappix.com/Phone',
-            'julien@jappix.com/Tablet'
+            'romeo@shakespeare.lit/Phone',
+            'juliet@capulet.com/Tablet'
         ]);
 
         // Leave conference...

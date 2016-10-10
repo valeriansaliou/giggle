@@ -2,9 +2,9 @@
  * Giggle.js
  * Automated tasks (uses GruntJS)
  *
- * Author: Valérian Saliou https://valeriansaliou.name/
+ * Author: Valerian Saliou https://valeriansaliou.name/
  *
- * Copyright: 2015, Valérian Saliou
+ * Copyright: 2015, Valerian Saliou
  * License: Mozilla Public License v2.0 (MPL v2.0)
  */
 

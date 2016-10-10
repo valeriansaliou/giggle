@@ -1,6 +1,6 @@
 {
-  "username": "webrtc.1@jappix.com:1388838519",
-  "password": "Ra7CmocZrIBpvyoEsqKnUjcPXlA=",
+  "username": "fallback.user@example.com:1388838519",
+  "password": "FallbackPassword",
 
   "uris": [
     "turn:8.34.221.6:3478?transport=udp",

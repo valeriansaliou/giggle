@@ -5,9 +5,9 @@
   @fileoverview Markup for the Multiparty Jingle (Muji) client
 
   @url https://github.com/valeriansaliou/giggle
-  @author Valérian Saliou https://valeriansaliou.name/
+  @author Valerian Saliou https://valeriansaliou.name/
 
-  @copyright 2015, Valérian Saliou
+  @copyright 2015, Valerian Saliou
   @license Mozilla Public License v2.0 (MPL v2.0)
 
 -->
@@ -55,22 +55,22 @@
     <form id="form_login" action="#">
       <label>
         <span class="label">BOSH</span>
-        <input name="login_bosh" type="url" placeholder="https://bind.jappix.com/" value="https://bind.jappix.com/" required="" />
+        <input name="login_bosh" type="url" placeholder="https://bosh.example.com/" required="" />
       </label>
 
       <label>
         <span class="label">WebSocket</span>
-        <input name="login_websocket" type="url" placeholder="wss://websocket.jappix.com/" value="wss://websocket.jappix.com/" />
+        <input name="login_websocket" type="url" placeholder="wss://websocket.example.com/" />
       </label>
 
       <label>
         <span class="label">JID</span>
-        <input name="login_jid" type="email" placeholder="user@jappix.com" value="jappix@jappix.com" required="" />
+        <input name="login_jid" type="email" placeholder="user@example.com" required="" />
       </label>
 
       <label>
         <span class="label">Password</span>
-        <input name="login_pwd" type="password" placeholder="Password" value="jappix" required="" />
+        <input name="login_pwd" type="password" placeholder="Password" required="" />
       </label>
 
       <button type="submit">Connect</button>
@@ -88,7 +88,7 @@
     <form id="form_call" action="#">
       <label>
         <span class="label">Room JID</span>
-        <input name="call_room" type="text" placeholder="room@muc.jappix.com" value="1_room_giggle@muc.jappix.com" required="" />
+        <input name="call_room" type="text" placeholder="room@muc.example.com" required="" />
       </label>
 
       <button name="call_audio" type="submit">Audio Only</button>
@@ -102,7 +102,7 @@
     <ul id="roster_call"></ul>
 
     <form id="form_invite" action="#" disabled>
-        <input name="invite_jid" type="text" placeholder="user@jappix.com" required="" disabled />
+        <input name="invite_jid" type="text" placeholder="user@example.com" required="" disabled />
         <button name="invite_submit" type="submit" disabled>Call Invite</button>
     </form>
   </fieldset>
@@ -145,6 +145,6 @@
   <hr class="bottom" />
 
   <div id="copyright">
-    © 2014 - <a href="https://valeriansaliou.name/">Valérian Saliou</a> and the <a href="https://jappix.org/">Jappix Project</a> team.
+    © 2014 - <a href="https://valeriansaliou.name/">Valerian Saliou</a>.
   </div>
 </body>

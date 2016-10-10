@@ -2,9 +2,9 @@
  * @fileoverview Giggle library - Multi-user call lib
  *
  * @url https://github.com/valeriansaliou/giggle
- * @author Valérian Saliou https://valeriansaliou.name/
+ * @author Valerian Saliou https://valeriansaliou.name/
  *
- * @copyright 2015, Valérian Saliou
+ * @copyright 2015, Valerian Saliou
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 

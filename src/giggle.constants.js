@@ -2,9 +2,9 @@
  * @fileoverview Giggle library - Constants map
  *
  * @url https://github.com/valeriansaliou/giggle
- * @author Valérian Saliou https://valeriansaliou.name/
+ * @author Valerian Saliou https://valeriansaliou.name/
  *
- * @copyright 2015, Valérian Saliou
+ * @copyright 2015, Valerian Saliou
  * @license Mozilla Public License v2.0 (MPL v2.0)
  */
 
@@ -75,7 +75,7 @@ var WEBRTC_CONFIGURATION = {
   peer_connection : {
     config        : {
       iceServers : [{
-        url: 'stun:stun.jappix.com'
+        url: 'stun.l.google.com:19302'
       }]
     },
 
