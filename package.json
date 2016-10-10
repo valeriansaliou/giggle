@@ -1,10 +1,10 @@
 {
   "name": "giggle",
   "description": "Giggle Jingle library for XMPP, implementation of XEP-0166.",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "homepage": "https://github.com/valeriansaliou/giggle",
 
-  "copyright": "2015, Valérian Saliou",
+  "copyright": "2015, Valerian Saliou",
   "license": "MPL 2.0",
 
   "repository": {
@@ -13,7 +13,7 @@
   },
 
   "author": {
-    "name": "Valérian Saliou",
+    "name": "Valerian Saliou",
     "url": "https://valeriansaliou.name/"
   },
 
