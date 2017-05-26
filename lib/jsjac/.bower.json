@@ -1,0 +1,13 @@
+{
+  "name": "jsjac",
+  "homepage": "https://github.com/sstrigler/JSJaC",
+  "_release": "393694e039",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "393694e03980897d4f4f23abc353853ddf205adc"
+  },
+  "_source": "git://github.com/sstrigler/JSJaC.git",
+  "_target": "*",
+  "_originalSource": "sstrigler/JSJaC"
+}
