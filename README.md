@@ -28,7 +28,7 @@ Please first clone Giggle on your local environment, and access it over your loc
 
 ### One-to-one calls (aka Single)
 
-You can try Giggle.js one-to-one calls using the page: `./examples/single_client.html`
+You can try Giggle.js one-to-one calls using the page: [giggle/examples/single_client.html](https://valeriansaliou.github.io/giggle/examples/single_client.html)
 
 Open it on 2 separate tabs or 2 different computers, and login with 2 different XMPP accounts. Then, paste the full JID of the other connected account in the call field.
 
@@ -36,7 +36,7 @@ The call should then be initiated, and after a while the video will come.
 
 ### Multiparty calls (aka Muji)
 
-You can try Giggle.js multiparty calls using the page: `./examples/muji_client.html`
+You can try Giggle.js multiparty calls using the page: [giggle/examples/muji_client.html](https://valeriansaliou.github.io/giggle/examples/muji_client.html)
 
 Open it on 3+ separate tabs or 3+ different computers, and login with 3+ different XMPP accounts. Then, join the same conference room (you can enter any room even if it doesn't exist, on any open MUC server).
 
@@ -147,11 +147,7 @@ var handle_disco_info = function(iq) {
 
 ### One-to-one calls
 
-The one-to-one demo client source code can be found at the following URLs:
-
-* **HTML**: [valeriansaliou/giggle/blob/master/examples/single_client.html](https://github.com/valeriansaliou/giggle/blob/master/examples/single_client.html)
-* **CSS**: [valeriansaliou/giggle/blob/master/examples/styles/single_client.css](https://github.com/valeriansaliou/giggle/blob/master/examples/styles/single_client.css)
-* **JavaScript**: [valeriansaliou/giggle/blob/master/examples/scripts/single_client.js](https://github.com/valeriansaliou/giggle/blob/master/examples/scripts/single_client.js)
+The one-to-one demo client source code can be found at the following URL: [giggle/examples/single_client.html](https://valeriansaliou.github.io/giggle/examples/single_client.html)
 
 Here's a sum up on how to use the Giggle/Single API:
 
@@ -203,11 +199,7 @@ $('form#launch_single_call').submit(function() {
 
 ### Multiparty calls
 
-The multiparty demo client source code can be found at the following URLs:
-
-* **HTML**: [valeriansaliou/giggle/blob/master/examples/muji_client.html](https://github.com/valeriansaliou/giggle/blob/master/examples/muji_client.html)
-* **CSS**: [valeriansaliou/giggle/blob/master/examples/styles/muji_client.css](https://github.com/valeriansaliou/giggle/blob/master/examples/styles/muji_client.css)
-* **JavaScript**: [valeriansaliou/giggle/blob/master/examples/scripts/muji_client.js](https://github.com/valeriansaliou/giggle/blob/master/examples/scripts/muji_client.js)
+The multiparty demo client source code can be found at the following URL: [giggle/examples/muji_client.html](https://valeriansaliou.github.io/giggle/examples/muji_client.html)
 
 Here's a sum up on how to use the Giggle/Muji API:
 
