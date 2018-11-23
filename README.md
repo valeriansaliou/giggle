@@ -8,6 +8,8 @@ Giggle.js
 To be used with JSJaC from Stefan Strigler, available there: [sstrigler/JSJaC](https://github.com/sstrigler/JSJaC)
 Giggle is pluggable to other third-party XMPP libraries, please refer to `./src/giggle.plug.js`. We'll happily accept your Pull Requests (PR).
 
+**🇫🇷 Crafted in Brest, France.**
+
 ## How To Build It?
 
 Only Giggle.js raw sources are provided in this repository. Those are not usable out-of-the-box for production purposes. You first need to build the library components on your local machine.
