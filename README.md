@@ -1,8 +1,6 @@
 Giggle.js
 =========
 
-[![Build Status](https://travis-ci.org/valeriansaliou/giggle.svg?branch=master)](https://travis-ci.org/valeriansaliou/giggle) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/valeriansaliou/giggle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 **Giggle library**, implementation of [XEP-0166 (Jingle)](http://xmpp.org/extensions/xep-0166.html). _XMPP audio/video chat in your Web browser!_
 
 To be used with JSJaC from Stefan Strigler, available there: [sstrigler/JSJaC](https://github.com/sstrigler/JSJaC)
