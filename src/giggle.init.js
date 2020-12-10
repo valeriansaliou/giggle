@@ -251,45 +251,47 @@ var GiggleInit = ring.create(
                 GiggleStorage.get_debug().log('[giggle:init] _fallback > handle > Parsing ' + data.uris.length + ' URIs...', 2);
 
                 for(i in data.uris) {
-                  cur_url = data.uris[i];
+                  if(data.uris.hasOwnProperty(i)){
+                    cur_url = data.uris[i];
 
-                  if(cur_url) {
-                    // Parse current URL
-                    cur_parse = R_GIGGLE_SERVICE_URI.exec(cur_url);
+                    if(cur_url) {
+                      // Parse current URL
+                      cur_parse = R_GIGGLE_SERVICE_URI.exec(cur_url);
 
-                    if(cur_parse) {
-                      cur_type = cur_parse[1]        || null;
-                      cur_host = cur_parse[2]        || null;
-                      cur_port = cur_parse[3]        || null;
-                      cur_transport = cur_parse[4]   || null;
+                      if(cur_parse) {
+                        cur_type = cur_parse[1]        || null;
+                        cur_host = cur_parse[2]        || null;
+                        cur_port = cur_parse[3]        || null;
+                        cur_transport = cur_parse[4]   || null;
 
-                      cur_username  = data.username  || null;
-                      cur_password  = data.password  || null;
+                        cur_username  = data.username  || null;
+                        cur_password  = data.password  || null;
 
-                      if(!cur_host || !cur_type)  continue;
+                        if(!cur_host || !cur_type)  continue;
 
-                      if(!(cur_type in GiggleStorage.get_fallback())) {
-                        GiggleStorage.get_debug().log('[giggle:init] _fallback > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
-                        continue;
+                        if(!(cur_type in GiggleStorage.get_fallback())) {
+                          GiggleStorage.get_debug().log('[giggle:init] _fallback > handle > Service skipped (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
+                          continue;
+                        }
+
+                        store_obj = {
+                          'host'      : cur_host,
+                          'port'      : cur_port,
+                          'transport' : cur_transport,
+                          'type'      : cur_type
+                        };
+
+                        if(cur_type == 'turn') {
+                          store_obj.username = cur_username;
+                          store_obj.password = cur_password;
+                        }
+
+                        GiggleStorage.get_fallback()[cur_type].push(store_obj);
+
+                        GiggleStorage.get_debug().log('[giggle:init] _fallback > handle > Fallback service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
+                      } else {
+                        GiggleStorage.get_debug().log('[giggle:init] _fallback > handle > Fallback service not stored, weird URI (' + cur_url + ').', 0);
                       }
-
-                      store_obj = {
-                        'host'      : cur_host,
-                        'port'      : cur_port,
-                        'transport' : cur_transport,
-                        'type'      : cur_type
-                      };
-
-                      if(cur_type == 'turn') {
-                        store_obj.username = cur_username;
-                        store_obj.password = cur_password;
-                      }
-
-                      GiggleStorage.get_fallback()[cur_type].push(store_obj);
-
-                      GiggleStorage.get_debug().log('[giggle:init] _fallback > handle > Fallback service stored (type: ' + cur_type + ', host: ' + cur_host + ', port: ' + cur_port + ', transport: ' + cur_transport + ').', 4);
-                    } else {
-                      GiggleStorage.get_debug().log('[giggle:init] _fallback > handle > Fallback service not stored, weird URI (' + cur_url + ').', 0);
                     }
                   }
                 }

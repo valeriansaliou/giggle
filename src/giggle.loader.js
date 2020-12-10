@@ -44,7 +44,8 @@ var GiggleLoader = {
   _includes: {
     lib: [
       'underscore/underscore',
-      'ring/ring'
+      'ring/ring',
+      'temasys/script/plugin_temasys'
     ],
 
     src: [
@@ -60,7 +61,8 @@ var GiggleLoader = {
       'giggle.plug.jsjac',
       'giggle.broadcast',
       'giggle.init',
-      'giggle.main'
+      'giggle.main',
+      'giggle.detect_rtc'
     ]
   },
 
@@ -72,7 +74,7 @@ var GiggleLoader = {
    */
    _fire_ready: function() {
     // Executes all pending ready callbacks
-    for(var i = 0; i < this._ready_callbacks.length; i++) {
+    for(var i = 0, len = this._ready_callbacks.length; i < len; ++i) {
       // Fire, fire, fire!
       this._ready_callbacks[i].bind(window)();
     }
@@ -137,18 +139,18 @@ var GiggleLoader = {
   go: function() {
     var includes = [], c;
 
-    for(c in this._includes.lib) {
-      includes.push('../lib/' + this._includes.lib[c]);
+    for(c = 0, len = this._includes.lib.length; c < len; ++c) {
+      includes.push('../../giggle/lib/' + this._includes.lib[c]);
     }
 
-    includes = includes.concat(
-      this._includes.src
-    );
+    for(c = 0, len = this._includes.src.length; c < len; ++c) {
+      includes.push('../../giggle/src/' + this._includes.src[c]);
+    }
 
     var scripts = document.getElementsByTagName('script');
     var path = './', i, j;
 
-    for(i = 0; i < scripts.length; i++) {
+    for(i = 0, len = scripts.length; i < len; ++i) {
       if(scripts.item(i).src && scripts.item(i).src.match(/giggle\.loader\.js$/)) {
         path = scripts.item(i).src.replace(/giggle\.loader\.js$/, '');
         break;

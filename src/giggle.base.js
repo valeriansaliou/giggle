@@ -604,9 +604,11 @@ var __GiggleBase = ring.create(
 
           // Check view is not already registered
           for(i in (fn.view.get)()) {
-            if((fn.view.get)()[i] == view) {
-              this.get_debug().log('[giggle:base] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
-              return true;
+            if((fn.view.get)().hasOwnProperty(i)){
+              if((fn.view.get)()[i] == view) {
+                this.get_debug().log('[giggle:base] register_view > Could not register view of type: ' + type + ' (already registered).', 2);
+                return true;
+              }
             }
           }
 
@@ -652,20 +654,22 @@ var __GiggleBase = ring.create(
 
           // Check view is registered
           for(i in (fn.view.get)()) {
-            if((fn.view.get)()[i] == view) {
-              // Proceeds un-registration
-              this.utils._peer_stream_detach(
-                [view]
-              );
+              if((fn.view.get)().hasOwnProperty(i)){
+                if((fn.view.get)()[i] == view) {
+                  // Proceeds un-registration
+                  this.utils._peer_stream_detach(
+                    [view]
+                  );
 
-              this.utils.array_remove_value(
-                (fn.view.get)(),
-                view
-              );
+                  this.utils.array_remove_value(
+                    (fn.view.get)(),
+                    view
+                  );
 
-              this.get_debug().log('[giggle:base] unregister_view > Unregistered view of type: ' + type, 3);
-              return true;
-            }
+                  this.get_debug().log('[giggle:base] unregister_view > Unregistered view of type: ' + type, 3);
+                  return true;
+                }
+             }
           }
 
           this.get_debug().log('[giggle:base] unregister_view > Could not unregister view of type: ' + type + ' (not found).', 2);
@@ -722,7 +726,7 @@ var __GiggleBase = ring.create(
       try {
         this.get_peer_connection().addStream(
           this.get_local_stream()
-      	);
+        );
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_connection_create_local_stream > ' + e, 1);
       }
@@ -739,12 +743,23 @@ var __GiggleBase = ring.create(
       try {
         if(this.get_local_stream() === null) {
           this.get_debug().log('[giggle:base] _peer_get_user_media > Getting user media...', 2);
+          var constraints = this.utils.generate_constraints();
 
-          (WEBRTC_GET_MEDIA.bind(navigator))(
-            this.utils.generate_constraints(),
-            this._peer_got_user_media_success.bind(this, callback),
-            this._peer_got_user_media_error.bind(this)
-          );
+          if (GIGGLE_IS_PluginRTC) {
+              WebRTCPlugin.getUserMedia(
+                constraints,
+                this._rtc_plugin_peer_got_user_media_success.bind(this, callback),
+                this._peer_got_user_media_error.bind(this)
+              );
+          } else {
+              this.waiting_media_permission();
+
+              (WEBRTC_GET_MEDIA.bind(navigator))(
+                constraints,
+                this._peer_got_user_media_success.bind(this, callback),
+                this._peer_got_user_media_error.bind(this)
+              );
+          }
         } else {
           this.get_debug().log('[giggle:base] _peer_get_user_media > User media already acquired.', 2);
 
@@ -753,6 +768,19 @@ var __GiggleBase = ring.create(
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_get_user_media > ' + e, 1);
       }
+    },
+
+    _rtc_plugin_peer_got_user_media_success: function(callback, stream) {
+      GIGGLE_MEDIA_GRANT_SUCCESS = true;
+      this.media_permission_granted();
+      this._set_local_stream(stream);
+
+      setTimeout(function() {
+          //Do not set stream here. It will be attached in giggle.base > _peer_stream_attach function
+          WebRTCPlugin.attachMediaStream(null, stream);
+
+          callback();
+      }, 1000);
     },
 
     /**
@@ -766,6 +794,9 @@ var __GiggleBase = ring.create(
 
       try {
         this.get_debug().log('[giggle:base] _peer_got_user_media_success > Got user media.', 2);
+
+        GIGGLE_MEDIA_GRANT_SUCCESS = true;
+        this.media_permission_granted();
 
         this._set_local_stream(stream);
 
@@ -816,20 +847,24 @@ var __GiggleBase = ring.create(
         this.sdp._resolution_payload(payload_parsed);
 
         for(cur_name in payload_parsed) {
-          this._set_payloads_local(
-            cur_name,
-            payload_parsed[cur_name]
-          );
+          if(payload_parsed.hasOwnProperty(cur_name)){
+	    this._set_payloads_local(
+	      cur_name,
+	      payload_parsed[cur_name]
+	    );
+          }
         }
 
         var cur_semantics;
         var group_parsed = this.sdp._parse_group(sdp_local.sdp);
 
         for(cur_semantics in group_parsed) {
-          this._set_group_local(
-            cur_semantics,
-            group_parsed[cur_semantics]
-          );
+          if(group_parsed.hasOwnProperty(cur_semantics)){
+            this._set_group_local(
+              cur_semantics,
+              group_parsed[cur_semantics]
+            );
+          }
         }
 
         // Filter our local description (remove unused medias)
@@ -922,20 +957,30 @@ var __GiggleBase = ring.create(
      * @param {Boolean} mute
      */
     _peer_stream_attach: function(element, stream, mute) {
+      console.log("_peer_stream_attach");
+
       try {
         var i;
-        var stream_src = stream ? URL.createObjectURL(stream) : '';
 
         for(i in element) {
-          element[i].src = stream_src;
+          if(element.hasOwnProperty(i)){
 
-          if(navigator.mozGetUserMedia) {
-            element[i].play();
-          } else {
-            element[i].autoplay = true;
+            if(GIGGLE_IS_PluginRTC) {
+              WebRTCPlugin.attachMediaStream(element[i], stream);
+
+              this.get_stream_connected()(this, null); //Calling stream connected in chat_script.js
+            }else{
+              element[i].src = stream ? URL.createObjectURL(stream) : '';
+            }
+
+            if(navigator.mozGetUserMedia) {
+              element[i].play();
+            } else {
+              element[i].autoplay = true;
+            }
+
+            if(typeof mute == 'boolean') element[i].muted = mute;
           }
-
-          if(typeof mute == 'boolean') element[i].muted = mute;
         }
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_stream_attach > ' + e, 1);
@@ -952,8 +997,10 @@ var __GiggleBase = ring.create(
         var i;
 
         for(i in element) {
-          element[i].pause();
-          element[i].src = '';
+          if(element.hasOwnProperty(i)){
+            element[i].pause();
+            element[i].src = '';
+          }
         }
       } catch(e) {
         this.get_debug().log('[giggle:base] _peer_stream_detach > ' + e, 1);
@@ -1479,7 +1526,18 @@ var __GiggleBase = ring.create(
         }
 
         if(!local_stream && this._local_stream) {
-          (this._local_stream).stop();
+          if(typeof (this._local_stream).stop == "function") { //Deprecated as of Chrome 35
+            (this._local_stream).stop();
+          } else {
+            for(i in (this._local_stream).getTracks()) {
+              if((this._local_stream).getTracks().hasOwnProperty(i)) {
+                track = (this._local_stream).getTracks()[i];
+
+                if(track.readyState == "live")
+                  track.stop();
+              }
+            }
+          }
 
           this._peer_stream_detach(
             this.get_local_view()

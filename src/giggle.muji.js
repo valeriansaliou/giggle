@@ -503,21 +503,25 @@ var GiggleMuji = ring.create([__GiggleBase],
         this._set_responder(this.utils.connection_jid());
 
         for(i in this.get_media_all()) {
-          cur_name = this.utils.name_generate(
-            this.get_media_all()[i]
-          );
+          if(this.get_media_all().hasOwnProperty(i)){
+            if(this.get_media_all().hasOwnProperty(i)){
+              cur_name = this.utils.name_generate(
+                this.get_media_all()[i]
+              );
 
-          this._set_name(cur_name);
+              this._set_name(cur_name);
 
-          this._set_senders(
-            cur_name,
-            GIGGLE_SENDERS_BOTH.jingle
-          );
+              this._set_senders(
+                cur_name,
+                GIGGLE_SENDERS_BOTH.jingle
+              );
 
-          this._set_creator(
-            cur_name,
-            GIGGLE_CREATOR_INITIATOR
-          );
+              this._set_creator(
+                cur_name,
+                GIGGLE_CREATOR_INITIATOR
+              );
+            }
+          }
         }
 
         // Register session to common router
@@ -991,7 +995,9 @@ var GiggleMuji = ring.create([__GiggleBase],
 
           for(i in handlers) {
             /* @function */
-            handlers[i](stanza);
+            if(handlers.hasOwnProperty(i)){
+              handlers[i](stanza);
+            }
           }
 
           this.unregister_handler(GIGGLE_STANZA_PRESENCE, type, id);
@@ -1724,12 +1730,14 @@ var GiggleMuji = ring.create([__GiggleBase],
         var cur_media_name;
 
         for(cur_media_name in this._mute) {
-          if(this.get_mute(cur_media_name) === true) {
-            this._toggle_participants_mute(
-              cur_media_name,
-              GIGGLE_SESSION_INFO_MUTE,
-              username
-            );
+          if(this._mute.hasOwnProperty(cur_media_name)){
+            if(this.get_mute(cur_media_name) === true) {
+              this._toggle_participants_mute(
+                cur_media_name,
+                GIGGLE_SESSION_INFO_MUTE,
+                username
+              );
+            }
           }
         }
 
@@ -2386,13 +2394,15 @@ var GiggleMuji = ring.create([__GiggleBase],
             participants = this.get_participants();
 
         for(cur_username in participants) {
-          cur_participant = participants[cur_username];
+          if(participants.hasOwnProperty(cur_username)){
+            cur_participant = participants[cur_username];
 
-          if(typeof cur_participant.session != 'undefined') {
-            if(send_terminate === true)
-              cur_participant.session.terminate();
+            if(typeof cur_participant.session != 'undefined') {
+              if(send_terminate === true)
+                cur_participant.session.terminate();
 
-            this.get_remove_remote_view()(this, cur_username);
+              this.get_remove_remote_view()(this, cur_username);
+            }
           }
         }
 
@@ -2433,15 +2443,17 @@ var GiggleMuji = ring.create([__GiggleBase],
         }
 
         for(i in participants) {
-          cur_participant = participants[i];
+          if(participants.hasOwnProperty(i)){
+            cur_participant = participants[i];
 
-          if(cur_participant.session.get_status() === GIGGLE_STATUS_ACCEPTED) {
-            switch(mute_action) {
-              case GIGGLE_SESSION_INFO_MUTE:
-                cur_participant.session.mute(media_name); break;
+            if(cur_participant.session.get_status() === GIGGLE_STATUS_ACCEPTED) {
+              switch(mute_action) {
+                case GIGGLE_SESSION_INFO_MUTE:
+                  cur_participant.session.mute(media_name); break;
 
-              case GIGGLE_SESSION_INFO_UNMUTE:
-                cur_participant.session.unmute(media_name); break;
+                case GIGGLE_SESSION_INFO_UNMUTE:
+                  cur_participant.session.unmute(media_name); break;
+              }
             }
           }
         }

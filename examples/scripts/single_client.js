@@ -202,12 +202,24 @@ var ARGS = {
 
   stream_disconnected: function(_this, stanza) {
     console.log('stream_disconnected');
+  },
+
+  media_permission_error: function(media_type, to) {
+    //Invoked when recipient blocks media permission
+  },
+
+  waiting_media_permission: function() {
+    //Show permission message
+  },
+
+  media_permission_granted: function() {
+    //Hide permission message
   }
 };
 
 GiggleLoader.on_ready(function() {
   // Check for WebRTC support
-  if(!GIGGLE_AVAILABLE) {
+  if(!GIGGLE_AVAILABLE && !GIGGLE_IS_PluginRTC) {
     $('#fieldset_login').attr('disabled', true);
     $('#not_supported:hidden').animate({'height': 'toggle', 'opacity': 'toggle'}, 400);
   }

@@ -37,9 +37,9 @@ var WEBRTC_GET_MEDIA           = ( navigator.webkitGetUserMedia     ||
  * @default
  * @public
  */
-var WEBRTC_PEER_CONNECTION     = ( window.webkitRTCPeerConnection   ||
-                                   window.mozRTCPeerConnection      ||
-                                   window.RTCPeerConnection         );
+var WEBRTC_PEER_CONNECTION     = ( window.RTCPeerConnection         ||
+                                   window.webkitRTCPeerConnection   ||
+                                   window.mozRTCPeerConnection      );
 
 /**
  * @constant
@@ -2679,3 +2679,27 @@ GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_INITIATING]  = 1;
 GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_INITIATED]   = 1;
 GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_LEAVING]     = 1;
 GIGGLE_MUJI_STATUS[GIGGLE_MUJI_STATUS_LEFT]        = 1;
+
+var GIGGLE_MEDIA_GRANT_SUCCESS = false;
+var PROPOSE_TIMEOUT, PROPOSED_CALL_ID;
+
+var GIGGLE_IS_SAFARI = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+var GIGGLE_IS_IE = !!document.documentMode;
+var GIGGLE_IS_PluginRTC = GIGGLE_IS_SAFARI || GIGGLE_IS_IE;
+
+var WebRTCPlugin = {};
+
+// polyfilling some WebRTC methods with those of temasys RTC plugin.
+window.onPluginRTCInitialized = function(pluginRTCObject) {
+    WebRTCPlugin = pluginRTCObject;
+    MediaStreamTrack            = WebRTCPlugin.MediaStreamTrack;
+    RTCPeerConnection           = WebRTCPlugin.RTCPeerConnection;
+    WEBRTC_PEER_CONNECTION      = WebRTCPlugin.RTCPeerConnection;
+    RTCIceCandidate             = WebRTCPlugin.RTCIceCandidate;
+    WEBRTC_ICE_CANDIDATE        = WebRTCPlugin.RTCIceCandidate;
+    RTCSessionDescription       = WebRTCPlugin.RTCSessionDescription;
+    WEBRTC_SESSION_DESCRIPTION  = WebRTCPlugin.RTCSessionDescription;
+    WEBRTC_GET_MEDIA            = WebRTCPlugin.getUserMedia;
+    GIGGLE_AVAILABLE            = WEBRTC_GET_MEDIA ? true : false;
+};
+if (!!window.PluginRTC) window.onPluginRTCInitialized(window.PluginRTC);
